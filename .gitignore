@@ -1,0 +1,16 @@
+/Acme-CPAN-Installer-*
+/.build
+/_build*
+/Build
+MYMETA.*
+!META.json
+/.prove
+/.carmel/
+/MANIFEST
+/META.yml
+/Makefile
+/Makefile.old
+/blib/
+/cpanfile.snapshot
+/local/
+/pm_to_blib
