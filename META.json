@@ -1,5 +1,5 @@
 {
-   "abstract" : "WIP",
+   "abstract" : "an experimental cpan module installer",
    "author" : [
       "Shoichi Kaji <skaji@cpan.org>"
    ],
@@ -37,7 +37,17 @@
       },
       "runtime" : {
          "requires" : {
+            "CPAN::DistnameInfo" : "0",
+            "CPAN::Meta" : "0",
+            "CPAN::Meta::YAML" : "0",
+            "Carton::Snapshot" : "0",
+            "File::pushd" : "0",
+            "HTTP::Tiny" : "0",
+            "IO::Socket::SSL" : "0",
+            "JSON::PP" : "0",
             "Menlo::CLI::Compat" : "0",
+            "Module::CPANfile" : "0",
+            "Module::CoreList" : "0",
             "perl" : "5.008005"
          }
       },
