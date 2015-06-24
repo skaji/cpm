@@ -59,7 +59,6 @@ sub run {
         warn "Loading distributions from $file...\n";
         my @distributions = $self->load_snapshot($file);
         $master->add_distribution($_) for @distributions;
-        $master->add_job(type => "install", distfile => $_) for map $_->distfile, @distributions;
     } else {
         if (!@packages) {
             my $file = $self->{cpanfile};

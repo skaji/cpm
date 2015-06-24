@@ -148,6 +148,7 @@ sub add_job {
 
 sub get_job {
     my $self = shift;
+    $self->_calculate_jobs;
     return unless $self->jobs;
 
     my ($job) = grep { !$_->in_charge } $self->jobs;
@@ -157,7 +158,6 @@ sub get_job {
         = map { $self->worker($_->in_charge) } grep { !defined $_->result } $self->jobs;
     my @done_workers = $self->ready_workers(@running_workers);
     $self->register_result($_->result) for @done_workers;
-    $self->_calculate_jobs;
     $self->get_job;
 }
 
