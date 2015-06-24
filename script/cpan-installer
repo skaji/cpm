@@ -1,0 +1,45 @@
+#!perl
+use strict;
+use warnings;
+use utf8;
+
+use Acme::CPAN::Installer;
+Acme::CPAN::Installer->new->parse_options(@ARGV)->run;
+
+__END__
+
+=head1 NAME
+
+cpan-installer - an experimental cpan module installer
+
+=head1 SYNOPSIS
+
+Install distributions listed in C<cpanfile.snapshot>:
+
+  # from cpanfile.snapshot
+  > cpan-installer
+
+Install modules specified in C<cpanfile> or arguments (very experimental):
+
+  # from cpanfile
+  > cpan-installer
+
+  # or explicitly
+  > cpan-installer Module1 Module2 ...
+
+Options:
+
+  -w, --workers=N
+        how many workers, default: 5
+  -L, -l, --local-lib=DIR
+        install base, default: local/
+  -v, --version
+        show version
+  -h, --help
+        show this help
+
+=head1 AUTHOR
+
+Shoichi Kaji
+
+=cut

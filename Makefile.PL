@@ -7,18 +7,30 @@ use 5.008005;
 use ExtUtils::MakeMaker;
 
 my %WriteMakefileArgs = (
-  "ABSTRACT" => "WIP",
+  "ABSTRACT" => "an experimental cpan module installer",
   "AUTHOR" => "Shoichi Kaji <skaji\@cpan.org>",
   "CONFIGURE_REQUIRES" => {
     "ExtUtils::MakeMaker" => 0
   },
   "DISTNAME" => "Acme-CPAN-Installer",
-  "EXE_FILES" => [],
+  "EXE_FILES" => [
+    "script/cpan-installer"
+  ],
   "LICENSE" => "perl",
   "MIN_PERL_VERSION" => "5.008005",
   "NAME" => "Acme::CPAN::Installer",
   "PREREQ_PM" => {
-    "Menlo::CLI::Compat" => 0
+    "CPAN::DistnameInfo" => 0,
+    "CPAN::Meta" => 0,
+    "CPAN::Meta::YAML" => 0,
+    "Carton::Snapshot" => 0,
+    "File::pushd" => 0,
+    "HTTP::Tiny" => 0,
+    "IO::Socket::SSL" => 0,
+    "JSON::PP" => 0,
+    "Menlo::CLI::Compat" => 0,
+    "Module::CPANfile" => 0,
+    "Module::CoreList" => 0
   },
   "TEST_REQUIRES" => {
     "Test::More" => "0.96"
@@ -31,8 +43,18 @@ my %WriteMakefileArgs = (
 
 
 my %FallbackPrereqs = (
+  "CPAN::DistnameInfo" => 0,
+  "CPAN::Meta" => 0,
+  "CPAN::Meta::YAML" => 0,
+  "Carton::Snapshot" => 0,
   "ExtUtils::MakeMaker" => 0,
+  "File::pushd" => 0,
+  "HTTP::Tiny" => 0,
+  "IO::Socket::SSL" => 0,
+  "JSON::PP" => 0,
   "Menlo::CLI::Compat" => 0,
+  "Module::CPANfile" => 0,
+  "Module::CoreList" => 0,
   "Test::More" => "0.96"
 );
 
