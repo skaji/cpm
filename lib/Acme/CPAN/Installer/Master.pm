@@ -167,8 +167,7 @@ sub get_job {
         return $job;
     }
 
-    my @running_workers
-        = map { $self->worker($_->in_charge) } grep { !defined $_->result } $self->jobs;
+    my @running_workers = map { $self->worker($_->in_charge) } $self->jobs;
     my @done_workers = $self->ready_workers(@running_workers);
     $self->register_result($_->result) for @done_workers;
     $self->get_job;
