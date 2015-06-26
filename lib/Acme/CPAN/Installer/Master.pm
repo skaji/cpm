@@ -22,6 +22,14 @@ sub new {
     }, $class;
 }
 
+sub fail {
+    my $self = shift;
+    my @fail_resolve = sort keys %{$self->{_fail_resolve}};
+    my @fail_install = sort keys %{$self->{_fail_install}};
+    return if !@fail_resolve && !@fail_install;
+    { resolve => \@fail_resolve, install => \@fail_install };
+}
+
 sub is_master { shift->{master} }
 
 {
@@ -141,18 +149,23 @@ sub add_job {
     my $new = Acme::CPAN::Installer::Job->new(%job);
     if (grep { $_->equals($new) } $self->jobs) {
         # warn "already registered job: " . $new->uid . "\n";
+        return 0;
     } else {
         $self->{jobs}{$new->uid} = $new;
+        return 1;
     }
 }
 
 sub get_job {
     my $self = shift;
+    if (my ($job) = grep { !$_->in_charge } $self->jobs) {
+        return $job;
+    }
     $self->_calculate_jobs;
     return unless $self->jobs;
-
-    my ($job) = grep { !$_->in_charge } $self->jobs;
-    return $job if $job;
+    if (my ($job) = grep { !$_->in_charge } $self->jobs) {
+        return $job;
+    }
 
     my @running_workers
         = map { $self->worker($_->in_charge) } grep { !defined $_->result } $self->jobs;
@@ -213,19 +226,25 @@ sub _calculate_jobs {
             next if $resolved && $resolved->installed;
             $ready_to_install = 0;
             if (!$resolved) {
-                $self->add_job(
+                my $added = $self->add_job(
                     type => "resolve",
                     package => $package,
                     version => $version,
                 );
+                if ($added) {
+                    # warn "-> stack \e[35mresolve\e[m $package (from @{[$dist->name]})\n";
+                }
             }
         }
 
         if ($ready_to_install) {
-            $self->add_job(
+            my $added = $self->add_job(
                 type => "install",
                 distfile => $dist->distfile,
             );
+            if ($added) {
+                # warn "-> stack \e[36minstall\e[m @{[$dist->name]}\n";
+            }
         }
     }
 }
@@ -235,10 +254,11 @@ sub add_distribution {
     my $distfile = $distribution->distfile;
     if (exists $self->{distributions}{$distfile}) {
         # warn "already registerd dist: $distfile\n";
+        return 0;
     } else {
         $self->{distributions}{$distfile} = $distribution;
+        return 1;
     }
-    return 1;
 }
 
 sub _register_resolve_result {
@@ -253,7 +273,10 @@ sub _register_resolve_result {
         provides => $job->result->{provides},
         requirements => $job->result->{requirements},
     );
-    $self->add_distribution($distribution);
+    my $added = $self->add_distribution($distribution);
+    unless ($added) {
+        # warn "-> already \e[31mresolved\e[m @{[$distribution->name]}\n";
+    }
 }
 
 sub _register_install_result {

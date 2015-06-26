@@ -4,7 +4,7 @@ use warnings;
 use utf8;
 
 use Acme::CPAN::Installer;
-Acme::CPAN::Installer->new->parse_options(@ARGV)->run;
+exit Acme::CPAN::Installer->new->parse_options(@ARGV)->run;
 
 __END__
 

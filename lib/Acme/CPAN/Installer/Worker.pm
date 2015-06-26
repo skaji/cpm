@@ -40,16 +40,19 @@ sub run_loop {
 sub info {
     my ($self, $job) = @_;
     my $message = "";
-    if ($job->{type} eq "install") {
+    my $type = $job->{type} || "";
+    if ($type eq "install") {
+        $type = "\e[35m$type\e[m";
         $message = CPAN::DistnameInfo->new($job->{distfile})->distvname;
-    } elsif ($job->{type} eq "resolve") {
+    } elsif ($type eq "resolve") {
+        $type = "\e[36m$type\e[m";
         $message = $job->{package};
         if ($job->{result}{ok}) {
             $message .= " -> ". CPAN::DistnameInfo->new($job->{result}{distfile})->distvname;
         }
     }
     my $ok = $job->{result}{ok} ? "\e[32mDONE\e[m" : "\e[31mFAIL\e[m";
-    warn "$$ $ok $job->{type} $message\n";
+    warn "$$ $ok $type $message\n";
 }
 
 1;

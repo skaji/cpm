@@ -2,6 +2,7 @@ package Acme::CPAN::Installer::Distribution;
 use strict;
 use warnings;
 use Module::CoreList;
+use CPAN::DistnameInfo;
 
 sub new {
     my ($class, %option) = @_;
@@ -18,6 +19,14 @@ sub requirements {
 
 sub distfile {
     shift->{distfile};
+}
+
+sub name {
+    my $self = shift;
+    $self->{name} ||= do {
+        my $info = CPAN::DistnameInfo->new($self->distfile);
+        $info->distvname;
+    };
 }
 
 sub installed {

@@ -82,6 +82,15 @@ sub run {
         }
     }
     $master->shutdown_workers;
+    my $fail = $master->fail;
+    if ($fail) {
+        my ($install, $resolve) = @{ $fail }{qw(install resolve)};
+        warn "\e[31mFAIL\e[m resolve $_\n" for @$resolve;
+        warn "\e[31mFAIL\e[m install $_\n" for @$install;
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 sub load_cpanfile {
