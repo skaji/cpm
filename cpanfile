@@ -10,6 +10,9 @@ requires 'IO::Socket::SSL';
 requires 'JSON::PP';
 requires 'Module::CPANfile';
 requires 'Module::CoreList';
+requires 'Module::Metadata';
+requires 'local::lib';
+requires 'version';
 
 # for a while, you have to manually install this:
 # $ cpanm git://github.com/miyagawa/cpanminus.git@menlo

@@ -7,6 +7,7 @@ use Acme::CPAN::Installer::Worker::Installer;
 use Acme::CPAN::Installer::Worker::Resolver;
 use CPAN::DistnameInfo;
 use JSON::PP qw(encode_json decode_json);
+use Time::HiRes qw(gettimeofday tv_interval);
 
 sub new {
     my ($class, %option) = @_;
@@ -23,36 +24,48 @@ sub run_loop {
         my $job = eval { decode_json $raw } or last;
         my $type = $job->{type} || "(undef)";
         my $result;
-        if ($type eq "install") {
+        my $start = $self->{verbose} ? [gettimeofday] : undef;
+        if (grep {$type eq $_} qw(fetch configure install)) {
             $result = eval { $self->{installer}->work($job) };
+            warn $@ if $@;
         } elsif ($type eq "resolve") {
             $result = eval { $self->{resolver}->work($job) };
+            warn $@ if $@;
         } else {
-            warn "Unknown type: $type\n";
+            die "Unknown type: $type\n";
         }
-        $job = +{ %$job, result => $result };
-        $self->info($job);
+        my $elapsed = $start ? tv_interval($start) : undef;
+        $result ||= { ok => 0 };
+        $job = +{ %$job, %$result };
+        $self->info($job, $elapsed);
         my $res = encode_json $job;
         syswrite $self->{write_fh}, "$res\n";
     }
 }
 
+my %color = (
+    resolve => 33,
+    fetch => 34,
+    configure => 35,
+    install => 36,
+);
+
 sub info {
-    my ($self, $job) = @_;
-    my $message = "";
-    my $type = $job->{type} || "";
-    if ($type eq "install") {
-        $type = "\e[35m$type\e[m";
-        $message = CPAN::DistnameInfo->new($job->{distfile})->distvname;
-    } elsif ($type eq "resolve") {
-        $type = "\e[36m$type\e[m";
-        $message = $job->{package};
-        if ($job->{result}{ok}) {
-            $message .= " -> ". CPAN::DistnameInfo->new($job->{result}{distfile})->distvname;
-        }
+    my ($self, $job, $elapsed) = @_;
+    my $type = $job->{type};
+    return if !$self->{verbose} && $type ne "install";
+    my $distvname = $job->{distfile}
+        ? CPAN::DistnameInfo->new($job->{distfile})->distvname : "";
+    my $message;
+    if ($type eq "resolve") {
+        $message = $job->{package} . ($job->{ok} ? " -> $distvname" : "");
+    } else {
+        $message = $distvname;
     }
-    my $ok = $job->{result}{ok} ? "\e[32mDONE\e[m" : "\e[31mFAIL\e[m";
-    warn "$$ $ok $type $message\n";
+    my $ok = $job->{ok} ? "\e[32mDONE\e[m" : "\e[31mFAIL\e[m";
+    $elapsed = sprintf "(%.3fsec) ", $elapsed if defined $elapsed;
+    warn sprintf "%d %s \e[$color{$type}m%-9s\e[m %s%s\n",
+        $$, $ok, $type, $elapsed || "", $message;
 }
 
 1;

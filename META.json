@@ -48,7 +48,10 @@
             "Menlo::CLI::Compat" : "0",
             "Module::CPANfile" : "0",
             "Module::CoreList" : "0",
-            "perl" : "5.008005"
+            "Module::Metadata" : "0",
+            "local::lib" : "0",
+            "perl" : "5.008005",
+            "version" : "0"
          }
       },
       "test" : {

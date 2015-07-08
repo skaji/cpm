@@ -6,13 +6,14 @@ use Acme::CPAN::Installer::Distribution;
 use Acme::CPAN::Installer::Job;
 use IO::Handle;
 use IO::Select;
-use JSON::PP;
-use Scalar::Util qw(weaken);
-use List::Util qw(all);
+use Module::CoreList;
+use Module::Metadata;
+use version;
 
 sub new {
-    my $class = shift;
+    my ($class, %option) = @_;
     bless {
+        %option,
         master => 1,
         workers => +{},
         jobs => +{},
@@ -58,8 +59,9 @@ sub is_master { shift->{master} }
         my $self = shift;
         if ($self->{_written} != 1) { die }
         $self->{_written}--;
-        sysread $self->read_fh, my $buffer, 64*1024;
-        decode_json $buffer;
+        my $read_fh = $self->read_fh;
+        my $string = <$read_fh>;
+        decode_json $string;
     }
     sub result { shift->read } # alias
 }
@@ -108,7 +110,7 @@ sub _can_read {
 
     my @return;
     for my $worker (@workers) {
-        if (grep { $worker->read_fh == $_  } @ready) {
+        if (grep { $worker->read_fh == $_ } @ready) {
             push @return, $worker;
         }
     }
@@ -178,16 +180,13 @@ sub register_result {
     my ($job) = grep { $_->uid eq $result->{uid} } $self->jobs;
     die "Missing job that has uid=$result->{uid}" unless $job;
 
-    $job->{result} = $result->{result};
-    if ($job->type eq "resolve") {
-        $self->_register_resolve_result($job);
-    } elsif ($job->type eq "install") {
-        $self->_register_install_result($job);
-    }
+    %{$job} = %{$result}; # XXX
+
+    my $method = "_register_@{[$job->{type}]}_result";
+    $self->$method($job);
     $self->remove_job($job);
     return 1;
 }
-
 
 sub remove_job {
     my ($self, $job) = @_;
@@ -204,48 +203,108 @@ sub distribution {
 sub _calculate_jobs {
     my $self = shift;
 
-    my @all = $self->distributions;
-    my @not_installed
-        = grep { !$_->installed && !$self->{_fail_install}{$_->distfile} } @all;
+    my @distributions
+        = grep { !$self->{_fail_install}{$_->distfile} } $self->distributions;
 
-    for my $dist (@not_installed) {
-        my $ready_to_install = 1;
-        for my $req (@{$dist->requirements}) {
-            my ($package, $version) = @{$req}{qw(package version)};
-
-            next if Acme::CPAN::Installer::Distribution->is_core($package, $version);
-
-            if ($self->{_fail_resolve}{$package}) {
-                $ready_to_install = 0;
-                $self->{_fail_install}{$dist->distfile}++;
-                next;
-            }
-
-            my ($resolved) = grep { $_->providing($package, $version) } @all;
-            next if $resolved && $resolved->installed;
-            $ready_to_install = 0;
-            if (!$resolved) {
-                my $added = $self->add_job(
-                    type => "resolve",
-                    package => $package,
-                    version => $version,
-                );
-                if ($added) {
-                    # warn "-> stack \e[35mresolve\e[m $package (from @{[$dist->name]})\n";
-                }
-            }
+    if (my @dists = grep { $_->resolved } @distributions) {
+        for my $dist (@dists) {
+            $self->add_job(type => "fetch", distfile => $dist->distfile);
         }
+    }
 
-        if ($ready_to_install) {
-            my $added = $self->add_job(
-                type => "install",
-                distfile => $dist->distfile,
-            );
-            if ($added) {
-                # warn "-> stack \e[36minstall\e[m @{[$dist->name]}\n";
+    if (my @dists = grep { $_->fetched } @distributions) {
+        for my $dist (@dists) {
+            my ($is_satisfied, @need_resolve)
+                = $self->_is_satisfied($dist->configure_requirements);
+            if ($is_satisfied) {
+                $self->add_job(
+                    type => "configure",
+                    meta => $dist->meta,
+                    directory => $dist->directory,
+                    distfile => $dist->distfile,
+                );
+            } elsif (@need_resolve) {
+                my $ok = $self->_register_resolve_job(@need_resolve);
+                $self->{_fail_install}{$dist->distfile}++ unless $ok;
             }
         }
     }
+
+    if (my @dists = grep { $_->configured } @distributions) {
+        for my $dist (@dists) {
+            my ($is_satisfied, @need_resolve)
+                = $self->_is_satisfied($dist->requirements);
+            if ($is_satisfied) {
+                $self->add_job(
+                    type => "install",
+                    meta => $dist->meta,
+                    distdata => $dist->distdata,
+                    directory => $dist->directory,
+                    distfile => $dist->distfile,
+                );
+            } elsif (@need_resolve) {
+                my $ok = $self->_register_resolve_job(@need_resolve);
+                $self->{_fail_install}{$dist->distfile}++ unless $ok;
+            }
+        }
+    }
+}
+
+sub _register_resolve_job {
+    my ($self, @package) = @_;
+    my $ok = 1;
+    for my $package (@package) {
+        if ($self->{_fail_resolve}{$package->{package}}) {
+            $ok = 0;
+            next;
+        }
+        $self->add_job(
+            type => "resolve",
+            package => $package->{package},
+            version => $package->{version},
+        );
+    }
+    return $ok;
+}
+
+sub is_installed {
+    my ($self, $package, $version) = @_;
+    my $info = Module::Metadata->new_from_module($package, inc => $self->{inc});
+    return unless $info;
+    return 1 unless $version;
+    version->parse($version) <= version->parse($info->version);
+}
+
+sub is_core {
+    my ($class, $package, $version) = @_;
+    return 1 if $package eq "perl";
+    if (exists $Module::CoreList::version{$]}{$package}) {
+        return 1 unless $version;
+        my $core_version = $Module::CoreList::version{$]}{$package};
+        return unless $core_version;
+        return version->parse($version) <= version->parse($core_version);
+    }
+    return;
+}
+
+sub _is_satisfied {
+    my ($self, $requirements) = @_;
+    my $is_satisfied = 1;
+    my @need_resolve;
+    my @distributions = $self->distributions;
+    for my $req (@$requirements) {
+        my ($package, $version) = @{$req}{qw(package version)};
+        next if $self->is_core($package, $version);
+        next if $self->is_installed($package, $version);
+        my ($resolved) = grep { $_->providing($package, $version) } @distributions;
+        next if $resolved && $resolved->installed;
+
+        $is_satisfied = 0;
+        if (!$resolved) {
+            push @need_resolve, { package => $package, version => $version };
+        }
+    }
+    return ($is_satisfied, @need_resolve);
 }
 
 sub add_distribution {
@@ -266,16 +325,53 @@ sub _register_resolve_result {
         $self->{_fail_resolve}{$job->{package}}++;
         return;
     }
+    if ($job->{distfile} =~ m{/perl-5[^/]+$}) {
+        warn "$$ \e[31mFAIL\e[m \e[36minstall\e[m   Cannot upgrade core module $job->{package}.\n";
+        $self->{_fail_install}{$job->{package}}++; # XXX
+        return;
+    }
+
+    if ($self->is_installed($job->{package}, $job->{version})) {
+        my $version = $job->{version} || 0;
+        warn "$$ \e[32mDONE\e[m \e[36minstall\e[m   $job->{package} is up to date. ($version)\n";
+        return;
+    }
 
     my $distribution = Acme::CPAN::Installer::Distribution->new(
-        distfile => $job->result->{distfile},
-        provides => $job->result->{provides},
-        requirements => $job->result->{requirements},
+        distfile => $job->{distfile},
+        provides => $job->{provides},
     );
     my $added = $self->add_distribution($distribution);
     unless ($added) {
         # warn "-> already \e[31mresolved\e[m @{[$distribution->name]}\n";
     }
+}
+
+sub _register_fetch_result {
+    my ($self, $job) = @_;
+    if (!$job->is_success) {
+        $self->{_fail_install}{$job->{distfile}}++;
+        return;
+    }
+    my $distribution = $self->distribution($job->{distfile});
+    $distribution->fetched(1);
+    $distribution->configure_requirements($job->{configure_requirements});
+    $distribution->directory($job->{directory});
+    $distribution->meta($job->{meta});
+    return 1;
+}
+
+sub _register_configure_result {
+    my ($self, $job) = @_;
+    if (!$job->is_success) {
+        $self->{_fail_install}{$job->{distfile}}++;
+        return;
+    }
+    my $distribution = $self->distribution($job->{distfile});
+    $distribution->configured(1);
+    $distribution->distdata($job->{distdata});
+    $distribution->requirements($job->{requirements});
+    return 1;
 }
 
 sub _register_install_result {
@@ -284,9 +380,9 @@ sub _register_install_result {
         $self->{_fail_install}{$job->{distfile}}++;
         return;
     }
-    $self->distribution($job->{distfile})->installed(1);
+    my $distribution = $self->distribution($job->{distfile});
+    $distribution->installed(1);
     return 1;
 }
-
 
 1;

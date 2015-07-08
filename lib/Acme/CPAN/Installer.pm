@@ -5,12 +5,12 @@ use warnings;
 use 5.008_005;
 our $VERSION = '0.01';
 
-use Acme::CPAN::Installer::Job;
 use Acme::CPAN::Installer::Master;
 use Acme::CPAN::Installer::Worker;
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
-use Pod::Usage 'pod2usage';
+use Pod::Usage ();
 use Cwd 'abs_path';
+use Config;
 
 sub new {
     my ($class, %option) = @_;
@@ -18,6 +18,9 @@ sub new {
         workers => 5,
         snapshot => "cpanfile.snapshot",
         cpanfile => "cpanfile",
+        local_lib => "local",
+        cpanmetadb => "https://cpanmetadb-provides.herokuapp.com",
+        mirror => "http://www.cpan.org",
         %option
     }, $class;
 }
@@ -26,26 +29,89 @@ sub parse_options {
     my ($self, @argv) = @_;
     local @ARGV = @argv;
     GetOptions
-        "L|l|local-lib=s" => \($self->{local_lib} = "local"),
-        "w|workers=i" => \($self->{workers} = 5),
-        "h|help" => sub { pod2usage(0) },
-        "v|version" => sub { printf "%s %s\n", __PACKAGE__, __PACKAGE__->VERSION; exit },
+        "L|local-lib-contained=s" => \($self->{local_lib}),
+        "w|workers=i" => \($self->{workers}),
+        "g|global"    => \($self->{global}),
+        "v|verbose"   => \($self->{verbose}),
+        "h|help"      => sub { $self->cmd_help },
+        "V|version"   => sub { $self->cmd_version },
+        "cpanmetadb=s" => \($self->{cpanmetadb}),
+        "mirror=s"     => \($self->{mirror}),
     or exit 1;
-    $self->{local_lib} = abs_path $self->{local_lib};
+    $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
     $self->{packages} = [ map +{ package => $_, version => 0 }, @ARGV ];
-    $self;
+    s{/$}{} for $self->{cpanmetadb}, $self->{mirror};
+    @ARGV;
+}
+
+sub _search_inc {
+    my $self = shift;
+    return @INC if $self->{global};
+    my $base = $self->{local_lib};
+    # copy from cpanminus
+    require local::lib;
+    (
+        local::lib->resolve_path(local::lib->install_base_arch_path($base)),
+        local::lib->resolve_path(local::lib->install_base_perl_path($base)),
+        (!$self->{exclude_vendor} ? grep {$_} @Config{qw(vendorarch vendorlibexp)} : ()),
+        @Config{qw(archlibexp privlibexp)},
+    );
 }
 
 sub run {
+    my ($self, @argv) = @_;
+    my $cmd = shift @argv or die "Need subcommand, try `$0 --help`\n";
+    $cmd = "help"    if $cmd =~ /^(-h|--help)$/;
+    $cmd = "version" if $cmd =~ /^(-V|--version)$/;
+    if (my $sub = $self->can("cmd_$cmd")) {
+        @argv = $self->parse_options(@argv) unless $cmd eq "exec";
+        return $self->$sub(@argv);
+    } else {
+        die "Unknown command: $cmd\n";
+    }
+}
+
+sub cmd_help {
+    Pod::Usage::pod2usage(0);
+}
+sub cmd_version {
+    my $class = ref $_[0] || $_[0];
+    printf "%s %s\n", $class, $class->VERSION;
+    exit 0;
+}
+
+sub cmd_exec {
+    my ($self, @argv) = @_;
+    my $local_lib = abs_path $self->{local_lib};
+    if (-d "$local_lib/lib/perl5") {
+        $ENV{PERL5LIB} = "$local_lib/lib/perl5"
+                       . ($ENV{PERL5LIB} ? ":$ENV{PERL5LIB}" : "");
+    }
+    if (-d "$local_lib/bin") {
+        $ENV{PATH} = "$local_lib/bin:$ENV{PATH}";
+    }
+    exec @argv;
+    exit 255;
+}
+
+sub cmd_install {
     my $self = shift;
-    my $master = Acme::CPAN::Installer::Master->new;
-    my $menlo_base = "$ENV{HOME}/.experimental-installer";
-    my $menlo_build_log = "$menlo_base/build.@{[time]}.log";
+    die "Need arguments or cpanfile.\n"
+        if !@{$self->{packages}} && !-f $self->{cpanfile};
+
+    my $master = Acme::CPAN::Installer::Master->new(
+        inc => [$self->_search_inc],
+    );
+    my $menlo_base = "$ENV{HOME}/.experimental-installer/work";
+    my $menlo_build_log = "$ENV{HOME}/.experimental-installer/build.@{[time]}.log";
     my $cb = sub {
         my ($read_fh, $write_fh) = @_;
         my $worker = Acme::CPAN::Installer::Worker->new(
+            verbose => $self->{verbose},
+            cpanmetadb => $self->{cpanmetadb},
+            mirror => $self->{mirror},
             read_fh => $read_fh, write_fh => $write_fh,
-            local_lib => $self->{local_lib},
+            ($self->{global} ? () : (local_lib => $self->{local_lib})),
             menlo_base => $menlo_base, menlo_build_log => $menlo_build_log,
         );
         $worker->run_loop;
@@ -53,25 +119,30 @@ sub run {
 
     $master->spawn_worker($cb) for 1 .. $self->{workers};
 
-    my @packages = @{$self->{packages}};
-    if (!@packages && -f $self->{snapshot}) {
-        my $file = $self->{snapshot};
-        warn "Loading distributions from $file...\n";
-        my @distributions = $self->load_snapshot($file);
-        $master->add_distribution($_) for @distributions;
-    } else {
-        if (!@packages) {
-            my $file = $self->{cpanfile};
-            die "Missing both $file and $self->{snapshot}, try: $0 --help\n" unless -f $file;
-            warn "Loading modules from $file...\n";
-            @packages = $self->load_cpanfile($file);
+    if (!@{$self->{packages}} && -f $self->{cpanfile}) {
+        warn "Loading modules from $self->{cpanfile}...\n";
+        my @packages = grep {
+            !$master->is_installed($_->{package}, $_->{version})
+        } $self->load_cpanfile($self->{cpanfile});
+        do { warn "All requirements are satisfied.\n"; exit } unless @packages;
+
+        if (-f $self->{snapshot}) {
+            warn "Loading distributions from $self->{snapshot}...\n";
+            my @distributions = grep {
+                my $dist = $_;
+                grep {$dist->providing($_->{package}, $_->{version})} @packages;
+            } $self->load_snapshot($self->{snapshot});
+            $master->add_distribution($_) for @distributions;
+        } else {
+            $self->{packages} = \@packages;
         }
-        $master->add_job(
-            type => "resolve",
-            package => $_->{package},
-            version => $_->{version} || 0
-        ) for @packages;
     }
+
+    $master->add_job(
+        type => "resolve",
+        package => $_->{package},
+        version => $_->{version} || 0
+    ) for @{$self->{packages}};
 
     MAIN_LOOP:
     while (1) {
@@ -119,21 +190,10 @@ sub load_snapshot {
             $version = undef if $version eq "undef";
             +{ package => $package, version => $version };
         } sort keys %{$dist->provides};
-        my $hash = $dist->requirements->as_string_hash;
-        my @requirements = map {
-            +{
-                package => $_,
-                version => $hash->{version},
-                # XXX: cpanfile.snapshot drops phase/type information, so this is dummy
-                phase => "runtime",
-                type => "requires",
-            };
-        } sort keys %$hash;
 
         push @distributions, Acme::CPAN::Installer::Distribution->new(
             distfile => $dist->distfile,
             provides => \@provides,
-            requirements => \@requirements,
         );
     }
     @distributions;
@@ -144,24 +204,18 @@ __END__
 
 =encoding utf-8
 
+=for stopwords npm
+
 =head1 NAME
 
 Acme::CPAN::Installer - an experimental cpan module installer
 
 =head1 SYNOPSIS
 
-Install distributions listed in C<cpanfile.snapshot>:
-
-  # from cpanfile.snapshot
-  > cpan-installer
-
-Install modules specified in C<cpanfile> or arguments (very experimental):
+  > cpan-installer install Module1 Module2 ...
 
   # from cpanfile
-  > cpan-installer
-
-  # or explicitly
-  > cpan-installer Module1 Module2 ...
+  > cpan-installer install
 
 =head1 INSTALL
 
@@ -176,7 +230,8 @@ Then install this module:
 
 =head1 DESCRIPTION
 
-Acme::CPAN::Installer is an experimental cpan module installer.
+Acme::CPAN::Installer is an experimental cpan module installer,
+which uses Menlo::CLI::Compat in parallel.
 
 =head1 MOTIVATION
 
@@ -190,37 +245,6 @@ and cpan clients must handle these correspondence correctly.
 
 I suspect this only applies to cpan world,
 and never applies to, for example, ruby gems or node npm.
-
-And, the 2nd hardest part is that
-we cannot determine the real dependencies of a distribution
-unless we fetch it, extract it, execute C<Makefile.PL>/C<Build.PL>, and get C<MYMETA.json>.
-
-So I propose:
-
-=over 4
-
-=item *
-
-Create an API server which offers:
-
-  input:
-    * module and its version requirement
-  output:
-    * distfile path
-    * providing modules (modules and versions)
-    * dependencies of modules (or distributions?)
-
-I guess this is accomplished by combining
-L<http://cpanmetadb.plackperl.org/> and L<https://api.metacpan.org/>.
-
-Sample: L<https://cpanmetadb-provides.herokuapp.com/>
-
-=item *
-
-Forbid cpan distributions to configure themselves dynamically
-so that the dependencies are determined statically.
-
-=back
 
 =head1 AUTHOR
 
