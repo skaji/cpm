@@ -12,7 +12,7 @@
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
       "version" : 2
    },
-   "name" : "Acme-CPAN-Installer",
+   "name" : "App-cpm",
    "no_index" : {
       "directory" : [
          "t",
@@ -63,13 +63,13 @@
    "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
-         "web" : "https://github.com/shoichikaji/Acme-CPAN-Installer/issues"
+         "web" : "https://github.com/shoichikaji/cpm/issues"
       },
-      "homepage" : "https://github.com/shoichikaji/Acme-CPAN-Installer",
+      "homepage" : "https://github.com/shoichikaji/cpm",
       "repository" : {
          "type" : "git",
-         "url" : "https://github.com/shoichikaji/Acme-CPAN-Installer.git",
-         "web" : "https://github.com/shoichikaji/Acme-CPAN-Installer"
+         "url" : "https://github.com/shoichikaji/cpm.git",
+         "web" : "https://github.com/shoichikaji/cpm"
       }
    },
    "version" : "0.01"

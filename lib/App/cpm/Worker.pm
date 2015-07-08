@@ -1,18 +1,18 @@
-package Acme::CPAN::Installer::Worker;
+package App::cpm::Worker;
 use strict;
 use warnings;
 use utf8;
 
-use Acme::CPAN::Installer::Worker::Installer;
-use Acme::CPAN::Installer::Worker::Resolver;
+use App::cpm::Worker::Installer;
+use App::cpm::Worker::Resolver;
 use CPAN::DistnameInfo;
 use JSON::PP qw(encode_json decode_json);
 use Time::HiRes qw(gettimeofday tv_interval);
 
 sub new {
     my ($class, %option) = @_;
-    my $installer = Acme::CPAN::Installer::Worker::Installer->new(%option);
-    my $resolver  = Acme::CPAN::Installer::Worker::Resolver->new(%option);
+    my $installer = App::cpm::Worker::Installer->new(%option);
+    my $resolver  = App::cpm::Worker::Resolver->new(%option);
     bless { %option, installer => $installer, resolver => $resolver }, $class;
 }
 

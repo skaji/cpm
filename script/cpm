@@ -3,25 +3,25 @@ use strict;
 use warnings;
 use utf8;
 
-use Acme::CPAN::Installer;
-exit Acme::CPAN::Installer->new->run(@ARGV);
+use App::cpm;
+exit App::cpm->new->run(@ARGV);
 
 __END__
 
 =head1 NAME
 
-cpan-installer - an experimental cpan module installer
+cpm - an experimental cpan module installer
 
 =head1 SYNOPSIS
 
   # install modules
-  > cpan-installer install Module1 Module2 ...
+  > cpm install Module1 Module2 ...
 
   # from cpanfile if it exists
-  > cpan-installer install
+  > cpm install
 
   # just like carton exec
-  > cpan-installer exec perl ...
+  > cpm exec perl ...
 
 =head1 OPTIONS
 

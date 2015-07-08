@@ -1,6 +1,6 @@
 use strict;
 use Test::More;
-use Acme::CPAN::Installer;
+use App::cpm;
 
 # replace with the actual test
 ok 1;

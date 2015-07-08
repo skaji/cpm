@@ -2,9 +2,9 @@ use strict;
 use warnings;
 use utf8;
 use Test::More;
-use Acme::CPAN::Installer::Worker::Resolver;
+use App::cpm::Worker::Resolver;
 
-my $r = Acme::CPAN::Installer::Worker::Resolver->new(
+my $r = App::cpm::Worker::Resolver->new(
     cpanmetadb => "https://cpanmetadb-provides.herokuapp.com",
 );
 
