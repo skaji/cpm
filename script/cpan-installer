@@ -4,7 +4,7 @@ use warnings;
 use utf8;
 
 use Acme::CPAN::Installer;
-exit Acme::CPAN::Installer->new->parse_options(@ARGV)->run;
+exit Acme::CPAN::Installer->new->run(@ARGV);
 
 __END__
 
@@ -14,32 +14,30 @@ cpan-installer - an experimental cpan module installer
 
 =head1 SYNOPSIS
 
-Install distributions listed in C<cpanfile.snapshot>:
+  # install modules
+  > cpan-installer install Module1 Module2 ...
 
-  # from cpanfile.snapshot
-  > cpan-installer
+  # from cpanfile if it exists
+  > cpan-installer install
 
-Install modules specified in C<cpanfile> or arguments (very experimental):
+  # just like carton exec
+  > cpan-installer exec perl ...
 
-  # from cpanfile
-  > cpan-installer
-
-  # or explicitly
-  > cpan-installer Module1 Module2 ...
-
-Options:
+=head1 OPTIONS
 
   -w, --workers=N
-        how many workers, default: 5
-  -L, -l, --local-lib=DIR
+        number of workers, default: 5
+  -L, local-lib-contained=DIR
         install base, default: local/
+  -g, --global
+        install modules to global @INC instead of local-lib
+      --mirror
+        base url for the cpan mirror to use, default: http://www.cpan.org
+      --cpanmetadb
+        cpanmetadb url, default: https://cpanmetadb-provides.herokuapp.com
   -v, --version
         show version
   -h, --help
         show this help
-
-=head1 AUTHOR
-
-Shoichi Kaji
 
 =cut

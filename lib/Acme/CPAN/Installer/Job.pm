@@ -5,7 +5,7 @@ use utf8;
 
 sub new {
     my ($class, %option) = @_;
-    my $self = bless {result => undef, %option}, $class;
+    my $self = bless {%option}, $class;
     $self->{uid} = $self->_uid;
     $self;
 }
@@ -15,7 +15,7 @@ sub uid { shift->{uid} }
 sub _uid {
     my $self = shift;
     my $type = $self->type;
-    if ($type eq "install") {
+    if (grep { $type eq $_ } qw(fetch configure install)) {
         "$type " . $self->{distfile};
     } elsif ($type eq "resolve") {
         "$type " . $self->{package};
@@ -34,15 +34,9 @@ sub in_charge {
     @_ ? $self->{in_charge} = shift : $self->{in_charge};
 }
 
-sub result {
-    my $self = shift;
-    $self->{result};
-}
-
 sub is_success {
     my $self = shift;
-    my $result = $self->result or return;
-    $result->{ok};
+    $self->{ok};
 }
 
 sub equals {

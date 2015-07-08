@@ -1,51 +1,76 @@
 package Acme::CPAN::Installer::Distribution;
 use strict;
 use warnings;
-use Module::CoreList;
-use CPAN::DistnameInfo;
+use version;
 
 sub new {
     my ($class, %option) = @_;
-    bless {%option}, $class;
+    bless {_state => 0, %option}, $class;
 }
 
-sub provides {
-    shift->{provides} || [];
-}
-
-sub requirements {
-    shift->{requirements} || [];
-}
-
-sub distfile {
-    shift->{distfile};
-}
-
-sub name {
-    my $self = shift;
-    $self->{name} ||= do {
-        my $info = CPAN::DistnameInfo->new($self->distfile);
-        $info->distvname;
+for my $attr (qw(
+    configure_requirements
+    directory
+    distdata
+    distfile
+    meta
+    provides
+    requirements
+)) {
+    no strict 'refs';
+    *$attr = sub {
+        my $self = shift;
+        $self->{$attr} = shift if @_;
+        $self->{$attr};
     };
+}
+
+use constant STATE_RESOLVED   => 0; # default
+use constant STATE_FETCHED    => 1;
+use constant STATE_CONFIGURED => 2;
+use constant STATE_INSTALLED  => 3;
+
+sub resolved {
+    my $self = shift;
+    $self->{_state} == STATE_RESOLVED;
+}
+
+sub fetched {
+    my $self = shift;
+    if (@_ && $_[0]) {
+        $self->{_state} = STATE_FETCHED;
+    }
+    $self->{_state} == STATE_FETCHED;
+}
+
+sub configured {
+    my $self = shift;
+    if (@_ && $_[0]) {
+        $self->{_state} = STATE_CONFIGURED
+    }
+    $self->{_state} == STATE_CONFIGURED;
 }
 
 sub installed {
     my $self = shift;
-    $self->{installed} = shift if @_;
-    $self->{installed};
-}
-
-sub is_core {
-    my ($class, $package, $version) = @_;
-    return 1 if $package eq "perl";
-    return 1 if exists $Module::CoreList::version{$]}{$package};
-    return;
+    if (@_ && $_[0]) {
+        $self->{_state} = STATE_INSTALLED;
+    }
+    $self->{_state} == STATE_INSTALLED;
 }
 
 sub providing {
     my ($self, $package, $version) = @_;
     for my $provide (@{$self->provides}) {
-        return $self if $provide->{package} eq $package;
+        if ($provide->{package} eq $package) {
+            return 1 unless $version;
+            if (version->parse($version) <= version->parse($provide->{version})) {
+                return 1;
+            } else {
+                warn sprintf "-> %s provides %s (%s), but needs %s\n",
+                    $self->distfile, $package, $provide->{version}, $version;
+            }
+        }
     }
     return;
 }
