@@ -1,4 +1,4 @@
-package Acme::CPAN::Installer::Distribution;
+package App::cpm::Distribution;
 use strict;
 use warnings;
 use version;

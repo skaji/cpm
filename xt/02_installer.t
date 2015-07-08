@@ -2,11 +2,11 @@ use strict;
 use warnings;
 use utf8;
 use Test::More;
-use Acme::CPAN::Installer::Worker::Installer;
+use App::cpm::Worker::Installer;
 use File::Temp 'tempdir';
 
 my $tempdir = tempdir CLEANUP => 1;
-my $installer = Acme::CPAN::Installer::Worker::Installer->new(
+my $installer = App::cpm::Worker::Installer->new(
     local_lib => $tempdir,
     mirror => "http://www.cpan.org",
 );

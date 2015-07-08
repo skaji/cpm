@@ -12,13 +12,13 @@ my %WriteMakefileArgs = (
   "CONFIGURE_REQUIRES" => {
     "ExtUtils::MakeMaker" => 0
   },
-  "DISTNAME" => "Acme-CPAN-Installer",
+  "DISTNAME" => "App-cpm",
   "EXE_FILES" => [
-    "script/cpan-installer"
+    "script/cpm"
   ],
   "LICENSE" => "perl",
   "MIN_PERL_VERSION" => "5.008005",
-  "NAME" => "Acme::CPAN::Installer",
+  "NAME" => "App::cpm",
   "PREREQ_PM" => {
     "CPAN::DistnameInfo" => 0,
     "CPAN::Meta" => 0,

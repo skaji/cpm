@@ -1,9 +1,9 @@
-package Acme::CPAN::Installer::Master;
+package App::cpm::Master;
 use strict;
 use warnings;
 use utf8;
-use Acme::CPAN::Installer::Distribution;
-use Acme::CPAN::Installer::Job;
+use App::cpm::Distribution;
+use App::cpm::Job;
 use IO::Handle;
 use IO::Select;
 use Module::CoreList;
@@ -35,7 +35,7 @@ sub is_master { shift->{master} }
 
 {
     package
-        Acme::CPAN::Installer::_Worker;
+        App::cpm::_Worker;
     use JSON::PP;
     sub new {
         my ($class, %option) = @_;
@@ -96,7 +96,7 @@ sub spawn_worker {
     }
     close $_ for $write_fh1, $read_fh2;
     $write_fh2->autoflush(1);
-    $self->{workers}{$pid} = Acme::CPAN::Installer::_Worker->new(
+    $self->{workers}{$pid} = App::cpm::_Worker->new(
         pid => $pid, read_fh => $read_fh1, write_fh => $write_fh2,
     );
 }
@@ -148,7 +148,7 @@ sub jobs { values %{shift->{jobs}} }
 
 sub add_job {
     my ($self, %job) = @_;
-    my $new = Acme::CPAN::Installer::Job->new(%job);
+    my $new = App::cpm::Job->new(%job);
     if (grep { $_->equals($new) } $self->jobs) {
         # warn "already registered job: " . $new->uid . "\n";
         return 0;
@@ -337,7 +337,7 @@ sub _register_resolve_result {
         return;
     }
 
-    my $distribution = Acme::CPAN::Installer::Distribution->new(
+    my $distribution = App::cpm::Distribution->new(
         distfile => $job->{distfile},
         provides => $job->{provides},
     );

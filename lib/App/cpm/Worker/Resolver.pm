@@ -1,4 +1,4 @@
-package Acme::CPAN::Installer::Worker::Resolver;
+package App::cpm::Worker::Resolver;
 use strict;
 use warnings;
 use utf8;

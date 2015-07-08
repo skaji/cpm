@@ -1,12 +1,12 @@
-package Acme::CPAN::Installer;
+package App::cpm;
 
 use strict;
 use warnings;
 use 5.008_005;
 our $VERSION = '0.01';
 
-use Acme::CPAN::Installer::Master;
-use Acme::CPAN::Installer::Worker;
+use App::cpm::Master;
+use App::cpm::Worker;
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use Pod::Usage ();
 use Cwd 'abs_path';
@@ -99,14 +99,14 @@ sub cmd_install {
     die "Need arguments or cpanfile.\n"
         if !@{$self->{packages}} && !-f $self->{cpanfile};
 
-    my $master = Acme::CPAN::Installer::Master->new(
+    my $master = App::cpm::Master->new(
         inc => [$self->_search_inc],
     );
     my $menlo_base = "$ENV{HOME}/.experimental-installer/work";
     my $menlo_build_log = "$ENV{HOME}/.experimental-installer/build.@{[time]}.log";
     my $cb = sub {
         my ($read_fh, $write_fh) = @_;
-        my $worker = Acme::CPAN::Installer::Worker->new(
+        my $worker = App::cpm::Worker->new(
             verbose => $self->{verbose},
             cpanmetadb => $self->{cpanmetadb},
             mirror => $self->{mirror},
@@ -191,7 +191,7 @@ sub load_snapshot {
             +{ package => $package, version => $version };
         } sort keys %{$dist->provides};
 
-        push @distributions, Acme::CPAN::Installer::Distribution->new(
+        push @distributions, App::cpm::Distribution->new(
             distfile => $dist->distfile,
             provides => \@provides,
         );
@@ -208,14 +208,14 @@ __END__
 
 =head1 NAME
 
-Acme::CPAN::Installer - an experimental cpan module installer
+App::cpm - an experimental cpan module installer
 
 =head1 SYNOPSIS
 
-  > cpan-installer install Module1 Module2 ...
+  > cpm install Module1 Module2 ...
 
   # from cpanfile
-  > cpan-installer install
+  > cpm install
 
 =head1 INSTALL
 
@@ -226,11 +226,11 @@ so you have to install it first:
 
 Then install this module:
 
-  > cpanm git://github.com/shoichikaji/Acme-CPAN-Installer.git
+  > cpanm git://github.com/shoichikaji/cpm.git
 
 =head1 DESCRIPTION
 
-Acme::CPAN::Installer is an experimental cpan module installer,
+App::cpm is an experimental cpan module installer,
 which uses Menlo::CLI::Compat in parallel.
 
 =head1 MOTIVATION

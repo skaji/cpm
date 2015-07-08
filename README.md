@@ -1,13 +1,13 @@
 # NAME
 
-Acme::CPAN::Installer - an experimental cpan module installer
+App::cpm - an experimental cpan module installer
 
 # SYNOPSIS
 
-    > cpan-installer install Module1 Module2 ...
+    > cpm install Module1 Module2 ...
 
     # from cpanfile
-    > cpan-installer install
+    > cpm install
 
 # INSTALL
 
@@ -18,11 +18,11 @@ so you have to install it first:
 
 Then install this module:
 
-    > cpanm git://github.com/shoichikaji/Acme-CPAN-Installer.git
+    > cpanm git://github.com/shoichikaji/cpm.git
 
 # DESCRIPTION
 
-Acme::CPAN::Installer is an experimental cpan module installer,
+App::cpm is an experimental cpan module installer,
 which uses Menlo::CLI::Compat in parallel.
 
 # MOTIVATION
