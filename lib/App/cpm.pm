@@ -102,8 +102,8 @@ sub cmd_install {
     my $master = App::cpm::Master->new(
         inc => [$self->_search_inc],
     );
-    my $menlo_base = "$ENV{HOME}/.experimental-installer/work";
-    my $menlo_build_log = "$ENV{HOME}/.experimental-installer/build.@{[time]}.log";
+    my $menlo_base = "$ENV{HOME}/.perl-cpm/work";
+    my $menlo_build_log = "$ENV{HOME}/.perl-cpm/build.@{[time]}.log";
     my $cb = sub {
         my ($read_fh, $write_fh) = @_;
         my $worker = App::cpm::Worker->new(
