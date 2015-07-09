@@ -60,14 +60,14 @@ sub _search_inc {
 
 sub run {
     my ($self, @argv) = @_;
-    my $cmd = shift @argv or die "Need subcommand, try `$0 --help`\n";
+    my $cmd = shift @argv or die "Need subcommand, try `cpm --help`\n";
     $cmd = "help"    if $cmd =~ /^(-h|--help)$/;
     $cmd = "version" if $cmd =~ /^(-V|--version)$/;
     if (my $sub = $self->can("cmd_$cmd")) {
         @argv = $self->parse_options(@argv) unless $cmd eq "exec";
         return $self->$sub(@argv);
     } else {
-        die "Unknown command: $cmd\n";
+        die "Unknown subcommand '$cmd', try `cpm --help`\n";
     }
 }
 
