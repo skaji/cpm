@@ -37,6 +37,7 @@ sub work {
         }
     } elsif ($type eq "install") {
         my $ok = $self->install($job->{directory}, $job->{distdata});
+        rmtree $job->{directory} if $ok; # XXX Carmel!!!
         return { ok => $ok };
     } else {
         die "Unknown type: $type\n";
