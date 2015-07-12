@@ -158,10 +158,10 @@ sub cmd_install {
         my ($install, $resolve) = @{ $fail }{qw(install resolve)};
         warn "\e[31mFAIL\e[m resolve $_\n" for @$resolve;
         warn "\e[31mFAIL\e[m install $_\n" for @$install;
-        return 1;
-    } else {
-        return 0;
     }
+    my $num = $master->installed_distributions;
+    warn "$num distribution@{[$num > 1 ? 's' : '']} installed\n";
+    return $fail ? 1 : 0;
 }
 
 sub load_cpanfile {

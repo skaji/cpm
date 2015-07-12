@@ -15,6 +15,7 @@ sub new {
     bless {
         %option,
         master => 1,
+        installed_distributions => 0,
         workers => +{},
         jobs => +{},
         distributions => +{},
@@ -382,7 +383,12 @@ sub _register_install_result {
     }
     my $distribution = $self->distribution($job->{distfile});
     $distribution->installed(1);
+    $self->{installed_distributions}++;
     return 1;
+}
+
+sub installed_distributions {
+    shift->{installed_distributions};
 }
 
 1;
