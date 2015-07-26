@@ -87,7 +87,8 @@ sub spawn_worker {
     $self->is_master or die;
     pipe my $read_fh1, my $write_fh1;
     pipe my $read_fh2, my $write_fh2;
-    my $pid = fork // die;
+    my $pid = fork;
+    die "fork failed" unless defined $pid;
     if ($pid == 0) {
         $self->{master} = 0;
         close $_ for $read_fh1, $write_fh2, $self->handles;
