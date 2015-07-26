@@ -6,7 +6,6 @@ requires 'CPAN::Meta::YAML';
 requires 'Carton::Snapshot';
 requires 'File::pushd';
 requires 'HTTP::Tiny';
-requires 'IO::Socket::SSL';
 requires 'JSON::PP';
 requires 'Module::CPANfile';
 requires 'Module::CoreList';

@@ -43,7 +43,6 @@
             "Carton::Snapshot" : "0",
             "File::pushd" : "0",
             "HTTP::Tiny" : "0",
-            "IO::Socket::SSL" : "0",
             "JSON::PP" : "0",
             "Menlo::CLI::Compat" : "0",
             "Module::CPANfile" : "0",

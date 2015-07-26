@@ -19,7 +19,7 @@ sub new {
         snapshot => "cpanfile.snapshot",
         cpanfile => "cpanfile",
         local_lib => "local",
-        cpanmetadb => "https://cpanmetadb-provides.herokuapp.com",
+        cpanmetadb => "http://cpanmetadb-provides.herokuapp.com",
         mirror => "http://www.cpan.org",
         %option
     }, $class;

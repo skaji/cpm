@@ -36,7 +36,7 @@ cpm - an experimental cpan module installer
       --mirror
         base url for the cpan mirror to use, default: http://www.cpan.org
       --cpanmetadb
-        cpanmetadb url, default: https://cpanmetadb-provides.herokuapp.com
+        cpanmetadb url, default: http://cpanmetadb-provides.herokuapp.com
   -V, --version
         show version
   -h, --help
