@@ -27,12 +27,14 @@ cpm - an experimental cpan module installer
 
   -w, --workers=N
         number of workers, default: 5
-  -L, local-lib-contained=DIR
+  -L, --local-lib-contained=DIR
         install base, default: local/
   -g, --global
         install modules to global @INC instead of local-lib
   -v, --verbose
         verbose mode; you can see what is going on
+      --target-perl
+        EXPERIMENTAL: specify target perl version
       --mirror
         base url for the cpan mirror to use, default: http://www.cpan.org
       --cpanmetadb

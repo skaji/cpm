@@ -271,18 +271,28 @@ sub _register_resolve_job {
 
 sub is_installed {
     my ($self, $package, $version) = @_;
-    my $info = Module::Metadata->new_from_module($package, inc => $self->{inc});
+    my $info = Module::Metadata->new_from_module($package, inc => $self->{user_inc});
     return unless $info;
     return 1 unless $version;
     version->parse($version) <= version->parse($info->version);
 }
 
 sub is_core {
-    my ($class, $package, $version) = @_;
-    return 1 if $package eq "perl";
-    if (exists $Module::CoreList::version{$]}{$package}) {
+    my ($self, $package, $version) = @_;
+    return 1 if $package eq "perl"; # XXX
+    my $target_perl = $self->{target_perl};
+    if (exists $Module::CoreList::version{$target_perl}{$package}) {
+        if (!exists $Module::CoreList::version{$]}{$package}) {
+            if (!$self->{_removed_core}{$package}++) {
+                my $t = version->parse($target_perl)->normal;
+                my $v = version->parse($])->normal;
+                warn "$$ \e[33mWARN\e[m !!!!!!!   "
+                    . "$package is core in $t, but not in $v, so install it.\n";
+                return;
+            }
+        }
         return 1 unless $version;
-        my $core_version = $Module::CoreList::version{$]}{$package};
+        my $core_version = $Module::CoreList::version{$target_perl}{$package};
         return unless $core_version;
         return version->parse($version) <= version->parse($core_version);
     }
