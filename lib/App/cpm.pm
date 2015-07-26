@@ -21,6 +21,7 @@ sub new {
         local_lib => "local",
         cpanmetadb => "http://cpanmetadb-provides.herokuapp.com",
         mirror => "http://www.cpan.org",
+        target_perl => $],
         %option
     }, $class;
 }
@@ -37,24 +38,35 @@ sub parse_options {
         "V|version"   => sub { $self->cmd_version },
         "cpanmetadb=s" => \($self->{cpanmetadb}),
         "mirror=s"     => \($self->{mirror}),
+        "target-perl=s" => \(my $target_perl),
     or exit 1;
     $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
     $self->{packages} = [ map +{ package => $_, version => 0 }, @ARGV ];
     s{/$}{} for $self->{cpanmetadb}, $self->{mirror};
+    $self->{target_perl} = version->parse($target_perl)->numify if $target_perl;
     @ARGV;
 }
 
-sub _search_inc {
+sub _core_inc {
     my $self = shift;
-    return @INC if $self->{global};
+    (
+        (!$self->{exclude_vendor} ? grep {$_} @Config{qw(vendorarch vendorlibexp)} : ()),
+        @Config{qw(archlibexp privlibexp)},
+    );
+}
+
+sub _user_inc {
+    my $self = shift;
+    if ($self->{global}) {
+        my %core = map { $_ => 1 } $self->_core_inc;
+        return grep { !$core{$_} } @INC;
+    }
+
     my $base = $self->{local_lib};
-    # copy from cpanminus
     require local::lib;
     (
         local::lib->resolve_path(local::lib->install_base_arch_path($base)),
         local::lib->resolve_path(local::lib->install_base_perl_path($base)),
-        (!$self->{exclude_vendor} ? grep {$_} @Config{qw(vendorarch vendorlibexp)} : ()),
-        @Config{qw(archlibexp privlibexp)},
     );
 }
 
@@ -100,7 +112,9 @@ sub cmd_install {
         if !@{$self->{packages}} && !-f $self->{cpanfile};
 
     my $master = App::cpm::Master->new(
-        inc => [$self->_search_inc],
+        target_perl => $self->{target_perl},
+        core_inc => [$self->_core_inc],
+        user_inc => [$self->_user_inc],
     );
     my $menlo_base = "$ENV{HOME}/.perl-cpm/work";
     my $menlo_build_log = "$ENV{HOME}/.perl-cpm/build.@{[time]}.log";
