@@ -47,7 +47,7 @@ sub work {
 
 sub new {
     my ($class, %option) = @_;
-    my $menlo_base = (delete $option{menlo_base}) || "$ENV{HOME}/.experimental-installer";
+    my $menlo_base = (delete $option{menlo_base}) || "$ENV{HOME}/.perl-cpm";
     my $menlo_build_log = (delete $option{menlo_build_log}) || "$menlo_base/build.log";
     mkpath $menlo_base unless -d $menlo_base;
 

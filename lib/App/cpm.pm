@@ -1,16 +1,16 @@
 package App::cpm;
-
+use 5.008_005;
 use strict;
 use warnings;
-use 5.008_005;
-our $VERSION = '0.01';
-
 use App::cpm::Master;
 use App::cpm::Worker;
+use App::cpm::Logger;
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use Pod::Usage ();
 use Cwd 'abs_path';
 use Config;
+
+our $VERSION = '0.100';
 
 sub new {
     my ($class, %option) = @_;
@@ -26,35 +26,49 @@ sub new {
 }
 
 sub parse_options {
-    my ($self, @argv) = @_;
-    local @ARGV = @argv;
+    my $self = shift;
+    local @ARGV = @_;
     GetOptions
         "L|local-lib-contained=s" => \($self->{local_lib}),
-        "w|workers=i" => \($self->{workers}),
-        "g|global"    => \($self->{global}),
-        "v|verbose"   => \($self->{verbose}),
-        "h|help"      => sub { $self->cmd_help },
-        "V|version"   => sub { $self->cmd_version },
+        "V|version" => sub { $self->cmd_version },
+        "color!" => \($self->{color}),
         "cpanmetadb=s" => \($self->{cpanmetadb}),
-        "mirror=s"     => \($self->{mirror}),
+        "g|global" => \($self->{global}),
+        "h|help" => sub { $self->cmd_help },
+        "mirror=s" => \($self->{mirror}),
+        "v|verbose" => \($self->{verbose}),
+        "w|workers=i" => \($self->{workers}),
     or exit 1;
+
     $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
-    $self->{packages} = [ map +{ package => $_, version => 0 }, @ARGV ];
     s{/$}{} for $self->{cpanmetadb}, $self->{mirror};
+    $self->{color} = 1 if !defined $self->{color} && -t STDOUT;
+
+    $App::cpm::Logger::COLOR = 1 if $self->{color};
+    $App::cpm::Logger::VERBOSE = 1 if $self->{verbose};
     @ARGV;
 }
 
-sub _search_inc {
+sub _core_inc {
     my $self = shift;
-    return @INC if $self->{global};
+    (
+        (!$self->{exclude_vendor} ? grep {$_} @Config{qw(vendorarch vendorlibexp)} : ()),
+        @Config{qw(archlibexp privlibexp)},
+    );
+}
+
+sub _user_inc {
+    my $self = shift;
+    if ($self->{global}) {
+        my %core = map { $_ => 1 } $self->_core_inc;
+        return grep { !$core{$_} } @INC;
+    }
+
     my $base = $self->{local_lib};
-    # copy from cpanminus
     require local::lib;
     (
         local::lib->resolve_path(local::lib->install_base_arch_path($base)),
         local::lib->resolve_path(local::lib->install_base_perl_path($base)),
-        (!$self->{exclude_vendor} ? grep {$_} @Config{qw(vendorarch vendorlibexp)} : ()),
-        @Config{qw(archlibexp privlibexp)},
     );
 }
 
@@ -74,6 +88,7 @@ sub run {
 sub cmd_help {
     Pod::Usage::pod2usage(0);
 }
+
 sub cmd_version {
     my $class = ref $_[0] || $_[0];
     printf "%s %s\n", $class, $class->VERSION;
@@ -95,12 +110,12 @@ sub cmd_exec {
 }
 
 sub cmd_install {
-    my $self = shift;
-    die "Need arguments or cpanfile.\n"
-        if !@{$self->{packages}} && !-f $self->{cpanfile};
+    my ($self, @argv) = @_;
+    die "Need arguments or cpanfile.\n" if !@argv && !-f $self->{cpanfile};
 
     my $master = App::cpm::Master->new(
-        inc => [$self->_search_inc],
+        core_inc => [$self->_core_inc],
+        user_inc => [$self->_user_inc],
     );
     my $menlo_base = "$ENV{HOME}/.perl-cpm/work";
     my $menlo_build_log = "$ENV{HOME}/.perl-cpm/build.@{[time]}.log";
@@ -119,22 +134,22 @@ sub cmd_install {
 
     $master->spawn_worker($cb) for 1 .. $self->{workers};
 
-    if (!@{$self->{packages}} && -f $self->{cpanfile}) {
+    my @package = map +{package => $_, version => 0}, @argv;
+    if (!@package && -f $self->{cpanfile}) {
         warn "Loading modules from $self->{cpanfile}...\n";
-        my @packages = grep {
+        @package = grep {
             !$master->is_installed($_->{package}, $_->{version})
         } $self->load_cpanfile($self->{cpanfile});
-        do { warn "All requirements are satisfied.\n"; exit } unless @packages;
+        do { warn "All requirements are satisfied.\n"; exit } unless @package;
 
         if (-f $self->{snapshot}) {
             warn "Loading distributions from $self->{snapshot}...\n";
             my @distributions = grep {
                 my $dist = $_;
-                grep {$dist->providing($_->{package}, $_->{version})} @packages;
+                grep {$dist->providing($_->{package}, $_->{version})} @package;
             } $self->load_snapshot($self->{snapshot});
             $master->add_distribution($_) for @distributions;
-        } else {
-            $self->{packages} = \@packages;
+            @package = ();
         }
     }
 
@@ -142,7 +157,7 @@ sub cmd_install {
         type => "resolve",
         package => $_->{package},
         version => $_->{version} || 0
-    ) for @{$self->{packages}};
+    ) for @package;
 
     MAIN_LOOP:
     while (1) {
@@ -153,15 +168,20 @@ sub cmd_install {
         }
     }
     $master->shutdown_workers;
-    my $fail = $master->fail;
-    if ($fail) {
-        my ($install, $resolve) = @{ $fail }{qw(install resolve)};
-        warn "\e[31mFAIL\e[m resolve $_\n" for @$resolve;
-        warn "\e[31mFAIL\e[m install $_\n" for @$install;
+
+    if (my $fail = $master->fail) {
+        local $App::cpm::Logger::VERBOSE = 0;
+        for my $type (qw(install resolve)) {
+            App::cpm::Logger->log(
+                result => "FAIL",
+                type => $type,
+                message => $_,
+            ) for @{$fail->{$type}};
+        }
     }
     my $num = $master->installed_distributions;
-    warn "$num distribution@{[$num > 1 ? 's' : '']} installed\n";
-    return $fail ? 1 : 0;
+    warn "$num distribution@{[$num > 1 ? 's' : '']} installed.\n";
+    return $master->fail ? 1 : 0;
 }
 
 sub load_cpanfile {
@@ -204,57 +224,47 @@ __END__
 
 =encoding utf-8
 
-=for stopwords npm
-
 =head1 NAME
 
-App::cpm - an experimental cpan module installer
+App::cpm - an experimental cpan client
 
 =head1 SYNOPSIS
 
-  > cpm install Module1 Module2 ...
-
-  # from cpanfile
-  > cpm install
-
-=head1 INSTALL
-
-This module depends on L<Menlo::CLI::Compat|https://github.com/miyagawa/cpanminus/tree/menlo>,
-so you have to install it first:
-
-  > cpanm git://github.com/miyagawa/cpanminus.git@menlo
-
-Then install this module:
-
-  > cpanm git://github.com/shoichikaji/cpm.git
+  > cpm install Module
 
 =head1 DESCRIPTION
 
-App::cpm is an experimental cpan module installer,
-which uses Menlo::CLI::Compat in parallel.
+B<THIS IS VERY EXPERIMETNAL, API WILL CHANGE WITHOUT NOTICE!>
+
+cpm is an experimental cpan client, which uses Menlo::CLI::Compat in parallel.
+You may install cpan modules fast with cpm.
 
 =head1 MOTIVATION
 
-My motivation is simple: I want to install cpan modules as quickly as possible.
+Why do we need a new cpan client?
 
-=head1 WHY INSTALLATION OF CPAN MODULES IS SO HARD
+I use L<cpanm> a lot, and it's totally awesome.
 
-I think the hardest part of installation of cpan modules is that
-cpan world has two notions B<modules> and B<distributions>,
-and cpan clients must handle these correspondence correctly.
+But if your Perl project has hundreds of cpan module dependencies,
+then it takes quite a lot of time to install them.
 
-I suspect this only applies to cpan world,
-and never applies to, for example, ruby gems or node npm.
+So my motivation is: I want to install cpan modules as fast as possible.
 
-=head1 AUTHOR
+=head1 HOW FAST?
 
-Shoichi Kaji E<lt>skaji@cpan.orgE<gt>
+Just an example:
 
-=head1 COPYRIGHT
+  > time cpanm -nq -Lextlib Plack
+  real 0m47.705s
 
-Copyright 2015- Shoichi Kaji
+  > time cpm install Plack
+  real 0m16.629s
 
-=head1 LICENSE
+Why don't you try cpm with your favorite modules?
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2015 Shoichi Kaji E<lt>skaji@cpan.orgE<gt>
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

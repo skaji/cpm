@@ -5,6 +5,7 @@ use utf8;
 
 use App::cpm::Worker::Installer;
 use App::cpm::Worker::Resolver;
+use App::cpm::Logger;
 use CPAN::DistnameInfo;
 use JSON::PP qw(encode_json decode_json);
 use Time::HiRes qw(gettimeofday tv_interval);
@@ -43,17 +44,10 @@ sub run_loop {
     }
 }
 
-my %color = (
-    resolve => 33,
-    fetch => 34,
-    configure => 35,
-    install => 36,
-);
-
 sub info {
     my ($self, $job, $elapsed) = @_;
     my $type = $job->{type};
-    return if !$self->{verbose} && $type ne "install";
+    return if !$App::cpm::Logger::VERBOSE && $type ne "install";
     my $distvname = $job->{distfile}
         ? CPAN::DistnameInfo->new($job->{distfile})->distvname : "";
     my $message;
@@ -62,10 +56,13 @@ sub info {
     } else {
         $message = $distvname;
     }
-    my $ok = $job->{ok} ? "\e[32mDONE\e[m" : "\e[31mFAIL\e[m";
-    $elapsed = sprintf "(%.3fsec) ", $elapsed if defined $elapsed;
-    warn sprintf "%d %s \e[$color{$type}m%-9s\e[m %s%s\n",
-        $$, $ok, $type, $elapsed || "", $message;
+    $elapsed = defined $elapsed ? sprintf "(%.3fsec) ", $elapsed : "";
+
+    App::cpm::Logger->log(
+        type => $type,
+        result => $job->{ok} ? "DONE" : "FAIL",
+        message => "$elapsed$message",
+    );
 }
 
 1;

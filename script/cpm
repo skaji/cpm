@@ -10,14 +10,14 @@ __END__
 
 =head1 NAME
 
-cpm - an experimental cpan module installer
+cpm - an experimental cpan client
 
 =head1 SYNOPSIS
 
   # install modules
   > cpm install Module1 Module2 ...
 
-  # from cpanfile if it exists
+  # from cpanfile (with cpanfile.snapshot if any)
   > cpm install
 
   # just like carton exec
@@ -27,16 +27,18 @@ cpm - an experimental cpan module installer
 
   -w, --workers=N
         number of workers, default: 5
-  -L, local-lib-contained=DIR
+  -L, --local-lib-contained=DIR
         install base, default: local/
   -g, --global
         install modules to global @INC instead of local-lib
   -v, --verbose
         verbose mode; you can see what is going on
-      --mirror
+      --mirror=URL
         base url for the cpan mirror to use, default: http://www.cpan.org
-      --cpanmetadb
+      --cpanmetadb=URL
         cpanmetadb url, default: http://cpanmetadb-provides.herokuapp.com
+      --color, --no-color
+        turn on/off color output, default: on
   -V, --version
         show version
   -h, --help

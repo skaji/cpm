@@ -4,6 +4,7 @@ use warnings;
 use utf8;
 use App::cpm::Distribution;
 use App::cpm::Job;
+use App::cpm::Logger;
 use IO::Handle;
 use IO::Select;
 use Module::CoreList;
@@ -152,7 +153,6 @@ sub add_job {
     my ($self, %job) = @_;
     my $new = App::cpm::Job->new(%job);
     if (grep { $_->equals($new) } $self->jobs) {
-        # warn "already registered job: " . $new->uid . "\n";
         return 0;
     } else {
         $self->{jobs}{$new->uid} = $new;
@@ -271,15 +271,15 @@ sub _register_resolve_job {
 
 sub is_installed {
     my ($self, $package, $version) = @_;
-    my $info = Module::Metadata->new_from_module($package, inc => $self->{inc});
+    my $info = Module::Metadata->new_from_module($package, inc => $self->{user_inc});
     return unless $info;
     return 1 unless $version;
     version->parse($version) <= version->parse($info->version);
 }
 
 sub is_core {
-    my ($class, $package, $version) = @_;
-    return 1 if $package eq "perl";
+    my ($self, $package, $version) = @_;
+    return 1 if $package eq "perl"; # XXX
     if (exists $Module::CoreList::version{$]}{$package}) {
         return 1 unless $version;
         my $core_version = $Module::CoreList::version{$]}{$package};
@@ -313,7 +313,6 @@ sub add_distribution {
     my ($self, $distribution) = @_;
     my $distfile = $distribution->distfile;
     if (exists $self->{distributions}{$distfile}) {
-        # warn "already registerd dist: $distfile\n";
         return 0;
     } else {
         $self->{distributions}{$distfile} = $distribution;
@@ -328,14 +327,22 @@ sub _register_resolve_result {
         return;
     }
     if ($job->{distfile} =~ m{/perl-5[^/]+$}) {
-        warn "$$ \e[31mFAIL\e[m \e[36minstall\e[m   Cannot upgrade core module $job->{package}.\n";
+        App::cpm::Logger->log(
+            result => "FAIL",
+            type => "install",
+            message => "Cannot upgrade core module $job->{package}.",
+        );
         $self->{_fail_install}{$job->{package}}++; # XXX
         return;
     }
 
     if ($self->is_installed($job->{package}, $job->{version})) {
         my $version = $job->{version} || 0;
-        warn "$$ \e[32mDONE\e[m \e[36minstall\e[m   $job->{package} is up to date. ($version)\n";
+        App::cpm::Logger->log(
+            result => "DONE",
+            type => "install",
+            message => "$job->{package} is up to date. ($version)",
+        );
         return;
     }
 
@@ -343,10 +350,7 @@ sub _register_resolve_result {
         distfile => $job->{distfile},
         provides => $job->{provides},
     );
-    my $added = $self->add_distribution($distribution);
-    unless ($added) {
-        # warn "-> already \e[31mresolved\e[m @{[$distribution->name]}\n";
-    }
+    $self->add_distribution($distribution);
 }
 
 sub _register_fetch_result {
