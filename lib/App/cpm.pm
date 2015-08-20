@@ -138,7 +138,8 @@ sub cmd_install {
     if (!@package && -f $self->{cpanfile}) {
         warn "Loading modules from $self->{cpanfile}...\n";
         @package = grep {
-            !$master->is_installed($_->{package}, $_->{version})
+            !$master->is_core($_->{package}, $_->{version})
+            && !$master->is_installed($_->{package}, $_->{version})
         } $self->load_cpanfile($self->{cpanfile});
         do { warn "All requirements are satisfied.\n"; exit } unless @package;
 
