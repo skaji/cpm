@@ -1,52 +1,46 @@
+[![Build Status](https://travis-ci.org/shoichikaji/cpm.svg?branch=master)](https://travis-ci.org/shoichikaji/cpm)
+
 # NAME
 
-App::cpm - an experimental cpan module installer
+App::cpm - an experimental cpan client
 
 # SYNOPSIS
 
-    > cpm install Module1 Module2 ...
-
-    # from cpanfile
-    > cpm install
-
-# INSTALL
-
-This module depends on [Menlo::CLI::Compat](https://github.com/miyagawa/cpanminus/tree/menlo),
-so you have to install it first:
-
-    > cpanm git://github.com/miyagawa/cpanminus.git@menlo
-
-Then install this module:
-
-    > cpanm git://github.com/shoichikaji/cpm.git
+    > cpm install Module
 
 # DESCRIPTION
 
-App::cpm is an experimental cpan module installer,
-which uses Menlo::CLI::Compat in parallel.
+**THIS IS VERY EXPERIMETNAL, API WILL CHANGE WITHOUT NOTICE!**
+
+cpm is an experimental cpan client, which uses Menlo::CLI::Compat in parallel.
+You may install cpan modules fast with cpm.
 
 # MOTIVATION
 
-My motivation is simple: I want to install cpan modules as quickly as possible.
+Why do we need a new cpan client?
 
-# WHY INSTALLATION OF CPAN MODULES IS SO HARD
+I use [cpanm](https://metacpan.org/pod/cpanm) a lot, and it's totally awesome.
 
-I think the hardest part of installation of cpan modules is that
-cpan world has two notions **modules** and **distributions**,
-and cpan clients must handle these correspondence correctly.
+But if your Perl project has hundreds of cpan module dependencies,
+then it takes quite a lot of time to install them.
 
-I suspect this only applies to cpan world,
-and never applies to, for example, ruby gems or node npm.
+So my motivation is: I want to install cpan modules as fast as possible.
 
-# AUTHOR
+# HOW FAST?
 
-Shoichi Kaji <skaji@cpan.org>
+Just an example:
 
-# COPYRIGHT
+    > time cpanm -nq -Lextlib Plack
+    real 0m47.705s
 
-Copyright 2015- Shoichi Kaji
+    > time cpm install Plack
+    real 0m16.629s
 
-# LICENSE
+Why don't you try cpm with your favorite modules?
+
+# COPYRIGHT AND LICENSE
+
+Copyright 2015 Shoichi Kaji <skaji@cpan.org>
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

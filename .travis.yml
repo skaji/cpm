@@ -1,0 +1,17 @@
+language: perl
+perl:
+  - '5.20'
+  - '5.18'
+  - '5.16'
+  - '5.14'
+  - '5.12'
+  - '5.10'
+  - '5.8'
+before_install:
+  - perlbrew install-cpanm -f
+install:
+  - (cpanm -nq --dev Menlo::CLI::Compat) || cat ~/.cpanm/build.log
+  - (cpanm --installdeps -nq .) || cat ~/.cpanm/build.log
+script:
+  - prove -l t xt
+sudo: false

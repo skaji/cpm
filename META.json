@@ -1,10 +1,10 @@
 {
-   "abstract" : "an experimental cpan module installer",
+   "abstract" : "an experimental cpan client",
    "author" : [
       "Shoichi Kaji <skaji@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 5.037, Dist::Milla version v1.0.15, CPAN::Meta::Converter version 2.150001",
+   "generated_by" : "Dist::Zilla version 5.039, Dist::Milla version v1.0.15, CPAN::Meta::Converter version 2.150001",
    "license" : [
       "perl_5"
    ],
@@ -59,6 +59,7 @@
       },
       "test" : {
          "requires" : {
+            "Capture::Tiny" : "0",
             "Test::More" : "0.96"
          }
       }
@@ -75,6 +76,6 @@
          "web" : "https://github.com/shoichikaji/cpm"
       }
    },
-   "version" : "0.01"
+   "version" : "0.100"
 }
 
