@@ -132,8 +132,6 @@ sub cmd_install {
         $worker->run_loop;
     };
 
-    $master->spawn_worker($cb) for 1 .. $self->{workers};
-
     my @package = map +{package => $_, version => 0}, @argv;
     if (!@package && -f $self->{cpanfile}) {
         warn "Loading modules from $self->{cpanfile}...\n";
@@ -160,6 +158,7 @@ sub cmd_install {
         version => $_->{version} || 0
     ) for @package;
 
+    $master->spawn_worker($cb) for 1 .. $self->{workers};
     MAIN_LOOP:
     while (1) {
         for my $worker ($master->ready_workers) {
