@@ -35,8 +35,6 @@ cpm - an experimental cpan client
         verbose mode; you can see what is going on
       --mirror=URL
         base url for the cpan mirror to use, default: http://www.cpan.org
-      --cpanmetadb=URL
-        cpanmetadb url, default: http://cpanmetadb-provides.herokuapp.com
       --color, --no-color
         turn on/off color output, default: on
   -V, --version

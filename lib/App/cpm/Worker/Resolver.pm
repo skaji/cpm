@@ -15,7 +15,7 @@ sub new {
 
 sub work {
     my ($self, $job) = @_;
-    my $res = $self->{ua}->get($self->{cpanmetadb} . "/v1.1/package/$job->{package}");
+    my $res = $self->{ua}->get( "$self->{cpanmetadb}/$job->{package}" );
     if ($res->{success}) {
         my $yaml = CPAN::Meta::YAML->read_string($res->{content});
         my $meta = $yaml->[0];
@@ -30,7 +30,7 @@ sub work {
             ok => 1,
             distfile => $meta->{distfile},
             version => $meta->{version},
-            provides => $meta->{provides} || [],
+            provide => +{package => $job->{package}, version => $version},
         };
     }
     return { ok => 0 };

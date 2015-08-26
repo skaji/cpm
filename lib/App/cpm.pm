@@ -19,7 +19,7 @@ sub new {
         snapshot => "cpanfile.snapshot",
         cpanfile => "cpanfile",
         local_lib => "local",
-        cpanmetadb => "http://cpanmetadb-provides.herokuapp.com",
+        cpanmetadb => "http://cpanmetadb.plackperl.org/v1.0/package",
         mirror => "http://www.cpan.org",
         %option
     }, $class;
@@ -32,7 +32,6 @@ sub parse_options {
         "L|local-lib-contained=s" => \($self->{local_lib}),
         "V|version" => sub { $self->cmd_version },
         "color!" => \($self->{color}),
-        "cpanmetadb=s" => \($self->{cpanmetadb}),
         "g|global" => \($self->{global}),
         "h|help" => sub { $self->cmd_help },
         "mirror=s" => \($self->{mirror}),
@@ -41,7 +40,7 @@ sub parse_options {
     or exit 1;
 
     $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
-    s{/$}{} for $self->{cpanmetadb}, $self->{mirror};
+    $self->{mirror} =~ s{/$}{};
     $self->{color} = 1 if !defined $self->{color} && -t STDOUT;
 
     $App::cpm::Logger::COLOR = 1 if $self->{color};

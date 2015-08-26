@@ -5,7 +5,7 @@ use Test::More;
 use App::cpm::Worker::Resolver;
 
 my $r = App::cpm::Worker::Resolver->new(
-    cpanmetadb => "http://cpanmetadb-provides.herokuapp.com",
+    cpanmetadb => "http://cpanmetadb.plackperl.org/v1.0/package",
 );
 
 my $res = $r->work(+{ package => "Plack", version => 1 });
