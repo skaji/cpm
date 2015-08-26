@@ -15,7 +15,7 @@ sub work {
     my ($self, $job) = @_;
     my $type = $job->{type} || "(undef)";
     if ($type eq "fetch") {
-        my ($directory, $meta, $configure_requirements)
+        my ($directory, $meta, $configure_requirements, $provides)
             = $self->fetch($job->{distfile});
         if ($configure_requirements) {
             return +{
@@ -23,6 +23,7 @@ sub work {
                 directory => $directory,
                 meta => $meta,
                 configure_requirements => $configure_requirements,
+                provides => $provides,
             };
         }
     } elsif ($type eq "configure") {
@@ -81,18 +82,24 @@ sub fetch {
     my $dir = $self->menlo->fetch_module($dist)
         or return;
     chdir $dir or die;
-    my ($meta, $configure_requirements) = $self->_get_configure_requirements;
+    my ($meta, $configure_requirements, $provides) = $self->_get_configure_requirements;
     my $abs_dir = File::Spec->catdir($self->menlo->{base}, $dir);
-    return ($abs_dir, $meta, $configure_requirements);
+    return ($abs_dir, $meta, $configure_requirements, $provides);
 }
 
 sub _get_configure_requirements {
     my $self = shift;
     my $meta;
     my $requirements = [];
+    my $provides;
     if (my ($file) = grep -f, qw(META.json META.yml)) {
         $meta = CPAN::Meta->load_file($file);
         $requirements = $self->_extract_requirements($meta, [qw(configure)]);
+        my $p = $self->menlo->extract_packages($meta, ".");
+        $provides = [map +{
+            package => $_,
+            version => $p->{$_}{version} || undef,
+        }, sort keys %$p]
     }
 
     if (!@$requirements && -f "Build.PL") {
@@ -101,7 +108,7 @@ sub _get_configure_requirements {
             phase => "configure", type => "requires",
         };
     }
-    return ($meta ? $meta->as_struct : +{}, $requirements);
+    return ($meta ? $meta->as_struct : +{}, $requirements, $provides);
 }
 
 

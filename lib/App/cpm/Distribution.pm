@@ -25,6 +25,13 @@ for my $attr (qw(
     };
 }
 
+sub append_provide {
+    my ($self, $provide) = @_;
+    return if $self->providing($provide->{package});
+    push @{$self->{provides}}, $provide;
+    return 1;
+}
+
 use constant STATE_RESOLVED   => 0; # default
 use constant STATE_FETCHED    => 1;
 use constant STATE_CONFIGURED => 2;

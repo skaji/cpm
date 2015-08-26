@@ -310,9 +310,10 @@ sub _is_satisfied {
 }
 
 sub add_distribution {
-    my ($self, $distribution) = @_;
+    my ($self, $distribution, $provide) = @_;
     my $distfile = $distribution->distfile;
-    if (exists $self->{distributions}{$distfile}) {
+    if (my $already = $self->{distributions}{$distfile}) {
+        $already->append_provide($provide);
         return 0;
     } else {
         $self->{distributions}{$distfile} = $distribution;
@@ -348,9 +349,9 @@ sub _register_resolve_result {
 
     my $distribution = App::cpm::Distribution->new(
         distfile => $job->{distfile},
-        provides => $job->{provides},
+        provides => [$job->{provide}],
     );
-    $self->add_distribution($distribution);
+    $self->add_distribution($distribution, $job->{provide});
 }
 
 sub _register_fetch_result {
@@ -364,6 +365,7 @@ sub _register_fetch_result {
     $distribution->configure_requirements($job->{configure_requirements});
     $distribution->directory($job->{directory});
     $distribution->meta($job->{meta});
+    $distribution->provides($job->{provides});
     return 1;
 }
 
