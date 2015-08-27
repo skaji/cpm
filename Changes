@@ -2,5 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.101  2015-08-27 23:02:39 JST
+        - Now there is no assumption that "provides" of distributions are
+          statically determined. Use http://cpanmetadb.plackperl.org/ (#11)
+
 0.100  2015-08-21 02:35:24 JST
         - Initial release
