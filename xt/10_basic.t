@@ -22,4 +22,15 @@ subtest same => sub {
     };
 };
 
+subtest no_meta => sub {
+    my $r = cpm_install "WWW::RobotRules::Extended";
+    like $r->err, qr/^DONE install WWW-RobotRules-Extended/;
+};
+
+subtest invalid_meta => sub {
+    plan skip_all => "Invalid ExtUtils::MakeMaker req 7.0401 (only found 7.04)";
+    my $r = cpm_install "WWW::LinkedIn";
+    like $r->err, qr/^DONE install WWW-LinkedIn/;
+};
+
 done_testing;

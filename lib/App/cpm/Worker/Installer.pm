@@ -82,25 +82,31 @@ sub fetch {
     my $dir = $self->menlo->fetch_module($dist)
         or return;
     chdir $dir or die;
-    my ($meta, $configure_requirements, $provides) = $self->_get_configure_requirements;
+    my ($meta, $configure_requirements, $provides)
+        = $self->_get_configure_requirements($distfile);
     my $abs_dir = File::Spec->catdir($self->menlo->{base}, $dir);
     return ($abs_dir, $meta, $configure_requirements, $provides);
 }
 
 sub _get_configure_requirements {
-    my $self = shift;
+    my ($self, $distfile) = @_;
     my $meta;
-    my $requirements = [];
-    my $provides;
     if (my ($file) = grep -f, qw(META.json META.yml)) {
-        $meta = CPAN::Meta->load_file($file);
-        $requirements = $self->_extract_requirements($meta, [qw(configure)]);
-        my $p = $self->menlo->extract_packages($meta, ".");
-        $provides = [map +{
-            package => $_,
-            version => $p->{$_}{version} || undef,
-        }, sort keys %$p]
+        $meta = eval { CPAN::Meta->load_file($file) };
+        warn "-> $@" if $@;
     }
+
+    unless ($meta) {
+        my $d = CPAN::DistnameInfo->new($distfile);
+        $meta = CPAN::Meta->new({name => $d->dist, version => $d->version});
+    }
+
+    my $requirements = $self->_extract_requirements($meta, [qw(configure)]);
+    my $p = $self->menlo->extract_packages($meta, ".");
+    my $provides = [map +{
+        package => $_,
+        version => $p->{$_}{version} || undef,
+    }, sort keys %$p];
 
     if (!@$requirements && -f "Build.PL") {
         push @$requirements, {
