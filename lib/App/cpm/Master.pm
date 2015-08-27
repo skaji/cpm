@@ -313,7 +313,7 @@ sub add_distribution {
     my ($self, $distribution, $provide) = @_;
     my $distfile = $distribution->distfile;
     if (my $already = $self->{distributions}{$distfile}) {
-        $already->append_provide($provide);
+        $already->append_provide($provide) if $provide;
         return 0;
     } else {
         $self->{distributions}{$distfile} = $distribution;

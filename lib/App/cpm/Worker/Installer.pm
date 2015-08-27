@@ -93,7 +93,6 @@ sub _get_configure_requirements {
     my $meta;
     if (my ($file) = grep -f, qw(META.json META.yml)) {
         $meta = eval { CPAN::Meta->load_file($file) };
-        warn "-> $@" if $@;
     }
 
     unless ($meta) {
