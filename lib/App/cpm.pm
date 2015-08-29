@@ -142,11 +142,7 @@ sub cmd_install {
 
         if (-f $self->{snapshot}) {
             warn "Loading distributions from $self->{snapshot}...\n";
-            my @distributions = grep {
-                my $dist = $_;
-                grep {$dist->providing($_->{package}, $_->{version})} @package;
-            } $self->load_snapshot($self->{snapshot});
-            $master->add_distribution($_) for @distributions;
+            $master->add_distribution($_) for $self->load_snapshot($self->{snapshot});
             @package = ();
         }
     }
