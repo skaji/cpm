@@ -4,7 +4,6 @@ requires 'CPAN::DistnameInfo';
 requires 'CPAN::Meta';
 requires 'CPAN::Meta::Requirements';
 requires 'CPAN::Meta::YAML';
-requires 'Carton::Snapshot';
 requires 'File::pushd';
 requires 'HTTP::Tiny';
 requires 'JSON::PP';

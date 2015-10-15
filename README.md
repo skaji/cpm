@@ -2,7 +2,7 @@
 
 # NAME
 
-App::cpm - an experimental cpan client
+App::cpm - a fast cpan module installer
 
 # SYNOPSIS
 
@@ -10,21 +10,20 @@ App::cpm - an experimental cpan client
 
 # DESCRIPTION
 
-**THIS IS VERY EXPERIMETNAL, API WILL CHANGE WITHOUT NOTICE!**
+**THIS IS EXPERIMETNAL.**
 
-cpm is an experimental cpan client, which uses Menlo::CLI::Compat in parallel.
-You may install cpan modules fast with cpm.
+cpm is a fast cpan module installer, which uses [Menlo::CLI::Compat](https://metacpan.org/pod/Menlo::CLI::Compat) in parallel.
 
 # MOTIVATION
 
 Why do we need a new cpan client?
 
-I use [cpanm](https://metacpan.org/pod/cpanm) a lot, and it's totally awesome.
+I used [cpanm](https://metacpan.org/pod/cpanm) a lot, and it's totally awesome.
 
 But if your Perl project has hundreds of cpan module dependencies,
 then it takes quite a lot of time to install them.
 
-So my motivation is: I want to install cpan modules as fast as possible.
+So my motivation is simple: I want to install cpan modules as fast as possible.
 
 # HOW FAST?
 
@@ -36,7 +35,7 @@ Just an example:
     > time cpm install Plack
     real 0m16.629s
 
-Why don't you try cpm with your favorite modules?
+This shows cpm is 3x faster than cpanm.
 
 # COPYRIGHT AND LICENSE
 
@@ -48,5 +47,7 @@ it under the same terms as Perl itself.
 # SEE ALSO
 
 [App::cpanminus](https://metacpan.org/pod/App::cpanminus)
+
+[Menlo](https://metacpan.org/pod/Menlo)
 
 [Carton](https://metacpan.org/pod/Carton)

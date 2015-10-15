@@ -1,10 +1,10 @@
 {
-   "abstract" : "an experimental cpan client",
+   "abstract" : "a fast cpan module installer",
    "author" : [
       "Shoichi Kaji <skaji@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 5.039, Dist::Milla version v1.0.15, CPAN::Meta::Converter version 2.150001",
+   "generated_by" : "Dist::Zilla version 5.039, Dist::Milla version v1.0.15, CPAN::Meta::Converter version 2.150005",
    "license" : [
       "perl_5"
    ],
@@ -41,7 +41,6 @@
             "CPAN::Meta" : "0",
             "CPAN::Meta::Requirements" : "0",
             "CPAN::Meta::YAML" : "0",
-            "Carton::Snapshot" : "0",
             "ExtUtils::Install" : "1.46",
             "ExtUtils::MakeMaker" : "6.58",
             "File::pushd" : "0",
@@ -64,7 +63,7 @@
          }
       }
    },
-   "release_status" : "testing",
+   "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
          "web" : "https://github.com/shoichikaji/cpm/issues"

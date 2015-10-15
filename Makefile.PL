@@ -7,7 +7,7 @@ use 5.008005;
 use ExtUtils::MakeMaker;
 
 my %WriteMakefileArgs = (
-  "ABSTRACT" => "an experimental cpan client",
+  "ABSTRACT" => "a fast cpan module installer",
   "AUTHOR" => "Shoichi Kaji <skaji\@cpan.org>",
   "CONFIGURE_REQUIRES" => {
     "ExtUtils::MakeMaker" => 0
@@ -24,7 +24,6 @@ my %WriteMakefileArgs = (
     "CPAN::Meta" => 0,
     "CPAN::Meta::Requirements" => 0,
     "CPAN::Meta::YAML" => 0,
-    "Carton::Snapshot" => 0,
     "ExtUtils::Install" => "1.46",
     "ExtUtils::MakeMaker" => "6.58",
     "File::pushd" => 0,
@@ -55,7 +54,6 @@ my %FallbackPrereqs = (
   "CPAN::Meta::Requirements" => 0,
   "CPAN::Meta::YAML" => 0,
   "Capture::Tiny" => 0,
-  "Carton::Snapshot" => 0,
   "ExtUtils::Install" => "1.46",
   "ExtUtils::MakeMaker" => "6.58",
   "File::pushd" => 0,

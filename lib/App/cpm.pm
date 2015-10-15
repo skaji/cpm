@@ -80,7 +80,8 @@ sub run {
         @argv = $self->parse_options(@argv) unless $cmd eq "exec";
         return $self->$sub(@argv);
     } else {
-        die "Unknown subcommand '$cmd', try `cpm --help`\n";
+        my $type = $cmd =~ /^-/ ? "option" : "subcommand";
+        die "Unknown $type '$cmd', try `cpm --help`\n";
     }
 }
 
@@ -194,7 +195,10 @@ sub load_cpanfile {
 
 sub load_snapshot {
     my ($self, $file) = @_;
-    require Carton::Snapshot;
+    eval { require Carton::Snapshot };
+    if ($@) {
+        die "To load $file, you need to install Carton::Snapshot first.\n";
+    }
     my $snapshot = Carton::Snapshot->new(path => $file);
     $snapshot->load;
     my @distributions;
@@ -221,7 +225,7 @@ __END__
 
 =head1 NAME
 
-App::cpm - an experimental cpan client
+App::cpm - a fast cpan module installer
 
 =head1 SYNOPSIS
 
@@ -229,21 +233,20 @@ App::cpm - an experimental cpan client
 
 =head1 DESCRIPTION
 
-B<THIS IS VERY EXPERIMETNAL, API WILL CHANGE WITHOUT NOTICE!>
+B<THIS IS EXPERIMETNAL.>
 
-cpm is an experimental cpan client, which uses Menlo::CLI::Compat in parallel.
-You may install cpan modules fast with cpm.
+cpm is a fast cpan module installer, which uses L<Menlo::CLI::Compat> in parallel.
 
 =head1 MOTIVATION
 
 Why do we need a new cpan client?
 
-I use L<cpanm> a lot, and it's totally awesome.
+I used L<cpanm> a lot, and it's totally awesome.
 
 But if your Perl project has hundreds of cpan module dependencies,
 then it takes quite a lot of time to install them.
 
-So my motivation is: I want to install cpan modules as fast as possible.
+So my motivation is simple: I want to install cpan modules as fast as possible.
 
 =head1 HOW FAST?
 
@@ -255,7 +258,7 @@ Just an example:
   > time cpm install Plack
   real 0m16.629s
 
-Why don't you try cpm with your favorite modules?
+This shows cpm is 3x faster than cpanm.
 
 =head1 COPYRIGHT AND LICENSE
 
@@ -267,6 +270,8 @@ it under the same terms as Perl itself.
 =head1 SEE ALSO
 
 L<App::cpanminus>
+
+L<Menlo>
 
 L<Carton>
 

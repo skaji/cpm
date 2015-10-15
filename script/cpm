@@ -10,7 +10,7 @@ __END__
 
 =head1 NAME
 
-cpm - an experimental cpan client
+cpm - a fast cpan module installer
 
 =head1 SYNOPSIS
 
@@ -20,8 +20,8 @@ cpm - an experimental cpan client
   # from cpanfile (with cpanfile.snapshot if any)
   > cpm install
 
-  # just like carton exec
-  > cpm exec perl ...
+  # install module to global @INC istead of local/lib/perl5
+  > cpm install -g Module
 
 =head1 OPTIONS
 
