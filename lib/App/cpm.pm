@@ -80,8 +80,8 @@ sub run {
         @argv = $self->parse_options(@argv) unless $cmd eq "exec";
         return $self->$sub(@argv);
     } else {
-        my $type = $cmd =~ /^-/ ? "option" : "subcommand";
-        die "Unknown $type '$cmd', try `cpm --help`\n";
+        my $message = $cmd =~ /^-/ ? "Missing subcommand" : "Unknown subcommand '$cmd'";
+        die "$message, try `cpm --help`\n";
     }
 }
 
