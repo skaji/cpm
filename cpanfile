@@ -6,7 +6,7 @@ requires 'CPAN::Meta::Requirements';
 requires 'CPAN::Meta::YAML';
 requires 'File::pushd';
 requires 'HTTP::Tiny';
-requires 'JSON::PP';
+requires 'JSON::PP', '2.27300'; # for perl 5.8.6 or below
 requires 'Module::CPANfile';
 requires 'Module::CoreList';
 requires 'Module::Metadata';

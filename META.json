@@ -4,7 +4,7 @@
       "Shoichi Kaji <skaji@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 5.039, Dist::Milla version v1.0.15, CPAN::Meta::Converter version 2.150005",
+   "generated_by" : "Dist::Zilla version 5.040, Dist::Milla version v1.0.15, CPAN::Meta::Converter version 2.150005",
    "license" : [
       "perl_5"
    ],
@@ -15,12 +15,12 @@
    "name" : "App-cpm",
    "no_index" : {
       "directory" : [
-         "t",
-         "xt",
+         "eg",
+         "examples",
          "inc",
          "share",
-         "eg",
-         "examples"
+         "t",
+         "xt"
       ]
    },
    "prereqs" : {
@@ -45,7 +45,7 @@
             "ExtUtils::MakeMaker" : "6.58",
             "File::pushd" : "0",
             "HTTP::Tiny" : "0",
-            "JSON::PP" : "0",
+            "JSON::PP" : "2.27300",
             "Menlo::CLI::Compat" : "0",
             "Module::Build" : "0.38",
             "Module::CPANfile" : "0",

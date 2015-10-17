@@ -183,11 +183,11 @@ sub install {
     my $installed;
     if (-f 'Build') {
         $menlo->build([ $menlo->{perl}, "./Build" ], )
-        && $menlo->install([ $menlo->{perl}, "./Build", "install" ], )
+        && $menlo->install([ $menlo->{perl}, "./Build", "install" ], [])
         && $installed++;
     } else {
         $menlo->build([ $menlo->{make} ], )
-        && $menlo->install([ $menlo->{make}, "install" ], )
+        && $menlo->install([ $menlo->{make}, "install" ], [])
         && $installed++;
     }
 
