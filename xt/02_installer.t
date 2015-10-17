@@ -14,7 +14,7 @@ my $installer = App::cpm::Worker::Installer->new(
 my ($job, $result);
 
 $job = {
-    distfile => "M/MI/MIYAGAWA/Plack-1.0037.tar.gz",
+    distfile => "S/SK/SKAJI/Distribution-Metadata-0.05.tar.gz",
     type => "fetch",
 };
 $result = $installer->work($job);

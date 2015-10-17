@@ -12,10 +12,10 @@ my $installer = App::cpm::Worker::Installer->new(
     mirror => "http://www.cpan.org",
 );
 
-my $distfile = "M/MI/MIYAGAWA/Plack-1.0037.tar.gz";
+my $distfile = "S/SK/SKAJI/Distribution-Metadata-0.05.tar.gz";
 my ($dir, $meta, $configure_requirements) = $installer->fetch($distfile);
 
-like $dir, qr{^/.*Plack-1.0037$}; # abs
+like $dir, qr{^/.*Distribution-Metadata-0\.05$}; # abs
 ok scalar(keys %$meta);
 is_deeply $configure_requirements, [
   {
@@ -24,17 +24,12 @@ is_deeply $configure_requirements, [
     type    => "requires",
     version => 0,
   },
-  {
-    package => "File::ShareDir::Install",
-    phase   => "configure",
-    type    => "requires",
-    version => 0.06,
-  },
 ];
 
 my ($distdata, $requirements) = $installer->configure($dir, $distfile, $meta);
 
-is $distdata->{distvname}, "Plack-1.0037";
+is $distdata->{distvname}, "Distribution-Metadata-0.05";
+
 is_deeply $requirements->[-1], {
     package => "perl",
     phase   => "runtime",
@@ -47,11 +42,10 @@ my $ok = $installer->install($dir, $distdata);
 ok $ok;
 
 my @file = qw(
-    bin/plackup
-    lib/perl5/Plack.pm
-    lib/perl5/auto/share/dist/Plack/baybridge.jpg
+    bin/which-meta
+    lib/perl5/Distribution/Metadata.pm
 );
-push @file, "lib/perl5/$Config{archname}/.meta/Plack-1.0037/MYMETA.json";
+push @file, "lib/perl5/$Config{archname}/.meta/Distribution-Metadata-0.05/MYMETA.json";
 
 for my $file (@file) {
     ok -f "$tempdir/$file" or diag "$file missing";
