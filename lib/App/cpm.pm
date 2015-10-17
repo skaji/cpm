@@ -11,7 +11,7 @@ use Cwd 'abs_path';
 use File::Path 'mkpath';
 use Config;
 
-our $VERSION = '0.110';
+our $VERSION = '0.111';
 
 sub new {
     my ($class, %option) = @_;
