@@ -158,8 +158,9 @@ sub cmd_install {
     # prevent local::lib 2.000017 error
     # Unable to create /home/skaji/local/lib/perl5: File exists at /home/skaji/env/plenv/versions/c5.8.5/lib/perl5/site_perl/5.8.5/local/lib.pm line 678.
     if (!$self->{global}) {
-        my $dir = "$self->{local_lib}/lib/perl5/$Config{archname}";
-        mkpath $dir unless -d $dir;
+        my $lib = "$self->{local_lib}/lib/perl5/$Config{archname}";
+        my $bin = "$self->{local_lib}/bin";
+        mkpath $_ for grep !-d, $lib, $bin;
     }
 
     $master->spawn_worker($cb) for 1 .. $self->{workers};
