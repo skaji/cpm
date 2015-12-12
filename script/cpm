@@ -37,6 +37,8 @@ cpm - a fast cpan module installer
         base url for the cpan mirror to use, default: http://www.cpan.org
       --color, --no-color
         turn on/off color output, default: on
+      --test, --no-test
+        run test cases, default: no
   -V, --version
         show version
   -h, --help
