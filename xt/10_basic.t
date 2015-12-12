@@ -9,6 +9,10 @@ subtest basic => sub {
     like $r->err, qr/^DONE install App-FatPacker/;
     like $r->err, qr/1 distribution installed/;
     ok -f $r->local . "/bin/fatpack";
+
+    $r = cpm_install "Distribution::Metadata";
+    like $r->err, qr/^DONE install Distribution-Metadata/m or diag $r->err;
+    ok -f $r->local . "/bin/which-meta";
 };
 
 subtest same => sub {

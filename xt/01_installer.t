@@ -37,18 +37,4 @@ is_deeply $requirements->[-1], {
     version => "5.008001",
 };
 
-my $ok = $installer->install($dir, $distdata);
-
-ok $ok;
-
-my @file = qw(
-    bin/which-meta
-    lib/perl5/Distribution/Metadata.pm
-);
-push @file, "lib/perl5/$Config{archname}/.meta/Distribution-Metadata-0.05/MYMETA.json";
-
-for my $file (@file) {
-    ok -f "$tempdir/$file" or diag "$file missing";
-}
-
 done_testing;
