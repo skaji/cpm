@@ -9,7 +9,7 @@ use version;
 
 sub new {
     my ($class, %option) = @_;
-    my $ua = HTTP::Tiny->new(timeout => 5);
+    my $ua = HTTP::Tiny->new(timeout => 15, keep_alive => 1);
     bless { %option, ua => $ua }, $class;
 }
 
