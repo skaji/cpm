@@ -149,8 +149,18 @@ sub cmd_install {
         $worker->run_loop;
     };
 
-    my @package = map +{package => $_, version => 0}, @argv;
-    if (!@package && -f $self->{cpanfile}) {
+    my $git;
+    my @package;
+    for my $arg (@argv) {
+        if ($arg =~ /(?:^git:|\.git(?:@.+)?$)/) {
+            my $dist = App::cpm::Distribution->new(distfile => $arg, provides => []);
+            $master->add_distribution($dist);
+            $git++;
+        } else {
+            push @package, {package => $arg, version => 0};
+        }
+    }
+    if (!$git && !@package && -f $self->{cpanfile}) {
         warn "Loading modules from $self->{cpanfile}...\n";
         @package = grep {
             !$master->is_core($_->{package}, $_->{version})

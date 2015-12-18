@@ -75,18 +75,27 @@ sub menlo { shift->{menlo} }
 
 sub fetch {
     my ($self, $distfile) = @_;
-    my $uri = $distfile =~ /^http/i ? $distfile : "$self->{mirror}/authors/id/$distfile";
-    my $dist = { uris => [ $uri ] };
-    my $guard = pushd $self->menlo->{base};
-    my ($old) = (basename $uri) =~ /^(.+)\.(?:tar\.gz|zip|tar\.bz2|tgz)$/;
-    rmtree $old if $old && -d $old;
-    my $dir = $self->menlo->fetch_module($dist)
-        or return;
+    my $guard = pushd;
+
+    my $dir;
+    if ($distfile =~ /(?:^git:|\.git(?:@.+)?$)/) {
+        my $result = $self->menlo->git_uri($distfile)
+            or return;
+        $dir = $result->{dir};
+    } else {
+        chdir $self->menlo->{base};
+        my $uri = $distfile =~ /^http/i ? $distfile : "$self->{mirror}/authors/id/$distfile";
+        my $dist = { uris => [ $uri ] };
+        my ($old) = (basename $uri) =~ /^(.+)\.(?:tar\.gz|zip|tar\.bz2|tgz)$/;
+        rmtree $old if $old && -d $old;
+        $dir = $self->menlo->fetch_module($dist)
+            or return;
+        $dir = File::Spec->catdir($self->menlo->{base}, $dir);
+    }
     chdir $dir or die;
     my ($meta, $configure_requirements, $provides)
         = $self->_get_configure_requirements($distfile);
-    my $abs_dir = File::Spec->catdir($self->menlo->{base}, $dir);
-    return ($abs_dir, $meta, $configure_requirements, $provides);
+    return ($dir, $meta, $configure_requirements, $provides);
 }
 
 sub _get_configure_requirements {
@@ -164,6 +173,8 @@ sub _build_distdata {
     my $module_name = $menlo->find_module_name($fake_state) || $meta->{name};
     $module_name =~ s/-/::/g;
 
+    # XXX: if $distfile is git url, CPAN::DistnameInfo->distvname returns undef.
+    # Then menlo->save_meta does nothing.
     my $distvname = CPAN::DistnameInfo->new($distfile)->distvname;
     my $provides = $meta->{provides} || $menlo->extract_packages($meta, ".");
     +{
