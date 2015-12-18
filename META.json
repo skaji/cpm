@@ -4,7 +4,7 @@
       "Shoichi Kaji <skaji@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 5.040, Dist::Milla version v1.0.15, CPAN::Meta::Converter version 2.150005",
+   "generated_by" : "Dist::Zilla version 5.042, Dist::Milla version v1.0.15, CPAN::Meta::Converter version 2.150005",
    "license" : [
       "perl_5"
    ],
@@ -75,6 +75,6 @@
          "web" : "https://github.com/shoichikaji/cpm"
       }
    },
-   "version" : "0.111"
+   "version" : "0.112"
 }
 

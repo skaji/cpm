@@ -2,14 +2,15 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
-0.111  2015-10-18 03:04:30 JST
+0.112  2015-12-19 01:15:44 JST
+        - Introduce --test option (ichesnokov #14)
 
+0.111  2015-10-18 03:04:30 JST
         - improve perl 5.8 support
         - fix "Unable to create local/lib/perl5: File exists" error,
           which was introduced by local::lib 2.000017 (or dev release 2.000016)
 
 0.110  2015-10-16 00:26:31 JST
-
         - Non trial release
 
 0.101  2015-08-27 23:02:39 JST
