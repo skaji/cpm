@@ -61,6 +61,7 @@ sub new {
         try_wget => 0,
         try_curl => 0,
         try_lwp  => 0,
+        notest   => $option{notest},
     );
     if (my $local_lib = delete $option{local_lib}) {
         $menlo->{self_contained} = 1;
@@ -147,9 +148,10 @@ sub configure {
     }
     my $distdata = $self->_build_distdata($distfile, $meta);
     my $requirements = [];
+    my $phase = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
     if (my ($file) = grep -f, qw(MYMETA.json MYMETA.yml)) {
         my $mymeta = CPAN::Meta->load_file($file);
-        $requirements = $self->_extract_requirements($mymeta, [qw(build runtime)]);
+        $requirements = $self->_extract_requirements($mymeta, $phase);
     }
     return ($distdata, $requirements);
 }
@@ -183,10 +185,12 @@ sub install {
     my $installed;
     if (-f 'Build') {
         $menlo->build([ $menlo->{perl}, "./Build" ], )
+        && $menlo->test([ $menlo->{perl}, "./Build", "test" ], )
         && $menlo->install([ $menlo->{perl}, "./Build", "install" ], [])
         && $installed++;
     } else {
         $menlo->build([ $menlo->{make} ], )
+        && $menlo->test([ $menlo->{make}, "test" ], )
         && $menlo->install([ $menlo->{make}, "install" ], [])
         && $installed++;
     }

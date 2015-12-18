@@ -37,4 +37,16 @@ subtest invalid_meta => sub {
     like $r->err, qr/^DONE install WWW-LinkedIn/;
 };
 
+subtest test => sub {
+    # File-pushd only in test requires
+    my $r = cpm_install "Distribution::Metadata";
+    unlike $r->err, qr/File-pushd/;
+
+    $r = cpm_install "--no-test", "Distribution::Metadata";
+    unlike $r->err, qr/File-pushd/;
+
+    $r = cpm_install "--test", "Distribution::Metadata";
+    like $r->err, qr/File-pushd/;
+};
+
 done_testing;

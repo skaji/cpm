@@ -29,6 +29,7 @@ sub new {
 sub parse_options {
     my $self = shift;
     local @ARGV = @_;
+    $self->{notest} = 1;
     GetOptions
         "L|local-lib-contained=s" => \($self->{local_lib}),
         "V|version" => sub { $self->cmd_version },
@@ -38,6 +39,7 @@ sub parse_options {
         "mirror=s" => \($self->{mirror}),
         "v|verbose" => \($self->{verbose}),
         "w|workers=i" => \($self->{workers}),
+        "test!" => sub { $self->{notest} = $_[1] ? 0 : 1 },
     or exit 1;
 
     $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
@@ -129,6 +131,7 @@ sub cmd_install {
             read_fh => $read_fh, write_fh => $write_fh,
             ($self->{global} ? () : (local_lib => $self->{local_lib})),
             menlo_base => $menlo_base, menlo_build_log => $menlo_build_log,
+            notest => $self->{notest},
         );
         $worker->run_loop;
     };
