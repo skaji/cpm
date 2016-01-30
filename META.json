@@ -31,7 +31,9 @@
       },
       "develop" : {
          "requires" : {
+            "Capture::Tiny" : "0",
             "Dist::Milla" : "v1.0.15",
+            "Path::Tiny" : "0",
             "Test::Pod" : "1.41"
          }
       },
@@ -53,12 +55,11 @@
             "Module::Metadata" : "0",
             "local::lib" : "2.000018",
             "perl" : "5.008005",
-            "version" : "0"
+            "version" : "0.77"
          }
       },
       "test" : {
          "requires" : {
-            "Capture::Tiny" : "0",
             "Test::More" : "0.96"
          }
       }

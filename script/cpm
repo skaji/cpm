@@ -17,11 +17,18 @@ cpm - a fast cpan module installer
   # install modules
   > cpm install Module1 Module2 ...
 
+  # install modules with verbose messages
+  > cpm install -v Module
+
   # from cpanfile (with cpanfile.snapshot if any)
   > cpm install
 
   # install module to global @INC istead of local/lib/perl5
   > cpm install -g Module
+
+  # install modules as if version of your perl is 5.8.5
+  # so that modules which are not core in 5.8.5 will be installed
+  > cpm install --target-perl 5.8.5
 
 =head1 OPTIONS
 
@@ -33,6 +40,8 @@ cpm - a fast cpan module installer
         install modules to global @INC instead of local-lib
   -v, --verbose
         verbose mode; you can see what is going on
+      --target-perl=VERSION  (EXPERIMENTAL)
+        install modules as if verison is your perl is VERSION
       --mirror=URL
         base url for the cpan mirror to use, default: http://www.cpan.org
       --color, --no-color

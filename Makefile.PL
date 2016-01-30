@@ -35,10 +35,9 @@ my %WriteMakefileArgs = (
     "Module::CoreList" => 0,
     "Module::Metadata" => 0,
     "local::lib" => "2.000018",
-    "version" => 0
+    "version" => "0.77"
   },
   "TEST_REQUIRES" => {
-    "Capture::Tiny" => 0,
     "Test::More" => "0.96"
   },
   "VERSION" => "0.112",
@@ -53,7 +52,6 @@ my %FallbackPrereqs = (
   "CPAN::Meta" => 0,
   "CPAN::Meta::Requirements" => 0,
   "CPAN::Meta::YAML" => 0,
-  "Capture::Tiny" => 0,
   "ExtUtils::Install" => "1.46",
   "ExtUtils::MakeMaker" => "6.58",
   "File::pushd" => 0,
@@ -66,7 +64,7 @@ my %FallbackPrereqs = (
   "Module::Metadata" => 0,
   "Test::More" => "0.96",
   "local::lib" => "2.000018",
-  "version" => 0
+  "version" => "0.77"
 );
 
 

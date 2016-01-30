@@ -8,6 +8,8 @@ perl:
   - '5.12'
   - '5.10'
   - '5.8'
+install:
+  - cpanm -nq --installdeps --with-develop .
 script:
   - prove -l t xt
 sudo: false

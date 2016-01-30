@@ -5,7 +5,11 @@ use utf8;
 use Capture::Tiny 'capture';
 use File::Temp 'tempdir';
 use Exporter 'import';
+use FindBin '$Bin';
+use Cwd 'abs_path';
 our @EXPORT = qw(cpm_install with_same_local);
+
+my $base = abs_path("$Bin/..");
 
 my $TEMPDIR = tempdir CLEANUP => 1;
 
@@ -34,7 +38,7 @@ sub cpm_install {
     my @argv = @_;
     my $local = $_LOCAL || tempdir DIR => $TEMPDIR;
     my ($out, $err, $exit) = capture {
-        system $^X, "-Ilib", "script/cpm", "install", "-L", $local, @argv;
+        system $^X, "-I$base/lib", "$base/script/cpm", "install", "-L", $local, @argv;
     };
     Result->new(local => $local, out => $out, err => $err, exit => $exit);
 }
