@@ -8,7 +8,6 @@ use App::cpm::Logger;
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use Pod::Usage ();
 use Cwd 'abs_path';
-use File::Path 'mkpath';
 use Config;
 
 our $VERSION = '0.112';
@@ -157,18 +156,6 @@ sub cmd_install {
         package => $_->{package},
         version => $_->{version} || 0
     ) for @package;
-
-    # prevent local::lib 2.000017+ error
-    # Unable to create /home/skaji/local/lib/perl5: File exists at /home/skaji/env/plenv/versions/c5.8.5/lib/perl5/site_perl/5.8.5/local/lib.pm line 678.
-    # See https://github.com/Perl-Toolchain-Gang/local-lib/commit/2f7bd47d1098d032de6d5f61354e310ad41b1097
-    if (!$self->{global}) {
-        my $v = $Config{version};
-        $v =~ s/^v//;
-        my $lib_v = "$self->{local_lib}/lib/perl5/$v/$Config{archname}";
-        my $lib   = "$self->{local_lib}/lib/perl5/$Config{archname}";
-        my $bin   = "$self->{local_lib}/bin";
-        mkpath $_ for grep !-d, $lib_v, $lib, $bin;
-    }
 
     $master->spawn_worker($cb) for 1 .. $self->{workers};
     MAIN_LOOP:
