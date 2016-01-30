@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.113  2016-01-30 21:13:33 JST
+        - Introduce --target-perl option (#16)
+        - Remove ugly workaround for local::lib
+
 0.112  2015-12-19 01:15:44 JST
         - Introduce --test option (ichesnokov #14)
 

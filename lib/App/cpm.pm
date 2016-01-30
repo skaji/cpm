@@ -11,7 +11,7 @@ use Cwd 'abs_path';
 use Config;
 use version;
 
-our $VERSION = '0.112';
+our $VERSION = '0.113';
 
 sub new {
     my ($class, %option) = @_;
