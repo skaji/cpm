@@ -9,6 +9,7 @@ use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use Pod::Usage ();
 use Cwd 'abs_path';
 use Config;
+use version;
 
 our $VERSION = '0.112';
 
@@ -21,6 +22,7 @@ sub new {
         local_lib => "local",
         cpanmetadb => "http://cpanmetadb.plackperl.org/v1.0/package",
         mirror => "http://www.cpan.org",
+        target_perl => $],
         %option
     }, $class;
 }
@@ -38,12 +40,18 @@ sub parse_options {
         "mirror=s" => \($self->{mirror}),
         "v|verbose" => \($self->{verbose}),
         "w|workers=i" => \($self->{workers}),
+        "target-perl=s" => \my $target_perl,
         "test!" => sub { $self->{notest} = $_[1] ? 0 : 1 },
     or exit 1;
 
     $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
     $self->{mirror} =~ s{/$}{};
     $self->{color} = 1 if !defined $self->{color} && -t STDOUT;
+    if ($target_perl) {
+        # 5.8 is interpreted as 5.800, fix it
+        $target_perl = "v$target_perl" if $target_perl =~ /^5\.[1-9]\d+$/;
+        $self->{target_perl} = version->parse($target_perl)->numify;
+    }
 
     $App::cpm::Logger::COLOR = 1 if $self->{color};
     $App::cpm::Logger::VERBOSE = 1 if $self->{verbose};
@@ -118,6 +126,7 @@ sub cmd_install {
     my $master = App::cpm::Master->new(
         core_inc => [$self->_core_inc],
         user_inc => [$self->_user_inc],
+        target_perl => $self->{target_perl},
     );
     my $menlo_base = "$ENV{HOME}/.perl-cpm/work";
     my $menlo_build_log = "$ENV{HOME}/.perl-cpm/build.@{[time]}.log";

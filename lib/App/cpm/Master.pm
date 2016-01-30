@@ -280,9 +280,21 @@ sub is_installed {
 sub is_core {
     my ($self, $package, $version) = @_;
     return 1 if $package eq "perl"; # XXX
-    if (exists $Module::CoreList::version{$]}{$package}) {
+    my $target_perl = $self->{target_perl};
+    if (exists $Module::CoreList::version{$target_perl}{$package}) {
+        if (!exists $Module::CoreList::version{$]}{$package}) {
+            if (!$self->{_removed_core}{$package}++) {
+                my $t = version->parse($target_perl)->normal;
+                my $v = version->parse($])->normal;
+                App::cpm::Logger->log(
+                    result => "WARN",
+                    message => "$package used to be core in $t, but not in $v, so will be installed",
+                );
+            }
+            return;
+        }
         return 1 unless $version;
-        my $core_version = $Module::CoreList::version{$]}{$package};
+        my $core_version = $Module::CoreList::version{$target_perl}{$package};
         return unless $core_version;
         return version->parse($version) <= version->parse($core_version);
     }

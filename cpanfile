@@ -11,7 +11,7 @@ requires 'Module::CPANfile';
 requires 'Module::CoreList';
 requires 'Module::Metadata';
 requires 'local::lib', '2.000018';
-requires 'version';
+requires 'version', '0.77';
 
 requires 'Menlo::CLI::Compat';
 
@@ -22,5 +22,9 @@ requires 'ExtUtils::Install', '1.46';   # shipt after perl v5.10.1
 
 on test => sub {
     requires 'Test::More', '0.96';
+};
+
+on develop => sub {
     requires 'Capture::Tiny';
+    requires 'Path::Tiny';
 };
