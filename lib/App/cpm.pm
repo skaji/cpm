@@ -51,6 +51,9 @@ sub parse_options {
         # 5.8 is interpreted as 5.800, fix it
         $target_perl = "v$target_perl" if $target_perl =~ /^5\.[1-9]\d+$/;
         $self->{target_perl} = version->parse($target_perl)->numify;
+        if ($self->{target_perl} > $]) {
+            die "--target-perl must be lower than your perl version $]\n";
+        }
     }
 
     $App::cpm::Logger::COLOR = 1 if $self->{color};
