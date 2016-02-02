@@ -76,6 +76,7 @@
          "web" : "https://github.com/shoichikaji/cpm"
       }
    },
-   "version" : "0.113"
+   "version" : "0.113",
+   "x_static_install" : "1"
 }
 

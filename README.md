@@ -1,53 +1,53 @@
-[![Build Status](https://travis-ci.org/shoichikaji/cpm.svg?branch=master)](https://travis-ci.org/shoichikaji/cpm)
+# cpm [![Build Status](https://travis-ci.org/shoichikaji/cpm.svg?branch=master)](https://travis-ci.org/shoichikaji/cpm)
 
-# NAME
+a fast cpan module installer
 
-App::cpm - a fast cpan module installer
+![demo](xt/demo.gif)
 
-# SYNOPSIS
+## Install
 
-    > cpm install Module
+Make sure you have [cpanm](https://github.com/miyagawa/cpanminus).
+If not, install it first:
 
-# DESCRIPTION
+```sh
+$ curl -sL http://cpanmin.us | perl - -nq App::cpanminus
+```
 
-**THIS IS EXPERIMETNAL.**
+Then:
 
-cpm is a fast cpan module installer, which uses [Menlo::CLI::Compat](https://metacpan.org/pod/Menlo::CLI::Compat) in parallel.
+```sh
+$ cpanm -nq App::cpm
+```
 
-# MOTIVATION
+## Description
 
-Why do we need a new cpan client?
+cpm is a fast cpan module installer, which uses
+[Menlo](https://metacpan.org/pod/Menlo) (cpanm 2.0) in parallel.
 
-I used [cpanm](https://metacpan.org/pod/cpanm) a lot, and it's totally awesome.
+If you're tired of installing a lot of cpan modules, why don't you try cpm?
 
-But if your Perl project has hundreds of cpan module dependencies,
-then it takes quite a lot of time to install them.
+## Roadmap
 
-So my motivation is simple: I want to install cpan modules as fast as possible.
+If you all find cpm useful,
+then cpm should be merged into cpanm 2.0. How exciting!
 
-# HOW FAST?
+To merge cpm into cpanm, there are several TODOs:
 
-Just an example:
+* Win32? - support platforms that do not have fork(2) system call
+* Logging? - the parallel feature makes log really messy
 
-    > time cpanm -nq -Lextlib Plack
-    real 0m47.705s
+Your feedback is highly appreciated.
 
-    > time cpm install Plack
-    real 0m16.629s
+## License
 
-This shows cpm is 3x faster than cpanm.
-
-# COPYRIGHT AND LICENSE
-
-Copyright 2015 Shoichi Kaji &lt;skaji@cpan.org>
+Copyright 2015 Shoichi Kaji <skaji@cpan.org>
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
-# SEE ALSO
+## See Also
 
-[App::cpanminus](https://metacpan.org/pod/App::cpanminus)
-
-[Menlo](https://metacpan.org/pod/Menlo)
-
-[Carton](https://metacpan.org/pod/Carton)
+* [Perl Advent Calendar 2015](http://www.perladvent.org/2015/2015-12-02.html)
+* [App::cpanminus](https://metacpan.org/pod/App::cpanminus)
+* [Menlo](https://metacpan.org/pod/Menlo)
+* [Carton](https://metacpan.org/pod/Carton)
