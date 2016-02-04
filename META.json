@@ -67,13 +67,13 @@
    "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
-         "web" : "https://github.com/shoichikaji/cpm/issues"
+         "web" : "https://github.com/skaji/cpm/issues"
       },
-      "homepage" : "https://github.com/shoichikaji/cpm",
+      "homepage" : "https://github.com/skaji/cpm",
       "repository" : {
          "type" : "git",
-         "url" : "https://github.com/shoichikaji/cpm.git",
-         "web" : "https://github.com/shoichikaji/cpm"
+         "url" : "https://github.com/skaji/cpm.git",
+         "web" : "https://github.com/skaji/cpm"
       }
    },
    "version" : "0.113",

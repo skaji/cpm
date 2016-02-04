@@ -1,4 +1,4 @@
-# cpm [![Build Status](https://travis-ci.org/shoichikaji/cpm.svg?branch=master)](https://travis-ci.org/shoichikaji/cpm)
+# cpm [![Build Status](https://travis-ci.org/skaji/cpm.svg?branch=master)](https://travis-ci.org/skaji/cpm)
 
 a fast cpan module installer
 
