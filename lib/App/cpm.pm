@@ -42,6 +42,8 @@ sub parse_options {
         "w|workers=i" => \($self->{workers}),
         "target-perl=s" => \my $target_perl,
         "test!" => sub { $self->{notest} = $_[1] ? 0 : 1 },
+        "cpanfile=s" => \($self->{cpanfile}),
+        "snapshot=s" => \($self->{snapshot}),
     or exit 1;
 
     $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
