@@ -48,8 +48,7 @@ sub info {
     my ($self, $job, $elapsed) = @_;
     my $type = $job->{type};
     return if !$App::cpm::Logger::VERBOSE && $type ne "install";
-    my $distvname = $job->{distfile}
-        ? CPAN::DistnameInfo->new($job->{distfile})->distvname : "";
+    my $distvname = CPAN::DistnameInfo->new($job->{distfile})->distvname || $job->{distfile};
     my $message;
     if ($type eq "resolve") {
         $message = $job->{package} . ($job->{ok} ? " -> $distvname" : "");
