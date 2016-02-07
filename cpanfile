@@ -21,10 +21,6 @@ requires 'Module::Build', '0.38';       # shipt with  perl v5.13.11
 requires 'ExtUtils::MakeMaker', '6.58'; # shipt with  perl v5.15.1
 requires 'ExtUtils::Install', '1.46';   # shipt after perl v5.10.1
 
-on test => sub {
-    requires 'Test::More', '0.96';
-};
-
 on develop => sub {
     requires 'Capture::Tiny';
     requires 'Path::Tiny';

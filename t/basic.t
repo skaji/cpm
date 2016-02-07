@@ -1,8 +1,4 @@
 use strict;
-use Test::More;
+use Test::More tests => 1;
 use App::cpm;
-
-# replace with the actual test
-ok 1;
-
-done_testing;
+pass "happy hacking!";

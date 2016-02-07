@@ -38,9 +38,6 @@ my %WriteMakefileArgs = (
     "parent" => 0,
     "version" => "0.77"
   },
-  "TEST_REQUIRES" => {
-    "Test::More" => "0.96"
-  },
   "VERSION" => "0.113",
   "test" => {
     "TESTS" => "t/*.t"
@@ -63,7 +60,6 @@ my %FallbackPrereqs = (
   "Module::CPANfile" => 0,
   "Module::CoreList" => 0,
   "Module::Metadata" => 0,
-  "Test::More" => "0.96",
   "local::lib" => "2.000018",
   "parent" => 0,
   "version" => "0.77"

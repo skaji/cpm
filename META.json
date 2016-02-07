@@ -58,11 +58,6 @@
             "perl" : "5.008005",
             "version" : "0.77"
          }
-      },
-      "test" : {
-         "requires" : {
-            "Test::More" : "0.96"
-         }
       }
    },
    "release_status" : "stable",
