@@ -1,7 +1,8 @@
 package App::cpm::Distribution;
 use strict;
 use warnings;
-use version;
+use App::cpm::version;
+use App::cpm::Logger;
 
 sub new {
     my ($class, %option) = @_;
@@ -70,12 +71,13 @@ sub providing {
     my ($self, $package, $version) = @_;
     for my $provide (@{$self->provides}) {
         if ($provide->{package} eq $package) {
-            return 1 unless $version;
-            if (version->parse($version) <= version->parse($provide->{version})) {
+            if (App::cpm::version->parse($provide->{version})->satisfy($version)) {
                 return 1;
             } else {
-                warn sprintf "-> %s provides %s (%s), but needs %s\n",
+                my $message = sprintf "%s provides %s (%s), but needs %s\n",
                     $self->distfile, $package, $provide->{version}, $version;
+                App::cpm::Logger->log(result => "WARN", message => $message);
+                last;
             }
         }
     }

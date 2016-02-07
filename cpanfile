@@ -11,6 +11,7 @@ requires 'Module::CPANfile';
 requires 'Module::CoreList';
 requires 'Module::Metadata';
 requires 'local::lib', '2.000018';
+requires 'parent';
 requires 'version', '0.77';
 
 requires 'Menlo::CLI::Compat';

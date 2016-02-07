@@ -54,6 +54,7 @@
             "Module::CoreList" : "0",
             "Module::Metadata" : "0",
             "local::lib" : "2.000018",
+            "parent" : "0",
             "perl" : "5.008005",
             "version" : "0.77"
          }

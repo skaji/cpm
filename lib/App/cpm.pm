@@ -5,11 +5,11 @@ use warnings;
 use App::cpm::Master;
 use App::cpm::Worker;
 use App::cpm::Logger;
+use App::cpm::version;
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use Pod::Usage ();
 use Cwd 'abs_path';
 use Config;
-use version;
 
 our $VERSION = '0.113';
 
@@ -42,6 +42,8 @@ sub parse_options {
         "w|workers=i" => \($self->{workers}),
         "target-perl=s" => \my $target_perl,
         "test!" => sub { $self->{notest} = $_[1] ? 0 : 1 },
+        "cpanfile=s" => \($self->{cpanfile}),
+        "snapshot=s" => \($self->{snapshot}),
     or exit 1;
 
     $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
@@ -50,7 +52,7 @@ sub parse_options {
     if ($target_perl) {
         # 5.8 is interpreted as 5.800, fix it
         $target_perl = "v$target_perl" if $target_perl =~ /^5\.[1-9]\d+$/;
-        $self->{target_perl} = version->parse($target_perl)->numify;
+        $self->{target_perl} = App::cpm::version->parse($target_perl)->numify;
         if ($self->{target_perl} > $]) {
             die "--target-perl must be lower than your perl version $]\n";
         }

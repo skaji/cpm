@@ -5,7 +5,8 @@ use utf8;
 
 use HTTP::Tiny;
 use CPAN::Meta::YAML;
-use version;
+use App::cpm::version;
+use App::cpm::Logger;
 
 sub new {
     my ($class, %option) = @_;
@@ -21,8 +22,11 @@ sub work {
         my $meta = $yaml->[0];
         my $version = $meta->{version} eq "undef" ? 0 : $meta->{version};
         if (my $req_version = $job->{version}) {
-            unless (version->parse($req_version) <= version->parse($version)) {
-                warn "-> Couldn't find $job->{package} $req_version (only found $version)\n";
+            unless (App::cpm::version->parse($version)->satisfy($req_version)) {
+                App::cpm::Logger->log(
+                    result => "WARN",
+                    message => "Couldn't find $job->{package} $req_version (only found $version)",
+                );
                 return { ok => 0 };
             }
         }

@@ -49,4 +49,10 @@ subtest test => sub {
     like $r->err, qr/File-pushd/;
 };
 
+subtest range => sub {
+    my $r = cpm_install "FormValidator::Lite"; # FormValidator::Lite has version range prereq
+    is $r->exit, 0;
+    like $r->err, qr/DONE install FormValidator-Lite/;
+};
+
 done_testing;

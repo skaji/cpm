@@ -35,6 +35,7 @@ my %WriteMakefileArgs = (
     "Module::CoreList" => 0,
     "Module::Metadata" => 0,
     "local::lib" => "2.000018",
+    "parent" => 0,
     "version" => "0.77"
   },
   "TEST_REQUIRES" => {
@@ -64,6 +65,7 @@ my %FallbackPrereqs = (
   "Module::Metadata" => 0,
   "Test::More" => "0.96",
   "local::lib" => "2.000018",
+  "parent" => 0,
   "version" => "0.77"
 );
 
