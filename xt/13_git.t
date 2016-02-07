@@ -15,4 +15,13 @@ subtest git2 => sub {
     note $r->err;
 };
 
+subtest fail => sub {
+    my $r = cpm_install "-v", "git://github.com/skaji/xxxxx.git";
+    isnt $r->exit, 0;
+    note $r->err;
+    $r = cpm_install "-v", 'git://github.com/skaji/change-shebang.git@xxxxxx';
+    isnt $r->exit, 0;
+    note $r->err;
+};
+
 done_testing;
