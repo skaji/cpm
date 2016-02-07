@@ -2,6 +2,12 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.114  2016-02-07 18:09:23 JST
+        - Take care of version range notation (#18)
+        - Add --cpanfile, --snapshot option (#18)
+        - Add experimental support for git url (#19)
+        - Improve document
+
 0.113  2016-01-30 21:13:33 JST
         - Introduce --target-perl option (#16)
         - Remove ugly workaround for local::lib
