@@ -260,9 +260,12 @@ App::cpm - a fast cpan module installer
 
 =head1 DESCRIPTION
 
+=for html
+<a href="https://raw.githubusercontent.com/skaji/cpm/master/xt/demo.gif"><img src="https://raw.githubusercontent.com/skaji/cpm/master/xt/demo.gif" alt="demo" style="max-width:100%;"></a>
+
 B<THIS IS EXPERIMETNAL.>
 
-cpm is a fast cpan module installer, which uses L<Menlo::CLI::Compat> in parallel.
+cpm is a fast cpan module installer, which uses L<Menlo> in parallel.
 
 =head1 MOTIVATION
 
@@ -275,7 +278,7 @@ then it takes quite a lot of time to install them.
 
 So my motivation is simple: I want to install cpan modules as fast as possible.
 
-=head1 HOW FAST?
+=head2 HOW FAST?
 
 Just an example:
 
@@ -287,6 +290,23 @@ Just an example:
 
 This shows cpm is 3x faster than cpanm.
 
+=head1 ROADMAP
+
+If you all find cpm useful,
+then cpm should be merged into cpanm 2.0. How exciting!
+
+To merge cpm into cpanm, there are several TODOs:
+
+=over 4
+
+=item * Win32? - support platforms that do not have fork(2) system call
+
+=item * Logging? - the parallel feature makes log really messy
+
+=back
+
+Your feedback is highly appreciated.
+
 =head1 COPYRIGHT AND LICENSE
 
 Copyright 2015 Shoichi Kaji E<lt>skaji@cpan.orgE<gt>
@@ -295,6 +315,9 @@ This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =head1 SEE ALSO
+
+
+L<Perl Advent Calendar 2015|http://www.perladvent.org/2015/2015-12-02.html>
 
 L<App::cpanminus>
 
