@@ -217,7 +217,7 @@ sub _calculate_jobs {
     if (my @dists = grep { $_->fetched } @distributions) {
         for my $dist (@dists) {
             my ($is_satisfied, @need_resolve)
-                = $self->_is_satisfied($dist->configure_requirements);
+                = $self->is_satisfied($dist->configure_requirements);
             if ($is_satisfied) {
                 $self->add_job(
                     type => "configure",
@@ -228,6 +228,11 @@ sub _calculate_jobs {
             } elsif (@need_resolve) {
                 my $ok = $self->_register_resolve_job(@need_resolve);
                 $self->{_fail_install}{$dist->distfile}++ unless $ok;
+            } elsif (!defined $is_satisfied) {
+                my ($req) = grep { $_->{package} eq "perl" } @{$dist->requirements};
+                my $msg = sprintf "%s requires perl %s", $dist->distvname, $req->{version};
+                App::cpm::Logger->log(result => "FAIL", message => $msg);
+                $self->{_fail_install}{$dist->distfile}++;
             }
         }
     }
@@ -235,7 +240,7 @@ sub _calculate_jobs {
     if (my @dists = grep { $_->configured } @distributions) {
         for my $dist (@dists) {
             my ($is_satisfied, @need_resolve)
-                = $self->_is_satisfied($dist->requirements);
+                = $self->is_satisfied($dist->requirements);
             if ($is_satisfied) {
                 $self->add_job(
                     type => "install",
@@ -247,6 +252,11 @@ sub _calculate_jobs {
             } elsif (@need_resolve) {
                 my $ok = $self->_register_resolve_job(@need_resolve);
                 $self->{_fail_install}{$dist->distfile}++ unless $ok;
+            } elsif (!defined $is_satisfied) {
+                my ($req) = grep { $_->{package} eq "perl" } @{$dist->requirements};
+                my $msg = sprintf "%s requires perl %s", $dist->distvname, $req->{version};
+                App::cpm::Logger->log(result => "FAIL", message => $msg);
+                $self->{_fail_install}{$dist->distfile}++;
             }
         }
     }
@@ -269,6 +279,11 @@ sub _register_resolve_job {
     return $ok;
 }
 
+sub is_satisfied_perl_version {
+    my ($self, $version) = @_;
+    App::cpm::version->parse($self->{target_perl})->satisfy($version);
+}
+
 sub is_installed {
     my ($self, $package, $version) = @_;
     my $info = Module::Metadata->new_from_module($package, inc => $self->{user_inc});
@@ -278,7 +293,6 @@ sub is_installed {
 
 sub is_core {
     my ($self, $package, $version) = @_;
-    return 1 if $package eq "perl"; # XXX
     my $target_perl = $self->{target_perl};
     if (exists $Module::CoreList::version{$target_perl}{$package}) {
         if (!exists $Module::CoreList::version{$]}{$package}) {
@@ -299,19 +313,26 @@ sub is_core {
     return;
 }
 
-sub _is_satisfied {
+# 0:     not satisfied, need wait for satisfying requirements
+# 1:     satisfied, ready to install
+# undef: not satisfied because of perl version
+sub is_satisfied {
     my ($self, $requirements) = @_;
     my $is_satisfied = 1;
     my @need_resolve;
     my @distributions = $self->distributions;
     for my $req (@$requirements) {
         my ($package, $version) = @{$req}{qw(package version)};
+        if ($package eq "perl") {
+            $is_satisfied = undef if !$self->is_satisfied_perl_version($version);
+            next;
+        }
         next if $self->is_core($package, $version);
         next if $self->is_installed($package, $version);
         my ($resolved) = grep { $_->providing($package, $version) } @distributions;
         next if $resolved && $resolved->installed;
 
-        $is_satisfied = 0;
+        $is_satisfied = 0 if defined $is_satisfied;
         if (!$resolved) {
             push @need_resolve, { package => $package, version => $version };
         }

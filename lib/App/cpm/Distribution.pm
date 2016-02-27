@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use App::cpm::version;
 use App::cpm::Logger;
+use CPAN::DistnameInfo;
 
 sub new {
     my ($class, %option) = @_;
@@ -23,6 +24,13 @@ for my $attr (qw(
         my $self = shift;
         $self->{$attr} = shift if @_;
         $self->{$attr};
+    };
+}
+
+sub distvname {
+    my $self = shift;
+    $self->{distvname} ||= do {
+        CPAN::DistnameInfo->new($self->distfile)->distvname || $self->distfile;
     };
 }
 

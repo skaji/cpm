@@ -160,18 +160,24 @@ sub cmd_install {
             push @package, {package => $arg, version => 0};
         }
     }
-    if (!$git && !@package && -f $self->{cpanfile}) {
-        warn "Loading modules from $self->{cpanfile}...\n";
-        @package = grep {
-            !$master->is_core($_->{package}, $_->{version})
-            && !$master->is_installed($_->{package}, $_->{version})
-        } $self->load_cpanfile($self->{cpanfile});
-        do { warn "All requirements are satisfied.\n"; exit } unless @package;
-
+    if (!$git && !@package) {
         if (-f $self->{snapshot}) {
             warn "Loading distributions from $self->{snapshot}...\n";
             $master->add_distribution($_) for $self->load_snapshot($self->{snapshot});
-            @package = ();
+        } elsif (-f $self->{cpanfile}) {
+            warn "Loading modules from $self->{cpanfile}...\n";
+            my $requirements = $self->load_cpanfile($self->{cpanfile});
+            my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirements);
+            if ($is_satisfied) {
+                warn "All requirements are satisfied.\n"; exit;
+            } elsif (!defined $is_satisfied) {
+                my ($req) = grep { $_->{package} eq "perl" } @$requirements;
+                die sprintf "%s requires perl %s\n", $self->{cpanfile}, $req->{version};
+            } else {
+                @package = @need_resolve;
+            }
+        } else {
+            die "Cannot find argument nor cpanfile\n";
         }
     }
 
@@ -213,11 +219,10 @@ sub load_cpanfile {
     my $cpanfile = Module::CPANfile->load($file);
     my @package;
     for my $package ($cpanfile->merged_requirements->required_modules) {
-        next if $package eq "perl";
         my $version =$cpanfile->prereq_for_module($package)->requirement->version;
         push @package, { package => $package, version => $version };
     }
-    @package;
+    \@package;
 }
 
 sub load_snapshot {
