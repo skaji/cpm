@@ -5,11 +5,12 @@ use utf8;
 use Capture::Tiny 'capture';
 use File::Temp 'tempdir';
 use Exporter 'import';
-use FindBin '$Bin';
+use File::Basename ();
+use File::Spec;
 use Cwd 'abs_path';
 our @EXPORT = qw(cpm_install with_same_local);
 
-my $base = abs_path("$Bin/..");
+my $base = abs_path( File::Spec->catdir(File::Basename::dirname(__FILE__), "..") );
 
 my $TEMPDIR = tempdir CLEANUP => 1;
 
