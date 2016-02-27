@@ -11,7 +11,7 @@ use Pod::Usage ();
 use Cwd 'abs_path';
 use Config;
 
-our $VERSION = '0.114';
+our $VERSION = '0.115';
 
 sub new {
     my ($class, %option) = @_;
