@@ -1,6 +1,6 @@
 # cpm [![Build Status](https://travis-ci.org/skaji/cpm.svg?branch=master)](https://travis-ci.org/skaji/cpm)
 
-a fast cpan module installer
+a fast CPAN module installer
 
 ![demo](xt/demo.gif)
 
@@ -21,10 +21,10 @@ $ cpanm -nq App::cpm
 
 ## Description
 
-cpm is a fast cpan module installer, which uses
+cpm is a fast CPAN module installer, which uses
 [Menlo](https://metacpan.org/pod/Menlo) (cpanm 2.0) in parallel.
 
-If you're tired of installing a lot of cpan modules, why don't you try cpm?
+If you're tired of installing a lot of CPAN modules, why don't you try cpm?
 
 ## Roadmap
 
