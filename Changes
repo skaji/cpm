@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.116  2016-05-14 08:48:24 JST
+        - Fixes typo and s/cpan/CPAN/ (oalders #21)
+
 0.115  2016-02-27 23:52:08 JST
         - Handle "perl" requirements correctly (#20)
 
