@@ -1,10 +1,10 @@
 {
-   "abstract" : "a fast cpan module installer",
+   "abstract" : "a fast CPAN module installer",
    "author" : [
       "Shoichi Kaji <skaji@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 5.043, Dist::Milla version v1.0.15, CPAN::Meta::Converter version 2.150005",
+   "generated_by" : "Dist::Zilla version 6.003, Dist::Milla version v1.0.16, CPAN::Meta::Converter version 2.150005",
    "license" : [
       "perl_5"
    ],
@@ -32,7 +32,7 @@
       "develop" : {
          "requires" : {
             "Capture::Tiny" : "0",
-            "Dist::Milla" : "v1.0.15",
+            "Dist::Milla" : "v1.0.16",
             "Path::Tiny" : "0",
             "Test::Pod" : "1.41"
          }
@@ -73,6 +73,9 @@
       }
    },
    "version" : "0.115",
+   "x_contributors" : [
+      "Olaf Alders <olaf@wundersolutions.com>"
+   ],
    "x_static_install" : "1"
 }
 
