@@ -257,7 +257,7 @@ __END__
 
 =head1 NAME
 
-App::cpm - a fast cpan module installer
+App::cpm - a fast CPAN module installer
 
 =head1 SYNOPSIS
 
@@ -268,20 +268,20 @@ App::cpm - a fast cpan module installer
 =for html
 <a href="https://raw.githubusercontent.com/skaji/cpm/master/xt/demo.gif"><img src="https://raw.githubusercontent.com/skaji/cpm/master/xt/demo.gif" alt="demo" style="max-width:100%;"></a>
 
-B<THIS IS EXPERIMETNAL.>
+B<THIS IS EXPERIMENTAL.>
 
-cpm is a fast cpan module installer, which uses L<Menlo> in parallel.
+cpm is a fast CPAN module installer, which uses L<Menlo> in parallel.
 
 =head1 MOTIVATION
 
-Why do we need a new cpan client?
+Why do we need a new CPAN client?
 
 I used L<cpanm> a lot, and it's totally awesome.
 
-But if your Perl project has hundreds of cpan module dependencies,
+But if your Perl project has hundreds of CPAN module dependencies,
 then it takes quite a lot of time to install them.
 
-So my motivation is simple: I want to install cpan modules as fast as possible.
+So my motivation is simple: I want to install CPAN modules as fast as possible.
 
 =head2 HOW FAST?
 
