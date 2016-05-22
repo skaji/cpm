@@ -169,7 +169,8 @@ sub cmd_install {
             my $requirements = $self->load_cpanfile($self->{cpanfile});
             my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirements);
             if ($is_satisfied) {
-                warn "All requirements are satisfied.\n"; exit;
+                warn "All requirements are satisfied.\n";
+                return 0; # exit 0
             } elsif (!defined $is_satisfied) {
                 my ($req) = grep { $_->{package} eq "perl" } @$requirements;
                 die sprintf "%s requires perl %s\n", $self->{cpanfile}, $req->{version};

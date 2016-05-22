@@ -6,6 +6,10 @@ a fast CPAN module installer
 
 ## Install
 
+There are 2 ways.
+
+### 1) install it from CPAN
+
 Make sure you have [cpanm](https://github.com/miyagawa/cpanminus).
 If not, install it first:
 
@@ -17,6 +21,16 @@ Then:
 
 ```sh
 $ cpanm -nq App::cpm
+```
+
+### 2) install a self-contained version
+
+If you have perl 5.16+, then you can use a _self-contained_ cpm:
+
+```sh
+$ curl -sL https://raw.githubusercontent.com/skaji/cpm/master/cpm > cpm
+$ chmod +x cpm
+$ ./cpm --version
 ```
 
 ## Description
