@@ -51,7 +51,7 @@ sub parse_options {
     $self->{color} = 1 if !defined $self->{color} && -t STDOUT;
     if ($target_perl) {
         # 5.8 is interpreted as 5.800, fix it
-        $target_perl = "v$target_perl" if $target_perl =~ /^5\.[1-9]\d+$/;
+        $target_perl = "v$target_perl" if $target_perl =~ /^5\.[1-9]\d*$/;
         $self->{target_perl} = App::cpm::version->parse($target_perl)->numify;
         if ($self->{target_perl} > $]) {
             die "--target-perl must be lower than your perl version $]\n";
