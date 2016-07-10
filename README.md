@@ -28,7 +28,7 @@ $ cpanm -nq App::cpm
 If you have perl 5.16+, then you can use a _self-contained_ cpm:
 
 ```sh
-$ curl -sL https://raw.githubusercontent.com/skaji/cpm/master/cpm > cpm
+$ curl -sL https://git.io/cpm > cpm
 $ chmod +x cpm
 $ ./cpm --version
 ```
