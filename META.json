@@ -4,7 +4,7 @@
       "Shoichi Kaji <skaji@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 6.003, Dist::Milla version v1.0.16, CPAN::Meta::Converter version 2.150005",
+   "generated_by" : "Dist::Milla version v1.0.16, Dist::Zilla version 6.006, CPAN::Meta::Converter version 2.150005",
    "license" : [
       "perl_5"
    ],
@@ -76,6 +76,7 @@
    "x_contributors" : [
       "Olaf Alders <olaf@wundersolutions.com>"
    ],
+   "x_serialization_backend" : "Cpanel::JSON::XS version 3.0217",
    "x_static_install" : "1"
 }
 

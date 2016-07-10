@@ -5,7 +5,7 @@ use App::FatPacker::Simple;
 use App::cpm;
 chdir "$FindBin::Bin/..";
 
-my @exclude = qw(
+my $exclude = join ",", qw(
   CPAN::Meta
   CPAN::Meta::Requirements
   ExtUtils::Config
@@ -26,4 +26,4 @@ sub cpm     { App::cpm->new->run(@_) }
 sub fatpack { App::FatPacker::Simple->new->parse_options(@_)->run }
 
 cpm "install", "--target-perl", "5.16.0";
-fatpack "-o", "cpm", "-e", (join ",", @exclude), "--shebang", $shebang, "script/cpm",
+fatpack "-o", "cpm", "-e", $exclude, "--shebang", $shebang, "script/cpm",
