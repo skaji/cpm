@@ -7,7 +7,9 @@ use CPAN::DistnameInfo;
 use CPAN::Meta;
 use File::Basename 'basename';
 use File::Path qw(mkpath rmtree);
+use File::Spec;
 use File::pushd 'pushd';
+use File::Copy::Recursive ();
 use JSON::PP qw(encode_json decode_json);
 use Menlo::CLI::Compat;
 
@@ -78,7 +80,14 @@ sub fetch {
     my $guard = pushd;
 
     my $dir;
-    if ($distfile =~ /(?:^git:|\.git(?:@.+)?$)/) {
+    if (-d $distfile) {
+        my $dest = File::Spec->catdir(
+            $self->menlo->{base}, basename($distfile) . "." . time
+        );
+        rmtree $dest if $dest;
+        File::Copy::Recursive::dircopy($distfile, $dest);
+        $dir = $dest;
+    } elsif ($distfile =~ /(?:^git:|\.git(?:@.+)?$)/) {
         my $result = $self->menlo->git_uri($distfile)
             or return;
         $dir = $result->{dir};

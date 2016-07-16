@@ -149,18 +149,18 @@ sub cmd_install {
         $worker->run_loop;
     };
 
-    my $git;
     my @package;
     for my $arg (@argv) {
-        if ($arg =~ /(?:^git:|\.git(?:@.+)?$)/) {
+        if (-d $arg or $arg =~ /(?:^git:|\.git(?:@.+)?$)/) {
+            $arg = abs_path $arg if -d $arg;
             my $dist = App::cpm::Distribution->new(distfile => $arg, provides => []);
             $master->add_distribution($dist);
-            $git++;
         } else {
             push @package, {package => $arg, version => 0};
         }
     }
-    if (!$git && !@package) {
+
+    if (!@argv) {
         if (-f $self->{snapshot}) {
             warn "Loading distributions from $self->{snapshot}...\n";
             $master->add_distribution($_) for $self->load_snapshot($self->{snapshot});
