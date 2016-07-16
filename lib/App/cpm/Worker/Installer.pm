@@ -84,7 +84,7 @@ sub fetch {
         my $dest = File::Spec->catdir(
             $self->menlo->{base}, basename($distfile) . "." . time
         );
-        rmtree $dest if $dest;
+        rmtree $dest if -d $dest;
         File::Copy::Recursive::dircopy($distfile, $dest);
         $dir = $dest;
     } elsif ($distfile =~ /(?:^git:|\.git(?:@.+)?$)/) {
