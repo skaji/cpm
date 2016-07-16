@@ -54,6 +54,7 @@
             "Module::CPANfile" : "0",
             "Module::CoreList" : "0",
             "Module::Metadata" : "0",
+            "Pod::Usage" : "1.33",
             "local::lib" : "2.000018",
             "parent" : "0",
             "perl" : "5.008005",

@@ -11,6 +11,7 @@ requires 'JSON::PP', '2.27300'; # for perl 5.8.6 or below
 requires 'Module::CPANfile';
 requires 'Module::CoreList';
 requires 'Module::Metadata';
+requires 'Pod::Usage', '1.33'; # for perl 5.8.6 or below
 requires 'local::lib', '2.000018';
 requires 'parent';
 requires 'version', '0.77';
