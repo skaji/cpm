@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.118  2016-08-03 10:46:56 JST
+        - cpm becomes even faster; save distfiles and use them (#23)
+
 0.117  2016-07-16 22:17:46 JST
         - Allow directories for install targets, eg `cpm install .`
 
