@@ -134,6 +134,7 @@ sub cmd_install {
         target_perl => $self->{target_perl},
     );
     my $menlo_base = "$ENV{HOME}/.perl-cpm/work";
+    my $menlo_cache = "$ENV{HOME}/.perl-cpm/cache";
     my $menlo_build_log = "$ENV{HOME}/.perl-cpm/build.@{[time]}.log";
     my $cb = sub {
         my ($read_fh, $write_fh) = @_;
@@ -144,6 +145,7 @@ sub cmd_install {
             read_fh => $read_fh, write_fh => $write_fh,
             ($self->{global} ? () : (local_lib => $self->{local_lib})),
             menlo_base => $menlo_base, menlo_build_log => $menlo_build_log,
+            menlo_cache => $menlo_cache,
             notest => $self->{notest},
         );
         $worker->run_loop;
