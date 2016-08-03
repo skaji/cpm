@@ -9,6 +9,7 @@ use File::Basename 'basename';
 use File::Path qw(mkpath rmtree);
 use File::Spec;
 use File::pushd 'pushd';
+use File::Copy ();
 use File::Copy::Recursive ();
 use JSON::PP qw(encode_json decode_json);
 use Menlo::CLI::Compat;
@@ -50,12 +51,14 @@ sub work {
 
 sub new {
     my ($class, %option) = @_;
-    my $menlo_base = (delete $option{menlo_base}) || "$ENV{HOME}/.perl-cpm";
+    my $menlo_base = (delete $option{menlo_base}) || "$ENV{HOME}/.perl-cpm/work";
     my $menlo_build_log = (delete $option{menlo_build_log}) || "$menlo_base/build.log";
+    my $menlo_cache = (delete $option{menlo_cache}) || "$ENV{HOME}/.perl-cpm/cache";
     mkpath $menlo_base unless -d $menlo_base;
 
     my $menlo = Menlo::CLI::Compat->new(
         base => $menlo_base,
+        save_dists => $menlo_cache,
         log  => $menlo_build_log,
         quiet => 1,
         pod2man => undef,
@@ -93,12 +96,19 @@ sub fetch {
         $dir = $result->{dir};
     } else {
         chdir $self->menlo->{base};
-        my $uri = $distfile =~ /^http/i ? $distfile : "$self->{mirror}/authors/id/$distfile";
-        my $dist = { uris => [ $uri ] };
-        my ($old) = (basename $uri) =~ /^(.+)\.(?:tar\.gz|zip|tar\.bz2|tgz)$/;
+        my $basename = basename($distfile);
+        my ($old) = $basename =~ /^(.+)\.(?:tar\.gz|zip|tar\.bz2|tgz)$/;
         rmtree $old if $old && -d $old;
-        $dir = $self->menlo->fetch_module($dist)
-            or return;
+
+        my $cache = File::Spec->catfile($self->menlo->{save_dists}, "authors/id/$distfile");
+        if (-f $cache) {
+            File::Copy::copy($cache, $basename) or return;
+            $dir = $self->menlo->unpack($basename) or return;
+        } else {
+            my $uri = "$self->{mirror}/authors/id/$distfile";
+            my $dist = { uris => [ $uri ], pathname => $distfile };
+            $dir = $self->menlo->fetch_module($dist) or return;
+        }
         $dir = File::Spec->catdir($self->menlo->{base}, $dir);
     }
     chdir $dir or die;
