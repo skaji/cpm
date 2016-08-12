@@ -105,8 +105,8 @@ sub fetch {
             File::Copy::copy($cache, $basename) or return;
             $dir = $self->menlo->unpack($basename) or return;
         } else {
-            my $uri = "$self->{mirror}/authors/id/$distfile";
-            my $dist = { uris => [ $uri ], pathname => $distfile };
+            my @uris = map { "$_/authors/id/$distfile" } @{ $self->{mirror} };
+            my $dist = { uris => \@uris, pathname => $distfile };
             $dir = $self->menlo->fetch_module($dist) or return;
         }
         $dir = File::Spec->catdir($self->menlo->{base}, $dir);

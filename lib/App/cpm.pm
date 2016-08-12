@@ -21,7 +21,7 @@ sub new {
         cpanfile => "cpanfile",
         local_lib => "local",
         cpanmetadb => "http://cpanmetadb.plackperl.org/v1.0/package",
-        mirror => "http://www.cpan.org",
+        mirror => ["http://www.cpan.org"],
         target_perl => $],
         %option
     }, $class;
@@ -31,13 +31,14 @@ sub parse_options {
     my $self = shift;
     local @ARGV = @_;
     $self->{notest} = 1;
+    my @mirror;
     GetOptions
         "L|local-lib-contained=s" => \($self->{local_lib}),
         "V|version" => sub { $self->cmd_version },
         "color!" => \($self->{color}),
         "g|global" => \($self->{global}),
         "h|help" => sub { $self->cmd_help },
-        "mirror=s" => \($self->{mirror}),
+        "mirror=s@" => \@mirror,
         "v|verbose" => \($self->{verbose}),
         "w|workers=i" => \($self->{workers}),
         "target-perl=s" => \my $target_perl,
@@ -47,7 +48,8 @@ sub parse_options {
     or exit 1;
 
     $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
-    $self->{mirror} =~ s{/$}{};
+    $self->{mirror} = \@mirror if @mirror;
+    $_ =~ s{/$}{} for @{$self->{mirror}};
     $self->{color} = 1 if !defined $self->{color} && -t STDOUT;
     if ($target_perl) {
         # 5.8 is interpreted as 5.800, fix it

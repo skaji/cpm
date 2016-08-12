@@ -44,6 +44,7 @@ cpm - a fast CPAN module installer
         install modules as if verison is your perl is VERSION
       --mirror=URL
         base url for the CPAN mirror to use, default: http://www.cpan.org
+        you can use --mirror multiple times
       --color, --no-color
         turn on/off color output, default: on
       --test, --no-test
