@@ -14,7 +14,7 @@ cpm - a fast CPAN module installer
 
 =head1 SYNOPSIS
 
-  # install modules
+  # install modules into local/
   > cpm install Module1 Module2 ...
 
   # install modules with verbose messages
@@ -23,7 +23,7 @@ cpm - a fast CPAN module installer
   # from cpanfile (with cpanfile.snapshot if any)
   > cpm install
 
-  # install module to global @INC istead of local/lib/perl5
+  # install module into current @INC istead of local/
   > cpm install -g Module
 
   # install modules as if version of your perl is 5.8.5
@@ -35,9 +35,9 @@ cpm - a fast CPAN module installer
   -w, --workers=N
         number of workers, default: 5
   -L, --local-lib-contained=DIR
-        install base, default: local/
+        directory to install modules into, default: local/
   -g, --global
-        install modules to global @INC instead of local-lib
+        install modules into current @INC instead of local/
   -v, --verbose
         verbose mode; you can see what is going on
       --target-perl=VERSION  (EXPERIMENTAL)
