@@ -135,6 +135,49 @@ sub cmd_install {
         user_inc => [$self->_user_inc],
         target_perl => $self->{target_perl},
     );
+
+    my @package;
+    for my $arg (@argv) {
+        if (-d $arg or $arg =~ /(?:^git:|\.git(?:@.+)?$)/) {
+            $arg = abs_path $arg if -d $arg;
+            my $dist = App::cpm::Distribution->new(distfile => $arg, provides => []);
+            $master->add_distribution($dist);
+        } else {
+            push @package, {package => $arg, version => 0};
+        }
+    }
+
+    if (!@argv) {
+        warn "Loading modules from $self->{cpanfile}...\n";
+        my $requirements = $self->load_cpanfile($self->{cpanfile});
+        my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirements);
+        if ($is_satisfied) {
+            warn "All requirements are satisfied.\n";
+            return 0; # exit 0
+        } elsif (!defined $is_satisfied) {
+            my ($req) = grep { $_->{package} eq "perl" } @$requirements;
+            die sprintf "%s requires perl %s\n", $self->{cpanfile}, $req->{version};
+        } else {
+            @package = @need_resolve;
+        }
+
+        if (-f $self->{snapshot}) {
+            if (!eval { require Carton::Snapshot }) {
+                die "To load $self->{snapshot}, you need to install Carton::Snapshot.\n";
+            }
+            warn "Loading distributions from $self->{snapshot}...\n";
+            if (!grep { /backpan/ } @{$self->{mirror}}) {
+                push @{$self->{mirror}}, "http://backpan.perl.org/"; # XXX
+            }
+        }
+    }
+
+    $master->add_job(
+        type => "resolve",
+        package => $_->{package},
+        version => $_->{version} || 0
+    ) for @package;
+
     my $menlo_base = "$ENV{HOME}/.perl-cpm/work";
     my $menlo_cache = "$ENV{HOME}/.perl-cpm/cache";
     my $menlo_build_log = "$ENV{HOME}/.perl-cpm/build.@{[time]}.log";
@@ -149,48 +192,10 @@ sub cmd_install {
             menlo_base => $menlo_base, menlo_build_log => $menlo_build_log,
             menlo_cache => $menlo_cache,
             notest => $self->{notest},
+            (!@argv && -f $self->{snapshot} ? (snapshot => $self->{snapshot}) : ()),
         );
         $worker->run_loop;
     };
-
-    my @package;
-    for my $arg (@argv) {
-        if (-d $arg or $arg =~ /(?:^git:|\.git(?:@.+)?$)/) {
-            $arg = abs_path $arg if -d $arg;
-            my $dist = App::cpm::Distribution->new(distfile => $arg, provides => []);
-            $master->add_distribution($dist);
-        } else {
-            push @package, {package => $arg, version => 0};
-        }
-    }
-
-    if (!@argv) {
-        if (-f $self->{snapshot}) {
-            warn "Loading distributions from $self->{snapshot}...\n";
-            $master->add_distribution($_) for $self->load_snapshot($self->{snapshot});
-        } elsif (-f $self->{cpanfile}) {
-            warn "Loading modules from $self->{cpanfile}...\n";
-            my $requirements = $self->load_cpanfile($self->{cpanfile});
-            my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirements);
-            if ($is_satisfied) {
-                warn "All requirements are satisfied.\n";
-                return 0; # exit 0
-            } elsif (!defined $is_satisfied) {
-                my ($req) = grep { $_->{package} eq "perl" } @$requirements;
-                die sprintf "%s requires perl %s\n", $self->{cpanfile}, $req->{version};
-            } else {
-                @package = @need_resolve;
-            }
-        } else {
-            die "Cannot find argument nor cpanfile\n";
-        }
-    }
-
-    $master->add_job(
-        type => "resolve",
-        package => $_->{package},
-        version => $_->{version} || 0
-    ) for @package;
 
     $master->spawn_worker($cb) for 1 .. $self->{workers};
     MAIN_LOOP:
