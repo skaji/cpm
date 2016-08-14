@@ -44,7 +44,7 @@ sub info {
     my $distvname = CPAN::DistnameInfo->new($job->{distfile})->distvname || $job->{distfile};
     my $message;
     if ($type eq "resolve") {
-        $message = $job->{package} . ($job->{ok} ? " -> $distvname" : "");
+        $message = $job->{package} . ($job->{ok} ? " -> $distvname (from $job->{from})" : "");
     } else {
         $message = $distvname;
     }

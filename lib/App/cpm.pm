@@ -146,13 +146,16 @@ sub cmd_install {
 
     my $worker = App::cpm::Worker->new(
         verbose         => $self->{verbose},
-        cpanmetadb      => $self->{cpanmetadb},
         mirror          => $self->{mirror},
         menlo_base      => "$ENV{HOME}/.perl-cpm/work",
         menlo_cache     => "$ENV{HOME}/.perl-cpm/cache",
         menlo_build_log => "$ENV{HOME}/.perl-cpm/build.@{[time]}.log",
         notest          => $self->{notest},
         ($self->{global} ? () : (local_lib => $self->{local_lib})),
+        resolver => [
+            (!@argv && -f $self->{snapshot} ? {snapshot => $self->{snapshot}} : ()),
+            { cpanmetadb => $self->{cpanmetadb} },
+        ],
     );
     my $pipes = App::cpm::Pipes->new($self->{workers}, sub {
         my $job = shift;
@@ -213,24 +216,27 @@ sub setup {
     }
 
     if (!@argv) {
-        if (-f $self->{snapshot}) {
-            warn "Loading distributions from $self->{snapshot}...\n";
-            $master->add_distribution($_) for $self->load_snapshot($self->{snapshot});
-        } elsif (-f $self->{cpanfile}) {
-            warn "Loading modules from $self->{cpanfile}...\n";
-            my $requirements = $self->load_cpanfile($self->{cpanfile});
-            my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirements);
-            if ($is_satisfied) {
-                warn "All requirements are satisfied.\n";
-                return 0; # exit 0
-            } elsif (!defined $is_satisfied) {
-                my ($req) = grep { $_->{package} eq "perl" } @$requirements;
-                die sprintf "%s requires perl %s\n", $self->{cpanfile}, $req->{version};
-            } else {
-                @package = @need_resolve;
-            }
+        warn "Loading modules from $self->{cpanfile}...\n";
+        my $requirements = $self->load_cpanfile($self->{cpanfile});
+        my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirements);
+        if ($is_satisfied) {
+            warn "All requirements are satisfied.\n";
+            exit 0;
+        } elsif (!defined $is_satisfied) {
+            my ($req) = grep { $_->{package} eq "perl" } @$requirements;
+            die sprintf "%s requires perl %s\n", $self->{cpanfile}, $req->{version};
         } else {
-            die "Cannot find argument nor cpanfile\n";
+            @package = @need_resolve;
+        }
+
+        if (-f $self->{snapshot}) {
+            if (!eval { require Carton::Snapshot }) {
+                die "To load $self->{snapshot}, you need to install Carton::Snapshot.\n";
+            }
+            warn "Loading distributions from $self->{snapshot}...\n";
+            if (!grep { /backpan/ } @{$self->{mirror}}) {
+                push @{$self->{mirror}}, "http://backpan.perl.org/"; # XXX
+            }
         }
     }
 
@@ -249,35 +255,10 @@ sub load_cpanfile {
     my $cpanfile = Module::CPANfile->load($file);
     my @package;
     for my $package ($cpanfile->merged_requirements->required_modules) {
-        my $version =$cpanfile->prereq_for_module($package)->requirement->version;
+        my $version = $cpanfile->prereq_for_module($package)->requirement->version;
         push @package, { package => $package, version => $version };
     }
     \@package;
-}
-
-sub load_snapshot {
-    my ($self, $file) = @_;
-    eval { require Carton::Snapshot };
-    if ($@) {
-        die "To load $file, you need to install Carton::Snapshot first.\n";
-    }
-    my $snapshot = Carton::Snapshot->new(path => $file);
-    $snapshot->load;
-    my @distributions;
-    for my $dist ($snapshot->distributions) {
-        my @provides = map {
-            my $package = $_;
-            my $version = $dist->provides->{$_}{version};
-            $version = undef if $version eq "undef";
-            +{ package => $package, version => $version };
-        } sort keys %{$dist->provides};
-
-        push @distributions, App::cpm::Distribution->new(
-            distfile => $dist->distfile,
-            provides => \@provides,
-        );
-    }
-    @distributions;
 }
 
 1;

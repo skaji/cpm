@@ -219,10 +219,12 @@ sub is_satisfied {
 }
 
 sub add_distribution {
-    my ($self, $distribution, $provide) = @_;
+    my ($self, $distribution, $provides) = @_;
     my $distfile = $distribution->distfile;
     if (my $already = $self->{distributions}{$distfile}) {
-        $already->append_provide($provide) if $provide;
+        if ($provides) {
+            $already->append_provide($_) for @$provides;
+        }
         return 0;
     } else {
         $self->{distributions}{$distfile} = $distribution;
@@ -258,9 +260,9 @@ sub _register_resolve_result {
 
     my $distribution = App::cpm::Distribution->new(
         distfile => $job->{distfile},
-        provides => [$job->{provide}],
+        provides => $job->{provides},
     );
-    $self->add_distribution($distribution, $job->{provide});
+    $self->add_distribution($distribution, $job->{provides});
 }
 
 sub _register_fetch_result {
