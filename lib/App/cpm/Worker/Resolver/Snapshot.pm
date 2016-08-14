@@ -1,7 +1,8 @@
 package App::cpm::Worker::Resolver::Snapshot;
 use strict;
 use warnings;
-use CPAN::Meta::Requirements;
+use App::cpm::version;
+use App::cpm::Logger;
 use Carton::Snapshot;
 
 sub new {
@@ -19,10 +20,13 @@ sub work {
     my $found = $self->snapshot->find($package);
     return { ok => 0 } unless $found;
 
-    my $snapshot_version = $found->version_for($package);
-    if (my $version = $job->{version}) {
-        my $reqs = CPAN::Meta::Requirements->from_string_hash({ $package => $version });
-        if (!$reqs->accepts_module($package, $snapshot_version)) {
+    my $version = $found->version_for($package);
+    if (my $req_version = $job->{version}) {
+        if (!App::cpm::version->parse($version)->satisfy($req_version)) {
+            App::cpm::Logger->log(
+                result => "WARN",
+                message => "Couldn't find $job->{package} $req_version (only found $version)",
+            );
             return { ok => 0 };
         }
     }
@@ -37,7 +41,7 @@ sub work {
     return {
         ok => 1,
         distfile => $found->distfile,
-        version  => $snapshot_version,
+        version  => $version,
         provides => \@provides,
     };
 }

@@ -22,7 +22,7 @@ sub work {
         my $meta = $yaml->[0];
         my $version = $meta->{version} eq "undef" ? 0 : $meta->{version};
         if (my $req_version = $job->{version}) {
-            unless (App::cpm::version->parse($version)->satisfy($req_version)) {
+            if (!App::cpm::version->parse($version)->satisfy($req_version)) {
                 App::cpm::Logger->log(
                     result => "WARN",
                     message => "Couldn't find $job->{package} $req_version (only found $version)",
