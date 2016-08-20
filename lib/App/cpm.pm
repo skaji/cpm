@@ -6,17 +6,21 @@ use App::cpm::Master;
 use App::cpm::Worker;
 use App::cpm::Logger;
 use App::cpm::version;
+use App::cpm::Pipes;
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
+use List::Util ();
 use Pod::Usage ();
 use Cwd 'abs_path';
 use Config;
 
 our $VERSION = '0.118';
 
+use constant WIN32 => $^O eq 'MSWin32';
+
 sub new {
     my ($class, %option) = @_;
     bless {
-        workers => 5,
+        workers => WIN32 ? 1 : 5,
         snapshot => "cpanfile.snapshot",
         cpanfile => "cpanfile",
         local_lib => "local",
@@ -58,6 +62,9 @@ sub parse_options {
         if ($self->{target_perl} > $]) {
             die "--target-perl must be lower than your perl version $]\n";
         }
+    }
+    if (WIN32 and $self->{workers} != 1) {
+        die "The number of workers must be 1 under WIN32 environment.\n";
     }
 
     $App::cpm::Logger::COLOR = 1 if $self->{color};
@@ -135,23 +142,64 @@ sub cmd_install {
         user_inc => [$self->_user_inc],
         target_perl => $self->{target_perl},
     );
-    my $menlo_base = "$ENV{HOME}/.perl-cpm/work";
-    my $menlo_cache = "$ENV{HOME}/.perl-cpm/cache";
-    my $menlo_build_log = "$ENV{HOME}/.perl-cpm/build.@{[time]}.log";
-    my $cb = sub {
-        my ($read_fh, $write_fh) = @_;
-        my $worker = App::cpm::Worker->new(
-            verbose => $self->{verbose},
-            cpanmetadb => $self->{cpanmetadb},
-            mirror => $self->{mirror},
-            read_fh => $read_fh, write_fh => $write_fh,
-            ($self->{global} ? () : (local_lib => $self->{local_lib})),
-            menlo_base => $menlo_base, menlo_build_log => $menlo_build_log,
-            menlo_cache => $menlo_cache,
-            notest => $self->{notest},
-        );
-        $worker->run_loop;
+    $self->setup($master => @argv);
+
+    my $worker = App::cpm::Worker->new(
+        verbose         => $self->{verbose},
+        cpanmetadb      => $self->{cpanmetadb},
+        mirror          => $self->{mirror},
+        menlo_base      => "$ENV{HOME}/.perl-cpm/work",
+        menlo_cache     => "$ENV{HOME}/.perl-cpm/cache",
+        menlo_build_log => "$ENV{HOME}/.perl-cpm/build.@{[time]}.log",
+        notest          => $self->{notest},
+        ($self->{global} ? () : (local_lib => $self->{local_lib})),
+    );
+    my $pipes = App::cpm::Pipes->new($self->{workers}, sub {
+        my $job = shift;
+        return $worker->work($job);
+    });
+
+    my $get_job; $get_job = sub {
+        my $master = shift;
+        if (my @job = $master->get_job) {
+            return @job;
+        }
+        if (my @written = $pipes->is_written) {
+            my @ready = $pipes->is_ready(@written);
+            $master->register_result($_->read) for @ready;
+            return $master->$get_job;
+        } else {
+            return;
+        }
     };
+
+    while (my @job = $master->$get_job) {
+        my @ready = $pipes->is_ready;
+        $master->register_result($_->read) for grep $_->is_written, @ready;
+        for my $i (0 .. List::Util::min($#job, $#ready)) {
+            $job[$i]->in_charge(1);
+            $ready[$i]->write($job[$i]);
+        }
+    }
+    $pipes->close;
+
+    if (my $fail = $master->fail) {
+        local $App::cpm::Logger::VERBOSE = 0;
+        for my $type (qw(install resolve)) {
+            App::cpm::Logger->log(
+                result => "FAIL",
+                type => $type,
+                message => $_,
+            ) for @{$fail->{$type}};
+        }
+    }
+    my $num = $master->installed_distributions;
+    warn "$num distribution@{[$num > 1 ? 's' : '']} installed.\n";
+    return $master->fail ? 1 : 0;
+}
+
+sub setup {
+    my ($self, $master, @argv) = @_;
 
     my @package;
     for my $arg (@argv) {
@@ -186,36 +234,13 @@ sub cmd_install {
         }
     }
 
-    $master->add_job(
-        type => "resolve",
-        package => $_->{package},
-        version => $_->{version} || 0
-    ) for @package;
-
-    $master->spawn_worker($cb) for 1 .. $self->{workers};
-    MAIN_LOOP:
-    while (1) {
-        for my $worker ($master->ready_workers) {
-            $master->register_result($worker->result) if $worker->has_result;
-            my $job = $master->get_job or last MAIN_LOOP;
-            $worker->work($job);
-        }
+    for my $p (@package) {
+        $master->add_job(
+            type => "resolve",
+            package => $p->{package},
+            version => $p->{version} || 0
+        );
     }
-    $master->shutdown_workers;
-
-    if (my $fail = $master->fail) {
-        local $App::cpm::Logger::VERBOSE = 0;
-        for my $type (qw(install resolve)) {
-            App::cpm::Logger->log(
-                result => "FAIL",
-                type => $type,
-                message => $_,
-            ) for @{$fail->{$type}};
-        }
-    }
-    my $num = $master->installed_distributions;
-    warn "$num distribution@{[$num > 1 ? 's' : '']} installed.\n";
-    return $master->fail ? 1 : 0;
 }
 
 sub load_cpanfile {

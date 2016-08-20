@@ -7,7 +7,6 @@ use App::cpm::Worker::Installer;
 use App::cpm::Worker::Resolver;
 use App::cpm::Logger;
 use CPAN::DistnameInfo;
-use JSON::PP qw(encode_json decode_json);
 use Time::HiRes qw(gettimeofday tv_interval);
 
 sub new {
@@ -17,31 +16,25 @@ sub new {
     bless { %option, installer => $installer, resolver => $resolver }, $class;
 }
 
-sub run_loop {
-    my $self = shift;
-
-    my $read_fh = $self->{read_fh};
-    while (my $raw = <$read_fh>) {
-        my $job = eval { decode_json $raw } or last;
-        my $type = $job->{type} || "(undef)";
-        my $result;
-        my $start = $self->{verbose} ? [gettimeofday] : undef;
-        if (grep {$type eq $_} qw(fetch configure install)) {
-            $result = eval { $self->{installer}->work($job) };
-            warn $@ if $@;
-        } elsif ($type eq "resolve") {
-            $result = eval { $self->{resolver}->work($job) };
-            warn $@ if $@;
-        } else {
-            die "Unknown type: $type\n";
-        }
-        my $elapsed = $start ? tv_interval($start) : undef;
-        $result ||= { ok => 0 };
-        $job = +{ %$job, %$result };
-        $self->info($job, $elapsed);
-        my $res = encode_json $job;
-        syswrite $self->{write_fh}, "$res\n";
+sub work {
+    my ($self, $job) = @_;
+    my $type = $job->{type} || "(undef)";
+    my $result;
+    my $start = $self->{verbose} ? [gettimeofday] : undef;
+    if (grep {$type eq $_} qw(fetch configure install)) {
+        $result = eval { $self->{installer}->work($job) };
+        warn $@ if $@;
+    } elsif ($type eq "resolve") {
+        $result = eval { $self->{resolver}->work($job) };
+        warn $@ if $@;
+    } else {
+        die "Unknown type: $type\n";
     }
+    my $elapsed = $start ? tv_interval($start) : undef;
+    $result ||= { ok => 0 };
+    $job = +{ %$job, %$result };
+    $self->info($job, $elapsed);
+    return $job;
 }
 
 sub info {
