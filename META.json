@@ -44,6 +44,9 @@
          }
       },
       "runtime" : {
+         "recommends" : {
+            "Carton::Snapshot" : "0"
+         },
          "requires" : {
             "CPAN::DistnameInfo" : "0",
             "CPAN::Meta" : "0",
