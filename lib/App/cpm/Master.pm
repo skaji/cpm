@@ -5,8 +5,6 @@ use utf8;
 use App::cpm::Distribution;
 use App::cpm::Job;
 use App::cpm::Logger;
-use IO::Handle;
-use IO::Select;
 use Module::CoreList;
 use Module::Metadata;
 use version;
@@ -15,9 +13,7 @@ sub new {
     my ($class, %option) = @_;
     bless {
         %option,
-        master => 1,
         installed_distributions => 0,
-        workers => +{},
         jobs => +{},
         distributions => +{},
         _fail_resolve => +{},
@@ -32,120 +28,6 @@ sub fail {
     return if !@fail_resolve && !@fail_install;
     { resolve => \@fail_resolve, install => \@fail_install };
 }
-
-sub is_master { shift->{master} }
-
-{
-    package
-        App::cpm::_Worker;
-    use JSON::PP;
-    sub new {
-        my ($class, %option) = @_;
-        bless { _written => 0, %option}, $class;
-    }
-    sub has_result { shift->{_written} }
-    sub read_fh  { shift->{read_fh}  }
-    sub write_fh { shift->{write_fh} }
-    sub pid { shift->{pid} }
-    sub write {
-        my ($self, $job) = @_;
-        if ($self->{_written} != 0) { die }
-        $self->{_written}++;
-        $job->in_charge($self->pid);
-        my %copy = %$job;
-        my $encoded = encode_json \%copy;
-        syswrite $self->write_fh, "$encoded\n";
-    }
-    sub work { shift->write(@_) } # alias
-    sub read {
-        my $self = shift;
-        if ($self->{_written} != 1) { die }
-        $self->{_written}--;
-        my $read_fh = $self->read_fh;
-        my $string = <$read_fh>;
-        decode_json $string;
-    }
-    sub result { shift->read } # alias
-}
-
-sub handles {
-    my $self = shift;
-    map { ($_->read_fh, $_->write_fh) } $self->workers;
-}
-
-sub worker {
-    my ($self, $worker_pid) = @_;
-    $self->{workers}{$worker_pid};
-}
-
-sub workers {
-    my $self = shift;
-    values %{$self->{workers}};
-}
-
-sub spawn_worker {
-    my ($self, $cb) = @_;
-    $self->is_master or die;
-    pipe my $read_fh1, my $write_fh1;
-    pipe my $read_fh2, my $write_fh2;
-    my $pid = fork;
-    die "fork failed" unless defined $pid;
-    if ($pid == 0) {
-        $self->{master} = 0;
-        close $_ for $read_fh1, $write_fh2, $self->handles;
-        $write_fh1->autoflush(1);
-        $cb->($read_fh2, $write_fh1);
-        exit;
-    }
-    close $_ for $write_fh1, $read_fh2;
-    $write_fh2->autoflush(1);
-    $self->{workers}{$pid} = App::cpm::_Worker->new(
-        pid => $pid, read_fh => $read_fh1, write_fh => $write_fh2,
-    );
-}
-
-sub _can_read {
-    my ($self, @workers) = @_;
-    $self->is_master or die;
-    @workers = $self->workers unless @workers;
-    my $select = IO::Select->new( map { $_->read_fh } @workers );
-    my @ready = $select->can_read; # blocking
-
-    my @return;
-    for my $worker (@workers) {
-        if (grep { $worker->read_fh == $_ } @ready) {
-            push @return, $worker;
-        }
-    }
-    return @return;
-}
-
-sub shutdown_workers {
-    my $self = shift;
-    close $_ for map { ($_->write_fh, $_->read_fh) } $self->workers;
-    while (%{$self->{workers}}) {
-        my $pid = wait;
-        if ($pid == -1) {
-            warn "wait() returns -1\n";
-        } elsif (my $worker = delete $self->{workers}{$pid}) {
-            close $worker->read_fh;
-        } else {
-            warn "wait() unexpectedly returns $pid\n";
-        }
-    }
-}
-
-sub ready_workers {
-    my ($self, @workers) = @_;
-    $self->is_master or die;
-    @workers = $self->workers unless @workers;
-    my @ready = grep { $_->{_written} == 0 } @workers;
-    return @ready if @ready;
-    $self->_can_read(@workers);
-}
-
-
-## job related method
 
 sub jobs { values %{shift->{jobs}} }
 
@@ -162,19 +44,15 @@ sub add_job {
 
 sub get_job {
     my $self = shift;
-    if (my ($job) = grep { !$_->in_charge } $self->jobs) {
-        return $job;
+    if (my @job = grep { !$_->in_charge } $self->jobs) {
+        return @job;
     }
     $self->_calculate_jobs;
     return unless $self->jobs;
-    if (my ($job) = grep { !$_->in_charge } $self->jobs) {
-        return $job;
+    if (my @job = grep { !$_->in_charge } $self->jobs) {
+        return @job;
     }
-
-    my @running_workers = map { $self->worker($_->in_charge) } $self->jobs;
-    my @done_workers = $self->ready_workers(@running_workers);
-    $self->register_result($_->result) for @done_workers;
-    $self->get_job;
+    return;
 }
 
 sub register_result {
