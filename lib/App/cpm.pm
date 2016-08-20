@@ -25,7 +25,7 @@ sub new {
         cpanfile => "cpanfile",
         local_lib => "local",
         cpanmetadb => "http://cpanmetadb.plackperl.org/v1.0/package",
-        mirror => ["http://www.cpan.org"],
+        mirror => ["http://www.cpan.org", "http://backpan.perl.org"],
         target_perl => $],
         %option
     }, $class;
@@ -234,9 +234,6 @@ sub setup {
                 die "To load $self->{snapshot}, you need to install Carton::Snapshot.\n";
             }
             warn "Loading distributions from $self->{snapshot}...\n";
-            if (!grep { /backpan/ } @{$self->{mirror}}) {
-                push @{$self->{mirror}}, "http://backpan.perl.org/"; # XXX
-            }
         }
     }
 
