@@ -6,7 +6,7 @@ use App::cpm::Master;
 use App::cpm::Worker;
 use App::cpm::Logger;
 use App::cpm::version;
-use App::cpm::Pipes;
+use Parallel::Pipes;
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use List::Util ();
 use Pod::Usage ();
@@ -157,7 +157,7 @@ sub cmd_install {
             { cpanmetadb => $self->{cpanmetadb} },
         ],
     );
-    my $pipes = App::cpm::Pipes->new($self->{workers}, sub {
+    my $pipes = Parallel::Pipes->new($self->{workers}, sub {
         my $job = shift;
         return $worker->work($job);
     });
