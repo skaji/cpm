@@ -50,7 +50,7 @@
          "requires" : {
             "CPAN::DistnameInfo" : "0",
             "CPAN::Meta" : "0",
-            "CPAN::Meta::Requirements" : "0",
+            "CPAN::Meta::Requirements" : "2.130",
             "CPAN::Meta::YAML" : "0",
             "ExtUtils::Install" : "1.46",
             "ExtUtils::MakeMaker" : "6.58",
