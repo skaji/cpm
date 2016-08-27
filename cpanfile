@@ -2,7 +2,7 @@ requires 'perl', '5.008005';
 
 requires 'CPAN::DistnameInfo';
 requires 'CPAN::Meta';
-requires 'CPAN::Meta::Requirements';
+requires 'CPAN::Meta::Requirements', '2.130'; # for v-strings
 requires 'CPAN::Meta::YAML';
 requires 'File::Copy::Recursive';
 requires 'File::pushd';

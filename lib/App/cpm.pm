@@ -253,6 +253,8 @@ sub load_cpanfile {
     my @package;
     for my $package ($cpanfile->merged_requirements->required_modules) {
         my $version = $cpanfile->prereq_for_module($package)->requirement->version;
+        my $parsed = eval { App::cpm::version->parse($version) };
+        $version = $parsed->stringify if !$@ && $parsed;
         push @package, { package => $package, version => $version };
     }
     \@package;
