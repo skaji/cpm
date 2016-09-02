@@ -49,6 +49,7 @@ sub parse_options {
         "test!" => sub { $self->{notest} = $_[1] ? 0 : 1 },
         "cpanfile=s" => \($self->{cpanfile}),
         "snapshot=s" => \($self->{snapshot}),
+        "sudo" => \($self->{sudo}),
     or exit 1;
 
     $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
@@ -65,6 +66,9 @@ sub parse_options {
     }
     if (WIN32 and $self->{workers} != 1) {
         die "The number of workers must be 1 under WIN32 environment.\n";
+    }
+    if ($self->{sudo}) {
+        !system "sudo", $^X, "-e1" or exit 1;
     }
 
     $App::cpm::Logger::COLOR = 1 if $self->{color};
@@ -151,6 +155,7 @@ sub cmd_install {
         menlo_cache     => "$ENV{HOME}/.perl-cpm/cache",
         menlo_build_log => "$ENV{HOME}/.perl-cpm/build.@{[time]}.log",
         notest          => $self->{notest},
+        sudo            => $self->{sudo},
         ($self->{global} ? () : (local_lib => $self->{local_lib})),
         resolver => [
             (!@argv && -f $self->{snapshot} ? {snapshot => $self->{snapshot}} : ()),
