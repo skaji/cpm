@@ -10,7 +10,8 @@ perl:
   - '5.10'
   - '5.8'
 install:
-  - cpanm -nq --installdeps --with-develop --with-recommends .
+  - cpanm -nq --installdeps --with-develop .
+  - cpanm -nq Carton
 script:
   - prove -l t xt
 sudo: false
