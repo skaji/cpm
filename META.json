@@ -21,12 +21,6 @@
          "share",
          "t",
          "xt"
-      ],
-      "package" : [
-         "App::cpm::Pipe::Here",
-         "App::cpm::Pipe::Impl",
-         "App::cpm::Pipe::Impl::NoFork",
-         "App::cpm::Pipe::There"
       ]
    },
    "prereqs" : {
