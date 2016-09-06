@@ -255,14 +255,11 @@ sub load_cpanfile {
     my ($self, $file) = @_;
     require Module::CPANfile;
     my $cpanfile = Module::CPANfile->load($file);
-    my @package;
-    for my $package ($cpanfile->merged_requirements->required_modules) {
-        my $version = $cpanfile->prereq_for_module($package)->requirement->version;
-        my $parsed = eval { App::cpm::version->parse($version) };
-        $version = $parsed->stringify if !$@ && $parsed;
-        push @package, { package => $package, version => $version };
-    }
-    \@package;
+    my $prereqs = $cpanfile->prereqs_with;
+    my $phases = [qw(build test runtime)];
+    my $requirements = $prereqs->merged_requirements($phases, ['requires']);
+    my $hash = $requirements->as_string_hash;
+    [ map { +{ package => $_, version => $hash->{$_} } } keys %$hash ];
 }
 
 1;
