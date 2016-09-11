@@ -52,6 +52,7 @@ sub parse_options {
         "snapshot=s" => \($self->{snapshot}),
         "sudo" => \($self->{sudo}),
         "save-dists=s" => \($self->{save_dists}),
+        "with-develop" => \($self->{with_develop}),
     or exit 1;
 
     $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
@@ -215,10 +216,18 @@ sub setup {
     for my $arg (@argv) {
         if (-d $arg or $arg =~ /(?:^git:|\.git(?:@.+)?$)/) {
             $arg = abs_path $arg if -d $arg;
-            my $dist = App::cpm::Distribution->new(distfile => $arg, provides => []);
+            my $dist = App::cpm::Distribution->new(
+                distfile => $arg,
+                provides => [],
+                with_develop => $self->{with_develop},
+            );
             $master->add_distribution($dist);
         } else {
-            push @package, {package => $arg, version => 0};
+            push @package, {
+                package => $arg,
+                version => 0,
+                with_develop => $self->{with_develop},
+            };
         }
     }
 
@@ -248,7 +257,8 @@ sub setup {
         $master->add_job(
             type => "resolve",
             package => $p->{package},
-            version => $p->{version} || 0
+            version => $p->{version} || 0,
+            with_develop => $p->{with_develop},
         );
     }
 }

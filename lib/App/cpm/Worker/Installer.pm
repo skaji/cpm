@@ -31,7 +31,12 @@ sub work {
         }
     } elsif ($type eq "configure") {
         my ($distdata, $requirements)
-            = $self->configure($job->{directory}, $job->{distfile}, $job->{meta});
+            = $self->configure(
+                $job->{directory},
+                $job->{distfile},
+                $job->{meta},
+                $job->{with_develop},
+            );
         if ($requirements) {
             return +{
                 ok => 1,
@@ -166,7 +171,7 @@ sub _extract_requirements {
 }
 
 sub configure {
-    my ($self, $dir, $distfile, $meta) = @_;
+    my ($self, $dir, $distfile, $meta, $with_develop) = @_;
     my $guard = pushd $dir;
     my $menlo = $self->menlo;
     if (-f 'Build.PL') {
@@ -179,6 +184,8 @@ sub configure {
     my $distdata = $self->_build_distdata($distfile, $meta);
     my $requirements = [];
     my $phase = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
+    push @$phase, 'develop' if $with_develop;
+
     if (my ($file) = grep -f, qw(MYMETA.json MYMETA.yml)) {
         my $mymeta = CPAN::Meta->load_file($file);
         $requirements = $self->_extract_requirements($mymeta, $phase);
