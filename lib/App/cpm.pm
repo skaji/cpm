@@ -51,6 +51,7 @@ sub parse_options {
         "cpanfile=s" => \($self->{cpanfile}),
         "snapshot=s" => \($self->{snapshot}),
         "sudo" => \($self->{sudo}),
+        "save-dists=s" => \($self->{save_dists}),
     or exit 1;
 
     $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
@@ -153,7 +154,7 @@ sub cmd_install {
         verbose         => $self->{verbose},
         mirror          => $self->{mirror},
         menlo_base      => "$ENV{HOME}/.perl-cpm/work",
-        menlo_cache     => "$ENV{HOME}/.perl-cpm/cache",
+        menlo_cache     => $self->{save_dists} || "$ENV{HOME}/.perl-cpm/cache",
         menlo_build_log => "$ENV{HOME}/.perl-cpm/build.@{[time]}.log",
         notest          => $self->{notest},
         sudo            => $self->{sudo},
