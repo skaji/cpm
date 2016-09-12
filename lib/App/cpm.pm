@@ -44,12 +44,16 @@ sub parse_options {
         "h|help" => sub { $self->cmd_help },
         "mirror=s@" => \@mirror,
         "v|verbose" => \($self->{verbose}),
+        "q|quiet!"  => \($self->{quiet}),
         "w|workers=i" => \($self->{workers}),
         "target-perl=s" => \my $target_perl,
         "test!" => sub { $self->{notest} = $_[1] ? 0 : 1 },
         "cpanfile=s" => \($self->{cpanfile}),
         "snapshot=s" => \($self->{snapshot}),
         "sudo" => \($self->{sudo}),
+        "save-dists=s" => \($self->{save_dists}),
+        "with-develop" => \($self->{with_develop}),
+        "with-all-features" => sub { $self->{features}{__all} = 1 },
     or exit 1;
 
     $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
@@ -152,7 +156,7 @@ sub cmd_install {
         verbose         => $self->{verbose},
         mirror          => $self->{mirror},
         menlo_base      => "$ENV{HOME}/.perl-cpm/work",
-        menlo_cache     => "$ENV{HOME}/.perl-cpm/cache",
+        menlo_cache     => $self->{save_dists} || "$ENV{HOME}/.perl-cpm/cache",
         menlo_build_log => "$ENV{HOME}/.perl-cpm/build.@{[time]}.log",
         notest          => $self->{notest},
         sudo            => $self->{sudo},
@@ -213,10 +217,20 @@ sub setup {
     for my $arg (@argv) {
         if (-d $arg or $arg =~ /(?:^git:|\.git(?:@.+)?$)/) {
             $arg = abs_path $arg if -d $arg;
-            my $dist = App::cpm::Distribution->new(distfile => $arg, provides => []);
+            my $dist = App::cpm::Distribution->new(
+                distfile => $arg,
+                provides => [],
+                features => $self->{features},
+                with_develop => $self->{with_develop},
+            );
             $master->add_distribution($dist);
         } else {
-            push @package, {package => $arg, version => 0};
+            push @package, {
+                package => $arg,
+                version => 0,
+                features => $self->{features},
+                with_develop => $self->{with_develop},
+            };
         }
     }
 
@@ -246,7 +260,9 @@ sub setup {
         $master->add_job(
             type => "resolve",
             package => $p->{package},
-            version => $p->{version} || 0
+            version => $p->{version} || 0,
+            features => $self->{features},
+            with_develop => $p->{with_develop},
         );
     }
 }

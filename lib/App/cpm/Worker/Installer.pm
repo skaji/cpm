@@ -31,7 +31,13 @@ sub work {
         }
     } elsif ($type eq "configure") {
         my ($distdata, $requirements)
-            = $self->configure($job->{directory}, $job->{distfile}, $job->{meta});
+            = $self->configure(
+                $job->{directory},
+                $job->{distfile},
+                $job->{meta},
+                $job->{with_develop},
+                $job->{features},
+            );
         if ($requirements) {
             return +{
                 ok => 1,
@@ -149,9 +155,15 @@ sub _get_configure_requirements {
 
 
 sub _extract_requirements {
-    my ($self, $meta, $phases) = @_;
+    my ($self, $meta, $phases, $allowed_features) = @_;
     $phases = [$phases] unless ref $phases;
-    my $hash = $meta->effective_prereqs->as_string_hash;
+
+    my @effective_features;
+    if ($allowed_features->{__all}) {
+        @effective_features = map $_->identifier, $meta->features;
+    }
+
+    my $hash = $meta->effective_prereqs(\@effective_features)->as_string_hash;
     my @requirements;
     for my $phase (@$phases) {
         my $reqs = ($hash->{$phase} || +{})->{requires} || +{};
@@ -166,7 +178,7 @@ sub _extract_requirements {
 }
 
 sub configure {
-    my ($self, $dir, $distfile, $meta) = @_;
+    my ($self, $dir, $distfile, $meta, $with_develop, $features) = @_;
     my $guard = pushd $dir;
     my $menlo = $self->menlo;
     if (-f 'Build.PL') {
@@ -179,9 +191,11 @@ sub configure {
     my $distdata = $self->_build_distdata($distfile, $meta);
     my $requirements = [];
     my $phase = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
+    push @$phase, 'develop' if $with_develop;
+
     if (my ($file) = grep -f, qw(MYMETA.json MYMETA.yml)) {
         my $mymeta = CPAN::Meta->load_file($file);
-        $requirements = $self->_extract_requirements($mymeta, $phase);
+        $requirements = $self->_extract_requirements($mymeta, $phase, $features);
     }
     return ($distdata, $requirements);
 }
