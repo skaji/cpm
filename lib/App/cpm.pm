@@ -53,6 +53,7 @@ sub parse_options {
         "sudo" => \($self->{sudo}),
         "save-dists=s" => \($self->{save_dists}),
         "with-develop" => \($self->{with_develop}),
+        "with-all-features" => sub { $self->{features}{__all} = 1 },
     or exit 1;
 
     $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
@@ -219,6 +220,7 @@ sub setup {
             my $dist = App::cpm::Distribution->new(
                 distfile => $arg,
                 provides => [],
+                features => $self->{features},
                 with_develop => $self->{with_develop},
             );
             $master->add_distribution($dist);
@@ -226,6 +228,7 @@ sub setup {
             push @package, {
                 package => $arg,
                 version => 0,
+                features => $self->{features},
                 with_develop => $self->{with_develop},
             };
         }
@@ -258,6 +261,7 @@ sub setup {
             type => "resolve",
             package => $p->{package},
             version => $p->{version} || 0,
+            features => $self->{features},
             with_develop => $p->{with_develop},
         );
     }

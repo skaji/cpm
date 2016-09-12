@@ -102,6 +102,7 @@ sub _calculate_jobs {
                     meta => $dist->meta,
                     directory => $dist->directory,
                     distfile => $dist->distfile,
+                    features => $dist->features,
                     with_develop => $dist->with_develop,
                 );
             } elsif (@need_resolve) {
@@ -262,6 +263,7 @@ sub _register_resolve_result {
     my $distribution = App::cpm::Distribution->new(
         distfile => $job->{distfile},
         provides => $job->{provides},
+        features => $job->{features},
         with_develop => $job->{with_develop},
     );
     $self->add_distribution($distribution, $job->{provides});

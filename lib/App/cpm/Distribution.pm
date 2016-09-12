@@ -18,6 +18,7 @@ for my $attr (qw(
     meta
     provides
     requirements
+    features
     with_develop
 )) {
     no strict 'refs';
