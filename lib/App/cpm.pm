@@ -44,6 +44,7 @@ sub parse_options {
         "h|help" => sub { $self->cmd_help },
         "mirror=s@" => \@mirror,
         "v|verbose" => \($self->{verbose}),
+        "q|quiet!"  => \($self->{quiet}),
         "w|workers=i" => \($self->{workers}),
         "target-perl=s" => \my $target_perl,
         "test!" => sub { $self->{notest} = $_[1] ? 0 : 1 },
