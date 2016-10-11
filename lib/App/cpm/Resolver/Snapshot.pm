@@ -1,4 +1,4 @@
-package App::cpm::Worker::Resolver::Snapshot;
+package App::cpm::Resolver::Snapshot;
 use strict;
 use warnings;
 use App::cpm::version;
@@ -14,11 +14,11 @@ sub new {
 
 sub snapshot { shift->{snapshot} }
 
-sub work {
+sub resolve {
     my ($self, $job) = @_;
     my $package = $job->{package};
     my $found = $self->snapshot->find($package);
-    return { ok => 0 } unless $found;
+    return unless $found;
 
     my $version = $found->version_for($package);
     if (my $req_version = $job->{version}) {
@@ -27,7 +27,7 @@ sub work {
                 result => "WARN",
                 message => "Couldn't find $job->{package} $req_version (only found $version)",
             );
-            return { ok => 0 };
+            return;
         }
     }
 
@@ -39,11 +39,9 @@ sub work {
     } sort keys %{$found->provides};
 
     return {
-        ok => 1,
         distfile => $found->distfile,
         version  => $version,
         provides => \@provides,
-        from => "snapshot",
     };
 }
 

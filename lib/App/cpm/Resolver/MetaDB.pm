@@ -1,4 +1,4 @@
-package App::cpm::Worker::Resolver::MetaDB;
+package App::cpm::Resolver::MetaDB;
 use strict;
 use warnings;
 use utf8;
@@ -14,7 +14,7 @@ sub new {
     bless { %option, ua => $ua }, $class;
 }
 
-sub work {
+sub resolve {
     my ($self, $job) = @_;
     my $res = $self->{ua}->get( "$self->{cpanmetadb}/$job->{package}" );
     if ($res->{success}) {
@@ -27,7 +27,7 @@ sub work {
                     result => "WARN",
                     message => "Couldn't find $job->{package} $req_version (only found $version)",
                 );
-                return { ok => 0 };
+                return;
             }
         }
         my @provides = map {
@@ -37,14 +37,12 @@ sub work {
             +{ package => $package, version => $version };
         } sort keys %{$meta->{provides}};
         return {
-            ok => 1,
             distfile => $meta->{distfile},
             version  => $meta->{version},
             provides => \@provides,
-            from => "cpanmetadb",
         };
     }
-    return { ok => 0 };
+    return;
 }
 
 1;

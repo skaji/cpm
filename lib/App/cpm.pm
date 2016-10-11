@@ -6,6 +6,8 @@ use App::cpm::Master;
 use App::cpm::Worker;
 use App::cpm::Logger;
 use App::cpm::version;
+use App::cpm::Resolver::MetaDB;
+use App::cpm::Resolver::Multiplexer;
 use Parallel::Pipes;
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use List::Util ();
@@ -146,7 +148,17 @@ sub cmd_install {
         user_inc => [$self->_user_inc],
         target_perl => $self->{target_perl},
     );
-    $self->setup($master => @argv);
+    $self->register_initial_job($master => @argv);
+
+    my $resolver = App::cpm::Resolver::Multiplexer->new;
+    if (!@argv && -f $self->{snapshot}) {
+        if (!eval { require App::cpm::Resolver::Snapshot }) {
+            die "To load $self->{snapshot}, you need to install Carton::Snapshot.\n";
+        }
+        warn "Loading distributions from $self->{snapshot}...\n";
+        $resolver->append(App::cpm::Resolver::Snapshot->new(snapshot => $self->{snapshot}));
+    }
+    $resolver->append(App::cpm::Resolver::MetaDB->new(cpanmetadb => $self->{cpanmetadb}));
 
     my $worker = App::cpm::Worker->new(
         verbose         => $self->{verbose},
@@ -156,11 +168,8 @@ sub cmd_install {
         menlo_build_log => "$ENV{HOME}/.perl-cpm/build.@{[time]}.log",
         notest          => $self->{notest},
         sudo            => $self->{sudo},
+        resolver        => $resolver,
         ($self->{global} ? () : (local_lib => $self->{local_lib})),
-        resolver => [
-            (!@argv && -f $self->{snapshot} ? {snapshot => $self->{snapshot}} : ()),
-            { cpanmetadb => $self->{cpanmetadb} },
-        ],
     );
     my $pipes = Parallel::Pipes->new($self->{workers}, sub {
         my $job = shift;
@@ -206,7 +215,7 @@ sub cmd_install {
     return $master->fail ? 1 : 0;
 }
 
-sub setup {
+sub register_initial_job {
     my ($self, $master, @argv) = @_;
 
     my @package;
@@ -232,13 +241,6 @@ sub setup {
             die sprintf "%s requires perl %s\n", $self->{cpanfile}, $req->{version};
         } else {
             @package = @need_resolve;
-        }
-
-        if (-f $self->{snapshot}) {
-            if (!eval { require Carton::Snapshot }) {
-                die "To load $self->{snapshot}, you need to install Carton::Snapshot.\n";
-            }
-            warn "Loading distributions from $self->{snapshot}...\n";
         }
     }
 
