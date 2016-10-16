@@ -9,7 +9,11 @@ sub new {
     my ($class, %option) = @_;
     my $snapshot = Carton::Snapshot->new(path => $option{path} || "cpanfile.snapshot");
     $snapshot->load;
-    bless { %option, snapshot => $snapshot }, $class;
+    bless {
+        mirror => ["http://www.cpan.org", "http://backpan.perl.org"],
+        %option,
+        snapshot => $snapshot
+    }, $class;
 }
 
 sub snapshot { shift->{snapshot} }

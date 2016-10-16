@@ -10,6 +10,7 @@ sub new {
 sub add {
     my ($self, $resolver) = @_;
     push @{ $self->{backends} }, $resolver;
+    $self;
 }
 
 sub resolve {

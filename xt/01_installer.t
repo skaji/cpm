@@ -27,7 +27,12 @@ is_deeply $configure_requirements, [
   },
 ];
 
-my ($distdata, $requirements) = $installer->configure($dir, $distfile, $meta);
+my ($distdata, $requirements) = $installer->configure({
+    directory => $dir,
+    distfile => $distfile,
+    meta => $meta,
+    source => "cpan",
+});
 
 is $distdata->{distvname}, "Distribution-Metadata-0.05";
 

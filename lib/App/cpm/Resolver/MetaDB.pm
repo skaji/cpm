@@ -13,6 +13,7 @@ sub new {
     my $ua = HTTP::Tiny->new(timeout => 15, keep_alive => 1);
     bless {
         uri => "http://cpanmetadb.plackperl.org/v1.0/package",
+        mirror => ["http://www.cpan.org"],
         %option,
         ua => $ua
     }, $class;

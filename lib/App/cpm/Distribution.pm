@@ -11,7 +11,8 @@ sub new {
     $uri = [$uri] unless ref $uri;
     my $distfile = delete $option{distfile} || $uri->[0];
     my $source = delete $option{source} || "cpan";
-    bless {%option, uri => $uri, distfile => $distfile, source => $source, _state => 0}, $class;
+    my $provides = delete $option{provides} || [];
+    bless {%option, provides => $provides, uri => $uri, distfile => $distfile, source => $source, _state => 0}, $class;
 }
 
 for my $attr (qw(

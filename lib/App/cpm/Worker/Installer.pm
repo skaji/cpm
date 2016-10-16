@@ -23,7 +23,7 @@ sub work {
     my ($self, $job) = @_;
     my $type = $job->{type} || "(undef)";
     if ($type eq "fetch") {
-        my ($directory, $meta, $configure_requirements, $provides)
+        my ($directory, $meta, $configure_requirements, $provides, $using_cache)
             = $self->fetch($job);
         if ($configure_requirements) {
             return +{
@@ -32,6 +32,7 @@ sub work {
                 meta => $meta,
                 configure_requirements => $configure_requirements,
                 provides => $provides,
+                using_cache => $using_cache,
             };
         }
     } elsif ($type eq "configure") {
@@ -100,6 +101,7 @@ sub fetch {
     my @uri      = ((), @{$job->{uri}}); # copy
 
     my $dir;
+    my $using_cache;
     if ($source eq "git") {
         for my $uri (@uri) {
             if (my $result = $self->menlo->git_uri($uri)) {
@@ -147,6 +149,7 @@ sub fetch {
                     if (-f $cache) {
                         File::Copy::copy($cache, $basename);
                         $dir = $self->menlo->unpack($basename);
+                        $using_cache++;
                         last FETCH;
                     } else {
                         $self->menlo->{save_dists} = $self->{cache};
@@ -162,7 +165,7 @@ sub fetch {
     chdir $dir or die;
     my ($meta, $configure_requirements, $provides)
         = $self->_get_configure_requirements($distfile);
-    return ($dir, $meta, $configure_requirements, $provides);
+    return ($dir, $meta, $configure_requirements, $provides, $using_cache);
 }
 
 sub _get_configure_requirements {
