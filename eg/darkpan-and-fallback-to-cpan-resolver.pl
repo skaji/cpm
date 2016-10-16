@@ -5,7 +5,8 @@ use App::cpm::Resolver::MetaDB;
 use App::cpm::Resolver::Mirror;
 
 # change as you want
-my $darkpan = " http://cpan.cpantesters.org/";
+# you can use file::// schema
+my $darkpan = "http://cpan.cpantesters.org/";
 
 my $cascade = App::cpm::Resolver::Cascade->new;
 $cascade->add(App::cpm::Resolver::Mirror->new(mirror => $darkpan));

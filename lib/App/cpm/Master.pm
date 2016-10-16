@@ -268,9 +268,12 @@ sub _register_resolve_result {
         source   => $job->{source},
         uri      => $job->{uri},
         distfile => $job->{distfile},
-        provides => $job->{provides},
     );
-    $self->add_distribution($distribution, $job->{provides});
+    my $provides = $job->{provides};
+    if (!$provides or @$provides == 0) {
+        $provides = [{package => $job->{package}, version => $job->{version}}];
+    }
+    $self->add_distribution($distribution, $provides);
 }
 
 sub _register_fetch_result {
