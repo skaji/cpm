@@ -53,6 +53,7 @@ sub parse_options {
         "snapshot=s" => \($self->{snapshot}),
         "sudo" => \($self->{sudo}),
         "resolver=s" => \($self->{custom_resolver}),
+        "mirror-only" => \($self->{mirror_only}),
     or exit 1;
 
     $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
@@ -260,6 +261,7 @@ sub load_cpanfile {
 
 sub generate_resolver {
     my $self = shift;
+
     if ($self->{custom_resolver}) {
         # XXX: cf Plack::Util::load_psgi
         my $resolver = do $self->{custom_resolver};
@@ -272,6 +274,12 @@ sub generate_resolver {
         }
         return $resolver;
     }
+
+    if ($self->{mirror_only}) {
+        require App::cpm::Resolver::Mirror;
+        return App::cpm::Resolver::Mirror->new(mirror => $self->{mirror}[0]);
+    }
+
     my $cascade = App::cpm::Resolver::Cascade->new;
     if (!@{$self->{argv}} && -f $self->{snapshot}) {
         if (!eval { require App::cpm::Resolver::Snapshot }) {
