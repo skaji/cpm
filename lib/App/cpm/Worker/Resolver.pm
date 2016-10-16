@@ -11,6 +11,8 @@ sub work {
     my ($self, $job) = @_;
     if (my $result = $self->{impl}->resolve($job)) {
         $result->{ok} = 1;
+        $result->{uri} = [$result->{uri}] unless ref $result->{uri};
+        $result->{distfile} ||= $result->{uri}[0];
         return $result;
     } else {
         return { ok => 0 };

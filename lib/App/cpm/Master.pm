@@ -88,7 +88,12 @@ sub _calculate_jobs {
 
     if (my @dists = grep { $_->resolved } @distributions) {
         for my $dist (@dists) {
-            $self->add_job(type => "fetch", distfile => $dist->distfile);
+            $self->add_job(
+                type => "fetch",
+                distfile => $dist->distfile,
+                source => $dist->source,
+                uri => $dist->uri,
+            );
         }
     }
 
@@ -102,6 +107,7 @@ sub _calculate_jobs {
                     meta => $dist->meta,
                     directory => $dist->directory,
                     distfile => $dist->distfile,
+                    source => $dist->source,
                 );
             } elsif (@need_resolve) {
                 my $ok = $self->_register_resolve_job(@need_resolve);
@@ -259,6 +265,8 @@ sub _register_resolve_result {
     }
 
     my $distribution = App::cpm::Distribution->new(
+        source   => $job->{source},
+        uri      => $job->{uri},
         distfile => $job->{distfile},
         provides => $job->{provides},
     );

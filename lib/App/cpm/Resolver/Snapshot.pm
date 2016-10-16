@@ -9,7 +9,7 @@ sub new {
     my ($class, %option) = @_;
     my $snapshot = Carton::Snapshot->new(path => $option{path} || "cpanfile.snapshot");
     $snapshot->load;
-    bless { snapshot => $snapshot }, $class;
+    bless { %option, snapshot => $snapshot }, $class;
 }
 
 sub snapshot { shift->{snapshot} }
@@ -38,8 +38,11 @@ sub resolve {
         +{ package => $package, version => $version };
     } sort keys %{$found->provides};
 
+    my $distfile = $found->distfile;
     return {
-        distfile => $found->distfile,
+        source => "cpan",
+        distfile => $distfile,
+        uri => [map { "$_/authors/id/$distfile" } @{$self->{mirror}}],
         version  => $version,
         provides => \@provides,
     };

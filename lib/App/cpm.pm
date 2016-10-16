@@ -153,8 +153,8 @@ sub cmd_install {
 
     my $worker = App::cpm::Worker->new(
         verbose         => $self->{verbose},
+        cache           => "$ENV{HOME}/.perl-cpm/cache",
         menlo_base      => "$ENV{HOME}/.perl-cpm/work",
-        menlo_cache     => "$ENV{HOME}/.perl-cpm/cache",
         menlo_build_log => "$ENV{HOME}/.perl-cpm/build.@{[time]}.log",
         notest          => $self->{notest},
         sudo            => $self->{sudo},
@@ -210,9 +210,12 @@ sub register_initial_job {
 
     my @package;
     for my $arg (@{$self->{argv}}) {
-        if (-d $arg or $arg =~ /(?:^git:|\.git(?:@.+)?$)/) {
-            $arg = abs_path $arg if -d $arg;
-            my $dist = App::cpm::Distribution->new(distfile => $arg, provides => []);
+        if (-d $arg || -f $arg) {
+            $arg = abs_path $arg;
+            my $dist = App::cpm::Distribution->new(source => "local", uri => ["file://$arg"], provides => []);
+            $master->add_distribution($dist);
+        } elsif ($arg =~ /(?:^git:|\.git(?:@.+)?$)/) {
+            my $dist = App::cpm::Distribution->new(source => "git", uri => [$arg], provides => []);
             $master->add_distribution($dist);
         } else {
             push @package, {package => $arg, version => 0};

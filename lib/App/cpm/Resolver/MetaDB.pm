@@ -11,7 +11,11 @@ use App::cpm::Logger;
 sub new {
     my ($class, %option) = @_;
     my $ua = HTTP::Tiny->new(timeout => 15, keep_alive => 1);
-    bless { %option, ua => $ua }, $class;
+    bless {
+        uri => "http://cpanmetadb.plackperl.org/v1.0/package",
+        %option,
+        ua => $ua
+    }, $class;
 }
 
 sub resolve {
@@ -36,8 +40,12 @@ sub resolve {
             $version = undef if $version eq "undef";
             +{ package => $package, version => $version };
         } sort keys %{$meta->{provides}};
+
+        my $distfile = $meta->{distfile};
         return {
-            distfile => $meta->{distfile},
+            source => "cpan",
+            distfile => $distfile,
+            uri => [map { "$_/authors/id/$distfile" } @{$self->{mirror}}],
             version  => $meta->{version},
             provides => \@provides,
         };
