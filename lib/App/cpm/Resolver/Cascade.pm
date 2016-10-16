@@ -1,4 +1,4 @@
-package App::cpm::Resolver::Multiplexer;
+package App::cpm::Resolver::Cascade;
 use strict;
 use warnings;
 
@@ -7,12 +7,8 @@ sub new {
     bless { backends => [] }, $class;
 }
 
-sub append {
+sub add {
     my ($self, $resolver) = @_;
-    if ( ! eval { $resolver->can("resolve") } ) {
-        my $class = ref $self;
-        die "$class\->append only accepts objects that have resolve method";
-    }
     push @{ $self->{backends} }, $resolver;
 }
 

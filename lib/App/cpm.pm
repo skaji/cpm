@@ -7,7 +7,7 @@ use App::cpm::Worker;
 use App::cpm::Logger;
 use App::cpm::version;
 use App::cpm::Resolver::MetaDB;
-use App::cpm::Resolver::Multiplexer;
+use App::cpm::Resolver::Cascade;
 use Parallel::Pipes;
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use List::Util ();
@@ -27,7 +27,7 @@ sub new {
         cpanfile => "cpanfile",
         local_lib => "local",
         cpanmetadb => "http://cpanmetadb.plackperl.org/v1.0/package",
-        mirror => ["http://www.cpan.org", "http://backpan.perl.org"],
+        mirror => ["http://www.cpan.org"],
         target_perl => $],
         %option
     }, $class;
@@ -75,7 +75,7 @@ sub parse_options {
 
     $App::cpm::Logger::COLOR = 1 if $self->{color};
     $App::cpm::Logger::VERBOSE = 1 if $self->{verbose};
-    @ARGV;
+    $self->{argv} = \@ARGV;
 }
 
 sub _core_inc {
@@ -107,8 +107,9 @@ sub run {
     $cmd = "help"    if $cmd =~ /^(-h|--help)$/;
     $cmd = "version" if $cmd =~ /^(-V|--version)$/;
     if (my $sub = $self->can("cmd_$cmd")) {
-        @argv = $self->parse_options(@argv) unless $cmd eq "exec";
-        return $self->$sub(@argv);
+        return $self->$sub(@argv) if $cmd eq "exec";
+        $self->parse_options(@argv);
+        return $self->$sub;
     } else {
         my $message = $cmd =~ /^-/ ? "Missing subcommand" : "Unknown subcommand '$cmd'";
         die "$message, try `cpm --help`\n";
@@ -140,35 +141,24 @@ sub cmd_exec {
 }
 
 sub cmd_install {
-    my ($self, @argv) = @_;
-    die "Need arguments or cpanfile.\n" if !@argv && !-f $self->{cpanfile};
+    my $self = shift;
+    die "Need arguments or cpanfile.\n" if !@{$self->{argv}} && !-f $self->{cpanfile};
 
     my $master = App::cpm::Master->new(
         core_inc => [$self->_core_inc],
         user_inc => [$self->_user_inc],
         target_perl => $self->{target_perl},
     );
-    $self->register_initial_job($master => @argv);
-
-    my $resolver = App::cpm::Resolver::Multiplexer->new;
-    if (!@argv && -f $self->{snapshot}) {
-        if (!eval { require App::cpm::Resolver::Snapshot }) {
-            die "To load $self->{snapshot}, you need to install Carton::Snapshot.\n";
-        }
-        warn "Loading distributions from $self->{snapshot}...\n";
-        $resolver->append(App::cpm::Resolver::Snapshot->new(snapshot => $self->{snapshot}));
-    }
-    $resolver->append(App::cpm::Resolver::MetaDB->new(cpanmetadb => $self->{cpanmetadb}));
+    $self->register_initial_job($master);
 
     my $worker = App::cpm::Worker->new(
         verbose         => $self->{verbose},
-        mirror          => $self->{mirror},
         menlo_base      => "$ENV{HOME}/.perl-cpm/work",
         menlo_cache     => "$ENV{HOME}/.perl-cpm/cache",
         menlo_build_log => "$ENV{HOME}/.perl-cpm/build.@{[time]}.log",
         notest          => $self->{notest},
         sudo            => $self->{sudo},
-        resolver        => $resolver,
+        resolver        => $self->generate_resolver,
         ($self->{global} ? () : (local_lib => $self->{local_lib})),
     );
     my $pipes = Parallel::Pipes->new($self->{workers}, sub {
@@ -216,10 +206,10 @@ sub cmd_install {
 }
 
 sub register_initial_job {
-    my ($self, $master, @argv) = @_;
+    my ($self, $master) = @_;
 
     my @package;
-    for my $arg (@argv) {
+    for my $arg (@{$self->{argv}}) {
         if (-d $arg or $arg =~ /(?:^git:|\.git(?:@.+)?$)/) {
             $arg = abs_path $arg if -d $arg;
             my $dist = App::cpm::Distribution->new(distfile => $arg, provides => []);
@@ -229,7 +219,7 @@ sub register_initial_job {
         }
     }
 
-    if (!@argv) {
+    if (!@{$self->{argv}}) {
         warn "Loading modules from $self->{cpanfile}...\n";
         my $requirements = $self->load_cpanfile($self->{cpanfile});
         my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirements);
@@ -262,6 +252,28 @@ sub load_cpanfile {
     my $requirements = $prereqs->merged_requirements($phases, ['requires']);
     my $hash = $requirements->as_string_hash;
     [ map { +{ package => $_, version => $hash->{$_} } } keys %$hash ];
+}
+
+sub generate_resolver {
+    my $self = shift;
+    my $cascade = App::cpm::Resolver::Cascade->new;
+    if (!@{$self->{argv}} && -f $self->{snapshot}) {
+        if (!eval { require App::cpm::Resolver::Snapshot }) {
+            die "To load $self->{snapshot}, you need to install Carton::Snapshot.\n";
+        }
+        warn "Loading distributions from $self->{snapshot}...\n";
+        my $resolver = App::cpm::Resolver::Snapshot->new(
+            path => $self->{snapshot},
+            mirror => [@{$self->{mirror}}, "http://backpan.perl.org"],
+        );
+        $cascade->add($resolver);
+    }
+    my $resolver = App::cpm::Resolver::MetaDB->new(
+        uri => $self->{cpanmetadb},
+        mirror => $self->{mirror},
+    );
+    $cascade->add($resolver);
+    $cascade;
 }
 
 1;

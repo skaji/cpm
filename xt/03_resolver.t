@@ -3,12 +3,12 @@ use warnings;
 use utf8;
 use Test::More;
 use App::cpm::Worker::Resolver;
-use App::cpm::Resolver::Multiplexer;
+use App::cpm::Resolver::Cascade;
 use App::cpm::Resolver::MetaDB;
 
-my $impl = App::cpm::Resolver::Multiplexer->new;
-$impl->append(App::cpm::Resolver::MetaDB->new(cpanmetadb => "http://cpanmetadb.plackperl.org/v1.0/package"));
-my $r = App::cpm::Worker::Resolver->new(impl => $impl);
+my $cascade = App::cpm::Resolver::Cascade->new;
+$cascade->add(App::cpm::Resolver::MetaDB->new(uri => "http://cpanmetadb.plackperl.org/v1.0/package"));
+my $r = App::cpm::Worker::Resolver->new(impl => $cascade);
 
 my $res = $r->work(+{ package => "Plack", version => 1 });
 

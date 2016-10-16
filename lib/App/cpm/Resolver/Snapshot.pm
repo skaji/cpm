@@ -7,7 +7,7 @@ use Carton::Snapshot;
 
 sub new {
     my ($class, %option) = @_;
-    my $snapshot = Carton::Snapshot->new(path => $option{snapshot} || "cpanfile.snapshot");
+    my $snapshot = Carton::Snapshot->new(path => $option{path} || "cpanfile.snapshot");
     $snapshot->load;
     bless { snapshot => $snapshot }, $class;
 }

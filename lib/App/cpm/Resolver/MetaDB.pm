@@ -16,7 +16,7 @@ sub new {
 
 sub resolve {
     my ($self, $job) = @_;
-    my $res = $self->{ua}->get( "$self->{cpanmetadb}/$job->{package}" );
+    my $res = $self->{ua}->get( "$self->{uri}/$job->{package}" );
     if ($res->{success}) {
         my $yaml = CPAN::Meta::YAML->read_string($res->{content});
         my $meta = $yaml->[0];
