@@ -275,12 +275,13 @@ sub generate_resolver {
         return $resolver;
     }
 
+    my $cascade = App::cpm::Resolver::Cascade->new;
     if ($self->{mirror_only}) {
         require App::cpm::Resolver::Mirror;
-        return App::cpm::Resolver::Mirror->new(mirror => $self->{mirror}[0]);
+        $cascade->add(App::cpm::Resolver::Mirror->new(mirror => $_)) for @{$self->{mirror}};
+        return $cascade;
     }
 
-    my $cascade = App::cpm::Resolver::Cascade->new;
     if (!@{$self->{argv}} && -f $self->{snapshot}) {
         if (!eval { require App::cpm::Resolver::Snapshot }) {
             die "To load $self->{snapshot}, you need to install Carton::Snapshot.\n";
