@@ -9,6 +9,7 @@ use App::cpm::version;
 sub new {
     my ($class, %option) = @_;
     my $mirror = $option{mirror} or die "missing mirror option";
+    $mirror =~ s{/*$}{/};
     my $cache = $option{cache} || "$ENV{HOME}/.perl-cpm";
     my $index = Menlo::Index::Mirror->new({
         mirror => $mirror,
@@ -16,7 +17,7 @@ sub new {
         fetcher => sub { $class->mirror(@_) },
     });
     $index->refresh_index; # refresh_index first
-    bless { mirror => $option{mirror}, index => $index }, $class;
+    bless { mirror => $mirror, index => $index }, $class;
 }
 
 # copy from Menlo::CLI::Compat
@@ -72,7 +73,7 @@ sub resolve {
     return +{
         source => "cpan", # XXX
         distfile => $distfile,
-        uri => [ "$self->{mirror}/authors/id/$distfile" ],
+        uri => [ "$self->{mirror}authors/id/$distfile" ],
         version => $result->{version},
         package => $result->{package},
     };

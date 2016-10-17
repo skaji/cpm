@@ -27,8 +27,8 @@ sub new {
         snapshot => "cpanfile.snapshot",
         cpanfile => "cpanfile",
         local_lib => "local",
-        cpanmetadb => "http://cpanmetadb.plackperl.org/v1.0/package",
-        mirror => ["http://www.cpan.org"],
+        cpanmetadb => "http://cpanmetadb.plackperl.org/v1.0/",
+        mirror => ["http://www.cpan.org/", "http://backpan.perl.org/"],
         target_perl => $],
         %option
     }, $class;
@@ -222,7 +222,18 @@ sub register_initial_job {
             my $dist = App::cpm::Distribution->new(source => "git", uri => [$arg], provides => []);
             $master->add_distribution($dist);
         } else {
-            push @package, {package => $arg, version => 0};
+            my ($package, $version);
+            # copy from Menlo
+            # Plack@1.2 -> Plack~"==1.2"
+            $arg =~ s/^([A-Za-z0-9_:]+)@([v\d\._]+)$/$1~== $2/;
+
+            # support Plack~1.20, DBI~"> 1.0, <= 2.0"
+            if ($arg =~ /\~[v\d\._,\!<>= ]+$/) {
+                ($package, $version) = split '~', $arg, 2;
+            } else {
+                $package = $arg;
+            }
+            push @package, {package => $package, version => $version || 0};
         }
     }
 
@@ -303,7 +314,7 @@ sub generate_resolver {
             warn "Loading distributions from $self->{snapshot}...\n";
             my $resolver = App::cpm::Resolver::Snapshot->new(
                 path => $self->{snapshot},
-                mirror => [@{$self->{mirror}}, "http://backpan.perl.org"],
+                mirror => $self->{mirror},
             );
             $cascade->add($resolver);
         }

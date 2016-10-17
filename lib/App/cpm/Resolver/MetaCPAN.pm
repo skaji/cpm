@@ -16,7 +16,7 @@ my $HTTP_CLIENT_CLASS = do {
 sub new {
     my ($class, %option) = @_;
     my $uri = $option{uri} || "https://fastapi.metacpan.org/v1/download_url/";
-    $uri =~ s{/+$}{/};
+    $uri =~ s{/*$}{/};
     my $http = $HTTP_CLIENT_CLASS->new(timeout => 10);
     bless { %option, uri => $uri, http => $http }, $class;
 }

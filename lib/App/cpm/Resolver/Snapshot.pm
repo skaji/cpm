@@ -9,9 +9,11 @@ sub new {
     my ($class, %option) = @_;
     my $snapshot = Carton::Snapshot->new(path => $option{path} || "cpanfile.snapshot");
     $snapshot->load;
+    my $mirror = $option{mirror} || ["http://www.cpan.org", "http://backpan.perl.org"];
+    s{/+$}{/} for @$mirror;
     bless {
-        mirror => ["http://www.cpan.org", "http://backpan.perl.org"],
         %option,
+        mirror => $mirror,
         snapshot => $snapshot
     }, $class;
 }
@@ -27,10 +29,6 @@ sub resolve {
     my $version = $found->version_for($package);
     if (my $req_version = $job->{version}) {
         if (!App::cpm::version->parse($version)->satisfy($req_version)) {
-            App::cpm::Logger->log(
-                result => "WARN",
-                message => "Couldn't find $job->{package} $req_version (only found $version)",
-            );
             return;
         }
     }
@@ -46,7 +44,7 @@ sub resolve {
     return {
         source => "cpan",
         distfile => $distfile,
-        uri => [map { "$_/authors/id/$distfile" } @{$self->{mirror}}],
+        uri => [map { "${_}authors/id/$distfile" } @{$self->{mirror}}],
         version  => $version,
         provides => \@provides,
     };
