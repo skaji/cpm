@@ -75,7 +75,7 @@ arbitrary db (elasticsearch, mysql, sqlite, PostgreSQL, etc)
 
 =back
 
-and want to fetching distributions via:
+and want to fetch distributions via:
 
 =over 4
 
@@ -117,15 +117,29 @@ Now cpm has not only the following resolvers
 
 =over 4
 
-=item App::cpm::Resolver::MetaDB
+=item *
 
-=item App::cpm::Resolver::MetaCPAN
+App::cpm::Resolver::MetaDB
 
-=item App::cpm::Resolver::Mirror
+=item *
 
-=item App::cpm::Resolver::Snapshot
+App::cpm::Resolver::MetaCPAN
 
-=item App::cpm::Resolver::Cascade
+=item *
+
+App::cpm::Resolver::Mirror
+
+=item *
+
+App::cpm::Resolver::Snapshot
+
+=item *
+
+App::cpm::Resolver::CPANfile
+
+=item *
+
+App::cpm::Resolver::Cascade
 
 =back
 
