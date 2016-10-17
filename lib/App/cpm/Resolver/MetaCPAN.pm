@@ -29,6 +29,10 @@ sub _encode {
 
 sub resolve {
     my ($self, $job) = @_;
+    if ($self->{only_dev} and !$job->{dev}) {
+        return;
+    }
+
     my %query = (
         ( ($self->{dev} || $job->{dev}) ? (dev => 1) : () ),
         ( $job->{version} ? (version => $job->{version}) : () ),

@@ -26,6 +26,9 @@ cpm - a fast CPAN module installer
   # install module into current @INC istead of local/
   > cpm install -g Module
 
+  # prefer TRIAL release
+  > cpm install --dev Moose
+
   # install modules as if version of your perl is 5.8.5
   # so that modules which are not core in 5.8.5 will be installed
   > cpm install --target-perl 5.8.5
@@ -56,6 +59,8 @@ cpm - a fast CPAN module installer
         query 02packages.details.txt.gz instead of cpanmetadb
       --resolver=SCRIPT (EXPERIMENTAL, will be removed or renamed)
         use your own resolver, see `perldoc App::cpm::Resolver`
+      --dev (EXPERIMENTAL)
+        resolve TRIAL distributions too
       --color, --no-color
         turn on/off color output, default: on
       --test, --no-test

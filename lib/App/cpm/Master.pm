@@ -220,7 +220,7 @@ sub is_satisfied {
 
         $is_satisfied = 0 if defined $is_satisfied;
         if (!$resolved) {
-            push @need_resolve, { package => $package, version => $version };
+            push @need_resolve, $req;
         }
     }
     return ($is_satisfied, @need_resolve);

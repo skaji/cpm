@@ -7,6 +7,7 @@ use App::cpm::Worker;
 use App::cpm::Logger;
 use App::cpm::version;
 use App::cpm::Resolver::MetaDB;
+use App::cpm::Resolver::MetaCPAN;
 use App::cpm::Resolver::Cascade;
 use Parallel::Pipes;
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
@@ -54,6 +55,7 @@ sub parse_options {
         "sudo" => \($self->{sudo}),
         "resolver=s" => \($self->{custom_resolver}),
         "mirror-only" => \($self->{mirror_only}),
+        "dev" => \($self->{dev}),
     or exit 1;
 
     $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
@@ -243,7 +245,8 @@ sub register_initial_job {
         $master->add_job(
             type => "resolve",
             package => $p->{package},
-            version => $p->{version} || 0
+            version => $p->{version} || 0,
+            ($p->{dev} ? (dev => 1) : ()),
         );
     }
 }
@@ -256,7 +259,12 @@ sub load_cpanfile {
     my $phases = [qw(build test runtime)];
     my $requirements = $prereqs->merged_requirements($phases, ['requires']);
     my $hash = $requirements->as_string_hash;
-    [ map { +{ package => $_, version => $hash->{$_} } } keys %$hash ];
+    [ map {
+        my $p = $_;
+        my $option = $cpanfile->options_for_module($p);
+        my $dev = $option && $option->{dev} ? 1 : undef;
+        +{ package => $_, version => $hash->{$_}, dev => $dev }
+    } keys %$hash ];
 }
 
 sub generate_resolver {
@@ -300,11 +308,19 @@ sub generate_resolver {
             $cascade->add($resolver);
         }
     }
-    my $resolver = App::cpm::Resolver::MetaDB->new(
+
+    my $resolver;
+
+    $resolver = App::cpm::Resolver::MetaCPAN->new(
+        $self->{dev} ? (dev => 1) : (only_dev => 1)
+    );
+    $cascade->add($resolver);
+    $resolver = App::cpm::Resolver::MetaDB->new(
         uri => $self->{cpanmetadb},
         mirror => $self->{mirror},
     );
     $cascade->add($resolver);
+
     $cascade;
 }
 
