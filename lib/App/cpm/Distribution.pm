@@ -9,7 +9,7 @@ sub new {
     my ($class, %option) = @_;
     my $uri = delete $option{uri};
     $uri = [$uri] unless ref $uri;
-    my $distfile = delete $option{distfile} || $uri->[0];
+    my $distfile = delete $option{distfile};
     my $source = delete $option{source} || "cpan";
     my $provides = delete $option{provides} || [];
     bless {%option, provides => $provides, uri => $uri, distfile => $distfile, source => $source, _state => 0}, $class;
@@ -20,7 +20,6 @@ for my $attr (qw(
     configure_requirements
     directory
     distdata
-    distfile
     meta
     uri
     provides
@@ -32,6 +31,11 @@ for my $attr (qw(
         $self->{$attr} = shift if @_;
         $self->{$attr};
     };
+}
+sub distfile {
+    my $self = shift;
+    $self->{distfile} = shift if @_;
+    $self->{distfile} || $self->{uri}[0];
 }
 
 sub distvname {

@@ -41,13 +41,14 @@ sub info {
     my ($self, $job, $elapsed) = @_;
     my $type = $job->{type};
     return if !$App::cpm::Logger::VERBOSE && $type ne "install";
-    my $distvname = CPAN::DistnameInfo->new($job->{distfile})->distvname || $job->{distfile};
+    my $name = $job->{distfile} ? CPAN::DistnameInfo->new($job->{distfile})->distvname : $job->{uri}[0];
     my ($message, $optional);
     if ($type eq "resolve") {
-        $message = $job->{package} . ($job->{ok} ? " -> $distvname" : "");
+        $message = $job->{package};
+        $message .= " -> $name" . ($job->{ref} ? "\@$job->{ref}" : "") if $job->{ok};
         $optional = "from $job->{from}" if $job->{ok} and $job->{from};
     } else {
-        $message = $distvname;
+        $message = $name;
         $optional = "using cache" if $type eq "fetch" and $job->{using_cache};
     }
     $elapsed = defined $elapsed ? sprintf "(%.3fsec) ", $elapsed : "";

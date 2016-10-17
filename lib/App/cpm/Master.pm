@@ -90,7 +90,7 @@ sub _calculate_jobs {
         for my $dist (@dists) {
             $self->add_job(
                 type => "fetch",
-                distfile => $dist->distfile,
+                distfile => $dist->{distfile},
                 source => $dist->source,
                 uri => $dist->uri,
             );
@@ -106,8 +106,9 @@ sub _calculate_jobs {
                     type => "configure",
                     meta => $dist->meta,
                     directory => $dist->directory,
-                    distfile => $dist->distfile,
+                    distfile => $dist->{distfile},
                     source => $dist->source,
+                    uri => $dist->uri,
                 );
             } elsif (@need_resolve) {
                 my $ok = $self->_register_resolve_job(@need_resolve);
@@ -131,7 +132,8 @@ sub _calculate_jobs {
                     meta => $dist->meta,
                     distdata => $dist->distdata,
                     directory => $dist->directory,
-                    distfile => $dist->distfile,
+                    distfile => $dist->{distfile},
+                    uri => $dist->uri,
                 );
             } elsif (@need_resolve) {
                 my $ok = $self->_register_resolve_job(@need_resolve);
@@ -244,7 +246,7 @@ sub _register_resolve_result {
         $self->{_fail_resolve}{$job->{package}}++;
         return;
     }
-    if ($job->{distfile} =~ m{/perl-5[^/]+$}) {
+    if ($job->{distfile} and $job->{distfile} =~ m{/perl-5[^/]+$}) {
         App::cpm::Logger->log(
             result => "FAIL",
             type => "install",
@@ -279,10 +281,10 @@ sub _register_resolve_result {
 sub _register_fetch_result {
     my ($self, $job) = @_;
     if (!$job->is_success) {
-        $self->{_fail_install}{$job->{distfile}}++;
+        $self->{_fail_install}{$job->distfile}++;
         return;
     }
-    my $distribution = $self->distribution($job->{distfile});
+    my $distribution = $self->distribution($job->distfile);
     $distribution->fetched(1);
     $distribution->configure_requirements($job->{configure_requirements});
     $distribution->directory($job->{directory});
@@ -294,10 +296,10 @@ sub _register_fetch_result {
 sub _register_configure_result {
     my ($self, $job) = @_;
     if (!$job->is_success) {
-        $self->{_fail_install}{$job->{distfile}}++;
+        $self->{_fail_install}{$job->distfile}++;
         return;
     }
-    my $distribution = $self->distribution($job->{distfile});
+    my $distribution = $self->distribution($job->distfile);
     $distribution->configured(1);
     $distribution->distdata($job->{distdata});
     $distribution->requirements($job->{requirements});
@@ -307,10 +309,10 @@ sub _register_configure_result {
 sub _register_install_result {
     my ($self, $job) = @_;
     if (!$job->is_success) {
-        $self->{_fail_install}{$job->{distfile}}++;
+        $self->{_fail_install}{$job->distfile}++;
         return;
     }
-    my $distribution = $self->distribution($job->{distfile});
+    my $distribution = $self->distribution($job->distfile);
     $distribution->installed(1);
     $self->{installed_distributions}++;
     return 1;

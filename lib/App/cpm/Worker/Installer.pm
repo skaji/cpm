@@ -98,12 +98,15 @@ sub fetch {
 
     my $source   = $job->{source};
     my $distfile = $job->{distfile};
-    my @uri      = ((), @{$job->{uri}}); # copy
+    my @uri      = ref $job->{uri} ? @{$job->{uri}} : ($job->{uri});
 
     my $dir;
     my $using_cache;
     if ($source eq "git") {
+        my $ref = $job->{ref} ? "\@$job->{ref}" : "";;
         for my $uri (@uri) {
+            $uri .= ".git" if $uri !~ /\.git$/;
+            $uri .= $ref;
             if (my $result = $self->menlo->git_uri($uri)) {
                 $dir = $result->{dir};
                 last;

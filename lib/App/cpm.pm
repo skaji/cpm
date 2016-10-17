@@ -282,16 +282,23 @@ sub generate_resolver {
         return $cascade;
     }
 
-    if (!@{$self->{argv}} && -f $self->{snapshot}) {
-        if (!eval { require App::cpm::Resolver::Snapshot }) {
-            die "To load $self->{snapshot}, you need to install Carton::Snapshot.\n";
+    if (!@{$self->{argv}}) {
+        if (-f $self->{cpanfile}) {
+            require App::cpm::Resolver::CPANfile;
+            my $resolver = App::cpm::Resolver::CPANfile->new(path => $self->{cpanfile});
+            $cascade->add($resolver);
         }
-        warn "Loading distributions from $self->{snapshot}...\n";
-        my $resolver = App::cpm::Resolver::Snapshot->new(
-            path => $self->{snapshot},
-            mirror => [@{$self->{mirror}}, "http://backpan.perl.org"],
-        );
-        $cascade->add($resolver);
+        if (-f $self->{snapshot}) {
+            if (!eval { require App::cpm::Resolver::Snapshot }) {
+                die "To load $self->{snapshot}, you need to install Carton::Snapshot.\n";
+            }
+            warn "Loading distributions from $self->{snapshot}...\n";
+            my $resolver = App::cpm::Resolver::Snapshot->new(
+                path => $self->{snapshot},
+                mirror => [@{$self->{mirror}}, "http://backpan.perl.org"],
+            );
+            $cascade->add($resolver);
+        }
     }
     my $resolver = App::cpm::Resolver::MetaDB->new(
         uri => $self->{cpanmetadb},

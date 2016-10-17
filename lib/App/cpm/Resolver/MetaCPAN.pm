@@ -39,11 +39,13 @@ sub resolve {
     return unless $res->{success};
 
     my $hash = eval { JSON::PP::decode_json($res->{content}) } or return;
+    my ($distfile) = $hash->{download_url} =~ m{/authors/id/(.+)};
     return {
         source => "cpan", # XXX
+        distfile => $distfile,
         package => $job->{package},
         version => $hash->{version},
-        uri => [$hash->{download_url}],
+        uri => $hash->{download_url},
     };
 }
 
