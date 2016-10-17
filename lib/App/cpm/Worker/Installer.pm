@@ -105,7 +105,7 @@ sub fetch {
     if ($source eq "git") {
         my $ref = $job->{ref} ? "\@$job->{ref}" : "";;
         for my $uri (@uri) {
-            $uri .= ".git" if $uri !~ /\.git$/;
+            $uri .= ".git" if $uri !~ /\.git$/ and $uri !~ /\.git\@.+/;
             $uri .= $ref;
             if (my $result = $self->menlo->git_uri($uri)) {
                 $dir = $result->{dir};
