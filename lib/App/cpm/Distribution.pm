@@ -24,6 +24,7 @@ for my $attr (qw(
     uri
     provides
     requirements
+    ref
 )) {
     no strict 'refs';
     *$attr = sub {
@@ -41,14 +42,22 @@ sub distfile {
 sub distvname {
     my $self = shift;
     $self->{distvname} ||= do {
-        CPAN::DistnameInfo->new($self->distfile)->distvname || $self->distfile;
+        CPAN::DistnameInfo->new($self->{distfile})->distvname || $self->distfile;
     };
 }
 
-sub append_provide {
+sub overwrite_provide {
     my ($self, $provide) = @_;
-    return if $self->providing($provide->{package});
-    push @{$self->{provides}}, $provide;
+    my $overwrited;
+    for my $exist (@{$self->{provides}}) {
+        if ($exist->{package} eq $provide->{package}) {
+            $exist = $provide;
+            $overwrited++;
+        }
+    }
+    if (!$overwrited) {
+        push @{$self->{provides}}, $provide;
+    }
     return 1;
 }
 
@@ -90,7 +99,7 @@ sub providing {
     my ($self, $package, $version) = @_;
     for my $provide (@{$self->provides}) {
         if ($provide->{package} eq $package) {
-            if (App::cpm::version->parse($provide->{version})->satisfy($version)) {
+            if (!$version or App::cpm::version->parse($provide->{version})->satisfy($version)) {
                 return 1;
             } else {
                 my $message = sprintf "%s provides %s (%s), but needs %s\n",

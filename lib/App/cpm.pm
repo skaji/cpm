@@ -60,7 +60,10 @@ sub parse_options {
 
     $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
     $self->{mirror} = \@mirror if @mirror;
-    $_ =~ s{/$}{} for @{$self->{mirror}};
+    for my $mirror (@{$self->{mirror}}) {
+        $mirror =~ s{/*$}{/};
+        $mirror = "file://$mirror" if $mirror !~ m{^https?://} and -d $mirror;
+    }
     $self->{color} = 1 if !defined $self->{color} && -t STDOUT;
     if ($target_perl) {
         # 5.8 is interpreted as 5.800, fix it
@@ -216,13 +219,14 @@ sub register_initial_job {
     for my $arg (@{$self->{argv}}) {
         if (-d $arg || -f $arg) {
             $arg = abs_path $arg;
-            my $dist = App::cpm::Distribution->new(source => "local", uri => ["file://$arg"], provides => []);
+            my $dist = App::cpm::Distribution->new(source => "local", uri => "file://$arg", provides => []);
             $master->add_distribution($dist);
-        } elsif ($arg =~ /(?:^git:|\.git(?:@.+)?$)/) {
-            my $dist = App::cpm::Distribution->new(source => "git", uri => [$arg], provides => []);
+        } elsif ($arg =~ /(?:^git:|\.git(?:@(.+))?$)/) {
+            my %ref = $1 ? (ref => $1) : ();
+            my $dist = App::cpm::Distribution->new(source => "git", uri => $arg, provides => [], %ref);
             $master->add_distribution($dist);
         } else {
-            my ($package, $version);
+            my ($package, $version, $dev);
             # copy from Menlo
             # Plack@1.2 -> Plack~"==1.2"
             $arg =~ s/^([A-Za-z0-9_:]+)@([v\d\._]+)$/$1~== $2/;
@@ -231,17 +235,19 @@ sub register_initial_job {
             if ($arg =~ /\~[v\d\._,\!<>= ]+$/) {
                 ($package, $version) = split '~', $arg, 2;
             } else {
+                $arg =~ s/[~@]dev$// and $dev++;
                 $package = $arg;
             }
-            push @package, {package => $package, version => $version || 0};
+            push @package, {package => $package, version => $version || 0, dev => $dev};
         }
     }
 
     if (!@{$self->{argv}}) {
         warn "Loading modules from $self->{cpanfile}...\n";
-        my $requirements = $self->load_cpanfile($self->{cpanfile});
+        my ($requirements, $dist) = $self->load_cpanfile($self->{cpanfile});
+        $master->add_distribution($_) for @$dist;
         my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirements);
-        if ($is_satisfied) {
+        if (!@$dist and $is_satisfied) {
             warn "All requirements are satisfied.\n";
             exit 0;
         } elsif (!defined $is_satisfied) {
@@ -257,7 +263,7 @@ sub register_initial_job {
             type => "resolve",
             package => $p->{package},
             version => $p->{version} || 0,
-            ($p->{dev} ? (dev => 1) : ()),
+            dev => $p->{dev},
         );
     }
 }
@@ -270,12 +276,29 @@ sub load_cpanfile {
     my $phases = [qw(build test runtime)];
     my $requirements = $prereqs->merged_requirements($phases, ['requires']);
     my $hash = $requirements->as_string_hash;
-    [ map {
-        my $p = $_;
-        my $option = $cpanfile->options_for_module($p);
-        my $dev = $option && $option->{dev} ? 1 : undef;
-        +{ package => $_, version => $hash->{$_}, dev => $dev }
-    } keys %$hash ];
+
+    my (@package, @distribution);
+    for my $package (sort keys %$hash) {
+        my $option = $cpanfile->options_for_module($package) || +{};
+        my $uri;
+        if ($uri = $option->{git}) {
+            push @distribution, App::cpm::Distribution->new(
+                source => "git", uri => $uri, ref => $option->{ref},
+                provides => [{package => $package}],
+            );
+        } elsif ($uri = $option->{dist}) {
+            my $source = $uri =~ m{^file://} ? "local" : "http";
+            push @distribution, App::cpm::Distribution->new(
+                source => $source, uri => $uri,
+                provides => [{package => $package}],
+            );
+        } else {
+            push @package, {
+                package => $package, version => $hash->{$package}, dev => $option->{dev},
+            };
+        }
+    }
+    (\@package, \@distribution);
 }
 
 sub generate_resolver {
@@ -301,28 +324,19 @@ sub generate_resolver {
         return $cascade;
     }
 
-    if (!@{$self->{argv}}) {
-        if (-f $self->{cpanfile}) {
-            require App::cpm::Resolver::CPANfile;
-            my $resolver = App::cpm::Resolver::CPANfile->new(path => $self->{cpanfile});
-            $cascade->add($resolver);
+    if (!@{$self->{argv}} and -f $self->{snapshot}) {
+        if (!eval { require App::cpm::Resolver::Snapshot }) {
+            die "To load $self->{snapshot}, you need to install Carton::Snapshot.\n";
         }
-        if (-f $self->{snapshot}) {
-            if (!eval { require App::cpm::Resolver::Snapshot }) {
-                die "To load $self->{snapshot}, you need to install Carton::Snapshot.\n";
-            }
-            warn "Loading distributions from $self->{snapshot}...\n";
-            my $resolver = App::cpm::Resolver::Snapshot->new(
-                path => $self->{snapshot},
-                mirror => $self->{mirror},
-            );
-            $cascade->add($resolver);
-        }
+        warn "Loading distributions from $self->{snapshot}...\n";
+        my $resolver = App::cpm::Resolver::Snapshot->new(
+            path => $self->{snapshot},
+            mirror => $self->{mirror},
+        );
+        $cascade->add($resolver);
     }
 
-    my $resolver;
-
-    $resolver = App::cpm::Resolver::MetaCPAN->new(
+    my $resolver = App::cpm::Resolver::MetaCPAN->new(
         $self->{dev} ? (dev => 1) : (only_dev => 1)
     );
     $cascade->add($resolver);

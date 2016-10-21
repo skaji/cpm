@@ -93,6 +93,7 @@ sub _calculate_jobs {
                 distfile => $dist->{distfile},
                 source => $dist->source,
                 uri => $dist->uri,
+                ref => $dist->ref,
             );
         }
     }
@@ -231,7 +232,7 @@ sub add_distribution {
     my $distfile = $distribution->distfile;
     if (my $already = $self->{distributions}{$distfile}) {
         if ($provides) {
-            $already->append_provide($_) for @$provides;
+            $already->overwrite_provide($_) for @$provides;
         }
         return 0;
     } else {
