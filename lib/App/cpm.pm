@@ -223,6 +223,7 @@ sub register_initial_job {
             $master->add_distribution($dist);
         } elsif ($arg =~ /(?:^git:|\.git(?:@(.+))?$)/) {
             my %ref = $1 ? (ref => $1) : ();
+            $arg =~ s/(?<=\.git)@.+$// if %ref;
             my $dist = App::cpm::Distribution->new(source => "git", uri => $arg, provides => [], %ref);
             $master->add_distribution($dist);
         } else {
