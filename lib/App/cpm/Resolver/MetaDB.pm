@@ -25,7 +25,7 @@ sub new {
 sub resolve {
     my ($self, $job) = @_;
 
-    if ($job->{version} and $job->{version} ne "undef") {
+    if (defined $job->{version} and $job->{version} =~ /(?:<|!=|==)/) {
         my $res = $self->{http}->get( "$self->{uri}history/$job->{package}" );
         return unless $res->{success};
 
@@ -66,6 +66,9 @@ sub resolve {
 
         my $yaml = CPAN::Meta::YAML->read_string($res->{content});
         my $meta = $yaml->[0];
+        if (!App::cpm::version->parse($meta->{version})->satisfy($job->{version})) {
+            return;
+        }
         my @provides = map {
             my $package = $_;
             my $version = $meta->{provides}{$_};
