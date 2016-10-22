@@ -11,6 +11,9 @@ use version;
 
 sub new {
     my ($class, %option) = @_;
+    if (!exists $Module::CoreList::version{$]}) {
+        die "Module::CoreList does not have your perl $^V entry, abort.\n";
+    }
     bless {
         %option,
         installed_distributions => 0,
@@ -153,10 +156,13 @@ sub _register_resolve_job {
     my ($self, @package) = @_;
     my $ok = 1;
     for my $package (@package) {
-        if ($self->{_fail_resolve}{$package->{package}}) {
+        if ($self->{_fail_resolve}{$package->{package}}
+            || $self->{_fail_install}{$package->{package}}
+        ) {
             $ok = 0;
             next;
         }
+
         $self->add_job(
             type => "resolve",
             package => $package->{package},
@@ -228,12 +234,10 @@ sub is_satisfied {
 }
 
 sub add_distribution {
-    my ($self, $distribution, $provides) = @_;
+    my ($self, $distribution) = @_;
     my $distfile = $distribution->distfile;
     if (my $already = $self->{distributions}{$distfile}) {
-        if ($provides) {
-            $already->overwrite_provide($_) for @$provides;
-        }
+        $already->overwrite_provide($_) for @{ $distribution->provides };
         return 0;
     } else {
         $self->{distributions}{$distfile} = $distribution;
@@ -267,16 +271,18 @@ sub _register_resolve_result {
         return;
     }
 
+    my $provides = $job->{provides};
+    if (!$provides or @$provides == 0) {
+        my $version = App::cpm::version->parse($job->{version}) || 0;
+        $provides = [{package => $job->{package}, version => $version}];
+    }
     my $distribution = App::cpm::Distribution->new(
         source   => $job->{source},
         uri      => $job->{uri},
+        provides => $provides,
         distfile => $job->{distfile},
     );
-    my $provides = $job->{provides};
-    if (!$provides or @$provides == 0) {
-        $provides = [{package => $job->{package}, version => $job->{version}}];
-    }
-    $self->add_distribution($distribution, $provides);
+    $self->add_distribution($distribution);
 }
 
 sub _register_fetch_result {
