@@ -19,7 +19,8 @@ Prepare your awesome resolver first:
 
       retrun {
         source => "git",
-        uri => ["git://github.com/you/Your-Module.git"],
+        uri => "git://github.com/you/Your-Module.git",
+        ref => "develop",
         version => "1.52",
         package => "Your::Module",
       };

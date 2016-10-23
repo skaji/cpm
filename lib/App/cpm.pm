@@ -221,9 +221,8 @@ sub register_initial_job {
             $arg = abs_path $arg;
             my $dist = App::cpm::Distribution->new(source => "local", uri => "file://$arg", provides => []);
             $master->add_distribution($dist);
-        } elsif ($arg =~ /(?:^git:|\.git(?:@(.+))?$)/) {
-            my %ref = $1 ? (ref => $1) : ();
-            $arg =~ s/(?<=\.git)@.+$// if %ref;
+        } elsif ($arg =~ /(?:^git:|\.git(?:@.+)?$)/) {
+            my %ref = $arg =~ s/(?<=\.git)@(.+)$// ? (ref => $1) : ();
             my $dist = App::cpm::Distribution->new(source => "git", uri => $arg, provides => [], %ref);
             $master->add_distribution($dist);
         } else {
@@ -231,7 +230,6 @@ sub register_initial_job {
             # copy from Menlo
             # Plack@1.2 -> Plack~"==1.2"
             $arg =~ s/^([A-Za-z0-9_:]+)@([v\d\._]+)$/$1~== $2/;
-
             # support Plack~1.20, DBI~"> 1.0, <= 2.0"
             if ($arg =~ /\~[v\d\._,\!<>= ]+$/) {
                 ($package, $version) = split '~', $arg, 2;

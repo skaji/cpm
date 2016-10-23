@@ -53,8 +53,8 @@ cpm - a fast CPAN module installer
       --target-perl=VERSION  (EXPERIMENTAL)
         install modules as if verison is your perl is VERSION
       --mirror=URL
-        base url for the CPAN mirror to use, default: http://www.cpan.org and http://backpan.perl.org
-        you can use --mirror multiple times
+        base url for the CPAN mirror to use, you can use --mirror multiple times
+        default: http://www.cpan.org and http://backpan.perl.org
       --mirror-only (EXPERIMENTAL, will be removed or renamed)
         query 02packages.details.txt.gz instead of cpanmetadb
       --resolver=SCRIPT (EXPERIMENTAL, will be removed or renamed)

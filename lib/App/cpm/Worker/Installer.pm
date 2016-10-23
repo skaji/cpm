@@ -13,6 +13,7 @@ use File::Copy ();
 use File::Copy::Recursive ();
 use JSON::PP qw(encode_json decode_json);
 use Menlo::CLI::Compat;
+use File::Temp ();
 
 my $CACHED_MIRROR = sub {
     my $uri = shift;
@@ -85,6 +86,28 @@ sub new {
 
 sub menlo { shift->{menlo} }
 
+sub _fetch_git {
+    my ($self, $uri, $ref) = @_;
+    my $dir = File::Temp::tempdir(CLEANUP => 1);
+    $self->menlo->mask_output( diag_progress => "Cloning $uri" );
+    $self->menlo->run_command([ 'git', 'clone', $uri, $dir ]);
+
+    unless (-e "$dir/.git") {
+        $self->menlo->diag_fail("Failed cloning git repository $uri", 1);
+        return;
+    }
+    my $guard = pushd $dir;
+    if ($ref) {
+        unless ($self->menlo->run_command([ 'git', 'checkout', $ref ])) {
+            $self->menlo->diag_fail("Failed to checkout '$ref' in git repository $uri\n");
+            return;
+        }
+    }
+    $self->menlo->diag_ok;
+    chomp(my $rev = `git rev-parse --short HEAD`);
+    ($dir, $rev);
+}
+
 my $clean = sub {
     my $uri = shift;
     my $basename = basename $uri;
@@ -100,17 +123,11 @@ sub fetch {
     my $distfile = $job->{distfile};
     my @uri      = ref $job->{uri} ? @{$job->{uri}} : ($job->{uri});
 
-    my $dir;
-    my $using_cache;
+    my ($dir, $rev, $using_cache);
     if ($source eq "git") {
-        my $ref = $job->{ref} ? "\@$job->{ref}" : "";;
         for my $uri (@uri) {
-            $uri .= ".git" if $uri !~ /\.git$/ and $uri !~ /\.git\@.+/;
-            $uri .= $ref;
-            if (my $result = $self->menlo->git_uri($uri)) {
-                $dir = $result->{dir};
-                last;
-            }
+            ($dir, $rev) = $self->_fetch_git($uri, $job->{ref});
+            last if $dir;
         }
     } elsif ($source eq "local") {
         for my $uri (@uri) {
