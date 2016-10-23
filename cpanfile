@@ -7,6 +7,7 @@ requires 'CPAN::Meta::YAML';
 requires 'File::Copy::Recursive';
 requires 'File::pushd';
 requires 'HTTP::Tiny';
+requires 'HTTP::Tinyish';
 requires 'JSON::PP', '2.27300'; # for perl 5.8.6 or below
 requires 'Module::CPANfile';
 requires 'Module::CoreList';
