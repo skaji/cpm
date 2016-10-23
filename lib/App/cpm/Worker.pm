@@ -12,7 +12,7 @@ use Time::HiRes qw(gettimeofday tv_interval);
 sub new {
     my ($class, %option) = @_;
     my $installer = App::cpm::Worker::Installer->new(%option);
-    my $resolver  = App::cpm::Worker::Resolver->new(%option);
+    my $resolver  = App::cpm::Worker::Resolver->new(impl => $option{resolver});
     bless { %option, installer => $installer, resolver => $resolver }, $class;
 }
 
@@ -41,12 +41,15 @@ sub info {
     my ($self, $job, $elapsed) = @_;
     my $type = $job->{type};
     return if !$App::cpm::Logger::VERBOSE && $type ne "install";
-    my $distvname = CPAN::DistnameInfo->new($job->{distfile})->distvname || $job->{distfile};
-    my $message;
+    my $name = $job->{distfile} ? CPAN::DistnameInfo->new($job->{distfile})->distvname : $job->{uri}[0];
+    my ($message, $optional);
     if ($type eq "resolve") {
-        $message = $job->{package} . ($job->{ok} ? " -> $distvname (from $job->{from})" : "");
+        $message = $job->{package};
+        $message .= " -> $name" . ($job->{ref} ? "\@$job->{ref}" : "") if $job->{ok};
+        $optional = "from $job->{from}" if $job->{ok} and $job->{from};
     } else {
-        $message = $distvname;
+        $message = $name;
+        $optional = "using cache" if $type eq "fetch" and $job->{using_cache};
     }
     $elapsed = defined $elapsed ? sprintf "(%.3fsec) ", $elapsed : "";
 
@@ -54,6 +57,7 @@ sub info {
         type => $type,
         result => $job->{ok} ? "DONE" : "FAIL",
         message => "$elapsed$message",
+        optional => $optional,
     );
 }
 

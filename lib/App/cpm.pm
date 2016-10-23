@@ -6,6 +6,9 @@ use App::cpm::Master;
 use App::cpm::Worker;
 use App::cpm::Logger;
 use App::cpm::version;
+use App::cpm::Resolver::MetaDB;
+use App::cpm::Resolver::MetaCPAN;
+use App::cpm::Resolver::Cascade;
 use Parallel::Pipes;
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use List::Util ();
@@ -24,8 +27,8 @@ sub new {
         snapshot => "cpanfile.snapshot",
         cpanfile => "cpanfile",
         local_lib => "local",
-        cpanmetadb => "http://cpanmetadb.plackperl.org/v1.0/package",
-        mirror => ["http://www.cpan.org", "http://backpan.perl.org"],
+        cpanmetadb => "http://cpanmetadb.plackperl.org/v1.0/",
+        mirror => ["http://www.cpan.org/", "http://backpan.perl.org/"],
         target_perl => $],
         %option
     }, $class;
@@ -50,11 +53,17 @@ sub parse_options {
         "cpanfile=s" => \($self->{cpanfile}),
         "snapshot=s" => \($self->{snapshot}),
         "sudo" => \($self->{sudo}),
+        "resolver=s" => \($self->{custom_resolver}),
+        "mirror-only" => \($self->{mirror_only}),
+        "dev" => \($self->{dev}),
     or exit 1;
 
     $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
     $self->{mirror} = \@mirror if @mirror;
-    $_ =~ s{/$}{} for @{$self->{mirror}};
+    for my $mirror (@{$self->{mirror}}) {
+        $mirror =~ s{/*$}{/};
+        $mirror = "file://$mirror" if $mirror !~ m{^https?://} and -d $mirror;
+    }
     $self->{color} = 1 if !defined $self->{color} && -t STDOUT;
     if ($target_perl) {
         # 5.8 is interpreted as 5.800, fix it
@@ -73,7 +82,7 @@ sub parse_options {
 
     $App::cpm::Logger::COLOR = 1 if $self->{color};
     $App::cpm::Logger::VERBOSE = 1 if $self->{verbose};
-    @ARGV;
+    $self->{argv} = \@ARGV;
 }
 
 sub _core_inc {
@@ -105,8 +114,9 @@ sub run {
     $cmd = "help"    if $cmd =~ /^(-h|--help)$/;
     $cmd = "version" if $cmd =~ /^(-V|--version)$/;
     if (my $sub = $self->can("cmd_$cmd")) {
-        @argv = $self->parse_options(@argv) unless $cmd eq "exec";
-        return $self->$sub(@argv);
+        return $self->$sub(@argv) if $cmd eq "exec";
+        $self->parse_options(@argv);
+        return $self->$sub;
     } else {
         my $message = $cmd =~ /^-/ ? "Missing subcommand" : "Unknown subcommand '$cmd'";
         die "$message, try `cpm --help`\n";
@@ -138,29 +148,25 @@ sub cmd_exec {
 }
 
 sub cmd_install {
-    my ($self, @argv) = @_;
-    die "Need arguments or cpanfile.\n" if !@argv && !-f $self->{cpanfile};
+    my $self = shift;
+    die "Need arguments or cpanfile.\n" if !@{$self->{argv}} && !-f $self->{cpanfile};
 
     my $master = App::cpm::Master->new(
         core_inc => [$self->_core_inc],
         user_inc => [$self->_user_inc],
         target_perl => $self->{target_perl},
     );
-    $self->setup($master => @argv);
+    $self->register_initial_job($master);
 
     my $worker = App::cpm::Worker->new(
         verbose         => $self->{verbose},
-        mirror          => $self->{mirror},
+        cache           => "$ENV{HOME}/.perl-cpm/cache",
         menlo_base      => "$ENV{HOME}/.perl-cpm/work",
-        menlo_cache     => "$ENV{HOME}/.perl-cpm/cache",
         menlo_build_log => "$ENV{HOME}/.perl-cpm/build.@{[time]}.log",
         notest          => $self->{notest},
         sudo            => $self->{sudo},
+        resolver        => $self->generate_resolver,
         ($self->{global} ? () : (local_lib => $self->{local_lib})),
-        resolver => [
-            (!@argv && -f $self->{snapshot} ? {snapshot => $self->{snapshot}} : ()),
-            { cpanmetadb => $self->{cpanmetadb} },
-        ],
     );
     my $pipes = Parallel::Pipes->new($self->{workers}, sub {
         my $job = shift;
@@ -206,25 +212,41 @@ sub cmd_install {
     return $master->fail ? 1 : 0;
 }
 
-sub setup {
-    my ($self, $master, @argv) = @_;
+sub register_initial_job {
+    my ($self, $master) = @_;
 
     my @package;
-    for my $arg (@argv) {
-        if (-d $arg or $arg =~ /(?:^git:|\.git(?:@.+)?$)/) {
-            $arg = abs_path $arg if -d $arg;
-            my $dist = App::cpm::Distribution->new(distfile => $arg, provides => []);
+    for my $arg (@{$self->{argv}}) {
+        if (-d $arg || -f $arg) {
+            $arg = abs_path $arg;
+            my $dist = App::cpm::Distribution->new(source => "local", uri => "file://$arg", provides => []);
+            $master->add_distribution($dist);
+        } elsif ($arg =~ /(?:^git:|\.git(?:@.+)?$)/) {
+            my %ref = $arg =~ s/(?<=\.git)@(.+)$// ? (ref => $1) : ();
+            my $dist = App::cpm::Distribution->new(source => "git", uri => $arg, provides => [], %ref);
             $master->add_distribution($dist);
         } else {
-            push @package, {package => $arg, version => 0};
+            my ($package, $version, $dev);
+            # copy from Menlo
+            # Plack@1.2 -> Plack~"==1.2"
+            $arg =~ s/^([A-Za-z0-9_:]+)@([v\d\._]+)$/$1~== $2/;
+            # support Plack~1.20, DBI~"> 1.0, <= 2.0"
+            if ($arg =~ /\~[v\d\._,\!<>= ]+$/) {
+                ($package, $version) = split '~', $arg, 2;
+            } else {
+                $arg =~ s/[~@]dev$// and $dev++;
+                $package = $arg;
+            }
+            push @package, {package => $package, version => $version || 0, dev => $dev};
         }
     }
 
-    if (!@argv) {
+    if (!@{$self->{argv}}) {
         warn "Loading modules from $self->{cpanfile}...\n";
-        my $requirements = $self->load_cpanfile($self->{cpanfile});
+        my ($requirements, $dist) = $self->load_cpanfile($self->{cpanfile});
+        $master->add_distribution($_) for @$dist;
         my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirements);
-        if ($is_satisfied) {
+        if (!@$dist and $is_satisfied) {
             warn "All requirements are satisfied.\n";
             exit 0;
         } elsif (!defined $is_satisfied) {
@@ -233,20 +255,14 @@ sub setup {
         } else {
             @package = @need_resolve;
         }
-
-        if (-f $self->{snapshot}) {
-            if (!eval { require Carton::Snapshot }) {
-                die "To load $self->{snapshot}, you need to install Carton::Snapshot.\n";
-            }
-            warn "Loading distributions from $self->{snapshot}...\n";
-        }
     }
 
     for my $p (@package) {
         $master->add_job(
             type => "resolve",
             package => $p->{package},
-            version => $p->{version} || 0
+            version => $p->{version} || 0,
+            dev => $p->{dev},
         );
     }
 }
@@ -259,7 +275,77 @@ sub load_cpanfile {
     my $phases = [qw(build test runtime)];
     my $requirements = $prereqs->merged_requirements($phases, ['requires']);
     my $hash = $requirements->as_string_hash;
-    [ map { +{ package => $_, version => $hash->{$_} } } keys %$hash ];
+
+    my (@package, @distribution);
+    for my $package (sort keys %$hash) {
+        my $option = $cpanfile->options_for_module($package) || +{};
+        my $uri;
+        if ($uri = $option->{git}) {
+            push @distribution, App::cpm::Distribution->new(
+                source => "git", uri => $uri, ref => $option->{ref},
+                provides => [{package => $package}],
+            );
+        } elsif ($uri = $option->{dist}) {
+            my $source = $uri =~ m{^file://} ? "local" : "http";
+            push @distribution, App::cpm::Distribution->new(
+                source => $source, uri => $uri,
+                provides => [{package => $package}],
+            );
+        } else {
+            push @package, {
+                package => $package, version => $hash->{$package}, dev => $option->{dev},
+            };
+        }
+    }
+    (\@package, \@distribution);
+}
+
+sub generate_resolver {
+    my $self = shift;
+
+    if ($self->{custom_resolver}) {
+        # XXX: cf Plack::Util::load_psgi
+        my $resolver = do $self->{custom_resolver};
+        if ( !$resolver && ( my $error = $@ || $! )) {
+            chomp $error;
+            die "$self->{custom_resolver}: $error\n";
+        }
+        if ( !$resolver or !eval { $resolver->can("resolve") }) {
+            die "$self->{custom_resolver} does not return resolver object\n"
+        }
+        return $resolver;
+    }
+
+    my $cascade = App::cpm::Resolver::Cascade->new;
+    if ($self->{mirror_only}) {
+        require App::cpm::Resolver::Mirror;
+        $cascade->add(App::cpm::Resolver::Mirror->new(mirror => $_)) for @{$self->{mirror}};
+        return $cascade;
+    }
+
+    if (!@{$self->{argv}} and -f $self->{snapshot}) {
+        if (!eval { require App::cpm::Resolver::Snapshot }) {
+            die "To load $self->{snapshot}, you need to install Carton::Snapshot.\n";
+        }
+        warn "Loading distributions from $self->{snapshot}...\n";
+        my $resolver = App::cpm::Resolver::Snapshot->new(
+            path => $self->{snapshot},
+            mirror => $self->{mirror},
+        );
+        $cascade->add($resolver);
+    }
+
+    my $resolver = App::cpm::Resolver::MetaCPAN->new(
+        $self->{dev} ? (dev => 1) : (only_dev => 1)
+    );
+    $cascade->add($resolver);
+    $resolver = App::cpm::Resolver::MetaDB->new(
+        uri => $self->{cpanmetadb},
+        mirror => $self->{mirror},
+    );
+    $cascade->add($resolver);
+
+    $cascade;
 }
 
 1;

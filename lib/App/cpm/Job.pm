@@ -16,12 +16,17 @@ sub _uid {
     my $self = shift;
     my $type = $self->type;
     if (grep { $type eq $_ } qw(fetch configure install)) {
-        "$type " . $self->{distfile};
+        "$type " . $self->distfile;
     } elsif ($type eq "resolve") {
         "$type " . $self->{package};
     } else {
         die "unknown type: " . ($type || "(undef)");
     }
+}
+
+sub distfile {
+    my $self = shift;
+    $self->{distfile} || $self->{uri}[0];
 }
 
 sub type {

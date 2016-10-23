@@ -26,9 +26,19 @@ cpm - a fast CPAN module installer
   # install module into current @INC istead of local/
   > cpm install -g Module
 
+  # prefer TRIAL release
+  > cpm install --dev Moose
+
   # install modules as if version of your perl is 5.8.5
   # so that modules which are not core in 5.8.5 will be installed
   > cpm install --target-perl 5.8.5
+
+  # query/fetch distributions for your local or remote darkpan only
+  > cpm install --mirror file:///path/to/darkpan   --mirror-only Your::Module
+  > cpm install --mirror http:/example.com/darkpan --mirror-only Your::Module
+
+  # use your custom resolver, see `perldoc App::cpm::Resolver`
+  > cpm install --resolver /path/to/resolver.pl Youde::Module
 
 =head1 OPTIONS
 
@@ -43,16 +53,18 @@ cpm - a fast CPAN module installer
       --target-perl=VERSION  (EXPERIMENTAL)
         install modules as if verison is your perl is VERSION
       --mirror=URL
-        base url for the CPAN mirror to use, default: http://www.cpan.org and http://backpan.perl.org
-        you can use --mirror multiple times
+        base url for the CPAN mirror to use, you can use --mirror multiple times
+        default: http://www.cpan.org and http://backpan.perl.org
+      --mirror-only (EXPERIMENTAL, will be removed or renamed)
+        query 02packages.details.txt.gz instead of cpanmetadb
+      --resolver=SCRIPT (EXPERIMENTAL, will be removed or renamed)
+        use your own resolver, see `perldoc App::cpm::Resolver`
+      --dev (EXPERIMENTAL)
+        resolve TRIAL distributions too
       --color, --no-color
         turn on/off color output, default: on
       --test, --no-test
         run test cases, default: no
-      --cpanfile=FILENAME
-        specify "cpanfile" filename, default: cpanfile
-      --snapshot=FILENAME
-        specify "cpanfile.snapshot" filename, defualt: cpanfile.snapshot
   -V, --version
         show version
   -h, --help

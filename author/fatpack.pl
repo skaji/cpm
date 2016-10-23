@@ -7,7 +7,6 @@ chdir "$FindBin::Bin/..";
 
 my $exclude = join ",", qw(
   CPAN::Meta
-  CPAN::Meta::Requirements
   ExtUtils::Config
   ExtUtils::Helpers
   ExtUtils::InstallPaths

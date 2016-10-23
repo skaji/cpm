@@ -11,6 +11,9 @@ use version;
 
 sub new {
     my ($class, %option) = @_;
+    if (!exists $Module::CoreList::version{$]}) {
+        die "Module::CoreList does not have your perl $^V entry, abort.\n";
+    }
     bless {
         %option,
         installed_distributions => 0,
@@ -88,7 +91,13 @@ sub _calculate_jobs {
 
     if (my @dists = grep { $_->resolved } @distributions) {
         for my $dist (@dists) {
-            $self->add_job(type => "fetch", distfile => $dist->distfile);
+            $self->add_job(
+                type => "fetch",
+                distfile => $dist->{distfile},
+                source => $dist->source,
+                uri => $dist->uri,
+                ref => $dist->ref,
+            );
         }
     }
 
@@ -101,7 +110,9 @@ sub _calculate_jobs {
                     type => "configure",
                     meta => $dist->meta,
                     directory => $dist->directory,
-                    distfile => $dist->distfile,
+                    distfile => $dist->{distfile},
+                    source => $dist->source,
+                    uri => $dist->uri,
                 );
             } elsif (@need_resolve) {
                 my $ok = $self->_register_resolve_job(@need_resolve);
@@ -125,7 +136,8 @@ sub _calculate_jobs {
                     meta => $dist->meta,
                     distdata => $dist->distdata,
                     directory => $dist->directory,
-                    distfile => $dist->distfile,
+                    distfile => $dist->{distfile},
+                    uri => $dist->uri,
                 );
             } elsif (@need_resolve) {
                 my $ok = $self->_register_resolve_job(@need_resolve);
@@ -144,10 +156,13 @@ sub _register_resolve_job {
     my ($self, @package) = @_;
     my $ok = 1;
     for my $package (@package) {
-        if ($self->{_fail_resolve}{$package->{package}}) {
+        if ($self->{_fail_resolve}{$package->{package}}
+            || $self->{_fail_install}{$package->{package}}
+        ) {
             $ok = 0;
             next;
         }
+
         $self->add_job(
             type => "resolve",
             package => $package->{package},
@@ -212,19 +227,17 @@ sub is_satisfied {
 
         $is_satisfied = 0 if defined $is_satisfied;
         if (!$resolved) {
-            push @need_resolve, { package => $package, version => $version };
+            push @need_resolve, $req;
         }
     }
     return ($is_satisfied, @need_resolve);
 }
 
 sub add_distribution {
-    my ($self, $distribution, $provides) = @_;
+    my ($self, $distribution) = @_;
     my $distfile = $distribution->distfile;
     if (my $already = $self->{distributions}{$distfile}) {
-        if ($provides) {
-            $already->append_provide($_) for @$provides;
-        }
+        $already->overwrite_provide($_) for @{ $distribution->provides };
         return 0;
     } else {
         $self->{distributions}{$distfile} = $distribution;
@@ -238,7 +251,7 @@ sub _register_resolve_result {
         $self->{_fail_resolve}{$job->{package}}++;
         return;
     }
-    if ($job->{distfile} =~ m{/perl-5[^/]+$}) {
+    if ($job->{distfile} and $job->{distfile} =~ m{/perl-5[^/]+$}) {
         App::cpm::Logger->log(
             result => "FAIL",
             type => "install",
@@ -258,20 +271,27 @@ sub _register_resolve_result {
         return;
     }
 
+    my $provides = $job->{provides};
+    if (!$provides or @$provides == 0) {
+        my $version = App::cpm::version->parse($job->{version}) || 0;
+        $provides = [{package => $job->{package}, version => $version}];
+    }
     my $distribution = App::cpm::Distribution->new(
+        source   => $job->{source},
+        uri      => $job->{uri},
+        provides => $provides,
         distfile => $job->{distfile},
-        provides => $job->{provides},
     );
-    $self->add_distribution($distribution, $job->{provides});
+    $self->add_distribution($distribution);
 }
 
 sub _register_fetch_result {
     my ($self, $job) = @_;
     if (!$job->is_success) {
-        $self->{_fail_install}{$job->{distfile}}++;
+        $self->{_fail_install}{$job->distfile}++;
         return;
     }
-    my $distribution = $self->distribution($job->{distfile});
+    my $distribution = $self->distribution($job->distfile);
     $distribution->fetched(1);
     $distribution->configure_requirements($job->{configure_requirements});
     $distribution->directory($job->{directory});
@@ -283,10 +303,10 @@ sub _register_fetch_result {
 sub _register_configure_result {
     my ($self, $job) = @_;
     if (!$job->is_success) {
-        $self->{_fail_install}{$job->{distfile}}++;
+        $self->{_fail_install}{$job->distfile}++;
         return;
     }
-    my $distribution = $self->distribution($job->{distfile});
+    my $distribution = $self->distribution($job->distfile);
     $distribution->configured(1);
     $distribution->distdata($job->{distdata});
     $distribution->requirements($job->{requirements});
@@ -296,10 +316,10 @@ sub _register_configure_result {
 sub _register_install_result {
     my ($self, $job) = @_;
     if (!$job->is_success) {
-        $self->{_fail_install}{$job->{distfile}}++;
+        $self->{_fail_install}{$job->distfile}++;
         return;
     }
-    my $distribution = $self->distribution($job->{distfile});
+    my $distribution = $self->distribution($job->distfile);
     $distribution->installed(1);
     $self->{installed_distributions}++;
     return 1;

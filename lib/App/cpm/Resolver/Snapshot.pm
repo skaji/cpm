@@ -1,4 +1,4 @@
-package App::cpm::Worker::Resolver::Snapshot;
+package App::cpm::Resolver::Snapshot;
 use strict;
 use warnings;
 use App::cpm::version;
@@ -7,27 +7,29 @@ use Carton::Snapshot;
 
 sub new {
     my ($class, %option) = @_;
-    my $snapshot = Carton::Snapshot->new(path => $option{snapshot} || "cpanfile.snapshot");
+    my $snapshot = Carton::Snapshot->new(path => $option{path} || "cpanfile.snapshot");
     $snapshot->load;
-    bless { snapshot => $snapshot }, $class;
+    my $mirror = $option{mirror} || ["http://www.cpan.org", "http://backpan.perl.org"];
+    s{/*$}{/} for @$mirror;
+    bless {
+        %option,
+        mirror => $mirror,
+        snapshot => $snapshot
+    }, $class;
 }
 
 sub snapshot { shift->{snapshot} }
 
-sub work {
+sub resolve {
     my ($self, $job) = @_;
     my $package = $job->{package};
     my $found = $self->snapshot->find($package);
-    return { ok => 0 } unless $found;
+    return unless $found;
 
     my $version = $found->version_for($package);
     if (my $req_version = $job->{version}) {
         if (!App::cpm::version->parse($version)->satisfy($req_version)) {
-            App::cpm::Logger->log(
-                result => "WARN",
-                message => "Couldn't find $job->{package} $req_version (only found $version)",
-            );
-            return { ok => 0 };
+            return;
         }
     }
 
@@ -38,12 +40,13 @@ sub work {
         +{ package => $package, version => $version };
     } sort keys %{$found->provides};
 
+    my $distfile = $found->distfile;
     return {
-        ok => 1,
-        distfile => $found->distfile,
+        source => "cpan",
+        distfile => $distfile,
+        uri => [map { "${_}authors/id/$distfile" } @{$self->{mirror}}],
         version  => $version,
         provides => \@provides,
-        from => "snapshot",
     };
 }
 

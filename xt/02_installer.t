@@ -13,8 +13,12 @@ my $installer = App::cpm::Worker::Installer->new(
 
 my ($job, $result);
 
+my $mirror = "http://www.cpan.org";
+my $distfile = "S/SK/SKAJI/Distribution-Metadata-0.05.tar.gz";
 $job = {
+    source => "cpan",
     distfile => "S/SK/SKAJI/Distribution-Metadata-0.05.tar.gz",
+    uri => ["$mirror/authors/id/$distfile"],
     type => "fetch",
 };
 $result = $installer->work($job);

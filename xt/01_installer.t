@@ -9,11 +9,12 @@ use File::Temp 'tempdir';
 my $tempdir = tempdir CLEANUP => 1;
 my $installer = App::cpm::Worker::Installer->new(
     local_lib => $tempdir,
-    mirror => "http://www.cpan.org",
 );
 
+my $mirror = "http://www.cpan.org";
 my $distfile = "S/SK/SKAJI/Distribution-Metadata-0.05.tar.gz";
-my ($dir, $meta, $configure_requirements) = $installer->fetch($distfile);
+my $job = { source => "cpan", uri => ["$mirror/authors/id/$distfile"], distfile => $distfile };
+my ($dir, $meta, $configure_requirements) = $installer->fetch($job);
 
 like $dir, qr{^/.*Distribution-Metadata-0\.05$}; # abs
 ok scalar(keys %$meta);
@@ -26,7 +27,12 @@ is_deeply $configure_requirements, [
   },
 ];
 
-my ($distdata, $requirements) = $installer->configure($dir, $distfile, $meta);
+my ($distdata, $requirements) = $installer->configure({
+    directory => $dir,
+    distfile => $distfile,
+    meta => $meta,
+    source => "cpan",
+});
 
 is $distdata->{distvname}, "Distribution-Metadata-0.05";
 
