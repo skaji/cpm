@@ -6,7 +6,7 @@ Revision history for App-cpm
         - Add experimental support for git/ref/dist/dev syntax in cpanfile;
           eg: requires 'Your::Module', git => 'git://github.com/you/Your-Module'
         - Support queries to MetaDB history API, now cpm can handle version range;
-          eg: cpm install Plack~'>= 2.02, < 5.00'
+          eg: cpm install Search::Elasticsearch~'>= 2.02, < 5.00'
         - Support queries to MetaCAPN API, now cpm can handle dev releases;
           eg: cpm install Moose@dev
         - Add --mirror-only option, now you can use cpm with your own darkpan;
