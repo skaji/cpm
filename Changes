@@ -2,6 +2,18 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.200  2016-10-24 02:33:11 JST
+        - Add experimental support for git/ref/dist/dev syntax in cpanfile;
+          eg: requires 'Your::Module', git => 'git://github.com/you/Your-Module'
+        - Support queries to MetaDB history API, now cpm can handle version range;
+          eg: cpm install Plack~'>= 2.02, < 5.00'
+        - Support queries to MetaCAPN API, now cpm can handle dev releases;
+          eg: cpm install Moose@dev
+        - Add --mirror-only option, now you can use cpm with your own darkpan;
+          eg: cpm install --mirror http://darkpan --mirror-only Your::Module
+        - Add --sudo option
+        - Use Parallel::Pipes to parallelize menlo
+
 0.118  2016-08-03 10:46:56 JST
         - cpm becomes even faster; save distfiles and use them (#23)
 

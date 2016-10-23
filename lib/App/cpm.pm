@@ -16,7 +16,7 @@ use Pod::Usage ();
 use Cwd 'abs_path';
 use Config;
 
-our $VERSION = '0.118';
+our $VERSION = '0.200';
 
 use constant WIN32 => $^O eq 'MSWin32';
 

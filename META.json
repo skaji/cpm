@@ -67,7 +67,7 @@
          }
       }
    },
-   "release_status" : "stable",
+   "release_status" : "testing",
    "resources" : {
       "bugtracker" : {
          "web" : "https://github.com/skaji/cpm/issues"
@@ -79,7 +79,7 @@
          "web" : "https://github.com/skaji/cpm"
       }
    },
-   "version" : "0.118",
+   "version" : "0.200",
    "x_contributors" : [
       "Olaf Alders <olaf@wundersolutions.com>"
    ],
