@@ -136,10 +136,6 @@ App::cpm::Resolver::Snapshot
 
 =item *
 
-App::cpm::Resolver::CPANfile
-
-=item *
-
 App::cpm::Resolver::Cascade
 
 =back
