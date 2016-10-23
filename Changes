@@ -13,6 +13,7 @@ Revision history for App-cpm
           eg: cpm install --mirror http://darkpan --mirror-only Your::Module
         - Add --sudo option
         - Use Parallel::Pipes to parallelize menlo
+        - Support platforms that do not have fork(2) system calls such as Win32
 
 0.118  2016-08-03 10:46:56 JST
         - cpm becomes even faster; save distfiles and use them (#23)

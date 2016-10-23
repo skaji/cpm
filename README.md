@@ -47,7 +47,7 @@ then cpm should be merged into cpanm 2.0. How exciting!
 
 To merge cpm into cpanm, there are several TODOs:
 
-* Win32? - support platforms that do not have fork(2) system call
+* DONE ~~Win32? - support platforms that do not have fork(2) system call~~
 * Logging? - the parallel feature makes log really messy
 
 Your feedback is highly appreciated.

@@ -402,7 +402,7 @@ To merge cpm into cpanm, there are several TODOs:
 
 =over 4
 
-=item * Win32? - support platforms that do not have fork(2) system call
+=item * (DONE) Win32? - support platforms that do not have fork(2) system call
 
 =item * Logging? - the parallel feature makes log really messy
 
