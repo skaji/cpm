@@ -318,8 +318,8 @@ sub generate_resolver {
 
     my $cascade = App::cpm::Resolver::Cascade->new;
     if ($self->{mirror_only}) {
-        require App::cpm::Resolver::Mirror;
-        $cascade->add(App::cpm::Resolver::Mirror->new(mirror => $_)) for @{$self->{mirror}};
+        require App::cpm::Resolver::O2Packages;
+        $cascade->add(App::cpm::Resolver::O2Packages->new(mirror => $_)) for @{$self->{mirror}};
         return $cascade;
     }
 
