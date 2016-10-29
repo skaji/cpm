@@ -3,7 +3,7 @@ Revision history for App-cpm
 {{$NEXT}}
 
 0.201  2016-10-29 21:29:29 JST
-        - Deprecate --mirror and --mirror-only options.
+        - Deprecate --mirror-only options.
           Use --resolver option instead (#41)
 
 0.200  2016-10-24 02:33:11 JST
