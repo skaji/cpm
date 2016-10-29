@@ -33,12 +33,16 @@ cpm - a fast CPAN module installer
   # so that modules which are not core in 5.8.5 will be installed
   > cpm install --target-perl 5.8.5
 
-  # query/fetch distributions for your local or remote darkpan only
-  > cpm install --mirror file:///path/to/darkpan   --mirror-only Your::Module
-  > cpm install --mirror http:/example.com/darkpan --mirror-only Your::Module
+  # resolve distribution names from DARKPAN/modules/02packages.details.txt.gz
+  # and fetch distibutions from DARKPAN/authors/id/...
+  > cpm install --resolver 02packages,http://example.com/darkpan Your::Module
+  > cpm install --resolver 02packages,file:///path/to/darkpan    Your::Module
+
+  # use darkpan first, and if it fails, use metadb and normal CPAN
+  > cpm install --resolver 02packages,http://example.com/darkpan --resolver metadb Your::Module
 
   # use your custom resolver, see `perldoc App::cpm::Resolver`
-  > cpm install --resolver /path/to/resolver.pl Youde::Module
+  > cpm install --custom-resolver /path/to/resolver.pl Youde::Module
 
 =head1 OPTIONS
 
@@ -55,10 +59,11 @@ cpm - a fast CPAN module installer
       --mirror=URL
         base url for the CPAN mirror to use, you can use --mirror multiple times
         default: http://www.cpan.org and http://backpan.perl.org
-      --mirror-only (EXPERIMENTAL, will be removed or renamed)
-        query 02packages.details.txt.gz instead of cpanmetadb
-      --resolver=SCRIPT (EXPERIMENTAL, will be removed or renamed)
-        use your own resolver, see `perldoc App::cpm::Resolver`
+  -r, --resolver=class,args (EXPERIMENTAL, will be removed or renamed)
+        specify resolvers, you can use --resolver multiple times
+        available classes: metadb/metacpan/02packages/snapshot
+      --custom-resolver=SCRIPT
+        use your custom resolver
       --dev (EXPERIMENTAL)
         resolve TRIAL distributions too
       --color, --no-color

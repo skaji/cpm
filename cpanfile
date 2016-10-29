@@ -4,10 +4,12 @@ requires 'CPAN::DistnameInfo';
 requires 'CPAN::Meta';
 requires 'CPAN::Meta::Requirements', '2.130'; # for v-strings
 requires 'CPAN::Meta::YAML';
+requires 'Class::Tiny';
 requires 'File::Copy::Recursive';
 requires 'File::pushd';
 requires 'HTTP::Tiny';
 requires 'HTTP::Tinyish';
+requires 'IO::Uncompress::Gunzip';
 requires 'JSON::PP', '2.27300'; # for perl 5.8.6 or below
 requires 'Module::CPANfile';
 requires 'Module::CoreList';
