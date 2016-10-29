@@ -38,7 +38,7 @@ sub parse_options {
     my $self = shift;
     local @ARGV = @_;
     $self->{notest} = 1;
-    my @mirror;
+    my (@mirror, @resolver);
     GetOptions
         "L|local-lib-contained=s" => \($self->{local_lib}),
         "V|version" => sub { $self->cmd_version },
@@ -53,12 +53,14 @@ sub parse_options {
         "cpanfile=s" => \($self->{cpanfile}),
         "snapshot=s" => \($self->{snapshot}),
         "sudo" => \($self->{sudo}),
-        "resolver=s" => \($self->{custom_resolver}),
+        "r|resolver=s@" => \@resolver,
+        "custom-resolver=s" => \($self->{custom_resolver}),
         "mirror-only" => \($self->{mirror_only}),
         "dev" => \($self->{dev}),
     or exit 1;
 
     $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
+    $self->{resolver} = \@resolver;
     $self->{mirror} = \@mirror if @mirror;
     for my $mirror (@{$self->{mirror}}) {
         $mirror =~ s{/*$}{/};
@@ -242,7 +244,6 @@ sub register_initial_job {
     }
 
     if (!@{$self->{argv}}) {
-        warn "Loading modules from $self->{cpanfile}...\n";
         my ($requirements, $dist) = $self->load_cpanfile($self->{cpanfile});
         $master->add_distribution($_) for @$dist;
         my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirements);
@@ -317,6 +318,44 @@ sub generate_resolver {
     }
 
     my $cascade = App::cpm::Resolver::Cascade->new;
+    if (@{$self->{resolver}}) {
+        for (@{$self->{resolver}}) {
+            my ($klass, @arg) = split /,/, $_;
+            my $resolver;
+            if ($klass =~ /^metadb$/i) {
+                $resolver = App::cpm::Resolver::MetaDB->new(
+                    mirror => @arg ? \@arg : $self->{mirror}
+                );
+            } elsif ($klass =~ /^metacpan$/i) {
+                $resolver = App::cpm::Resolver::MetaCPAN->new(dev => $self->{dev});
+            } elsif ($klass =~ /^[0o]2packages?$/i) {
+                require App::cpm::Resolver::O2Packages;
+                my ($path, $mirror);
+                if (@arg > 1) {
+                    ($path, $mirror) = @arg;
+                } elsif (@arg == 1) {
+                    $mirror = $arg[0];
+                } else {
+                    $mirror = $self->{mirror}[0];
+                }
+                $resolver = App::cpm::Resolver::O2Packages->new(
+                    $path ? (path => $path) : (),
+                    mirror => $mirror,
+                );
+            } elsif ($klass =~ /^snapshot$/i) {
+                require App::cpm::Resolver::Snapshot;
+                $resolver = App::cpm::Resolver::Snapshot->new(
+                    path => $self->{snapshot},
+                    mirror => @arg ? \@arg : $self->{mirror},
+                );
+            } else {
+                die "Unknown resolver: $klass\n";
+            }
+            $cascade->add($resolver);
+        }
+        return $cascade;
+    }
+
     if ($self->{mirror_only}) {
         require App::cpm::Resolver::O2Packages;
         $cascade->add(App::cpm::Resolver::O2Packages->new(mirror => $_)) for @{$self->{mirror}};

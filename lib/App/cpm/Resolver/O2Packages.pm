@@ -10,7 +10,7 @@ use File::Temp ();
     package
         App::cpm::Resolver::O2Packages::Impl;
     use parent 'CPAN::Common::Index::Mirror';
-    use Class::Tiny qw(index);
+    use Class::Tiny qw(path);
     use IO::Uncompress::Gunzip ();
     use File::Spec;
     use File::Basename ();
@@ -21,16 +21,17 @@ use File::Temp ();
 
     sub refresh_index {
         my $self = shift;
-        my $index = $self->index;
-        my $dest = File::Spec->catfile($self->cache, File::Basename::basename($index));
-        if ($index =~ m{^https?://}) {
-            my $res = HTTP::Tinyish->new->mirror($index => $dest);
-            die "$res->{status} $res->{reason}, $index\n" unless $res->{success};
+        my $path = $self->path;
+        my $dest = File::Spec->catfile($self->cache, File::Basename::basename($path));
+        if ($path =~ m{^https?://}) {
+            my $res = HTTP::Tinyish->new->mirror($path => $dest);
+            die "$res->{status} $res->{reason}, $path\n" unless $res->{success};
         } else {
-            $index =~ s{^file://}{};
-            if (!-f $dest or (stat $dest)[9] > (stat $index)[9]) {
-                File::Copy::copy($index, $dest) or die "Copy $index $dest: $!\n";
-                my $mtime = (stat $index)[9];
+            $path =~ s{^file://}{};
+            die "$path: No such file.\n" unless -f $path;
+            if (!-f $dest or (stat $dest)[9] > (stat $path)[9]) {
+                File::Copy::copy($path, $dest) or die "Copy $path $dest: $!\n";
+                my $mtime = (stat $path)[9];
                 utime $mtime, $mtime, $dest;
             }
         }
@@ -52,20 +53,20 @@ use File::Temp ();
 sub new {
     my ($class, %option) = @_;
     my $cache_base = $option{cache} || "$ENV{HOME}/.perl-cpm";
-    my $mirror = $option{mirror};
+    my $mirror = $option{mirror} or die "mirror option is required\n";
     $mirror =~ s{/*$}{/};
 
-    my ($index, $cache);
-    if ($option{index}) {
-        $index = $option{index};
+    my ($path, $cache);
+    if ($option{path}) {
+        $path = $option{path};
         $cache = File::Temp::tempdir(CLEANUP => 1);
     } else {
-        $index = "${mirror}modules/02packages.details.txt.gz";
+        $path = "${mirror}modules/02packages.details.txt.gz";
         $cache = $class->cache_for($mirror, $cache_base);
     }
 
     my $impl = App::cpm::Resolver::O2Packages::Impl->new(
-        index => $index, cache => $cache,
+        path => $path, cache => $cache,
     );
     $impl->refresh_index; # refresh_index first
     bless { mirror => $mirror, impl => $impl }, $class;
@@ -109,3 +110,35 @@ sub resolve {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+App::cpm::Resolver::O2Packages - resolve distribution uri from 02packages.details.txt.gz
+
+=head1 SYNOPSIS
+
+  use App::cpm::Resolver::O2Packages;
+
+  my $r1 = App::cpm::Resolver::O2Packages->new(
+    path   => "file:///path/to/02packages.details.txt.gz",
+    mirror => "http://www.cpan.org",
+  );
+
+  # if you omit path argument, then it defaults to $mirror/modules/02packages.details.txt.gz
+  my $r2 = App::cpm::Resolver::O2Packages->new(
+    mirror => "http://example.com/darkpan",
+  );
+
+=head1 DESCRIPTION
+
+App::cpm::Resolver::O2Packages resolves distribution uri from 02packages.details.txt.gz
+
+=head1 SEE ALSO
+
+L<CPAN::Common::Index::LocalPackage>
+
+L<CPAN::Common::Index::Mirror>
+
+=cut
