@@ -4,7 +4,6 @@ use warnings;
 use App::cpm::version;
 use Cwd ();
 use File::Path ();
-use File::Temp ();
 
 {
     package
@@ -59,14 +58,13 @@ sub new {
     my ($path, $cache);
     if ($option{path}) {
         $path = $option{path};
-        $cache = File::Temp::tempdir(CLEANUP => 1);
     } else {
         $path = "${mirror}modules/02packages.details.txt.gz";
         $cache = $class->cache_for($mirror, $cache_base);
     }
 
     my $impl = App::cpm::Resolver::O2Packages::Impl->new(
-        path => $path, cache => $cache,
+        path => $path, $cache ? (cache => $cache) : (),
     );
     $impl->refresh_index; # refresh_index first
     bless { mirror => $mirror, impl => $impl }, $class;
@@ -77,8 +75,9 @@ sub cache_for {
     if ($mirror !~ m{^https?://}) {
         $mirror =~ s{^file://}{};
         $mirror = Cwd::abs_path($mirror);
+        $mirror =~ s{^/}{};
     }
-    $mirror =~ s{^/}{};
+    $mirror =~ s{/$}{};
     $mirror =~ s/[^\w\.\-]+/%/g;
     my $dir = "$cache/sources/$mirror";
     File::Path::mkpath([ $dir ], 0, 0777);
