@@ -81,11 +81,11 @@
          "web" : "https://github.com/skaji/cpm"
       }
    },
-   "version" : "0.201",
+   "version" : "0.210",
    "x_contributors" : [
       "Olaf Alders <olaf@wundersolutions.com>"
    ],
-   "x_serialization_backend" : "Cpanel::JSON::XS version 3.0218",
+   "x_serialization_backend" : "Cpanel::JSON::XS version 3.022",
    "x_static_install" : "1"
 }
 
