@@ -2,6 +2,7 @@ package App::cpm::Resolver::MetaCPAN;
 use strict;
 use warnings;
 use JSON::PP ();
+our $VERSION = '0.201';
 
 my $HTTP_CLIENT_CLASS = do {
     if (eval { require IO::Socket::SSL }) {
@@ -17,7 +18,7 @@ sub new {
     my ($class, %option) = @_;
     my $uri = $option{uri} || "https://fastapi.metacpan.org/v1/download_url/";
     $uri =~ s{/*$}{/};
-    my $http = $HTTP_CLIENT_CLASS->new(timeout => 10);
+    my $http = $HTTP_CLIENT_CLASS->new(timeout => 10, agent => "App::cpm/$VERSION");
     bless { %option, uri => $uri, http => $http }, $class;
 }
 

@@ -4,6 +4,7 @@ use warnings;
 use App::cpm::version;
 use Cwd ();
 use File::Path ();
+our $VERSION = '0.201';
 
 {
     package
@@ -23,7 +24,7 @@ use File::Path ();
         my $path = $self->path;
         my $dest = File::Spec->catfile($self->cache, File::Basename::basename($path));
         if ($path =~ m{^https?://}) {
-            my $res = HTTP::Tinyish->new->mirror($path => $dest);
+            my $res = HTTP::Tinyish->new(agent => "App::cpm/$VERSION")->mirror($path => $dest);
             die "$res->{status} $res->{reason}, $path\n" unless $res->{success};
         } else {
             $path =~ s{^file://}{};

@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use utf8;
 use List::Util 'max';
+our $VERSION = '0.201';
 
 our $COLOR;
 our $VERBOSE;

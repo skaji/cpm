@@ -1,6 +1,7 @@
 package App::cpm::Worker::Resolver;
 use strict;
 use warnings;
+our $VERSION = '0.201';
 
 sub new {
     my ($class, %option) = @_;
