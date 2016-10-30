@@ -54,7 +54,6 @@ sub parse_options {
         "snapshot=s" => \($self->{snapshot}),
         "sudo" => \($self->{sudo}),
         "r|resolver=s@" => \@resolver,
-        "custom-resolver=s" => \($self->{custom_resolver}),
         "mirror-only" => \($self->{mirror_only}),
         "dev" => \($self->{dev}),
     or exit 1;
@@ -314,19 +313,6 @@ sub load_cpanfile {
 
 sub generate_resolver {
     my $self = shift;
-
-    if ($self->{custom_resolver}) {
-        # XXX: cf Plack::Util::load_psgi
-        my $resolver = do $self->{custom_resolver};
-        if ( !$resolver && ( my $error = $@ || $! )) {
-            chomp $error;
-            die "$self->{custom_resolver}: $error\n";
-        }
-        if ( !$resolver or !eval { $resolver->can("resolve") }) {
-            die "$self->{custom_resolver} does not return resolver object\n"
-        }
-        return $resolver;
-    }
 
     my $cascade = App::cpm::Resolver::Cascade->new;
     if (@{$self->{resolver}}) {

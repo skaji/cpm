@@ -41,9 +41,6 @@ cpm - a fast CPAN module installer
   # use darkpan first, and if it fails, use metadb and normal CPAN
   > cpm install --resolver 02packages,http://example.com/darkpan --resolver metadb Your::Module
 
-  # use your custom resolver, see `perldoc App::cpm::Resolver`
-  > cpm install --custom-resolver /path/to/resolver.pl Youde::Module
-
 =head1 OPTIONS
 
   -w, --workers=N
@@ -62,8 +59,6 @@ cpm - a fast CPAN module installer
   -r, --resolver=class,args (EXPERIMENTAL, will be removed or renamed)
         specify resolvers, you can use --resolver multiple times
         available classes: metadb/metacpan/02packages/snapshot
-      --custom-resolver=SCRIPT
-        use your custom resolver
       --dev (EXPERIMENTAL)
         resolve TRIAL distributions too
       --color, --no-color
