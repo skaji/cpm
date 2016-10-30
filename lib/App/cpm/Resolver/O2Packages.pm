@@ -110,35 +110,3 @@ sub resolve {
 }
 
 1;
-
-__END__
-
-=head1 NAME
-
-App::cpm::Resolver::O2Packages - resolve distribution uri from 02packages.details.txt.gz
-
-=head1 SYNOPSIS
-
-  use App::cpm::Resolver::O2Packages;
-
-  my $r1 = App::cpm::Resolver::O2Packages->new(
-    path   => "file:///path/to/02packages.details.txt.gz",
-    mirror => "http://www.cpan.org",
-  );
-
-  # if you omit path argument, then it defaults to $mirror/modules/02packages.details.txt.gz
-  my $r2 = App::cpm::Resolver::O2Packages->new(
-    mirror => "http://example.com/darkpan",
-  );
-
-=head1 DESCRIPTION
-
-App::cpm::Resolver::O2Packages resolves distribution uri from 02packages.details.txt.gz
-
-=head1 SEE ALSO
-
-L<CPAN::Common::Index::LocalPackage>
-
-L<CPAN::Common::Index::Mirror>
-
-=cut
