@@ -162,7 +162,7 @@ sub fetch {
                 last FETCH;
             } else {
                 local $self->menlo->{save_dists};
-                if ($CACHED_MIRROR->($uri)) {
+                if ($distfile and $CACHED_MIRROR->($uri)) {
                     my $cache = File::Spec->catfile($self->{cache}, "authors/id/$distfile");
                     if (-f $cache) {
                         File::Copy::copy($cache, $basename);

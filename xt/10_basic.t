@@ -55,4 +55,12 @@ subtest range => sub {
     like $r->err, qr/DONE install FormValidator-Lite/;
 };
 
+subtest http => sub {
+    my $r;
+    $r = cpm_install "http://www.cpan.org/authors/id/L/LE/LEONT/Module-Build-0.4220.tar.gz";
+    is $r->exit, 0;
+    $r = cpm_install "https://cpan.metacpan.org/authors/id/L/LE/LEONT/Module-Build-0.4220.tar.gz";
+    is $r->exit, 0;
+};
+
 done_testing;

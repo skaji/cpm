@@ -237,6 +237,9 @@ sub register_initial_job {
             my %ref = $arg =~ s/(?<=\.git)@(.+)$// ? (ref => $1) : ();
             my $dist = App::cpm::Distribution->new(source => "git", uri => $arg, provides => [], %ref);
             $master->add_distribution($dist);
+        } elsif ($arg =~ m{^https?://}) {
+            my $dist = App::cpm::Distribution->new(source => "http", uri => $arg, provides => []);
+            $master->add_distribution($dist);
         } else {
             my ($package, $version, $dev);
             # copy from Menlo
