@@ -63,19 +63,15 @@ sub new {
     my $menlo_build_log = (delete $option{menlo_build_log}) || "$menlo_base/build.log";
     my $cache = (delete $option{cache}) || "$ENV{HOME}/.perl-cpm/cache";
     mkpath $menlo_base unless -d $menlo_base;
-    $option{mirror} = [$option{mirror}] if ref $option{mirror} ne 'ARRAY';
 
     my $menlo = Menlo::CLI::Compat->new(
         base => $menlo_base,
         log  => $menlo_build_log,
         quiet => 1,
         pod2man => undef,
-        # force using HTTP::Tiny
-        try_wget => 0,
-        try_curl => 0,
-        try_lwp  => 0,
-        notest   => $option{notest},
-        sudo     => $option{sudo},
+        notest => $option{notest},
+        sudo => $option{sudo},
+        mirrors => ["https://cpan.metacpan.org/"], # this is dummy
     );
     if (my $local_lib = delete $option{local_lib}) {
         $menlo->{self_contained} = 1;
