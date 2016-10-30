@@ -89,8 +89,9 @@ sub _calculate_jobs {
     my @distributions
         = grep { !$self->{_fail_install}{$_->distfile} } $self->distributions;
 
-    if (my @dists = grep { $_->resolved } @distributions) {
+    if (my @dists = grep { $_->resolved && !$_->registered } @distributions) {
         for my $dist (@dists) {
+            $dist->registered(1);
             $self->add_job(
                 type => "fetch",
                 distfile => $dist->{distfile},
@@ -101,11 +102,12 @@ sub _calculate_jobs {
         }
     }
 
-    if (my @dists = grep { $_->fetched } @distributions) {
+    if (my @dists = grep { $_->fetched && !$_->registered } @distributions) {
         for my $dist (@dists) {
             my ($is_satisfied, @need_resolve)
                 = $self->is_satisfied($dist->configure_requirements);
             if ($is_satisfied) {
+                $dist->registered(1);
                 $self->add_job(
                     type => "configure",
                     meta => $dist->meta,
@@ -126,11 +128,12 @@ sub _calculate_jobs {
         }
     }
 
-    if (my @dists = grep { $_->configured } @distributions) {
+    if (my @dists = grep { $_->configured && !$_->registered } @distributions) {
         for my $dist (@dists) {
             my ($is_satisfied, @need_resolve)
                 = $self->is_satisfied($dist->requirements);
             if ($is_satisfied) {
+                $dist->registered(1);
                 $self->add_job(
                     type => "install",
                     meta => $dist->meta,

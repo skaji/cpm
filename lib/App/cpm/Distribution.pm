@@ -5,6 +5,12 @@ use App::cpm::version;
 use App::cpm::Logger;
 use CPAN::DistnameInfo;
 
+use constant STATE_REGISTERED => 0b00001;
+use constant STATE_RESOLVED   => 0b00010; # default
+use constant STATE_FETCHED    => 0b00100;
+use constant STATE_CONFIGURED => 0b01000;
+use constant STATE_INSTALLED  => 0b10000;
+
 sub new {
     my ($class, %option) = @_;
     my $uri = delete $option{uri};
@@ -12,7 +18,7 @@ sub new {
     my $distfile = delete $option{distfile};
     my $source = delete $option{source} || "cpan";
     my $provides = delete $option{provides} || [];
-    bless {%option, provides => $provides, uri => $uri, distfile => $distfile, source => $source, _state => 0}, $class;
+    bless {%option, provides => $provides, uri => $uri, distfile => $distfile, source => $source, _state => STATE_RESOLVED}, $class;
 }
 
 for my $attr (qw(
@@ -61,14 +67,20 @@ sub overwrite_provide {
     return 1;
 }
 
-use constant STATE_RESOLVED   => 0; # default
-use constant STATE_FETCHED    => 1;
-use constant STATE_CONFIGURED => 2;
-use constant STATE_INSTALLED  => 3;
+sub registered {
+    my $self = shift;
+    if (@_ && $_[0]) {
+        $self->{_state} |= STATE_REGISTERED;
+    }
+    $self->{_state} & STATE_REGISTERED;
+}
 
 sub resolved {
     my $self = shift;
-    $self->{_state} == STATE_RESOLVED;
+    if (@_ && $_[0]) {
+        $self->{_state} = STATE_RESOLVED;
+    }
+    $self->{_state} & STATE_RESOLVED;
 }
 
 sub fetched {
@@ -76,7 +88,7 @@ sub fetched {
     if (@_ && $_[0]) {
         $self->{_state} = STATE_FETCHED;
     }
-    $self->{_state} == STATE_FETCHED;
+    $self->{_state} & STATE_FETCHED;
 }
 
 sub configured {
@@ -84,7 +96,7 @@ sub configured {
     if (@_ && $_[0]) {
         $self->{_state} = STATE_CONFIGURED
     }
-    $self->{_state} == STATE_CONFIGURED;
+    $self->{_state} & STATE_CONFIGURED;
 }
 
 sub installed {
@@ -92,7 +104,7 @@ sub installed {
     if (@_ && $_[0]) {
         $self->{_state} = STATE_INSTALLED;
     }
-    $self->{_state} == STATE_INSTALLED;
+    $self->{_state} & STATE_INSTALLED;
 }
 
 sub providing {
