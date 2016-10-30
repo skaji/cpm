@@ -419,6 +419,7 @@ App::cpm - a fast CPAN module installer
 B<THIS IS EXPERIMENTAL.>
 
 cpm is a fast CPAN module installer, which uses L<Menlo> in parallel.
+For tutorial, check out L<App::cpm::Tutorial>.
 
 =head1 MOTIVATION
 
