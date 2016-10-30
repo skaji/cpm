@@ -157,7 +157,8 @@ sub fetch {
             my $basename = basename $uri;
             if ($uri =~ s{^file://}{}) {
                 File::Copy::copy($uri, $basename);
-                $dir = $self->menlo->unpack($basename);
+                $dir = $self->menlo->unpack($basename)
+                    or next FETCH;
                 last FETCH;
             } else {
                 local $self->menlo->{save_dists};
@@ -166,13 +167,19 @@ sub fetch {
                     if (-f $cache) {
                         File::Copy::copy($cache, $basename);
                         $dir = $self->menlo->unpack($basename);
+                        unless ($dir) {
+                            unlink $cache;
+                            next FETCH;
+                        }
                         $using_cache++;
                         last FETCH;
                     } else {
                         $self->menlo->{save_dists} = $self->{cache};
                     }
                 }
-                $dir = $self->menlo->fetch_module({uris => [$uri], pathname => $distfile});
+                $dir = $self->menlo->fetch_module({uris => [$uri], pathname => $distfile})
+                    or next FETCH;
+                last FETCH;
             }
         }
         $dir = File::Spec->catdir($self->menlo->{base}, $dir) if $dir;
