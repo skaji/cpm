@@ -211,7 +211,18 @@ sub cmd_install {
     }
     my $num = $master->installed_distributions;
     warn "$num distribution@{[$num > 1 ? 's' : '']} installed.\n";
+    $self->cleanup;
     return $master->fail ? 1 : 0;
+}
+
+sub cleanup {
+    my $self = shift;
+    my $week = time - 7*24*60*60;
+    my @file = map  { $_->[0] }
+               grep { $_->[1] < $week }
+               map  { [$_, (stat $_)[9]] }
+               glob "$ENV{HOME}/.perl-cpm/build*.log";
+    unlink $_ for @file;
 }
 
 sub register_initial_job {
