@@ -2,7 +2,7 @@ package App::cpm::Worker::Installer;
 use strict;
 use warnings;
 use utf8;
-our $VERSION = '0.210';
+our $VERSION = '0.211';
 
 use CPAN::DistnameInfo;
 use CPAN::Meta;

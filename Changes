@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.211  2016-10-31 03:53:28 JST
+        - Remove outdated pods
+
 0.210  2016-10-31 03:49:34 JST
         - Non trial release.
         - Add App::cpm::Tutorial.
