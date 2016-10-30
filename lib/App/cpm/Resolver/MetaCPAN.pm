@@ -39,7 +39,11 @@ sub resolve {
     );
     my $query = join "&", map { "$_=" . _encode($query{$_}) } sort keys %query;
     my $uri = "$self->{uri}$job->{package}" . ($query ? "?$query" : "");
-    my $res = $self->{http}->get($uri);
+    my $res;
+    for (1..2) {
+        $res = $self->{http}->get($uri);
+        last if $res->{success} or !($res->{status} == 599 and $res->{content} =~ /timed out/);
+    }
     return unless $res->{success};
 
     my $hash = eval { JSON::PP::decode_json($res->{content}) } or return;
