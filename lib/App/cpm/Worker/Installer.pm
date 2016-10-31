@@ -211,7 +211,7 @@ sub _get_configure_requirements {
         version => $p->{$_}{version} || undef,
     }, sort keys %$p];
 
-    if (!@$requirements && -f "Build.PL") {
+    if (!@$requirements && -f "Build.PL" && $distfile !~ m{/Module-Build-[0-9v]}) {
         push @$requirements, {
             package => "Module::Build", version => "0.38",
             phase => "configure", type => "requires",
