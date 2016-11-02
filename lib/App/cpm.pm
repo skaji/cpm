@@ -348,6 +348,9 @@ sub generate_resolver {
                     path => $self->{snapshot},
                     mirror => @arg ? \@arg : $self->{mirror},
                 );
+            } elsif ($klass =~ /^script$/i) {
+                require App::cpm::Resolver::Script;
+                $resolver = App::cpm::Resolver::Script->new();
             } else {
                 die "Unknown resolver: $klass\n";
             }
