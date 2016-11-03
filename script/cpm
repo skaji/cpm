@@ -65,6 +65,8 @@ cpm - a fast CPAN module installer
         turn on/off color output, default: on
       --test, --no-test
         run test cases, default: no
+      --man-pages
+        generate man pages
   -V, --version
         show version
   -h, --help

@@ -56,6 +56,7 @@ sub parse_options {
         "r|resolver=s@" => \@resolver,
         "mirror-only" => \($self->{mirror_only}),
         "dev" => \($self->{dev}),
+        "man-pages" => \($self->{man_pages}),
     or exit 1;
 
     $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
@@ -167,6 +168,7 @@ sub cmd_install {
         notest          => $self->{notest},
         sudo            => $self->{sudo},
         resolver        => $self->generate_resolver,
+        man_pages       => $self->{man_pages},
         ($self->{global} ? () : (local_lib => $self->{local_lib})),
     );
     my $pipes = Parallel::Pipes->new($self->{workers}, sub {

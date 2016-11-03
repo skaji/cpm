@@ -68,7 +68,7 @@ sub new {
         base => $menlo_base,
         log  => $menlo_build_log,
         quiet => 1,
-        pod2man => undef,
+        pod2man => $option{man_pages},
         notest => $option{notest},
         sudo => $option{sudo},
         mirrors => ["https://cpan.metacpan.org/"], # this is dummy
