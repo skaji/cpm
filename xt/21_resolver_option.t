@@ -26,15 +26,15 @@ $r = cpm_install "-v", "--resolver", "snapshot", "--snapshot", $snapshot, "commo
 like $r->err, qr/Snapshot/;
 
 $r = cpm_install "-v", "--resolver", "02packages,http://www.cpan.org", "common::sense";
-like $r->err, qr/O2Packages/;
+like $r->err, qr/02Packages/;
 
-my $O2packages = Path::Tiny->tempfile;
-$O2packages->spew(<<"...");
+my $index = Path::Tiny->tempfile;
+$index->spew(<<"...");
 dummy header
 
 common::sense 3.74 M/ML/MLEHMANN/common-sense-3.74.tar.gz
 ...
-$r = cpm_install "-v", "--resolver", "02packages,$O2packages,http://www.cpan.org", "common::sense";
-like $r->err, qr/O2Packages/;
+$r = cpm_install "-v", "--resolver", "02packages,$index,http://www.cpan.org", "common::sense";
+like $r->err, qr/02Packages/;
 
 done_testing;

@@ -328,8 +328,8 @@ sub generate_resolver {
                 );
             } elsif ($klass =~ /^metacpan$/i) {
                 $resolver = App::cpm::Resolver::MetaCPAN->new(dev => $self->{dev});
-            } elsif ($klass =~ /^[0o]2packages?$/i) {
-                require App::cpm::Resolver::O2Packages;
+            } elsif ($klass =~ /^02packages?$/i) {
+                require App::cpm::Resolver::02Packages;
                 my ($path, $mirror);
                 if (@arg > 1) {
                     ($path, $mirror) = @arg;
@@ -338,7 +338,7 @@ sub generate_resolver {
                 } else {
                     $mirror = $self->{mirror}[0];
                 }
-                $resolver = App::cpm::Resolver::O2Packages->new(
+                $resolver = App::cpm::Resolver::02Packages->new(
                     $path ? (path => $path) : (),
                     mirror => $mirror,
                 );
@@ -357,8 +357,8 @@ sub generate_resolver {
     }
 
     if ($self->{mirror_only}) {
-        require App::cpm::Resolver::O2Packages;
-        $cascade->add(App::cpm::Resolver::O2Packages->new(mirror => $_)) for @{$self->{mirror}};
+        require App::cpm::Resolver::02Packages;
+        $cascade->add(App::cpm::Resolver::02Packages->new(mirror => $_)) for @{$self->{mirror}};
         return $cascade;
     }
 

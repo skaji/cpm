@@ -1,4 +1,4 @@
-package App::cpm::Resolver::O2Packages;
+package App::cpm::Resolver::02Packages;
 use strict;
 use warnings;
 use App::cpm::version;
@@ -8,7 +8,7 @@ our $VERSION = '0.211';
 
 {
     package
-        App::cpm::Resolver::O2Packages::Impl;
+        App::cpm::Resolver::02Packages::Impl;
     use parent 'CPAN::Common::Index::Mirror';
     use Class::Tiny qw(path);
     use IO::Uncompress::Gunzip ();
@@ -64,7 +64,7 @@ sub new {
         $cache = $class->cache_for($mirror, $cache_base);
     }
 
-    my $impl = App::cpm::Resolver::O2Packages::Impl->new(
+    my $impl = App::cpm::Resolver::02Packages::Impl->new(
         path => $path, $cache ? (cache => $cache) : (),
     );
     $impl->refresh_index; # refresh_index first
