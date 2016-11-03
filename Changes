@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.212  2016-11-03 14:53:07 JST
+        - Add --man-pages option (perlancar #44)
+        - Rename O2Packages 02Packages (perlancar #45)
+
 0.211  2016-10-31 03:53:28 JST
         - Remove outdated pods
 
