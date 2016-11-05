@@ -29,7 +29,7 @@ our $VERSION = '0.212';
         } else {
             $path =~ s{^file://}{};
             die "$path: No such file.\n" unless -f $path;
-            if (!-f $dest or (stat $dest)[9] > (stat $path)[9]) {
+            if (!-f $dest or (stat $dest)[9] < (stat $path)[9]) {
                 File::Copy::copy($path, $dest) or die "Copy $path $dest: $!\n";
                 my $mtime = (stat $path)[9];
                 utime $mtime, $mtime, $dest;
@@ -39,7 +39,7 @@ our $VERSION = '0.212';
         if ($dest =~ /\.gz$/) {
             ( my $uncompressed = File::Basename::basename($dest) ) =~ s/\.gz$//;
             $uncompressed = File::Spec->catfile( $self->cache, $uncompressed );
-            if ( !-f $uncompressed or (stat $dest)[9] > (stat $uncompressed)[9] ) {
+            if ( !-f $uncompressed or (stat $uncompressed)[9] < (stat $dest)[9] ) {
                 IO::Uncompress::Gunzip::gunzip($dest, $uncompressed)
                     or die "Gunzip $dest: $IO::Uncompress::Gunzip::GunzipError";
             }
