@@ -32,4 +32,5 @@ recommends 'Carton::Snapshot';
 on develop => sub {
     requires 'Capture::Tiny';
     requires 'Path::Tiny';
+    requires 'CPAN::Mirror::Tiny', '0.10';
 };
