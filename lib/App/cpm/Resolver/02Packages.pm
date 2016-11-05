@@ -52,7 +52,7 @@ our $VERSION = '0.212';
 
 sub new {
     my ($class, %option) = @_;
-    my $cache_base = $option{cache} || "$ENV{HOME}/.perl-cpm";
+    my $cache_base = $option{cache} || "$ENV{HOME}/.perl-cpm/sources";
     my $mirror = $option{mirror} or die "mirror option is required\n";
     $mirror =~ s{/*$}{/};
 
@@ -80,7 +80,7 @@ sub cache_for {
     }
     $mirror =~ s{/$}{};
     $mirror =~ s/[^\w\.\-]+/%/g;
-    my $dir = "$cache/sources/$mirror";
+    my $dir = "$cache/$mirror";
     File::Path::mkpath([ $dir ], 0, 0777);
     return $dir;
 }

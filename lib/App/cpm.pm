@@ -23,6 +23,7 @@ use constant WIN32 => $^O eq 'MSWin32';
 sub new {
     my ($class, %option) = @_;
     bless {
+        home => "$ENV{HOME}/.perl-cpm",
         workers => WIN32 ? 1 : 5,
         snapshot => "cpanfile.snapshot",
         cpanfile => "cpanfile",
@@ -57,6 +58,7 @@ sub parse_options {
         "mirror-only" => \($self->{mirror_only}),
         "dev" => \($self->{dev}),
         "man-pages" => \($self->{man_pages}),
+        "home=s" => \($self->{home}),
     or exit 1;
 
     $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
@@ -162,9 +164,9 @@ sub cmd_install {
 
     my $worker = App::cpm::Worker->new(
         verbose         => $self->{verbose},
-        cache           => "$ENV{HOME}/.perl-cpm/cache",
-        menlo_base      => "$ENV{HOME}/.perl-cpm/work",
-        menlo_build_log => "$ENV{HOME}/.perl-cpm/build.@{[time]}.log",
+        cache           => "$self->{home}/cache",
+        menlo_base      => "$self->{home}/work",
+        menlo_build_log => "$self->{home}/build.@{[time]}.log",
         notest          => $self->{notest},
         sudo            => $self->{sudo},
         resolver        => $self->generate_resolver,
@@ -222,7 +224,7 @@ sub cleanup {
     my @file = map  { $_->[0] }
                grep { $_->[1] < $week }
                map  { [$_, (stat $_)[9]] }
-               glob "$ENV{HOME}/.perl-cpm/build*.log";
+               glob "$self->{home}/build*.log";
     unlink $_ for @file;
 }
 
@@ -342,6 +344,7 @@ sub generate_resolver {
                 }
                 $resolver = App::cpm::Resolver::02Packages->new(
                     $path ? (path => $path) : (),
+                    cache => "$self->{home}/sources",
                     mirror => $mirror,
                 );
             } elsif ($klass =~ /^snapshot$/i) {
@@ -360,7 +363,13 @@ sub generate_resolver {
 
     if ($self->{mirror_only}) {
         require App::cpm::Resolver::02Packages;
-        $cascade->add(App::cpm::Resolver::02Packages->new(mirror => $_)) for @{$self->{mirror}};
+        for my $mirror (@{$self->{mirror}}) {
+            my $resolver = App::cpm::Resolver::02Packages->new(
+                mirror => $mirror,
+                cache => "$self->{home}/sources",
+            );
+            $cascade->add($resolver);
+        }
         return $cascade;
     }
 
