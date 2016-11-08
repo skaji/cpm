@@ -156,7 +156,8 @@ sub fetch {
             $clean->($uri);
             my $basename = basename $uri;
             if ($uri =~ s{^file://}{}) {
-                File::Copy::copy($uri, $basename);
+                File::Copy::copy($uri, $basename)
+                    or next FETCH;
                 $dir = $self->menlo->unpack($basename)
                     or next FETCH;
                 last FETCH;

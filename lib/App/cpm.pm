@@ -13,7 +13,8 @@ use Parallel::Pipes;
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use List::Util ();
 use Pod::Usage ();
-use Cwd 'abs_path';
+use File::Spec;
+use Cwd ();
 use Config;
 
 our $VERSION = '0.213';
@@ -61,12 +62,11 @@ sub parse_options {
         "home=s" => \($self->{home}),
     or exit 1;
 
-    $self->{local_lib} = abs_path $self->{local_lib} unless $self->{global};
+    $self->{local_lib} = $self->maybe_abs($self->{local_lib}) unless $self->{global};
     $self->{resolver} = \@resolver;
     $self->{mirror} = \@mirror if @mirror;
     for my $mirror (@{$self->{mirror}}) {
-        $mirror =~ s{/*$}{/};
-        $mirror = "file://$mirror" if $mirror !~ m{^https?://} and -d $mirror;
+        $mirror = $self->normalize_mirror($mirror)
     }
     $self->{color} = 1 if !defined $self->{color} && -t STDOUT;
     if ($target_perl) {
@@ -112,6 +112,24 @@ sub _user_inc {
     );
 }
 
+sub maybe_abs {
+    my ($self, $path) = @_;
+    if (File::Spec->file_name_is_absolute($path)) {
+        return $path;
+    } else {
+        File::Spec->canonpath(File::Spec->catdir(Cwd::cwd(), $path));
+    }
+}
+
+sub normalize_mirror {
+    my ($self, $mirror) = @_;
+    $mirror =~ s{/*$}{/};
+    return $mirror if $mirror =~ m{^https?://};
+    $mirror =~ s{^file://}{};
+    die "$mirror: No such directory.\n" unless -d $mirror;
+    "file://" . $self->maybe_abs($mirror);
+}
+
 sub run {
     my ($self, @argv) = @_;
     my $cmd = shift @argv or die "Need subcommand, try `cpm --help`\n";
@@ -139,7 +157,7 @@ sub cmd_version {
 
 sub cmd_exec {
     my ($self, @argv) = @_;
-    my $local_lib = abs_path $self->{local_lib};
+    my $local_lib = $self->maybe_abs($self->{local_lib});
     if (-d "$local_lib/lib/perl5") {
         $ENV{PERL5LIB} = "$local_lib/lib/perl5"
                        . ($ENV{PERL5LIB} ? ":$ENV{PERL5LIB}" : "");
@@ -233,8 +251,8 @@ sub register_initial_job {
 
     my @package;
     for my $arg (@{$self->{argv}}) {
-        if (-d $arg || -f $arg) {
-            $arg = abs_path $arg;
+        if (-d $arg || -f $arg || $arg =~ s{^file://}{}) {
+            $arg = $self->maybe_abs($arg);
             my $dist = App::cpm::Distribution->new(source => "local", uri => "file://$arg", provides => []);
             $master->add_distribution($dist);
         } elsif ($arg =~ /(?:^git:|\.git(?:@.+)?$)/) {
@@ -328,7 +346,7 @@ sub generate_resolver {
             my $resolver;
             if ($klass =~ /^metadb$/i) {
                 $resolver = App::cpm::Resolver::MetaDB->new(
-                    mirror => @arg ? \@arg : $self->{mirror}
+                    mirror => @arg ? [map $self->normalize_mirror($_), @arg] : $self->{mirror}
                 );
             } elsif ($klass =~ /^metacpan$/i) {
                 $resolver = App::cpm::Resolver::MetaCPAN->new(dev => $self->{dev});
@@ -345,13 +363,13 @@ sub generate_resolver {
                 $resolver = App::cpm::Resolver::02Packages->new(
                     $path ? (path => $path) : (),
                     cache => "$self->{home}/sources",
-                    mirror => $mirror,
+                    mirror => $self->normalize_mirror($mirror),
                 );
             } elsif ($klass =~ /^snapshot$/i) {
                 require App::cpm::Resolver::Snapshot;
                 $resolver = App::cpm::Resolver::Snapshot->new(
                     path => $self->{snapshot},
-                    mirror => @arg ? \@arg : $self->{mirror},
+                    mirror => @arg ? [map $self->normalize_mirror($_), @arg] : $self->{mirror},
                 );
             } else {
                 die "Unknown resolver: $klass\n";
