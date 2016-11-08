@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.214  2016-11-09 00:59:23 JST
+        - Normalize mirrors so that "directory" mirrors work (oschwald #49)
+
 0.213  2016-11-05 11:00:58 JST
         - Fix how to cache 02packages.details.txt (oschwald #47)
 
