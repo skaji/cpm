@@ -9,10 +9,6 @@ subtest basic => sub {
     like $r->err, qr/^DONE install App-FatPacker/;
     like $r->err, qr/1 distribution installed/;
     ok -f $r->local . "/bin/fatpack";
-
-    $r = cpm_install "Distribution::Metadata";
-    like $r->err, qr/^DONE install Distribution-Metadata/m or diag $r->err;
-    ok -f $r->local . "/bin/which-meta";
 };
 
 subtest same => sub {
@@ -38,28 +34,28 @@ subtest invalid_meta => sub {
 };
 
 subtest test => sub {
-    # File-pushd only in test requires
-    my $r = cpm_install "Distribution::Metadata";
-    unlike $r->err, qr/File-pushd/;
+    # Test::Requires only in test requires
+    my $r = cpm_install "Data::Section::Simple";
+    unlike $r->err, qr/Test-Requires/;
 
-    $r = cpm_install "--no-test", "Distribution::Metadata";
-    unlike $r->err, qr/File-pushd/;
+    $r = cpm_install "--no-test", "Data::Section::Simple";
+    unlike $r->err, qr/Test-Requires/;
 
-    $r = cpm_install "--test", "Distribution::Metadata";
-    like $r->err, qr/File-pushd/;
+    $r = cpm_install "--test", "Data::Section::Simple";
+    like $r->err, qr/Test-Requires/;
 };
 
 subtest range => sub {
-    my $r = cpm_install "FormValidator::Lite"; # FormValidator::Lite has version range prereq
+    my $r = cpm_install "CPAN::Test::Dummy::Perl5::Deps::VersionRange";
     is $r->exit, 0;
-    like $r->err, qr/DONE install FormValidator-Lite/;
+    like $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-Deps-VersionRange/;
 };
 
 subtest http => sub {
     my $r;
-    $r = cpm_install "http://www.cpan.org/authors/id/L/LE/LEONT/Module-Build-0.4220.tar.gz";
+    $r = cpm_install "http://www.cpan.org/authors/id/L/LE/LEONT/ExtUtils-Config-0.008.tar.gz";
     is $r->exit, 0;
-    $r = cpm_install "https://cpan.metacpan.org/authors/id/L/LE/LEONT/Module-Build-0.4220.tar.gz";
+    $r = cpm_install "https://cpan.metacpan.org/authors/id/L/LE/LEONT/ExtUtils-Config-0.008.tar.gz";
     is $r->exit, 0;
 };
 

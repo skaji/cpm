@@ -13,5 +13,5 @@ install:
   - cpanm -nq --installdeps --with-develop .
   - cpanm -nq Carton
 script:
-  - prove -l t xt
+  - prove -l --timer t xt
 sudo: false
