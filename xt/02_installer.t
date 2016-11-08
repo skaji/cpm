@@ -6,8 +6,10 @@ use App::cpm::Worker::Installer;
 use File::Temp 'tempdir';
 
 my $tempdir = tempdir CLEANUP => 1;
+my $menlo_base = tempdir CLEANUP => 1;
 my $installer = App::cpm::Worker::Installer->new(
     local_lib => $tempdir,
+    menlo_base => $menlo_base,
     mirror => "http://www.cpan.org",
 );
 
