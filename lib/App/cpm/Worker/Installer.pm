@@ -78,10 +78,27 @@ sub new {
         $menlo->setup_local_lib($menlo->maybe_abs($local_lib));
     }
     $menlo->init_tools;
+    $class->set_http_agent($menlo);
     bless { %option, cache => $cache, menlo => $menlo }, $class;
 }
 
 sub menlo { shift->{menlo} }
+
+sub set_http_agent {
+    my ($class, $menlo) = @_;
+    my $agent = "App::cpm/$VERSION";
+    my $http = $menlo->{http};
+    my $klass = ref $http;
+    if ($klass =~ /HTTP::Tinyish::(Curl|Wget)/) {
+        $http->{agent} = $agent;
+    } elsif ($klass eq 'HTTP::Tinyish::LWP') {
+        $http->{ua}->agent($agent);
+    } elsif ($klass eq 'HTTP::Tinyish::HTTPTiny') {
+        $http->{tiny}->agent($agent);
+    } else {
+        die "Unknown http class: $klass\n";
+    }
+}
 
 sub _fetch_git {
     my ($self, $uri, $ref) = @_;
