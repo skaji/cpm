@@ -55,14 +55,14 @@ sub distvname {
 
 sub overwrite_provide {
     my ($self, $provide) = @_;
-    my $overwrited;
+    my $overwrote;
     for my $exist (@{$self->{provides}}) {
         if ($exist->{package} eq $provide->{package}) {
             $exist = $provide;
-            $overwrited++;
+            $overwrote++;
         }
     }
-    if (!$overwrited) {
+    if (!$overwrote) {
         push @{$self->{provides}}, $provide;
     }
     return 1;
