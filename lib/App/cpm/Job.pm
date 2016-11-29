@@ -30,6 +30,20 @@ sub distfile {
     $self->{distfile} || $self->{uri}[0];
 }
 
+sub distvname {
+    my $self = shift;
+    return $self->{_distvname} if $self->{_distvname};
+    if ($self->{distfile}) {
+        $self->{_distvname} ||= CPAN::DistnameInfo->new($self->{distfile})->distvname;
+    } elsif ($self->{uri}[0]) {
+        $self->{uri}[0];
+    } elsif ($self->{package}) {
+        $self->{package};
+    } else {
+        "UNKNOWN";
+    }
+}
+
 sub type {
     my $self = shift;
     $self->{type};
@@ -48,6 +62,14 @@ sub is_success {
 sub equals {
     my ($self, $that) = @_;
     $self->uid eq $that->uid;
+}
+
+sub merge {
+    my ($self, $that) = @_;
+    for my $key (keys %$that) {
+        $self->{$key} = $that->{$key};
+    }
+    $self;
 }
 
 1;

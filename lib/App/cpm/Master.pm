@@ -30,7 +30,8 @@ sub fail {
     my @fail_resolve = sort keys %{$self->{_fail_resolve}};
     my @fail_install = sort keys %{$self->{_fail_install}};
     return if !@fail_resolve && !@fail_install;
-    { resolve => \@fail_resolve, install => \@fail_install };
+    my @name = map { CPAN::DistnameInfo->new($_)->distvname || $_ } @fail_install;
+    { resolve => \@fail_resolve, install => \@name };
 }
 
 sub jobs { values %{shift->{jobs}} }

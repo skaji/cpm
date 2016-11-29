@@ -33,16 +33,16 @@ sub work {
     }
     my $elapsed = $start ? tv_interval($start) : undef;
     $result ||= { ok => 0 };
-    $job = +{ %$job, %$result };
+    $job->merge($result);
     $self->info($job, $elapsed);
     return $job;
 }
 
 sub info {
     my ($self, $job, $elapsed) = @_;
-    my $type = $job->{type};
+    my $type = $job->type;
     return if !$App::cpm::Logger::VERBOSE && $type ne "install";
-    my $name = $job->{distfile} ? CPAN::DistnameInfo->new($job->{distfile})->distvname : $job->{uri}[0];
+    my $name = $job->distvname;
     my ($message, $optional);
     if ($type eq "resolve") {
         $message = $job->{package};
