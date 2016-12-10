@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.292  2016-12-10 18:15:16 JST
+        - Fix trivial bug:)
+
 0.291  2016-12-10 18:01:31 JST
         - Make sure ~/.perl-cpm exists (eserte #60)
 

@@ -8,7 +8,7 @@ use App::cpm::Logger;
 use Module::CoreList;
 use Module::Metadata;
 use version;
-our $VERSION = '0.291';
+our $VERSION = '0.292';
 
 sub new {
     my ($class, %option) = @_;
