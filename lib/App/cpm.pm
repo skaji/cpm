@@ -17,7 +17,7 @@ use File::Spec;
 use Cwd ();
 use Config;
 
-our $VERSION = '0.214';
+our $VERSION = '0.290';
 
 use constant WIN32 => $^O eq 'MSWin32';
 

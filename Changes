@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.290  2016-12-10 11:29:22 JST
+        - cpm's log used to be really messy. Now it emits more (hopefully) sophisticated log ~/.perl-cpm/build.log,
+          so it will be easy to find out the reason of failures (if any).
+
 0.214  2016-11-09 00:59:23 JST
         - Normalize mirrors so that "directory" mirrors work (oschwald #49)
 

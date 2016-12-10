@@ -1,7 +1,7 @@
 package App::cpm::Worker::Resolver;
 use strict;
 use warnings;
-our $VERSION = '0.214';
+our $VERSION = '0.290';
 use File::Temp ();
 use App::cpm::Logger::File;
 
