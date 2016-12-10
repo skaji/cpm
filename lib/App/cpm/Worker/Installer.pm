@@ -68,7 +68,7 @@ sub new {
 
     my $base  = $option{base}  || "$ENV{HOME}/.perl-cpm/work";
     my $cache = $option{cache} || "$ENV{HOME}/.perl-cpm/cache";
-    mkpath $base for grep { !-d } $base, $cache;
+    mkpath $_ for grep { !-d } $base, $cache;
 
     my $menlo = App::cpm::Worker::Installer::Menlo->new(
         base => $base,
