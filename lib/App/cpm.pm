@@ -14,6 +14,7 @@ use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use List::Util ();
 use Pod::Usage ();
 use File::Spec;
+use File::Path ();
 use Cwd ();
 use Config;
 
@@ -173,6 +174,7 @@ sub cmd_install {
     my $self = shift;
     die "Need arguments or cpanfile.\n" if !@{$self->{argv}} && !-f $self->{cpanfile};
 
+    File::Path::mkpath($self->{home}) unless -d $self->{home};
     my $logger = App::cpm::Logger::File->new("$self->{home}/build.log.@{[time]}");
     $logger->symlink_to("$self->{home}/build.log");
 
