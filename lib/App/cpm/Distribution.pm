@@ -6,11 +6,12 @@ use App::cpm::Logger;
 use CPAN::DistnameInfo;
 our $VERSION = '0.214';
 
-use constant STATE_REGISTERED => 0b00001;
-use constant STATE_RESOLVED   => 0b00010; # default
-use constant STATE_FETCHED    => 0b00100;
-use constant STATE_CONFIGURED => 0b01000;
-use constant STATE_INSTALLED  => 0b10000;
+use constant STATE_REGISTERED      => 0b000001;
+use constant STATE_DEPS_REGISTERED => 0b000010;
+use constant STATE_RESOLVED        => 0b000100; # default
+use constant STATE_FETCHED         => 0b001000;
+use constant STATE_CONFIGURED      => 0b010000;
+use constant STATE_INSTALLED       => 0b100000;
 
 sub new {
     my ($class, %option) = @_;
@@ -74,6 +75,14 @@ sub registered {
         $self->{_state} |= STATE_REGISTERED;
     }
     $self->{_state} & STATE_REGISTERED;
+}
+
+sub deps_registered {
+    my $self = shift;
+    if (@_ && $_[0]) {
+        $self->{_state} |= STATE_DEPS_REGISTERED;
+    }
+    $self->{_state} & STATE_DEPS_REGISTERED;
 }
 
 sub resolved {

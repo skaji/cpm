@@ -118,7 +118,12 @@ sub _calculate_jobs {
                     source => $dist->source,
                     uri => $dist->uri,
                 );
-            } elsif (@need_resolve) {
+            } elsif (@need_resolve and !$dist->deps_registered) {
+                $dist->deps_registered(1);
+                local $self->{logger}->{context} = $dist->distvname;
+                my $msg = sprintf "Found configure dependencies: %s",
+                    join(", ", map { sprintf "%s (%s)", $_->{package}, $_->{version} || 0 }  @need_resolve);
+                $self->{logger}->log($msg);
                 my $ok = $self->_register_resolve_job(@need_resolve);
                 $self->{_fail_install}{$dist->distfile}++ unless $ok;
             } elsif (!defined $is_satisfied) {
@@ -144,7 +149,12 @@ sub _calculate_jobs {
                     distfile => $dist->{distfile},
                     uri => $dist->uri,
                 );
-            } elsif (@need_resolve) {
+            } elsif (@need_resolve and !$dist->deps_registered) {
+                $dist->deps_registered(1);
+                local $self->{logger}->{context} = $dist->distvname;
+                my $msg = sprintf "Found dependencies: %s",
+                    join(", ", map { sprintf "%s (%s)", $_->{package}, $_->{version} || 0 }  @need_resolve);
+                $self->{logger}->log($msg);
                 my $ok = $self->_register_resolve_job(@need_resolve);
                 $self->{_fail_install}{$dist->distfile}++ unless $ok;
             } elsif (!defined $is_satisfied) {
