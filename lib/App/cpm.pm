@@ -173,7 +173,11 @@ sub cmd_install {
     my $self = shift;
     die "Need arguments or cpanfile.\n" if !@{$self->{argv}} && !-f $self->{cpanfile};
 
+    my $logger = App::cpm::Logger::File->new("$self->{home}/build.log.@{[time]}");
+    $logger->symlink_to("$self->{home}/build.log");
+
     my $master = App::cpm::Master->new(
+        logger => $logger,
         core_inc => [$self->_core_inc],
         user_inc => [$self->_user_inc],
         target_perl => $self->{target_perl},
@@ -182,9 +186,8 @@ sub cmd_install {
 
     my $worker = App::cpm::Worker->new(
         verbose         => $self->{verbose},
-        cache           => "$self->{home}/cache",
-        menlo_base      => "$self->{home}/work",
-        menlo_build_log => "$self->{home}/build.@{[time]}.log",
+        home            => $self->{home},
+        logger          => $self->{logger},
         notest          => $self->{notest},
         sudo            => $self->{sudo},
         resolver        => $self->generate_resolver,
@@ -233,7 +236,12 @@ sub cmd_install {
     my $num = $master->installed_distributions;
     warn "$num distribution@{[$num > 1 ? 's' : '']} installed.\n";
     $self->cleanup;
-    return $master->fail ? 1 : 0;
+    if ($master->fail) {
+        warn "See $self->{home}/build.log for details.\n";
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 sub cleanup {

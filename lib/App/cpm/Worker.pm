@@ -12,8 +12,16 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 sub new {
     my ($class, %option) = @_;
+    my $home = $option{home};
+    my $logger = $option{logger} || App::cpm::Logger::File->new("$home/build.log.@{[time]}");
+    %option = (
+        %option,
+        logger => $logger,
+        base => "$home/work",
+        cache => "$home/cache",
+    );
     my $installer = App::cpm::Worker::Installer->new(%option);
-    my $resolver  = App::cpm::Worker::Resolver->new(impl => $option{resolver});
+    my $resolver  = App::cpm::Worker::Resolver->new(%option, impl => $option{resolver});
     bless { %option, installer => $installer, resolver => $resolver }, $class;
 }
 

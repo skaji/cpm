@@ -4,17 +4,17 @@ use warnings;
 use utf8;
 our $VERSION = '0.214';
 
+use App::cpm::Logger::File;
+use App::cpm::Worker::Installer::Menlo;
 use CPAN::DistnameInfo;
 use CPAN::Meta;
 use File::Basename 'basename';
-use File::Path qw(mkpath rmtree);
-use File::Spec;
-use File::pushd 'pushd';
 use File::Copy ();
 use File::Copy::Recursive ();
-use JSON::PP qw(encode_json decode_json);
-use Menlo::CLI::Compat;
+use File::Path qw(mkpath rmtree);
+use File::Spec;
 use File::Temp ();
+use File::pushd 'pushd';
 
 my $CACHED_MIRROR = sub {
     my $uri = shift;
@@ -24,6 +24,7 @@ my $CACHED_MIRROR = sub {
 sub work {
     my ($self, $job) = @_;
     my $type = $job->{type} || "(undef)";
+    local $self->menlo->{logger}->{context} = $job->distvname;
     if ($type eq "fetch") {
         my ($directory, $meta, $configure_requirements, $provides, $using_cache)
             = $self->fetch($job);
@@ -59,14 +60,18 @@ sub work {
 
 sub new {
     my ($class, %option) = @_;
-    my $menlo_base = (delete $option{menlo_base}) || "$ENV{HOME}/.perl-cpm/work";
-    my $menlo_build_log = (delete $option{menlo_build_log}) || "$menlo_base/build.log";
-    my $cache = (delete $option{cache}) || "$ENV{HOME}/.perl-cpm/cache";
-    mkpath $menlo_base unless -d $menlo_base;
+    my $base = $option{base} || "$ENV{HOME}/.perl-cpm/work";
+    my $logger = $option{logger};
+    if (!$logger) {
+        (undef, my $file) = File::Temp::tempfile(UNLINK => 1);
+        $logger = App::cpm::Logger::File->new($file);
+    }
+    my $cache = $option{cache} || "$base/.perl-cpm/cache";
+    mkpath $base unless -d $base;
 
-    my $menlo = Menlo::CLI::Compat->new(
-        base => $menlo_base,
-        log  => $menlo_build_log,
+    my $menlo = App::cpm::Worker::Installer::Menlo->new(
+        base => $base,
+        logger => $logger,
         quiet => 1,
         pod2man => $option{man_pages},
         notest => $option{notest},
@@ -77,28 +82,10 @@ sub new {
         $menlo->{self_contained} = 1;
         $menlo->setup_local_lib($menlo->maybe_abs($local_lib));
     }
-    $menlo->init_tools;
-    $class->set_http_agent($menlo);
     bless { %option, cache => $cache, menlo => $menlo }, $class;
 }
 
 sub menlo { shift->{menlo} }
-
-sub set_http_agent {
-    my ($class, $menlo) = @_;
-    my $agent = "App::cpm/$VERSION";
-    my $http = $menlo->{http};
-    my $klass = ref $http;
-    if ($klass =~ /HTTP::Tinyish::(Curl|Wget)/) {
-        $http->{agent} = $agent;
-    } elsif ($klass eq 'HTTP::Tinyish::LWP') {
-        $http->{ua}->agent($agent);
-    } elsif ($klass eq 'HTTP::Tinyish::HTTPTiny') {
-        $http->{tiny}->agent($agent);
-    } else {
-        die "Unknown http class: $klass\n";
-    }
-}
 
 sub _fetch_git {
     my ($self, $uri, $ref) = @_;
