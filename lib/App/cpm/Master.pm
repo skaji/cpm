@@ -127,7 +127,7 @@ sub _calculate_jobs {
                 my $ok = $self->_register_resolve_job(@need_resolve);
                 $self->{_fail_install}{$dist->distfile}++ unless $ok;
             } elsif (!defined $is_satisfied) {
-                my ($req) = grep { $_->{package} eq "perl" } @{$dist->requirements};
+                my ($req) = grep { $_->{package} eq "perl" } @{$dist->configure_requirements};
                 my $msg = sprintf "%s requires perl %s", $dist->distvname, $req->{version_range};
                 App::cpm::Logger->log(result => "FAIL", message => $msg);
                 $self->{_fail_install}{$dist->distfile}++;
