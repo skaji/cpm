@@ -9,6 +9,10 @@ perl:
   - '5.12'
   - '5.10'
   - '5.8'
+addons:
+  apt:
+    packages:
+    - libdb-dev
 install:
   - cpanm -nq --installdeps --with-develop .
   - cpanm -nq Carton

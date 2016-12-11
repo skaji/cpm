@@ -22,6 +22,7 @@ sub new {
         distributions => +{},
         _fail_resolve => +{},
         _fail_install => +{},
+        _is_installed => +{},
     }, $class;
 }
 
@@ -158,7 +159,7 @@ sub _calculate_jobs {
                 my $ok = $self->_register_resolve_job(@need_resolve);
                 $self->{_fail_install}{$dist->distfile}++ unless $ok;
             } elsif (!defined $is_satisfied) {
-                my ($req) = grep { $_->{package} eq "perl" } @{$dist->requirements};
+                my ($req) = grep { $_->{package} eq "perl" } @{$dist->configure_requirements};
                 my $msg = sprintf "%s requires perl %s", $dist->distvname, $req->{version_range};
                 App::cpm::Logger->log(result => "FAIL", message => $msg);
                 $self->{_fail_install}{$dist->distfile}++;
@@ -189,14 +190,19 @@ sub _register_resolve_job {
 
 sub is_satisfied_perl_version {
     my ($self, $version_range) = @_;
-    App::cpm::version->parse($self->{target_perl})->satisfy($version_range);
+    App::cpm::version->parse($self->{target_perl} || $])->satisfy($version_range);
 }
 
 sub is_installed {
     my ($self, $package, $version_range) = @_;
-    my $info = Module::Metadata->new_from_module($package, inc => $self->{user_inc});
+    if (exists $self->{_is_installed}{$package}) {
+        return 1 if $self->{_is_installed}{$package}->satisfy($version_range);
+    }
+    my $info = Module::Metadata->new_from_module($package, inc => $self->{inc});
     return unless $info;
-    return App::cpm::version->parse($info->version)->satisfy($version_range);
+    my $current_version = $self->{_is_installed}{$package}
+                        = App::cpm::version->parse($info->version);
+    return $current_version->satisfy($version_range);
 }
 
 sub is_core {
@@ -235,7 +241,7 @@ sub is_satisfied {
             $is_satisfied = undef if !$self->is_satisfied_perl_version($version_range);
             next;
         }
-        next if $self->is_core($package, $version_range);
+        next if $self->{target_perl} and $self->is_core($package, $version_range);
         next if $self->is_installed($package, $version_range);
         my ($resolved) = grep { $_->providing($package, $version_range) } @distributions;
         next if $resolved && $resolved->installed;
