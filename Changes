@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.293  2016-12-11 16:48:22 JST
+        - Now cpm does not assume core modules are always present (eserte #42, #62)
+        - Fix up-to-date handling (#61)
+
 0.292  2016-12-10 18:15:16 JST
         - Fix trivial bug:)
 

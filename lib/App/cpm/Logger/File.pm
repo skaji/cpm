@@ -2,7 +2,7 @@ package App::cpm::Logger::File;
 use strict;
 use warnings;
 use POSIX ();
-our $VERSION = '0.292';
+our $VERSION = '0.293';
 
 sub new {
     my ($class, $file) = @_;
