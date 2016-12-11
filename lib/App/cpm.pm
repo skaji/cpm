@@ -32,7 +32,6 @@ sub new {
         local_lib => "local",
         cpanmetadb => "http://cpanmetadb.plackperl.org/v1.0/",
         mirror => ["http://www.cpan.org/", "http://backpan.perl.org/"],
-        target_perl => $],
         %option
     }, $class;
 }
@@ -71,6 +70,7 @@ sub parse_options {
     }
     $self->{color} = 1 if !defined $self->{color} && -t STDOUT;
     if ($target_perl) {
+        die "--target-perl option conflicts with --global option\n" if $self->{global};
         # 5.8 is interpreted as 5.800, fix it
         $target_perl = "v$target_perl" if $target_perl =~ /^5\.[1-9]\d*$/;
         $self->{target_perl} = App::cpm::version->parse($target_perl)->numify;
@@ -90,27 +90,25 @@ sub parse_options {
     $self->{argv} = \@ARGV;
 }
 
-sub _core_inc {
+sub _inc {
     my $self = shift;
-    (
-        (!$self->{exclude_vendor} ? grep {$_} @Config{qw(vendorarch vendorlibexp)} : ()),
-        @Config{qw(archlibexp privlibexp)},
-    );
-}
-
-sub _user_inc {
-    my $self = shift;
-    if ($self->{global}) {
-        my %core = map { $_ => 1 } $self->_core_inc;
-        return grep { !$core{$_} } @INC;
-    }
+    return \@INC if $self->{global};
 
     my $base = $self->{local_lib};
     require local::lib;
-    (
+    my @local_lib = (
         local::lib->resolve_path(local::lib->install_base_arch_path($base)),
         local::lib->resolve_path(local::lib->install_base_perl_path($base)),
     );
+    my @core = (
+        (!$self->{exclude_vendor} ? grep {$_} @Config{qw(vendorarch vendorlibexp)} : ()),
+        @Config{qw(archlibexp privlibexp)},
+    );
+    if ($self->{target_perl}) {
+        return [@local_lib];
+    } else {
+        return [@local_lib, @core];
+    }
 }
 
 sub maybe_abs {
@@ -180,9 +178,8 @@ sub cmd_install {
 
     my $master = App::cpm::Master->new(
         logger => $logger,
-        core_inc => [$self->_core_inc],
-        user_inc => [$self->_user_inc],
-        target_perl => $self->{target_perl},
+        inc    => $self->_inc,
+        (exists $self->{target_perl} ? (target_perl => $self->{target_perl}) : ()),
     );
     $self->register_initial_job($master);
 
