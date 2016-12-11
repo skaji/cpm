@@ -90,9 +90,9 @@ sub resolve {
     my $result = $self->{impl}->search_packages({package => $job->{package}});
     return unless $result;
 
-    if (my $req_version = $job->{version}) {
+    if (my $version_range = $job->{version_range}) {
         my $version = $result->{version};
-        if (!App::cpm::version->parse($version)->satisfy($req_version)) {
+        if (!App::cpm::version->parse($version)->satisfy($version_range)) {
             return;
         }
     }

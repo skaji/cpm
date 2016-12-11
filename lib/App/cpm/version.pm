@@ -7,13 +7,13 @@ our $VERSION = '0.292';
 use parent 'version';
 
 sub satisfy {
-    my ($self, $want_ver) = @_;
+    my ($self, $version_range) = @_;
 
-    return 1 unless $want_ver;
-    return $self >= version->parse($want_ver) if $want_ver =~ /^v?[\d_.]+$/;
+    return 1 unless $version_range;
+    return $self >= version->parse($version_range) if $version_range =~ /^v?[\d_.]+$/;
 
     my $requirements = CPAN::Meta::Requirements->new;
-    $requirements->add_string_requirement('DummyModule', $want_ver);
+    $requirements->add_string_requirement('DummyModule', $version_range);
     $requirements->accepts_module('DummyModule', $self->numify);
 }
 

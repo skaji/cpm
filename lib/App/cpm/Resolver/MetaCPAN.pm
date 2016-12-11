@@ -36,7 +36,7 @@ sub resolve {
 
     my %query = (
         ( ($self->{dev} || $job->{dev}) ? (dev => 1) : () ),
-        ( $job->{version} ? (version => $job->{version}) : () ),
+        ( $job->{version_range} ? (version => $job->{version_range}) : () ),
     );
     my $query = join "&", map { "$_=" . _encode($query{$_}) } sort keys %query;
     my $uri = "$self->{uri}$job->{package}" . ($query ? "?$query" : "");

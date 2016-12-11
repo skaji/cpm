@@ -118,14 +118,14 @@ sub installed {
 }
 
 sub providing {
-    my ($self, $package, $version) = @_;
+    my ($self, $package, $version_range) = @_;
     for my $provide (@{$self->provides}) {
         if ($provide->{package} eq $package) {
-            if (!$version or App::cpm::version->parse($provide->{version})->satisfy($version)) {
+            if (!$version_range or App::cpm::version->parse($provide->{version})->satisfy($version_range)) {
                 return 1;
             } else {
                 my $message = sprintf "%s provides %s (%s), but needs %s\n",
-                    $self->distfile, $package, $provide->{version}, $version;
+                    $self->distfile, $package, $provide->{version} || 0, $version_range;
                 App::cpm::Logger->log(result => "WARN", message => $message);
                 last;
             }

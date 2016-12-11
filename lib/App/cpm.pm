@@ -273,18 +273,18 @@ sub register_initial_job {
             my $dist = App::cpm::Distribution->new(source => "http", uri => $arg, provides => []);
             $master->add_distribution($dist);
         } else {
-            my ($package, $version, $dev);
+            my ($package, $version_range, $dev);
             # copy from Menlo
             # Plack@1.2 -> Plack~"==1.2"
             $arg =~ s/^([A-Za-z0-9_:]+)@([v\d\._]+)$/$1~== $2/;
             # support Plack~1.20, DBI~"> 1.0, <= 2.0"
             if ($arg =~ /\~[v\d\._,\!<>= ]+$/) {
-                ($package, $version) = split '~', $arg, 2;
+                ($package, $version_range) = split '~', $arg, 2;
             } else {
                 $arg =~ s/[~@]dev$// and $dev++;
                 $package = $arg;
             }
-            push @package, {package => $package, version => $version || 0, dev => $dev};
+            push @package, {package => $package, version_range => $version_range || 0, dev => $dev};
         }
     }
 
@@ -297,7 +297,7 @@ sub register_initial_job {
             exit 0;
         } elsif (!defined $is_satisfied) {
             my ($req) = grep { $_->{package} eq "perl" } @$requirements;
-            die sprintf "%s requires perl %s\n", $self->{cpanfile}, $req->{version};
+            die sprintf "%s requires perl %s\n", $self->{cpanfile}, $req->{version_range};
         } else {
             @package = @need_resolve;
         }
@@ -307,7 +307,7 @@ sub register_initial_job {
         $master->add_job(
             type => "resolve",
             package => $p->{package},
-            version => $p->{version} || 0,
+            version_range => $p->{version_range} || 0,
             dev => $p->{dev},
         );
     }
@@ -339,7 +339,7 @@ sub load_cpanfile {
             );
         } else {
             push @package, {
-                package => $package, version => $hash->{$package}, dev => $option->{dev},
+                package => $package, version_range => $hash->{$package}, dev => $option->{dev},
             };
         }
     }
