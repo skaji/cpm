@@ -17,5 +17,5 @@ install:
   - cpanm -nq --installdeps --with-develop .
   - cpanm -nq Carton
 script:
-  - prove -l --timer t xt
+  - prove --state save -l --timer t xt || { echo '--- retry failed tests ---'; prove --state failed -l --timer t xt; }
 sudo: false
