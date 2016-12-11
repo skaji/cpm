@@ -28,8 +28,8 @@ sub resolve {
     return unless $found;
 
     my $version = $found->version_for($package);
-    if (my $req_version = $job->{version}) {
-        if (!App::cpm::version->parse($version)->satisfy($req_version)) {
+    if (my $version_range = $job->{version_range}) {
+        if (!App::cpm::version->parse($version)->satisfy($version_range)) {
             return;
         }
     }

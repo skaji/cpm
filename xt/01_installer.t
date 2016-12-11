@@ -27,7 +27,7 @@ is_deeply $configure_requirements, [
     package => "ExtUtils::MakeMaker",
     phase   => "configure",
     type    => "requires",
-    version => 0,
+    version_range => 0,
   },
 ];
 
@@ -44,7 +44,7 @@ is_deeply $requirements->[-1], {
     package => "perl",
     phase   => "runtime",
     type    => "requires",
-    version => "5.008001",
+    version_range => "5.008001",
 };
 
 done_testing;

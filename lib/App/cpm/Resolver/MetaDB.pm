@@ -26,7 +26,7 @@ sub new {
 sub resolve {
     my ($self, $job) = @_;
 
-    if (defined $job->{version} and $job->{version} =~ /(?:<|!=|==)/) {
+    if (defined $job->{version_range} and $job->{version_range} =~ /(?:<|!=|==)/) {
         my $res = $self->{http}->get( "$self->{uri}history/$job->{package}" );
         return unless $res->{success};
 
@@ -46,7 +46,7 @@ sub resolve {
 
         my $match;
         for my $try (sort { $b->{version_o} <=> $a->{version_o} } @found) {
-            if ($try->{version_o}->satisfy($job->{version})) {
+            if ($try->{version_o}->satisfy($job->{version_range})) {
                 $match = $try, last;
             }
         }
@@ -67,7 +67,7 @@ sub resolve {
 
         my $yaml = CPAN::Meta::YAML->read_string($res->{content});
         my $meta = $yaml->[0];
-        if (!App::cpm::version->parse($meta->{version})->satisfy($job->{version})) {
+        if (!App::cpm::version->parse($meta->{version})->satisfy($job->{version_range})) {
             return;
         }
         my @provides = map {

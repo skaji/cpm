@@ -16,7 +16,7 @@ sub add {
 
 sub resolve {
     my ($self, $job) = @_;
-    # here job = { package => "Plack", version => ">= 1.000, < 1.0030" }
+    # here job = { package => "Plack", version_range => ">= 1.000, < 1.0030" }
 
     for my $backend (@{ $self->{backends} }) {
         my $result = $backend->resolve($job);
