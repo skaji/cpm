@@ -2,16 +2,11 @@ package App::cpm::Worker::Resolver;
 use strict;
 use warnings;
 our $VERSION = '0.293';
-use File::Temp ();
 use App::cpm::Logger::File;
 
 sub new {
     my ($class, %option) = @_;
-    my $logger = $option{logger};
-    if (!$logger) {
-        (undef, my $file) = File::Temp::tempfile(UNLINK => 1);
-        $logger = App::cpm::Logger::File->new($file);
-    }
+    my $logger = $option{logger} || App::cpm::Logger::File->new;
     bless { impl => $option{impl}, logger => $logger }, $class;
 }
 

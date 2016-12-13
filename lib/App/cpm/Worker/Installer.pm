@@ -60,14 +60,9 @@ sub work {
 
 sub new {
     my ($class, %option) = @_;
-    my $logger = $option{logger};
-    if (!$logger) {
-        (undef, my $file) = File::Temp::tempfile(UNLINK => 1);
-        $logger = App::cpm::Logger::File->new($file);
-    }
-
-    my $base  = $option{base}  || "$ENV{HOME}/.perl-cpm/work";
-    my $cache = $option{cache} || "$ENV{HOME}/.perl-cpm/cache";
+    my $logger = $option{logger} || App::cpm::Logger::File->new;
+    my $base   = $option{base}   || "$ENV{HOME}/.perl-cpm/work";
+    my $cache  = $option{cache}  || "$ENV{HOME}/.perl-cpm/cache";
     mkpath $_ for grep { !-d } $base, $cache;
 
     my $menlo = App::cpm::Worker::Installer::Menlo->new(

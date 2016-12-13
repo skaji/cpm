@@ -2,11 +2,17 @@ package App::cpm::Logger::File;
 use strict;
 use warnings;
 use POSIX ();
+use File::Temp ();
 our $VERSION = '0.293';
 
 sub new {
     my ($class, $file) = @_;
-    open my $fh, ">>:unix", $file or die "$file: $!";
+    my $fh;
+    if ($file) {
+        open $fh, ">>:unix", $file or die "$file: $!";
+    } else {
+        ($fh, $file) = File::Temp::tempfile(UNLINK => 1);
+    }
     bless {
         context => '',
         fh => $fh,
