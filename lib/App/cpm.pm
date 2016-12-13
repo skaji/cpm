@@ -249,7 +249,7 @@ sub cleanup {
     my @file = map  { $_->[0] }
                grep { $_->[1] < $week }
                map  { [$_, (stat $_)[9]] }
-               glob "$self->{home}/build*.log";
+               glob "$self->{home}/build.log.*";
     unlink $_ for @file;
 }
 
