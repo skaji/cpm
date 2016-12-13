@@ -31,7 +31,7 @@ sub _encode {
 sub resolve {
     my ($self, $job) = @_;
     if ($self->{only_dev} and !$job->{dev}) {
-        return;
+        return { error => "skip, because MetaCPAN is configured to resolve dev releases only" };
     }
 
     my %query = (

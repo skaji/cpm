@@ -85,15 +85,19 @@ sub cache_for {
     return $dir;
 }
 
+sub cached_package { shift->{impl}->cached_package }
+
 sub resolve {
     my ($self, $job) = @_;
     my $result = $self->{impl}->search_packages({package => $job->{package}});
-    return unless $result;
+    if (!$result) {
+        return { error => "not found, @{[$self->cached_package]}" };
+    }
 
     if (my $version_range = $job->{version_range}) {
         my $version = $result->{version};
         if (!App::cpm::version->parse($version)->satisfy($version_range)) {
-            return;
+            return { error => "found version $version, but it does not satisfy $version_range, @{[$self->cached_package]}" };
         }
     }
     my $distfile = $result->{uri};
@@ -104,7 +108,7 @@ sub resolve {
         source => "cpan", # XXX
         distfile => $distfile,
         uri => "$self->{mirror}authors/id/$distfile",
-        version => $result->{version},
+        version => $result->{version} || 0,
         package => $result->{package},
     };
 }

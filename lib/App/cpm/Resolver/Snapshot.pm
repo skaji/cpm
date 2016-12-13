@@ -25,12 +25,14 @@ sub resolve {
     my ($self, $job) = @_;
     my $package = $job->{package};
     my $found = $self->snapshot->find($package);
-    return unless $found;
+    if (!$found) {
+        return { error => "not found, @{[$self->snapshot->path]}" };
+    }
 
     my $version = $found->version_for($package);
     if (my $version_range = $job->{version_range}) {
         if (!App::cpm::version->parse($version)->satisfy($version_range)) {
-            return;
+            return { error => "found version $version, but it does not satisfy $version_range, @{[$self->snapshot->path]}" };
         }
     }
 

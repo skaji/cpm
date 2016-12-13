@@ -33,6 +33,10 @@ sub _get {
     $res;
 }
 
+sub _uniq {
+    my %x; grep { !$x{$_ || ""}++ } @_;
+}
+
 sub resolve {
     my ($self, $job) = @_;
 
@@ -56,7 +60,6 @@ sub resolve {
             }
         }
 
-        return unless @found;
         $found[-1]->{latest} = 1;
 
         my $match;
@@ -75,6 +78,8 @@ sub resolve {
                 uri     => [map { "${_}authors/id/$distfile" } @{$self->{mirror}}],
                 distfile => $distfile,
             };
+        } else {
+            return { error => "found versions @{[join ',', _uniq map $_->{version}, @found]}, but they do not satisfy $job->{version_range}, $uri" };
         }
     } else {
         my $uri = "$self->{uri}package/$job->{package}";
@@ -88,7 +93,7 @@ sub resolve {
         my $yaml = CPAN::Meta::YAML->read_string($res->{content});
         my $meta = $yaml->[0];
         if (!App::cpm::version->parse($meta->{version})->satisfy($job->{version_range})) {
-            return;
+            return { error => "found version $meta->{version}, but it does not satisfy $job->{version_range}, $uri" };
         }
         my @provides = map {
             my $package = $_;
