@@ -23,12 +23,27 @@ sub new {
     }, $class;
 }
 
+sub _get {
+    my ($self, $uri) = @_;
+    my $res;
+    for (1..2) {
+        $res = $self->{http}->get($uri);
+        last if $res->{success} or $res->{status} == 404;
+    }
+    $res;
+}
+
 sub resolve {
     my ($self, $job) = @_;
 
     if (defined $job->{version_range} and $job->{version_range} =~ /(?:<|!=|==)/) {
-        my $res = $self->{http}->get( "$self->{uri}history/$job->{package}" );
-        return unless $res->{success};
+        my $uri = "$self->{uri}history/$job->{package}";
+        my $res = $self->_get($uri);
+        if (!$res->{success}) {
+            my $error = "$res->{status} $res->{reason}, $uri";
+            $error .= ", $res->{content}" if $res->{status} == 599;
+            return { error => $error };
+        }
 
         my @found;
         for my $line ( split /\r?\n/, $res->{content} ) {
@@ -62,8 +77,13 @@ sub resolve {
             };
         }
     } else {
-        my $res = $self->{http}->get( "$self->{uri}package/$job->{package}" );
-        return unless $res->{success};
+        my $uri = "$self->{uri}package/$job->{package}";
+        my $res = $self->_get($uri);
+        if (!$res->{success}) {
+            my $error = "$res->{status} $res->{reason}, $uri";
+            $error .= ", $res->{content}" if $res->{status} == 599;
+            return { error => $error };
+        }
 
         my $yaml = CPAN::Meta::YAML->read_string($res->{content});
         my $meta = $yaml->[0];

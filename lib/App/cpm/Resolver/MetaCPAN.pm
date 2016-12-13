@@ -43,9 +43,13 @@ sub resolve {
     my $res;
     for (1..2) {
         $res = $self->{http}->get($uri);
-        last if $res->{success} or !($res->{status} == 599 and $res->{content} =~ /timed out/);
+        last if $res->{success} or $res->{status} == 404;
     }
-    return unless $res->{success};
+    if (!$res->{success}) {
+        my $error = "$res->{status} $res->{reason}, $uri";
+        $error .= ", $res->{content}" if $res->{status} == 599;
+        return { error => $error };
+    }
 
     my $hash = eval { JSON::PP::decode_json($res->{content}) } or return;
     my ($distfile) = $hash->{download_url} =~ m{/authors/id/(.+)};
