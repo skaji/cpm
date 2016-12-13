@@ -14,7 +14,8 @@ sub work {
     my ($self, $job) = @_;
 
     local $self->{logger}->{context} = $job->{package};
-    if (my $result = $self->{impl}->resolve($job)) {
+    my $result = $self->{impl}->resolve($job);
+    if ($result and !$result->{error}) {
         $result->{ok} = 1;
         $result->{uri} = [$result->{uri}] unless ref $result->{uri};
         my $msg = sprintf "Resolved %s (%s) -> %s", $job->{package}, $job->{version} || 0,
@@ -22,8 +23,8 @@ sub work {
         $self->{logger}->log($msg);
         return $result;
     } else {
-        my $msg = sprintf "Failed to resolve %s", $job->{package};
-        $self->{logger}->log($msg);
+        $self->{logger}->log($result->{error}) if $result and $result->{error};
+        $self->{logger}->log(sprintf "Failed to resolve %s", $job->{package});
         return { ok => 0 };
     }
 }
