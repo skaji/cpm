@@ -186,7 +186,7 @@ sub cmd_install {
     my $worker = App::cpm::Worker->new(
         verbose         => $self->{verbose},
         home            => $self->{home},
-        logger          => $self->{logger},
+        logger          => $logger,
         notest          => $self->{notest},
         sudo            => $self->{sudo},
         resolver        => $self->generate_resolver,
