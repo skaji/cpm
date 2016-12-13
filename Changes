@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.294  2016-12-14 03:37:30 JST
+        - When resolving fails, more verbose messages are emitted (eserte #63, #64)
+        - Minor bug fixes
+
 0.293  2016-12-11 16:48:22 JST
         - Now cpm does not assume core modules are always present (eserte #42, #62)
         - Fix up-to-date handling (#61)
