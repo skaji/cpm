@@ -57,7 +57,7 @@ sub resolve {
         source => "cpan", # XXX
         distfile => $distfile,
         package => $job->{package},
-        version => $hash->{version},
+        version => $hash->{version} || 0,
         uri => $hash->{download_url},
     };
 }
