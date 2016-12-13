@@ -17,4 +17,13 @@ sub satisfy {
     $requirements->accepts_module('DummyModule', $self->numify);
 }
 
+# suppress warnings
+# > perl -Mwarnings -Mversion -e 'print version->parse("1.02_03")->numify'
+# alpha->numify() is lossy at -e line 1.
+# 1.020300
+sub numify {
+    no warnings;
+    shift->SUPER::numify(@_);
+}
+
 1;
