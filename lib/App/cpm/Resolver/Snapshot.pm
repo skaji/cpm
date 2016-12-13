@@ -39,7 +39,6 @@ sub resolve {
     my @provides = map {
         my $package = $_;
         my $version = $found->provides->{$_}{version};
-        $version = undef if $version eq "undef";
         +{ package => $package, version => $version };
     } sort keys %{$found->provides};
 
@@ -48,7 +47,7 @@ sub resolve {
         source => "cpan",
         distfile => $distfile,
         uri => [map { "${_}authors/id/$distfile" } @{$self->{mirror}}],
-        version  => $version,
+        version  => $version || 0,
         provides => \@provides,
     };
 }
