@@ -20,10 +20,12 @@ my %WriteMakefileArgs = (
   "MIN_PERL_VERSION" => "5.008005",
   "NAME" => "App::cpm",
   "PREREQ_PM" => {
+    "CPAN::Common::Index::Mirror" => 0,
     "CPAN::DistnameInfo" => 0,
     "CPAN::Meta" => 0,
     "CPAN::Meta::Requirements" => "2.130",
     "CPAN::Meta::YAML" => 0,
+    "Capture::Tiny" => 0,
     "Class::Tiny" => 0,
     "ExtUtils::Install" => "1.46",
     "ExtUtils::MakeMaker" => "6.58",
@@ -52,10 +54,12 @@ my %WriteMakefileArgs = (
 
 
 my %FallbackPrereqs = (
+  "CPAN::Common::Index::Mirror" => 0,
   "CPAN::DistnameInfo" => 0,
   "CPAN::Meta" => 0,
   "CPAN::Meta::Requirements" => "2.130",
   "CPAN::Meta::YAML" => 0,
+  "Capture::Tiny" => 0,
   "Class::Tiny" => 0,
   "ExtUtils::Install" => "1.46",
   "ExtUtils::MakeMaker" => "6.58",

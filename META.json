@@ -43,10 +43,12 @@
             "Carton::Snapshot" : "0"
          },
          "requires" : {
+            "CPAN::Common::Index::Mirror" : "0",
             "CPAN::DistnameInfo" : "0",
             "CPAN::Meta" : "0",
             "CPAN::Meta::Requirements" : "2.130",
             "CPAN::Meta::YAML" : "0",
+            "Capture::Tiny" : "0",
             "Class::Tiny" : "0",
             "ExtUtils::Install" : "1.46",
             "ExtUtils::MakeMaker" : "6.58",

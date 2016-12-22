@@ -1,9 +1,11 @@
 requires 'perl', '5.008005';
 
+requires 'CPAN::Common::Index::Mirror';
 requires 'CPAN::DistnameInfo';
 requires 'CPAN::Meta';
 requires 'CPAN::Meta::Requirements', '2.130'; # for v-strings
 requires 'CPAN::Meta::YAML';
+requires 'Capture::Tiny';
 requires 'Class::Tiny';
 requires 'File::Copy::Recursive';
 requires 'File::pushd';
