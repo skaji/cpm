@@ -16,6 +16,8 @@ use File::Spec;
 use File::Temp ();
 use File::pushd 'pushd';
 
+use constant NEED_INJECT_TOOLCHAIN_REQS => $] < 5.016;
+
 my $CACHED_MIRROR = sub {
     my $uri = shift;
     !!( $uri =~ m{^https?://(?:www.cpan.org|backpan.perl.org|cpan.metacpan.org)} );
@@ -193,6 +195,55 @@ sub fetch {
     return ($dir, $meta, $configure_requirements, $provides, $using_cache);
 }
 
+sub _inject_toolchain_reqs {
+    my ($self, $distfile, $reqs) = @_;
+    $distfile ||= "";
+
+    my %deps = map { $_->{package} => $_ } @$reqs;
+
+    if (    -f "Makefile.PL"
+        and !$deps{'ExtUtils::MakeMaker'}
+        and !-f "Build.PL"
+        and $distfile !~ m{/ExtUtils-MakeMaker-[0-9v]}
+    ) {
+        $deps{'ExtUtils::MakeMaker'} = {package => "ExtUtils::MakeMaker", version_range => '6.58'};
+    }
+
+    if (    $distfile !~ m{/ExtUtils-ParseXS-[0-9v]}
+        and $distfile !~ m{/ExtUtils-MakeMaker-[0-9v]}
+        and !$deps{'ExtUtils::ParseXS'}
+    ) {
+        $deps{'ExtUtils::ParseXS'} = {package => 'ExtUtils::ParseXS', version_range => '3.16'};
+    }
+
+    # copy from Menlo/cpanminus
+    my $toolchain = CPAN::Meta::Requirements->from_string_hash({
+        'Module::Build' => '0.38',
+        'ExtUtils::MakeMaker' => '6.58',
+        'ExtUtils::Install' => '1.46',
+        'ExtUtils::ParseXS' => '3.16',
+    });
+    my $merge = sub {
+        my $dep = shift;
+        $toolchain->add_string_requirement($dep->{package}, $dep->{version_range} || 0); # may die
+        $toolchain->requirements_for_module($dep->{package});
+    };
+
+    my $dep;
+    if ($dep = $deps{'ExtUtils::ParseXS'}) {
+        $dep->{version_range} = $merge->($dep);
+    }
+
+    if ($dep = $deps{"ExtUtils::MakeMaker"}) {
+        $dep->{version_range} = $merge->($dep);
+    } elsif ($dep = $deps{"Module::Build"}) {
+        $dep->{version_range} = $merge->($dep);
+        $dep = $deps{"ExtUtils::Install"} ||= {package => 'ExtUtils::Install', version_range => 0};
+        $dep->{version_range} = $merge->($dep);
+    }
+    @$reqs = values %deps;
+}
+
 sub _get_configure_requirements {
     my ($self, $distfile) = @_;
     my $meta;
@@ -212,8 +263,12 @@ sub _get_configure_requirements {
         version => $p->{$_}{version} || undef,
     }, sort keys %$p];
 
-    if (!@$requirements && -f "Build.PL" && $distfile !~ m{/Module-Build-[0-9v]}) {
+    if (!@$requirements and -f "Build.PL" and ($distfile || "") !~ m{/Module-Build-[0-9v]}) {
         push @$requirements, {package => "Module::Build", version_range => "0.38"};
+    }
+
+    if (NEED_INJECT_TOOLCHAIN_REQS) {
+        $self->_inject_toolchain_reqs($distfile, $requirements);
     }
     return ($meta ? $meta->as_struct : +{}, $requirements, $provides);
 }
