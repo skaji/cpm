@@ -10,7 +10,7 @@ sub satisfy {
     my ($self, $version_range) = @_;
 
     return 1 unless $version_range;
-    return $self >= version->parse($version_range) if $version_range =~ /^v?[\d_.]+$/;
+    return $self >= (ref $self)->parse($version_range) if $version_range =~ /^v?[\d_.]+$/;
 
     my $requirements = CPAN::Meta::Requirements->new;
     $requirements->add_string_requirement('DummyModule', $version_range);
@@ -22,8 +22,12 @@ sub satisfy {
 # alpha->numify() is lossy at -e line 1.
 # 1.020300
 sub numify {
-    no warnings;
+    local $SIG{__WARN__} = sub {};
     shift->SUPER::numify(@_);
+}
+sub parse {
+    local $SIG{__WARN__} = sub {};
+    shift->SUPER::parse(@_);
 }
 
 1;
