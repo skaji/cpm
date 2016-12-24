@@ -71,6 +71,7 @@ sub parse_options {
     $self->{color} = 1 if !defined $self->{color} && -t STDOUT;
     if ($target_perl) {
         die "--target-perl option conflicts with --global option\n" if $self->{global};
+        die "--target-perl option can be used only if perl version >= 5.16.0\n" if $] < 5.016;
         # 5.8 is interpreted as 5.800, fix it
         $target_perl = "v$target_perl" if $target_perl =~ /^5\.[1-9]\d*$/;
         $self->{target_perl} = App::cpm::version->parse($target_perl)->numify;
