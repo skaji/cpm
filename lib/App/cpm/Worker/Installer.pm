@@ -213,10 +213,7 @@ sub _get_configure_requirements {
     }, sort keys %$p];
 
     if (!@$requirements && -f "Build.PL" && $distfile !~ m{/Module-Build-[0-9v]}) {
-        push @$requirements, {
-            package => "Module::Build", version_range => "0.38",
-            phase => "configure", type => "requires",
-        };
+        push @$requirements, {package => "Module::Build", version_range => "0.38"};
     }
     return ($meta ? $meta->as_struct : +{}, $requirements, $provides);
 }
@@ -230,10 +227,7 @@ sub _extract_requirements {
     for my $phase (@$phases) {
         my $reqs = ($hash->{$phase} || +{})->{requires} || +{};
         for my $package (sort keys %$reqs) {
-            push @requirements, {
-                package => $package, version_range => $reqs->{$package},
-                phase => $phase, type => "requires",
-            };
+            push @requirements, {package => $package, version_range => $reqs->{$package}};
         }
     }
     \@requirements;
