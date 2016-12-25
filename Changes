@@ -2,6 +2,11 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.295  2016-12-25 11:07:33 JST
+        - Improve old perl (5.8, 5.10, 5.12, 5.14) support;
+          Inject ExtUtils::MakeMaker, ExtUtils::ParseXS, ExtUtils::Install, Module::Build into configure deps for every ditributions
+        - Now fatpacked cpm can be used with perl 5.10.1+ (previously with perl 5.16+)
+
 0.294  2016-12-14 03:37:30 JST
         - When resolving fails, more verbose messages are emitted (eserte #63, #64)
         - Minor bug fixes
