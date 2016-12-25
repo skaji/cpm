@@ -14,3 +14,4 @@ MYMETA.*
 /cpanfile.snapshot
 /local/
 /pm_to_blib
+/author/local/

@@ -28,7 +28,7 @@ If not, then
 
   $ curl -sL http://cpanmin.us | perl - -nq App::cpm
 
-Moreover if you use perl 5.16+, then you can fetch I<self-contained> cpm.
+Moreover if you use perl 5.10.1+, then you can fetch I<self-contained> cpm.
 
   $ curl -sL https://git.io/cpm > cpm
 

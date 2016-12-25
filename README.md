@@ -25,7 +25,7 @@ $ cpanm -nq App::cpm
 
 ### 2) install a self-contained version
 
-If you have perl 5.16+, then you can use a _self-contained_ cpm:
+If you have perl 5.10.1+, then you can use a _self-contained_ cpm:
 
 ```sh
 $ curl -sL https://git.io/cpm > cpm
