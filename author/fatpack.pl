@@ -21,15 +21,7 @@ my $shebang = <<'___';
 use 5.16.0;
 ___
 
-sub cpm {
-    if (fork) {
-        wait;
-        $? == 0 or die;
-    } else {
-        exit App::cpm->new->run(@_);
-    }
-}
-
+sub cpm { App::cpm->new->run(@_) == 0 or die }
 sub fatpack { App::FatPacker::Simple->new->parse_options(@_)->run }
 
 cpm "install", "--target-perl", "5.16.0";

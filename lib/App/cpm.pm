@@ -182,7 +182,7 @@ sub cmd_install {
         inc    => $self->_inc,
         (exists $self->{target_perl} ? (target_perl => $self->{target_perl}) : ()),
     );
-    $self->register_initial_job($master);
+    $self->register_initial_job($master) or return 0;
 
     my $worker = App::cpm::Worker->new(
         verbose         => $self->{verbose},
@@ -292,7 +292,7 @@ sub register_initial_job {
         my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirements);
         if (!@$dist and $is_satisfied) {
             warn "All requirements are satisfied.\n";
-            exit 0;
+            return 0;
         } elsif (!defined $is_satisfied) {
             my ($req) = grep { $_->{package} eq "perl" } @$requirements;
             die sprintf "%s requires perl %s\n", $self->{cpanfile}, $req->{version_range};
@@ -309,6 +309,7 @@ sub register_initial_job {
             dev => $p->{dev},
         );
     }
+    return 1;
 }
 
 sub load_cpanfile {
