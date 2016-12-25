@@ -35,6 +35,7 @@
             "Capture::Tiny" : "0",
             "Dist::Milla" : "v1.0.17",
             "Path::Tiny" : "0",
+            "Test::More" : "0.98",
             "Test::Pod" : "1.41"
          }
       },

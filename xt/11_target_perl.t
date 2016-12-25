@@ -8,6 +8,7 @@ use Path::Tiny;
 use version;
 
 my $perl_version = version->parse($])->numify;
+plan skip_all => 'only for perl 5.16+' unless 5.016 <= $perl_version;
 
 subtest test1 => sub {
     plan skip_all => 'only for perl 5.22' unless 5.022 <= $perl_version && $perl_version < 5.023;
@@ -20,7 +21,6 @@ subtest test1 => sub {
 };
 
 subtest test2 => sub {
-    plan skip_all => 'only for perl 5.12+' unless 5.012 <= $perl_version;
     my $guard = tempd;
     path("cpanfile")->spew(qq{requires 'HTTP::Tinyish';\n});
     my $r = cpm_install "--target-perl", "5.8.5";
@@ -30,7 +30,6 @@ subtest test2 => sub {
 };
 
 subtest test3 => sub {
-    plan skip_all => 'only for perl 5.12+' unless 5.012 <= $perl_version;
     my $guard = tempd;
     path("cpanfile")->spew(qq{requires 'HTTP::Tinyish';\n});
     my $r = cpm_install "--target-perl", "5.10.1";

@@ -22,12 +22,20 @@ my ($dir, $meta, $configure_requirements) = $installer->fetch($job);
 
 like $dir, qr{^/.*Distribution-Metadata-0\.05$}; # abs
 ok scalar(keys %$meta);
-is_deeply $configure_requirements, [
-  {
-    package => "ExtUtils::MakeMaker",
-    version_range => 0,
-  },
-];
+
+my %reqs = map {; ($_->{package} => $_->{version_range}) } @$configure_requirements;
+
+if ($] < 5.016) {
+    is_deeply \%reqs, {
+        "ExtUtils::MakeMaker" => '6.58',
+        "ExtUtils::ParseXS" => "3.16",
+    };
+} else {
+    is_deeply \%reqs, {
+        "ExtUtils::MakeMaker" => '0',
+    };
+}
+
 
 my ($distdata, $requirements) = $installer->configure({
     directory => $dir,
