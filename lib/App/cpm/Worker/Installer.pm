@@ -53,7 +53,12 @@ sub work {
         }
     } elsif ($type eq "install") {
         my $ok = $self->install($job);
-        rmtree $job->{directory} if $ok; # XXX Carmel!!!
+        if ($ok) {
+            $self->menlo->{logger}->log("Successfully installed distribution");
+            rmtree $job->{directory}; # XXX Carmel!!
+        } else {
+            $self->menlo->{logger}->log("Failed to install distribution");
+        }
         return { ok => $ok };
     } else {
         die "Unknown type: $type\n";
@@ -131,6 +136,7 @@ sub fetch {
         }
     } elsif ($source eq "local") {
         for my $uri (@uri) {
+            $self->menlo->{logger}->log("Copying $uri");
             $uri =~ s{^file://}{};
             my $basename = basename $uri;
             if (-d $uri) {
@@ -159,6 +165,7 @@ sub fetch {
             $clean->($uri);
             my $basename = basename $uri;
             if ($uri =~ s{^file://}{}) {
+                $self->menlo->{logger}->log("Copying $uri");
                 File::Copy::copy($uri, $basename)
                     or next FETCH;
                 $dir = $self->menlo->unpack($basename)
@@ -169,6 +176,7 @@ sub fetch {
                 if ($distfile and $CACHED_MIRROR->($uri)) {
                     my $cache = File::Spec->catfile($self->{cache}, "authors/id/$distfile");
                     if (-f $cache) {
+                        $self->menlo->{logger}->log("Using cache $cache");
                         File::Copy::copy($cache, $basename);
                         $dir = $self->menlo->unpack($basename);
                         unless ($dir) {
@@ -300,6 +308,7 @@ sub configure {
     my $guard = pushd $dir;
     my $menlo = $self->menlo;
 
+    $menlo->{logger}->log("Configuring distribution");
     my $static_builder;
     if ($menlo->opts_in_static_install($meta)) {
         my $state = {};
@@ -351,6 +360,7 @@ sub install {
     my $guard = pushd $dir;
     my $menlo = $self->menlo;
 
+    $menlo->{logger}->log("Building " . ($menlo->{notest} ? "" : "and testing ") . "distribution");
     my $installed;
     if ($static_builder) {
         $menlo->build(sub { $static_builder->build }, )
