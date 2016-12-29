@@ -9,14 +9,7 @@ use File::Path 'remove_tree';
 chdir $FindBin::Bin;
 
 my $exclude = join ",", qw(
-    ExtUtils::CBuilder
-    ExtUtils::Config
-    ExtUtils::Helpers
-    ExtUtils::InstallPaths
-    ExtUtils::MakeMaker
     ExtUtils::MakeMaker::CPANfile
-    ExtUtils::ParseXS
-    Module::Build
     Module::Build::Tiny
     Test::Harness
 );
