@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.296  2016-12-30 01:05:32 JST
+        - Opts in x_static_install (#68)
+
 0.295  2016-12-25 11:07:33 JST
         - Improve old perl (5.8, 5.10, 5.12, 5.14) support;
           Inject ExtUtils::MakeMaker, ExtUtils::ParseXS, ExtUtils::Install, Module::Build into configure deps for every ditributions
