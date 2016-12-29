@@ -33,6 +33,7 @@ for my $attr (qw(
     provides
     requirements
     ref
+    static_builder
 )) {
     no strict 'refs';
     *$attr = sub {

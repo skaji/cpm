@@ -41,17 +41,18 @@ sub work {
             };
         }
     } elsif ($type eq "configure") {
-        my ($distdata, $requirements)
+        my ($distdata, $requirements, $static_builder)
             = $self->configure($job); # $job->{directory}, $job->{distfile}, $job->{meta});
         if ($requirements) {
             return +{
                 ok => 1,
                 distdata => $distdata,
                 requirements => $requirements,
+                static_builder => $static_builder,
             };
         }
     } elsif ($type eq "install") {
-        my $ok = $self->install($job->{directory}, $job->{distdata});
+        my $ok = $self->install($job);
         rmtree $job->{directory} if $ok; # XXX Carmel!!!
         return { ok => $ok };
     } else {
@@ -256,19 +257,24 @@ sub _get_configure_requirements {
         $meta = CPAN::Meta->new({name => $d->dist, version => $d->version});
     }
 
-    my $requirements = $self->_extract_requirements($meta, [qw(configure)]);
     my $p = $self->menlo->extract_packages($meta, ".");
     my $provides = [map +{
         package => $_,
         version => $p->{$_}{version} || undef,
     }, sort keys %$p];
 
-    if (!@$requirements and -f "Build.PL" and ($distfile || "") !~ m{/Module-Build-[0-9v]}) {
-        push @$requirements, {package => "Module::Build", version_range => "0.38"};
-    }
+    my $requirements = [];
+    if ($self->menlo->opts_in_static_install($meta)) {
+        $self->menlo->{logger}->log("Distribution opts in x_static_install: $meta->{x_static_install}");
+    } else {
+        $requirements = $self->_extract_requirements($meta, [qw(configure)]);
+        if (!@$requirements and -f "Build.PL" and ($distfile || "") !~ m{/Module-Build-[0-9v]}) {
+            push @$requirements, {package => "Module::Build", version_range => "0.38"};
+        }
 
-    if (NEED_INJECT_TOOLCHAIN_REQS) {
-        $self->_inject_toolchain_reqs($distfile, $requirements);
+        if (NEED_INJECT_TOOLCHAIN_REQS) {
+            $self->_inject_toolchain_reqs($distfile, $requirements);
+        }
     }
     return ($meta ? $meta->as_struct : +{}, $requirements, $provides);
 }
@@ -293,7 +299,13 @@ sub configure {
     my ($dir, $distfile, $meta, $source) = @{$job}{qw(directory distfile meta source)};
     my $guard = pushd $dir;
     my $menlo = $self->menlo;
-    if (-f 'Build.PL') {
+
+    my $static_builder;
+    if ($menlo->opts_in_static_install($meta)) {
+        my $state = {};
+        $menlo->static_install_configure($state, "dummy", 1);
+        $static_builder = $state->{static_install};
+    } elsif (-f 'Build.PL') {
         $menlo->configure([ $menlo->{perl}, 'Build.PL' ], 1);
         return unless -f 'Build';
     } elsif (-f 'Makefile.PL') {
@@ -307,7 +319,7 @@ sub configure {
         my $mymeta = CPAN::Meta->load_file($file);
         $requirements = $self->_extract_requirements($mymeta, $phase);
     }
-    return ($distdata, $requirements);
+    return ($distdata, $requirements, $static_builder);
 }
 
 sub _build_distdata {
@@ -334,13 +346,18 @@ sub _build_distdata {
 }
 
 sub install {
-    my ($self, $dir, $distdata) = @_;
-
+    my ($self, $job) = @_;
+    my ($dir, $distdata, $static_builder) = @{$job}{qw(directory distdata static_builder)};
     my $guard = pushd $dir;
     my $menlo = $self->menlo;
 
     my $installed;
-    if (-f 'Build') {
+    if ($static_builder) {
+        $menlo->build(sub { $static_builder->build }, )
+        && $menlo->test(sub { $static_builder->build("test") }, )
+        && $menlo->install(sub { $static_builder->build("install") }, [])
+        && $installed++;
+    } elsif (-f 'Build') {
         $menlo->build([ $menlo->{perl}, "./Build" ], )
         && $menlo->test([ $menlo->{perl}, "./Build", "test" ], )
         && $menlo->install([ $menlo->{perl}, "./Build", "install" ], [])

@@ -21,10 +21,16 @@ my $TEMPDIR = tempdir CLEANUP => 1;
         my $class = shift;
         bless {@_}, $class;
     }
-    for my $attr (qw(local out err exit home)) {
+    for my $attr (qw(local out err exit home logfile)) {
         *$attr = sub { shift->{$attr} };
     }
     sub success { shift->exit == 0 }
+    sub log {
+        my $self = shift;
+        return $self->{_log} if $self->{_log};
+        open my $fh, "<", $self->logfile or die;
+        $self->{_log} = do { local $/; <$fh> };
+    }
 }
 
 our ($_LOCAL, $_HOME);
@@ -47,7 +53,8 @@ sub cpm_install {
     my ($out, $err, $exit) = capture {
         system $^X, "-I$base/lib", "$base/script/cpm", "install", "-L", $local, "--home", $home, @argv;
     };
-    Result->new(home => $home, local => $local, out => $out, err => $err, exit => $exit);
+    my $logfile = "$home/build.log";
+    Result->new(home => $home, local => $local, out => $out, err => $err, exit => $exit, logfile => $logfile);
 }
 
 

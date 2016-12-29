@@ -149,6 +149,7 @@ sub _calculate_jobs {
                     directory => $dist->directory,
                     distfile => $dist->{distfile},
                     uri => $dist->uri,
+                    static_builder => $dist->static_builder,
                 );
             } elsif (@need_resolve and !$dist->deps_registered) {
                 $dist->deps_registered(1);
@@ -331,6 +332,7 @@ sub _register_configure_result {
     $distribution->configured(1);
     $distribution->distdata($job->{distdata});
     $distribution->requirements($job->{requirements});
+    $distribution->static_builder($job->{static_builder});
     return 1;
 }
 

@@ -37,10 +37,10 @@ sub context {
 }
 
 sub log {
-    my $self = shift;
+    my ($self, @line) = @_;
     my $now = POSIX::strftime('%FT%T', localtime);
     my $context = $self->context;
-    for my $line (@_) {
+    for my $line (@line) {
         chomp $line;
         print { $self->{fh} } "$now,${$}$context| $_\n" for split /\n/, $line;
     }

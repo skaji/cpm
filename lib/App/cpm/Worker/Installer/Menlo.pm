@@ -4,8 +4,7 @@ use warnings;
 use parent 'Menlo::CLI::Compat';
 
 use App::cpm::Logger::File;
-use File::Temp ();
-use POSIX ();
+use Menlo::Builder::Static;
 
 our $VERSION = '0.295';
 
