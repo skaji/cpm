@@ -57,4 +57,11 @@ subtest http => sub {
     is $r->exit, 0;
 };
 
+subtest module_build => sub {
+    # https://github.com/Ovid/Test-Differences/issues/13
+    # https://rt.cpan.org/Ticket/Display.html?id=119616
+    my $r = cpm_install "Lingua::EN::Inflect";
+    is $r->exit, 0;
+};
+
 done_testing;

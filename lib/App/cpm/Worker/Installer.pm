@@ -271,20 +271,23 @@ sub _get_configure_requirements {
         version => $p->{$_}{version} || undef,
     }, sort keys %$p];
 
-    my $requirements = [];
+    my $reqs = [];
     if ($self->menlo->opts_in_static_install($meta)) {
         $self->menlo->{logger}->log("Distribution opts in x_static_install: $meta->{x_static_install}");
     } else {
-        $requirements = $self->_extract_requirements($meta, [qw(configure)]);
-        if (!@$requirements and -f "Build.PL" and ($distfile || "") !~ m{/Module-Build-[0-9v]}) {
-            push @$requirements, {package => "Module::Build", version_range => "0.38"};
+        $reqs = $self->_extract_requirements($meta, [qw(configure)]);
+        if (    -f "Build.PL"
+            and ($distfile || "") !~ m{/Module-Build-[0-9v]}
+            and ( !@$reqs or (@$reqs == 1 && $reqs->[0]{package} eq 'ExtUtils::MakeMaker') )
+        ) {
+            push @$reqs, {package => "Module::Build", version_range => "0.38"};
         }
 
         if (NEED_INJECT_TOOLCHAIN_REQS) {
-            $self->_inject_toolchain_reqs($distfile, $requirements);
+            $self->_inject_toolchain_reqs($distfile, $reqs);
         }
     }
-    return ($meta ? $meta->as_struct : +{}, $requirements, $provides);
+    return ($meta ? $meta->as_struct : +{}, $reqs, $provides);
 }
 
 
