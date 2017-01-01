@@ -1,4 +1,5 @@
 #!/usr/bin/env perl
+BEGIN { $ENV{PERL_JSON_BACKEND} = 0 } # force JSON::PP, https://github.com/perl-carton/carton/issues/214
 use 5.24.0;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
@@ -6,7 +7,32 @@ use App::FatPacker::Simple;
 use App::cpm;
 use Config;
 use File::Path 'remove_tree';
+use Carton::Environment;
 chdir $FindBin::Bin;
+
+sub cpm {
+    App::cpm->new->run(@_) == 0 or die
+}
+
+sub fatpack {
+    App::FatPacker::Simple->new->parse_options(@_)->run
+}
+
+sub remove_version_xs {
+    my $arch = $Config{archname};
+    my $file = "local/lib/perl5/$arch/version/vxs.pm";
+    my $dir  = "local/lib/perl5/$arch/auto/version";
+    unlink $file if -f $file;
+    remove_tree $dir if -d $dir;
+}
+
+sub gen_snapshot {
+    my $env = Carton::Environment->build("cpanfile", "local");
+    $env->cpanfile->load;
+    $env->snapshot->find_installs($env->install_path, $env->cpanfile->requirements);
+    $env->snapshot->save;
+}
+
 
 my $exclude = join ",", qw(
     ExtUtils::MakeMaker::CPANfile
@@ -19,32 +45,13 @@ my $shebang = <<'___';
 use 5.10.1;
 ___
 
-sub cpm { App::cpm->new->run(@_) == 0 or die }
-sub fatpack { App::FatPacker::Simple->new->parse_options(@_)->run }
+my $resolver = -f "cpanfile.snapshot" ? "snapshot" : "metadb";
 
-sub remove_version_xs {
-    my $arch = $Config{archname};
-    my $file = "local/lib/perl5/$arch/version/vxs.pm";
-    my $dir  = "local/lib/perl5/$arch/auto/version";
-    if (-f $file) {
-        warn "-> \e[33mRemove $file\e[m\n";
-        unlink $file or die;
-    }
-    if (-d $dir) {
-        warn "-> \e[33mRemove $dir\e[m\n";
-        remove_tree $dir or die;
-    }
-}
-
-cpm "install", "--target-perl", "5.10.1", "--cpanfile", "../cpanfile";
-cpm "install", "--target-perl", "5.10.1", "Devel::GlobalDestruction"; # for Class::Tiny
+warn "Resolver: $resolver\n";
+cpm "install", "--target-perl", "5.10.1", "--resolver", $resolver;
+cpm "install", "--target-perl", "5.10.1", "--resolver", $resolver, "Devel::GlobalDestruction"; # for Class::Tiny
+gen_snapshot;
 remove_version_xs;
-fatpack "-o", "../cpm", "-d", "../lib,local", "-e", $exclude, "--shebang", $shebang, "../script/cpm",
-
-open my $fh, "<", "../cpm" or die;
-while (<$fh>) {
-    if (my ($pm) = /^\$fatpacked\{"([^"]+)\.pm"/) {
-        $pm =~ s{/}{::}g;
-        say "FATPACKED: $pm";
-    }
-}
+print STDERR "FatPacking...";
+fatpack "-q", "-o", "../cpm", "-d", "../lib,local", "-e", $exclude, "--shebang", $shebang, "../script/cpm";
+print STDERR " DONE\n";
