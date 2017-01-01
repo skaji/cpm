@@ -2,7 +2,7 @@ package App::cpm::Resolver::MetaCPAN;
 use strict;
 use warnings;
 use JSON::PP ();
-our $VERSION = '0.296';
+our $VERSION = '0.297';
 
 my $HTTP_CLIENT_CLASS = do {
     if (eval { require IO::Socket::SSL }) {

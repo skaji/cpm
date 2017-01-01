@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.297  2017-01-01 20:19:24 JST
+        - Add workaround for dists which have both Makefile.PL and Build.PL
+        - Switch to Module::Build::Tiny
+
 0.296  2016-12-30 01:05:32 JST
         - Opts in x_static_install (#68)
 
