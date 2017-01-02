@@ -10,7 +10,7 @@ requires 'Class::Tiny';
 requires 'File::Copy::Recursive';
 requires 'File::pushd';
 requires 'HTTP::Tiny';
-requires 'HTTP::Tinyish';
+requires 'HTTP::Tinyish', '0.10';
 requires 'IO::Uncompress::Gunzip';
 requires 'JSON::PP', '2.27300'; # for perl 5.8.6 or below
 requires 'Menlo::CLI::Compat';
