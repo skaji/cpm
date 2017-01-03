@@ -5,17 +5,13 @@ use utf8;
 use App::cpm::Distribution;
 use App::cpm::Job;
 use App::cpm::Logger;
-use Module::CoreList;
 use Module::Metadata;
 use version;
 our $VERSION = '0.297';
 
 sub new {
     my ($class, %option) = @_;
-    if (!exists $Module::CoreList::version{$]}) {
-        die "Module::CoreList does not have your perl $^V entry, abort.\n";
-    }
-    bless {
+    my $self = bless {
         %option,
         installed_distributions => 0,
         jobs => +{},
@@ -24,6 +20,13 @@ sub new {
         _fail_install => +{},
         _is_installed => +{},
     }, $class;
+    if ($self->{target_perl}) {
+        require Module::CoreList;
+        if (!exists $Module::CoreList::version{$]}) {
+            die "Module::CoreList does not have your perl $^V entry, abort.\n";
+        }
+    }
+    $self;
 }
 
 sub fail {
