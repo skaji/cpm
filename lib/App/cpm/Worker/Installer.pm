@@ -265,7 +265,7 @@ sub _get_configure_requirements {
         $meta = CPAN::Meta->new({name => $d->dist, version => $d->version});
     }
 
-    my $p = $self->menlo->extract_packages($meta, ".");
+    my $p = $meta->{provides} || $self->menlo->extract_packages($meta, ".");
     my $provides = [map +{
         package => $_,
         version => $p->{$_}{version} || undef,
