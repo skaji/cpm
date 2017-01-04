@@ -114,7 +114,7 @@ subtest '02packages_http' => sub {
 
 subtest '02packages_file' => sub {
     with_same_home {
-        my $base = tempdir;
+        my $base = tempdir(CLEANUP => 1);
         my $cpan = CPAN::Mirror::Tiny->new(base => $base);
         $cpan->inject('cpan:App::ChangeShebang@0.06');
         if ($] < 5.016) {
@@ -142,7 +142,7 @@ subtest '02packages_file' => sub {
 };
 
 subtest '02packages_file_no_prefix' => sub {
-    my $base = tempdir;
+    my $base = tempdir(CLEANUP => 1);
     my $cpan = CPAN::Mirror::Tiny->new(base => $base);
     $cpan->inject('cpan:App::ChangeShebang@0.06');
     if ($] < 5.016) {
