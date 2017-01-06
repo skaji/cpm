@@ -110,6 +110,7 @@ sub _calculate_jobs {
 
     if (my @dists = grep { $_->fetched && !$_->registered } @distributions) {
         for my $dist (@dists) {
+            local $self->{logger}->{context} = $dist->distvname;
             my ($is_satisfied, @need_resolve)
                 = $self->is_satisfied($dist->configure_requirements);
             if ($is_satisfied) {
@@ -124,7 +125,6 @@ sub _calculate_jobs {
                 );
             } elsif (@need_resolve and !$dist->deps_registered) {
                 $dist->deps_registered(1);
-                local $self->{logger}->{context} = $dist->distvname;
                 my $msg = sprintf "Found configure dependencies: %s",
                     join(", ", map { sprintf "%s (%s)", $_->{package}, $_->{version_range} || 0 }  @need_resolve);
                 $self->{logger}->log($msg);
@@ -132,7 +132,8 @@ sub _calculate_jobs {
                 $self->{_fail_install}{$dist->distfile}++ unless $ok;
             } elsif (!defined $is_satisfied) {
                 my ($req) = grep { $_->{package} eq "perl" } @{$dist->configure_requirements};
-                my $msg = sprintf "%s requires perl %s", $dist->distvname, $req->{version_range};
+                my $msg = sprintf "%s requires perl %s, but you have only %s", $dist->distvname, $req->{version_range}, $];
+                $self->{logger}->log($msg);
                 App::cpm::Logger->log(result => "FAIL", message => $msg);
                 $self->{_fail_install}{$dist->distfile}++;
             }
@@ -141,6 +142,7 @@ sub _calculate_jobs {
 
     if (my @dists = grep { $_->configured && !$_->registered } @distributions) {
         for my $dist (@dists) {
+            local $self->{logger}->{context} = $dist->distvname;
             my ($is_satisfied, @need_resolve)
                 = $self->is_satisfied($dist->requirements);
             if ($is_satisfied) {
@@ -156,7 +158,6 @@ sub _calculate_jobs {
                 );
             } elsif (@need_resolve and !$dist->deps_registered) {
                 $dist->deps_registered(1);
-                local $self->{logger}->{context} = $dist->distvname;
                 my $msg = sprintf "Found dependencies: %s",
                     join(", ", map { sprintf "%s (%s)", $_->{package}, $_->{version_range} || 0 }  @need_resolve);
                 $self->{logger}->log($msg);
@@ -164,7 +165,8 @@ sub _calculate_jobs {
                 $self->{_fail_install}{$dist->distfile}++ unless $ok;
             } elsif (!defined $is_satisfied) {
                 my ($req) = grep { $_->{package} eq "perl" } @{$dist->requirements};
-                my $msg = sprintf "%s requires perl %s", $dist->distvname, $req->{version_range};
+                my $msg = sprintf "%s requires perl %s, but you have only %s", $dist->distvname, $req->{version_range}, $];
+                $self->{logger}->log($msg);
                 App::cpm::Logger->log(result => "FAIL", message => $msg);
                 $self->{_fail_install}{$dist->distfile}++;
             }
