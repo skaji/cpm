@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use POSIX ();
 use File::Temp ();
-our $VERSION = '0.297';
+our $VERSION = '0.298';
 
 sub new {
     my ($class, $file) = @_;

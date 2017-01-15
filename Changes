@@ -2,6 +2,11 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.298  2017-01-16 01:50:54 JST
+        - Fix how to extract "provides" from distributions
+        - Bump HTTP::Tinyish prereq
+        - Remove Module::CoreList prereq
+
 0.297  2017-01-01 20:19:24 JST
         - Add workaround for dists which have both Makefile.PL and Build.PL
         - Switch to Module::Build::Tiny
