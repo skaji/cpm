@@ -360,12 +360,12 @@ DISTRIBUTIONS
       strict 0
       version 0.87
       warnings 0
-  Parallel-Pipes-0.001
-    pathname: S/SK/SKAJI/Parallel-Pipes-0.001.tar.gz
+  Parallel-Pipes-0.002
+    pathname: S/SK/SKAJI/Parallel-Pipes-0.002.tar.gz
     provides:
-      Parallel::Pipes 0.001
+      Parallel::Pipes 0.002
     requirements:
-      ExtUtils::MakeMaker 0
+      Module::Build::Tiny 0.034
       perl 5.008001
   Parse-PMFile-0.41
     pathname: I/IS/ISHIGAKI/Parse-PMFile-0.41.tar.gz
@@ -379,11 +379,11 @@ DISTRIBUTIONS
       JSON::PP 2.00
       Safe 0
       version 0.83
-  Path-Tiny-0.098
-    pathname: D/DA/DAGOLDEN/Path-Tiny-0.098.tar.gz
+  Path-Tiny-0.100
+    pathname: D/DA/DAGOLDEN/Path-Tiny-0.100.tar.gz
     provides:
-      Path::Tiny 0.098
-      Path::Tiny::Error 0.098
+      Path::Tiny 0.100
+      Path::Tiny::Error 0.100
     requirements:
       Carp 0
       Cwd 0
