@@ -2,11 +2,11 @@ package App::cpm::Resolver::MetaCPAN;
 use strict;
 use warnings;
 use JSON::PP ();
+use HTTP::Tiny;
 our $VERSION = '0.298';
 
 my $HTTP_CLIENT_CLASS = do {
-    if (eval { require IO::Socket::SSL }) {
-        require HTTP::Tiny;
+    if (HTTP::Tiny->can_ssl) {
         "HTTP::Tiny";
     } else {
         require HTTP::Tinyish;
