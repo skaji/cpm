@@ -236,11 +236,18 @@ sub cmd_install {
     my $num = $master->installed_distributions;
     warn "$num distribution@{[$num > 1 ? 's' : '']} installed.\n";
     $self->cleanup;
-    if ($master->fail) {
-        warn "See $self->{home}/build.log for details.\n";
-        return 1;
+
+    if ($self->{return_artifacts}) {
+        my $ok = $master->fail ? 0 : 1;
+        return ($ok, $master->{_artifacts});
     } else {
-        return 0;
+        if ($master->fail) {
+            warn "See $self->{home}/build.log for details.\n";
+            return 1;
+        } else {
+            File::Path::rmtree($_) for values %{$master->{_artifacts}};
+            return 0;
+        }
     }
 }
 

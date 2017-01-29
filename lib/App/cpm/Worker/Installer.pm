@@ -55,11 +55,10 @@ sub work {
         my $ok = $self->install($job);
         if ($ok) {
             $self->menlo->{logger}->log("Successfully installed distribution");
-            rmtree $job->{directory}; # XXX Carmel!!
         } else {
             $self->menlo->{logger}->log("Failed to install distribution");
         }
-        return { ok => $ok };
+        return { ok => $ok, directory => $job->{directory} };
     } else {
         die "Unknown type: $type\n";
     }
