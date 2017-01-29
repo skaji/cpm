@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.299  2017-01-29 14:27:56 JST
+        - Add experimantal ability to save artifacts, especially for Carmel
+        - Support --with-develop option; Note this loads develop desps only from cpanfile
+
 0.298  2017-01-16 01:50:54 JST
         - Fix how to extract "provides" from distributions
         - Bump HTTP::Tinyish prereq
