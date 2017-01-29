@@ -237,7 +237,7 @@ sub cmd_install {
     warn "$num distribution@{[$num > 1 ? 's' : '']} installed.\n";
     $self->cleanup;
 
-    if ($self->{return_artifacts}) {
+    if ($self->{_return_artifacts}) {
         my $ok = $master->fail ? 0 : 1;
         return ($ok, $master->{_artifacts});
     } else {
