@@ -60,6 +60,7 @@ sub parse_options {
         "dev" => \($self->{dev}),
         "man-pages" => \($self->{man_pages}),
         "home=s" => \($self->{home}),
+        "with-develop" => \($self->{with_develop}),
     or exit 1;
 
     $self->{local_lib} = $self->maybe_abs($self->{local_lib}) unless $self->{global};
@@ -325,6 +326,7 @@ sub load_cpanfile {
     my $cpanfile = Module::CPANfile->load($file);
     my $prereqs = $cpanfile->prereqs_with;
     my $phases = [qw(build test runtime)];
+    push @$phases, 'develop' if $self->{with_develop};
     my $requirements = $prereqs->merged_requirements($phases, ['requires']);
     my $hash = $requirements->as_string_hash;
 

@@ -67,6 +67,8 @@ cpm - a fast CPAN module installer
         run test cases, default: no
       --man-pages
         generate man pages
+      --with-develop (EXPERIMENTAL)
+        install develop dependencies in cpanfile too
   -V, --version
         show version
   -h, --help
