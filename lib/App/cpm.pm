@@ -32,6 +32,7 @@ sub new {
         local_lib => "local",
         cpanmetadb => "http://cpanmetadb.plackperl.org/v1.0/",
         mirror => ["http://www.cpan.org/", "http://backpan.perl.org/"],
+        retry => 1,
         %option
     }, $class;
 }
@@ -61,6 +62,7 @@ sub parse_options {
         "man-pages" => \($self->{man_pages}),
         "home=s" => \($self->{home}),
         "with-develop" => \($self->{with_develop}),
+        "retry!" => \($self->{retry}),
     or exit 1;
 
     $self->{local_lib} = $self->maybe_abs($self->{local_lib}) unless $self->{global};
@@ -193,6 +195,7 @@ sub cmd_install {
         sudo            => $self->{sudo},
         resolver        => $self->generate_resolver,
         man_pages       => $self->{man_pages},
+        retry           => $self->{retry},
         ($self->{global} ? () : (local_lib => $self->{local_lib})),
     );
     my $pipes = Parallel::Pipes->new($self->{workers}, sub {

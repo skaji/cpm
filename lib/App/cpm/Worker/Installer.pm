@@ -39,6 +39,8 @@ sub work {
                 provides => $provides,
                 using_cache => $using_cache,
             };
+        } else {
+            $self->menlo->{logger}->log("Failed to fetch/configure distribution");
         }
     } elsif ($type eq "configure") {
         my ($distdata, $requirements, $static_builder)
@@ -50,6 +52,8 @@ sub work {
                 requirements => $requirements,
                 static_builder => $static_builder,
             };
+        } else {
+            $self->menlo->{logger}->log("Failed to configure distribution");
         }
     } elsif ($type eq "install") {
         my $ok = $self->install($job);
@@ -304,6 +308,14 @@ sub _extract_requirements {
     \@requirements;
 }
 
+sub _retry {
+    my ($self, $sub) = @_;
+    return 1 if $sub->();
+    return unless $self->{retry};
+    $self->{menlo}{logger}->log("! Retrying (you can turn off this behavior by --no-retry)");
+    return $sub->();
+}
+
 sub configure {
     my ($self, $job) = @_;
     my ($dir, $distfile, $meta, $source) = @{$job}{qw(directory distfile meta source)};
@@ -317,11 +329,15 @@ sub configure {
         $menlo->static_install_configure($state, "dummy", 1);
         $static_builder = $state->{static_install};
     } elsif (-f 'Build.PL') {
-        $menlo->configure([ $menlo->{perl}, 'Build.PL' ], 1);
-        return unless -f 'Build';
+        $self->_retry(sub {
+            $menlo->configure([ $menlo->{perl}, 'Build.PL' ], 1);
+            -f 'Build';
+        }) or return;
     } elsif (-f 'Makefile.PL') {
-        $menlo->configure([ $menlo->{perl}, 'Makefile.PL' ], 1); # XXX depth == 1?
-        return unless -f 'Makefile';
+        $self->_retry(sub {
+            $menlo->configure([ $menlo->{perl}, 'Makefile.PL' ], 1); # XXX depth == 1?
+            -f 'Makefile';
+        }) or return;
     }
     my $distdata = $self->_build_distdata($source, $distfile, $meta);
     my $requirements = [];
@@ -370,14 +386,14 @@ sub install {
         && $menlo->install(sub { $static_builder->build("install") }, [])
         && $installed++;
     } elsif (-f 'Build') {
-        $menlo->build([ $menlo->{perl}, "./Build" ], )
-        && $menlo->test([ $menlo->{perl}, "./Build", "test" ], )
-        && $menlo->install([ $menlo->{perl}, "./Build", "install" ], [])
+        $self->_retry(sub { $menlo->build([ $menlo->{perl}, "./Build" ], )  })
+        && $self->_retry(sub { $menlo->test([ $menlo->{perl}, "./Build", "test" ], )  })
+        && $self->_retry(sub { $menlo->install([ $menlo->{perl}, "./Build", "install" ], [])  })
         && $installed++;
     } else {
-        $menlo->build([ $menlo->{make} ], )
-        && $menlo->test([ $menlo->{make}, "test" ], )
-        && $menlo->install([ $menlo->{make}, "install" ], [])
+        $self->_retry(sub { $menlo->build([ $menlo->{make} ], )  })
+        && $self->_retry(sub { $menlo->test([ $menlo->{make}, "test" ], )  })
+        && $self->_retry(sub { $menlo->install([ $menlo->{make}, "install" ], []) })
         && $installed++;
     }
 
