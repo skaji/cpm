@@ -306,7 +306,8 @@ sub register_initial_job {
             return 0;
         } elsif (!defined $is_satisfied) {
             my ($req) = grep { $_->{package} eq "perl" } @$requirements;
-            die sprintf "%s requires perl %s, but you have only %s\n", $self->{cpanfile}, $req->{version_range}, $];
+            die sprintf "%s requires perl %s, but you have only %s\n",
+                $self->{cpanfile}, $req->{version_range}, $self->{target_perl} || $];
         } else {
             @package = @need_resolve;
         }

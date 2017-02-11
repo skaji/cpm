@@ -133,7 +133,8 @@ sub _calculate_jobs {
                 $self->{_fail_install}{$dist->distfile}++ unless $ok;
             } elsif (!defined $is_satisfied) {
                 my ($req) = grep { $_->{package} eq "perl" } @{$dist->configure_requirements};
-                my $msg = sprintf "%s requires perl %s, but you have only %s", $dist->distvname, $req->{version_range}, $];
+                my $msg = sprintf "%s requires perl %s, but you have only %s",
+                    $dist->distvname, $req->{version_range}, $self->{target_perl} || $];
                 $self->{logger}->log($msg);
                 App::cpm::Logger->log(result => "FAIL", message => $msg);
                 $self->{_fail_install}{$dist->distfile}++;
@@ -166,7 +167,8 @@ sub _calculate_jobs {
                 $self->{_fail_install}{$dist->distfile}++ unless $ok;
             } elsif (!defined $is_satisfied) {
                 my ($req) = grep { $_->{package} eq "perl" } @{$dist->requirements};
-                my $msg = sprintf "%s requires perl %s, but you have only %s", $dist->distvname, $req->{version_range}, $];
+                my $msg = sprintf "%s requires perl %s, but you have only %s",
+                    $dist->distvname, $req->{version_range}, $self->{target_perl} || $];
                 $self->{logger}->log($msg);
                 App::cpm::Logger->log(result => "FAIL", message => $msg);
                 $self->{_fail_install}{$dist->distfile}++;
