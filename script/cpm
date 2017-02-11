@@ -69,6 +69,8 @@ cpm - a fast CPAN module installer
         generate man pages
       --with-develop (EXPERIMENTAL)
         install develop dependencies in cpanfile too
+      --retry, --no-retry
+        retry configure/build/test/install if fails, default: retry
   -V, --version
         show version
   -h, --help
