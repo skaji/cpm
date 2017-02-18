@@ -77,10 +77,9 @@ sub parse_options {
         die "--target-perl option can be used only if perl version >= 5.16.0\n" if $] < 5.016;
         # 5.8 is interpreted as 5.800, fix it
         $target_perl = "v$target_perl" if $target_perl =~ /^5\.[1-9]\d*$/;
-        $self->{target_perl} = App::cpm::version->parse($target_perl)->numify;
-        if ($self->{target_perl} > $]) {
-            die "--target-perl must be lower than your perl version $]\n";
-        }
+        $target_perl = sprintf '%0.6f', App::cpm::version->parse($target_perl)->numify;
+        $target_perl = '5.008' if $target_perl eq '5.008000';
+        $self->{target_perl} = $target_perl;
     }
     if (WIN32 and $self->{workers} != 1) {
         die "The number of workers must be 1 under WIN32 environment.\n";
