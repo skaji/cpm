@@ -23,9 +23,6 @@ sub new {
     }, $class;
     if ($self->{target_perl}) {
         require Module::CoreList;
-        if (!exists $Module::CoreList::version{$]}) {
-            die "Module::CoreList does not have your perl $^V entry, abort.\n";
-        }
         if (!exists $Module::CoreList::version{$self->{target_perl}}) {
             die "Module::CoreList does not have target perl $self->{target_perl} entry, abort.\n";
         }
