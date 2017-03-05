@@ -64,7 +64,7 @@
             "Pod::Usage" : "1.33",
             "local::lib" : "2.000018",
             "parent" : "0",
-            "perl" : "5.008005",
+            "perl" : "5.008001",
             "version" : "0.77"
          }
       }
@@ -85,7 +85,7 @@
    "x_contributors" : [
       "Olaf Alders <olaf@wundersolutions.com>"
    ],
-   "x_serialization_backend" : "Cpanel::JSON::XS version 3.0225",
+   "x_serialization_backend" : "Cpanel::JSON::XS version 3.0227",
    "x_static_install" : 1
 }
 

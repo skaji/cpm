@@ -1,5 +1,5 @@
 package App::cpm;
-use 5.008_005;
+use 5.008001;
 use strict;
 use warnings;
 use App::cpm::Master;
