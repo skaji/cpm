@@ -483,6 +483,22 @@ Just an example:
 
 This shows cpm is 3x faster than cpanm.
 
+=head1 CAVEATS
+
+L<eserte|https://github.com/skaji/cpm/issues/71> reported that
+the parallel feature of cpm yielded a new type of failure for CPAN module installation.
+That is,
+if B<ModuleA> implicitly requires B<ModuleB> in configure/build phase,
+and B<ModuleB> is about to be installed,
+then it may happen that the installation of B<ModuleA> fails.
+
+I can say that it hardly happens especially if you use a new Perl.
+Moreover, for a workaround, cpm automatically retries the installation if it fails.
+
+I hope that
+if almost all CPAN modules are distributed with L<static install enabled|http://blogs.perl.org/users/shoichi_kaji1/2017/03/make-your-cpan-module-static-installable.html>,
+then cpm will parallelize the installation for these CPAN modules safely and we can eliminate this new type of failure completely.
+
 =head1 ROADMAP
 
 If you all find cpm useful,
