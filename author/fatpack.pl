@@ -48,8 +48,8 @@ ___
 my $resolver = -f "cpanfile.snapshot" ? "snapshot" : "metadb";
 
 warn "Resolver: $resolver\n";
-cpm "install", "--target-perl", "5.10.1", "--resolver", $resolver;
-cpm "install", "--target-perl", "5.10.1", "--resolver", $resolver, "Devel::GlobalDestruction"; # for Class::Tiny
+cpm "install", "--cpanfile", "../cpanfile", "--target-perl", "5.10.1", "--resolver", $resolver;
+cpm "install", "--cpanfile", "../cpanfile", "--target-perl", "5.10.1", "--resolver", $resolver, "Devel::GlobalDestruction"; # for Class::Tiny
 gen_snapshot;
 remove_version_xs;
 print STDERR "FatPacking...";
