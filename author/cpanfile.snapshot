@@ -101,10 +101,10 @@ DISTRIBUTIONS
       perl 5.008001
       strict 0
       warnings 0
-  Capture-Tiny-0.44
-    pathname: D/DA/DAGOLDEN/Capture-Tiny-0.44.tar.gz
+  Capture-Tiny-0.46
+    pathname: D/DA/DAGOLDEN/Capture-Tiny-0.46.tar.gz
     provides:
-      Capture::Tiny 0.44
+      Capture::Tiny 0.46
     requirements:
       Carp 0
       Exporter 0
@@ -232,10 +232,10 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
-  HTTP-Tinyish-0.10
-    pathname: M/MI/MIYAGAWA/HTTP-Tinyish-0.10.tar.gz
+  HTTP-Tinyish-0.12
+    pathname: M/MI/MIYAGAWA/HTTP-Tinyish-0.12.tar.gz
     provides:
-      HTTP::Tinyish 0.10
+      HTTP::Tinyish 0.12
       HTTP::Tinyish::Base undef
       HTTP::Tinyish::Curl undef
       HTTP::Tinyish::HTTPTiny undef
@@ -244,10 +244,10 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       File::Which 0
-      HTTP::Tiny 0.054
+      HTTP::Tiny 0.055
       IPC::Run3 0
       parent 0
-      perl 5.008005
+      perl 5.008001
   IPC-Run3-0.048
     pathname: R/RJ/RJBS/IPC-Run3-0.048.tar.gz
     provides:
@@ -379,11 +379,11 @@ DISTRIBUTIONS
       JSON::PP 2.00
       Safe 0
       version 0.83
-  Path-Tiny-0.100
-    pathname: D/DA/DAGOLDEN/Path-Tiny-0.100.tar.gz
+  Path-Tiny-0.104
+    pathname: D/DA/DAGOLDEN/Path-Tiny-0.104.tar.gz
     provides:
-      Path::Tiny 0.100
-      Path::Tiny::Error 0.100
+      Path::Tiny 0.104
+      Path::Tiny::Error 0.104
     requirements:
       Carp 0
       Cwd 0

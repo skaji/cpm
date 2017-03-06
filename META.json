@@ -54,7 +54,7 @@
             "File::Copy::Recursive" : "0",
             "File::pushd" : "0",
             "HTTP::Tiny" : "0.055",
-            "HTTP::Tinyish" : "0.10",
+            "HTTP::Tinyish" : "0.12",
             "IO::Uncompress::Gunzip" : "0",
             "JSON::PP" : "2.27300",
             "Menlo::CLI::Compat" : "0",
