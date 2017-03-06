@@ -2,6 +2,11 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.300  2017-03-06 09:01:27 JST
+        - Add CAVEATS section to pod (eserte #71)
+        - cpm automatically retries the installation if it fails (eserte #71, #73)
+        - Now minimal perl requirement 5.8.5 -> 5.8.1
+
 0.299  2017-01-29 14:27:56 JST
         - Add experimantal ability to save artifacts, especially for Carmel
         - Support --with-develop option; Note this loads develop deps only from cpanfile
