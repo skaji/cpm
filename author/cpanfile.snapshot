@@ -425,58 +425,58 @@ DISTRIBUTIONS
       Sub::Exporter::Progressive 0.001013
     requirements:
       ExtUtils::MakeMaker 0
-  Test-Harness-3.36
-    pathname: L/LE/LEONT/Test-Harness-3.36.tar.gz
+  Test-Harness-3.38
+    pathname: L/LE/LEONT/Test-Harness-3.38.tar.gz
     provides:
-      App::Prove 3.36
-      App::Prove::State 3.36
-      App::Prove::State::Result 3.36
-      App::Prove::State::Result::Test 3.36
+      App::Prove 3.38
+      App::Prove::State 3.38
+      App::Prove::State::Result 3.38
+      App::Prove::State::Result::Test 3.38
       Harness::Hook undef
-      TAP::Base 3.36
-      TAP::Formatter::Base 3.36
-      TAP::Formatter::Color 3.36
-      TAP::Formatter::Console 3.36
-      TAP::Formatter::Console::ParallelSession 3.36
-      TAP::Formatter::Console::Session 3.36
-      TAP::Formatter::File 3.36
-      TAP::Formatter::File::Session 3.36
-      TAP::Formatter::Session 3.36
-      TAP::Harness 3.36
-      TAP::Harness::Env 3.36
-      TAP::Object 3.36
-      TAP::Parser 3.36
-      TAP::Parser::Aggregator 3.36
-      TAP::Parser::Grammar 3.36
-      TAP::Parser::Iterator 3.36
-      TAP::Parser::Iterator::Array 3.36
-      TAP::Parser::Iterator::Process 3.36
-      TAP::Parser::Iterator::Stream 3.36
-      TAP::Parser::IteratorFactory 3.36
-      TAP::Parser::Multiplexer 3.36
-      TAP::Parser::Result 3.36
-      TAP::Parser::Result::Bailout 3.36
-      TAP::Parser::Result::Comment 3.36
-      TAP::Parser::Result::Plan 3.36
-      TAP::Parser::Result::Pragma 3.36
-      TAP::Parser::Result::Test 3.36
-      TAP::Parser::Result::Unknown 3.36
-      TAP::Parser::Result::Version 3.36
-      TAP::Parser::Result::YAML 3.36
-      TAP::Parser::ResultFactory 3.36
-      TAP::Parser::Scheduler 3.36
-      TAP::Parser::Scheduler::Job 3.36
-      TAP::Parser::Scheduler::Spinner 3.36
-      TAP::Parser::Source 3.36
-      TAP::Parser::SourceHandler 3.36
-      TAP::Parser::SourceHandler::Executable 3.36
-      TAP::Parser::SourceHandler::File 3.36
-      TAP::Parser::SourceHandler::Handle 3.36
-      TAP::Parser::SourceHandler::Perl 3.36
-      TAP::Parser::SourceHandler::RawTAP 3.36
-      TAP::Parser::YAMLish::Reader 3.36
-      TAP::Parser::YAMLish::Writer 3.36
-      Test::Harness 3.36
+      TAP::Base 3.38
+      TAP::Formatter::Base 3.38
+      TAP::Formatter::Color 3.38
+      TAP::Formatter::Console 3.38
+      TAP::Formatter::Console::ParallelSession 3.38
+      TAP::Formatter::Console::Session 3.38
+      TAP::Formatter::File 3.38
+      TAP::Formatter::File::Session 3.38
+      TAP::Formatter::Session 3.38
+      TAP::Harness 3.38
+      TAP::Harness::Env 3.38
+      TAP::Object 3.38
+      TAP::Parser 3.38
+      TAP::Parser::Aggregator 3.38
+      TAP::Parser::Grammar 3.38
+      TAP::Parser::Iterator 3.38
+      TAP::Parser::Iterator::Array 3.38
+      TAP::Parser::Iterator::Process 3.38
+      TAP::Parser::Iterator::Stream 3.38
+      TAP::Parser::IteratorFactory 3.38
+      TAP::Parser::Multiplexer 3.38
+      TAP::Parser::Result 3.38
+      TAP::Parser::Result::Bailout 3.38
+      TAP::Parser::Result::Comment 3.38
+      TAP::Parser::Result::Plan 3.38
+      TAP::Parser::Result::Pragma 3.38
+      TAP::Parser::Result::Test 3.38
+      TAP::Parser::Result::Unknown 3.38
+      TAP::Parser::Result::Version 3.38
+      TAP::Parser::Result::YAML 3.38
+      TAP::Parser::ResultFactory 3.38
+      TAP::Parser::Scheduler 3.38
+      TAP::Parser::Scheduler::Job 3.38
+      TAP::Parser::Scheduler::Spinner 3.38
+      TAP::Parser::Source 3.38
+      TAP::Parser::SourceHandler 3.38
+      TAP::Parser::SourceHandler::Executable 3.38
+      TAP::Parser::SourceHandler::File 3.38
+      TAP::Parser::SourceHandler::Handle 3.38
+      TAP::Parser::SourceHandler::Perl 3.38
+      TAP::Parser::SourceHandler::RawTAP 3.38
+      TAP::Parser::YAMLish::Reader 3.38
+      TAP::Parser::YAMLish::Writer 3.38
+      Test::Harness 3.38
     requirements:
       ExtUtils::MakeMaker 0
   Tie-Handle-Offset-0.003

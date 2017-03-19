@@ -7,7 +7,8 @@ use App::FatPacker::Simple;
 use App::cpm;
 use Config;
 use File::Path 'remove_tree';
-use Carton::Environment;
+use Carton::Snapshot;
+use CPAN::Meta::Requirements;
 chdir $FindBin::Bin;
 
 sub cpm {
@@ -27,10 +28,10 @@ sub remove_version_xs {
 }
 
 sub gen_snapshot {
-    my $env = Carton::Environment->build("cpanfile", "local");
-    $env->cpanfile->load;
-    $env->snapshot->find_installs($env->install_path, $env->cpanfile->requirements);
-    $env->snapshot->save;
+    my $snapshot = Carton::Snapshot->new(path => "cpanfile.snapshot");
+    my $no_exclude = CPAN::Meta::Requirements->new;
+    $snapshot->find_installs("local", $no_exclude);
+    $snapshot->save;
 }
 
 
