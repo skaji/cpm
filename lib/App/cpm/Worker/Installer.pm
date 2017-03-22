@@ -324,21 +324,33 @@ sub configure {
 
     $menlo->{logger}->log("Configuring distribution");
     my $static_builder;
-    if ($menlo->opts_in_static_install($meta)) {
-        my $state = {};
-        $menlo->static_install_configure($state, "dummy", 1);
-        $static_builder = $state->{static_install};
-    } elsif (-f 'Build.PL') {
-        $self->_retry(sub {
-            $menlo->configure([ $menlo->{perl}, 'Build.PL' ], 1);
-            -f 'Build';
-        }) or return;
-    } elsif (-f 'Makefile.PL') {
-        $self->_retry(sub {
-            $menlo->configure([ $menlo->{perl}, 'Makefile.PL' ], 1); # XXX depth == 1?
-            -f 'Makefile';
-        }) or return;
+
+    # try multiple configurators to produce builder, e.g. for modules
+    # with both MB and EUMM
+    # idea from Menlo::CLI::Compat->configure_this()
+    my $state = {};
+    my $try_static = sub {
+        if ($menlo->opts_in_static_install($meta)) {
+            $menlo->static_install_configure($state, "dummy", 1);
+            $static_builder = $state->{static_install};
+        }
+    };
+    my $try_mb = sub {
+        $menlo->configure([ $menlo->{perl}, 'Build.PL' ], 1);
+        $state->{configured_ok}  = -f 'Build';
+        $state->{configured}++;
+    };
+    my $try_eumm = sub {
+        $menlo->configure([ $menlo->{perl}, 'Makefile.PL' ], 1); # XXX depth == 1?
+        $state->{configured_ok} = -f 'Makefile';
+        $state->{configured}++;
+    };
+    for my $try ($try_static, $try_mb, $try_eumm) {
+        $self->_retry($try);
+        last if $state->{configured_ok};
     }
+    return unless $state->{configured};
+
     my $distdata = $self->_build_distdata($source, $distfile, $meta);
     my $requirements = [];
     my $phase = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
