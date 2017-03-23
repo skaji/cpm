@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.301  2017-03-23 23:21:00 JST
+        - Try to configure static-install, Build.PL and Makefile.PL in order (zakame #74, #75, #76)
+
 0.300  2017-03-06 09:01:27 JST
         - Add CAVEATS section to pod (eserte #71)
         - cpm automatically retries the installation if it fails (eserte #71, #73)
