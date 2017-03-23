@@ -323,22 +323,29 @@ sub configure {
     my $menlo = $self->menlo;
 
     $menlo->{logger}->log("Configuring distribution");
-    my $static_builder;
-    if ($menlo->opts_in_static_install($meta)) {
-        my $state = {};
-        $menlo->static_install_configure($state, "dummy", 1);
-        $static_builder = $state->{static_install};
-    } elsif (-f 'Build.PL') {
-        $self->_retry(sub {
-            $menlo->configure([ $menlo->{perl}, 'Build.PL' ], 1);
-            -f 'Build';
-        }) or return;
-    } elsif (-f 'Makefile.PL') {
-        $self->_retry(sub {
-            $menlo->configure([ $menlo->{perl}, 'Makefile.PL' ], 1); # XXX depth == 1?
-            -f 'Makefile';
-        }) or return;
+    my ($static_builder, $configure_ok);
+    {
+        if ($menlo->opts_in_static_install($meta)) {
+            my $state = {};
+            $menlo->static_install_configure($state, "dummy", 1);
+            $static_builder = $state->{static_install};
+            ++$configure_ok and last;
+        }
+        if (-f 'Build.PL') {
+            $self->_retry(sub {
+                $menlo->configure([ $menlo->{perl}, 'Build.PL' ], 1);
+                -f 'Build';
+            }) and ++$configure_ok and last;
+        }
+        if (-f 'Makefile.PL') {
+            $self->_retry(sub {
+                $menlo->configure([ $menlo->{perl}, 'Makefile.PL' ], 1); # XXX depth == 1?
+                -f 'Makefile';
+            }) and ++$configure_ok and last;
+        }
     }
+    return unless $configure_ok;
+
     my $distdata = $self->_build_distdata($source, $distfile, $meta);
     my $requirements = [];
     my $phase = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];

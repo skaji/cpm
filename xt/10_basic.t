@@ -44,10 +44,14 @@ subtest http => sub {
     is $r->exit, 0;
 };
 
-subtest module_build => sub {
+subtest configure => sub {
     # https://github.com/Ovid/Test-Differences/issues/13
     # https://rt.cpan.org/Ticket/Display.html?id=119616
     my $r = cpm_install 'Lingua::EN::Inflect@1.900';
+    is $r->exit, 0;
+    note $r->log;
+
+    $r = cpm_install 'Data::Utilities@0.04';
     is $r->exit, 0;
     note $r->log;
 };
