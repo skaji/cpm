@@ -330,12 +330,14 @@ sub configure {
         }
         if (-f 'Build.PL') {
             $self->_retry(sub {
+                $menlo->{logger}->log("Running Build.PL");
                 $menlo->configure([ $menlo->{perl}, 'Build.PL' ], 1);
                 -f 'Build';
             }) and ++$configure_ok and last;
         }
         if (-f 'Makefile.PL') {
             $self->_retry(sub {
+                $menlo->{logger}->log("Running Makefile.PL");
                 $menlo->configure([ $menlo->{perl}, 'Makefile.PL' ], 1); # XXX depth == 1?
                 -f 'Makefile';
             }) and ++$configure_ok and last;
