@@ -94,6 +94,7 @@ sub run_timeout {
 
     return $self->run_command($cmd) if ref($cmd) eq 'CODE' || WIN32 || $self->{verbose} || !$timeout;
 
+    local $self->{logger}{pid} = $$;
     my $pid = fork;
     if ($pid) {
         eval {

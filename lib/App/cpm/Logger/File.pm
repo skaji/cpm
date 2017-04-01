@@ -17,6 +17,7 @@ sub new {
         context => '',
         fh => $fh,
         file => $file,
+        pid => '',
     }, $class;
 }
 
@@ -31,27 +32,28 @@ sub file {
     shift->{file};
 }
 
-sub context {
+sub prefix {
     my $self = shift;
-    $self->{context} ? ",$self->{context}" : "";
+    my $pid = $self->{pid} || $$;
+    $self->{context} ? "$pid,$self->{context}" : $pid;
 }
 
 sub log {
     my ($self, @line) = @_;
     my $now = POSIX::strftime('%FT%T', localtime);
-    my $context = $self->context;
+    my $prefix = $self->prefix;
     for my $line (@line) {
         chomp $line;
-        print { $self->{fh} } "$now,${$}$context| $_\n" for split /\n/, $line;
+        print { $self->{fh} } "$now,$prefix| $_\n" for split /\n/, $line;
     }
 }
 
 sub log_with_fh {
     my ($self, $fh) = @_;
-    my $context = $self->context;
+    my $prefix = $self->prefix;
     while (my $line = <$fh>) {
         chomp $line;
-        print { $self->{fh} } "@{[POSIX::strftime('%FT%T', localtime)]},${$}$context| $line\n";
+        print { $self->{fh} } "@{[POSIX::strftime('%FT%T', localtime)]},$prefix| $line\n";
     }
 }
 
