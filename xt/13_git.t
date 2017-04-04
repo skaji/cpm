@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 use Test::More;
+use lib ".";
 use xt::CLI;
 
 subtest git1 => sub {

@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use utf8;
 use Test::More;
+use lib ".";
 use xt::CLI;
 
 subtest module_build => sub {

@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use utf8;
 use Test::More;
+use lib ".";
 use xt::CLI;
 
 subtest same => sub {
