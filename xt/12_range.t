@@ -1,8 +1,8 @@
 use strict;
 use warnings;
 use Test::More;
-use lib ".";
-use xt::CLI;
+use lib "xt/lib";
+use CLI;
 use Path::Tiny;
 
 subtest ok => sub {

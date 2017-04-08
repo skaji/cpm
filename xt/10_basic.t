@@ -2,8 +2,8 @@ use strict;
 use warnings;
 use utf8;
 use Test::More;
-use lib ".";
-use xt::CLI;
+use lib "xt/lib";
+use CLI;
 
 subtest same => sub {
     with_same_local {

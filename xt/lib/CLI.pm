@@ -1,4 +1,4 @@
-package xt::CLI;
+package CLI;
 use strict;
 use warnings;
 use utf8;
@@ -10,7 +10,7 @@ use File::Spec;
 use Cwd 'abs_path';
 our @EXPORT = qw(cpm_install with_same_local with_same_home);
 
-my $base = abs_path( File::Spec->catdir(File::Basename::dirname(__FILE__), "..") );
+my $base = abs_path( File::Spec->catdir(File::Basename::dirname(__FILE__), "..", "..") );
 
 my $TEMPDIR = tempdir CLEANUP => 1;
 

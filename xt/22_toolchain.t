@@ -2,8 +2,8 @@ use strict;
 use warnings;
 use utf8;
 use Test::More;
-use lib ".";
-use xt::CLI;
+use lib "xt/lib";
+use CLI;
 
 subtest module_build => sub {
     my $r = cpm_install 'Module::Build@0.4203';

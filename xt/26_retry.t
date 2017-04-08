@@ -1,8 +1,8 @@
 use strict;
 use warnings;
 use Test::More;
-use lib ".";
-use xt::CLI;
+use lib "xt/lib";
+use CLI;
 
 my $r = cpm_install "CPAN::Test::Dummy::Perl5::Make::Failearly";
 isnt $r->exit, 0;

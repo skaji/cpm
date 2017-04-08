@@ -1,8 +1,8 @@
 use strict;
 use warnings;
 use Test::More;
-use lib ".";
-use xt::CLI;
+use lib "xt/lib";
+use CLI;
 
 subtest git1 => sub {
     my $r = cpm_install "-v", "https://github.com/skaji/change-shebang.git";
