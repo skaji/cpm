@@ -30,6 +30,18 @@ sub new {
     $self;
 }
 
+sub clear {
+    my $self = shift;
+    $self->{installed_distributions} = 0;
+    $self->{jobs} = {};
+    $self->{distributions} = {};
+    $self->{_fail_resolve} = {};
+    $self->{_fail_install} = {};
+    $self->{_is_installed} = {};
+    $self->{_artifacts} = {};
+    $self;
+}
+
 sub fail {
     my $self = shift;
     my @fail_resolve = sort keys %{$self->{_fail_resolve}};
