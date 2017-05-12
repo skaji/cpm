@@ -85,7 +85,7 @@
    "x_contributors" : [
       "Olaf Alders <olaf@wundersolutions.com>"
    ],
-   "x_serialization_backend" : "Cpanel::JSON::XS version 3.023",
+   "x_serialization_backend" : "Cpanel::JSON::XS version 3.0233",
    "x_static_install" : 1
 }
 
