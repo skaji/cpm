@@ -26,7 +26,7 @@ ok scalar(keys %$meta);
 my %reqs = map {; ($_->{package} => $_->{version_range}) } @$configure_requirements;
 
 is_deeply \%reqs, {
-    "ExtUtils::MakeMaker" => '0',
+    "ExtUtils::MakeMaker" => $] < 5.016 ? '6.58' : '0',
 };
 
 my ($distdata, $requirements) = $installer->configure({

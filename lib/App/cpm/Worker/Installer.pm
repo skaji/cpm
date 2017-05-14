@@ -213,9 +213,18 @@ sub _inject_toolchain_reqs {
 
     my %deps = map { $_->{package} => $_ } @$reqs;
 
+    if (    -f "Makefile.PL"
+        and !$deps{'ExtUtils::MakeMaker'}
+        and !-f "Build.PL"
+        and $distfile !~ m{/ExtUtils-MakeMaker-[0-9v]}
+    ) {
+        $deps{'ExtUtils::MakeMaker'} = {package => "ExtUtils::MakeMaker", version_range => '6.58'};
+    }
+
     # copy from Menlo/cpanminus
     my $toolchain = CPAN::Meta::Requirements->from_string_hash({
         'Module::Build' => '0.38',
+        'ExtUtils::MakeMaker' => '6.58',
         'ExtUtils::Install' => '1.46',
     });
     my $merge = sub {
@@ -225,6 +234,9 @@ sub _inject_toolchain_reqs {
     };
 
     my $dep;
+    if ($dep = $deps{"ExtUtils::MakeMaker"}) {
+        $dep->{version_range} = $merge->($dep);
+    }
     if ($dep = $deps{"Module::Build"}) {
         $dep->{version_range} = $merge->($dep);
         $dep = $deps{"ExtUtils::Install"} ||= {package => 'ExtUtils::Install', version_range => 0};
