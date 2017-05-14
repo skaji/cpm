@@ -221,19 +221,11 @@ sub _inject_toolchain_reqs {
         $deps{'ExtUtils::MakeMaker'} = {package => "ExtUtils::MakeMaker", version_range => '6.58'};
     }
 
-    if (    $distfile !~ m{/ExtUtils-ParseXS-[0-9v]}
-        and $distfile !~ m{/ExtUtils-MakeMaker-[0-9v]}
-        and !$deps{'ExtUtils::ParseXS'}
-    ) {
-        $deps{'ExtUtils::ParseXS'} = {package => 'ExtUtils::ParseXS', version_range => '3.16'};
-    }
-
     # copy from Menlo/cpanminus
     my $toolchain = CPAN::Meta::Requirements->from_string_hash({
         'Module::Build' => '0.38',
         'ExtUtils::MakeMaker' => '6.58',
         'ExtUtils::Install' => '1.46',
-        'ExtUtils::ParseXS' => '3.16',
     });
     my $merge = sub {
         my $dep = shift;
@@ -242,13 +234,10 @@ sub _inject_toolchain_reqs {
     };
 
     my $dep;
-    if ($dep = $deps{'ExtUtils::ParseXS'}) {
-        $dep->{version_range} = $merge->($dep);
-    }
-
     if ($dep = $deps{"ExtUtils::MakeMaker"}) {
         $dep->{version_range} = $merge->($dep);
-    } elsif ($dep = $deps{"Module::Build"}) {
+    }
+    if ($dep = $deps{"Module::Build"}) {
         $dep->{version_range} = $merge->($dep);
         $dep = $deps{"ExtUtils::Install"} ||= {package => 'ExtUtils::Install', version_range => 0};
         $dep->{version_range} = $merge->($dep);

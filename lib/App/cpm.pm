@@ -184,24 +184,89 @@ sub cmd_install {
         inc    => $self->_inc,
         (exists $self->{target_perl} ? (target_perl => $self->{target_perl}) : ()),
     );
+
+    # dryrun
     $self->register_initial_job($master) or return 0;
+    $master->clear;
 
     my $worker = App::cpm::Worker->new(
-        verbose         => $self->{verbose},
-        home            => $self->{home},
-        logger          => $logger,
-        notest          => $self->{notest},
-        sudo            => $self->{sudo},
-        resolver        => $self->generate_resolver,
-        man_pages       => $self->{man_pages},
-        retry           => $self->{retry},
+        verbose   => $self->{verbose},
+        home      => $self->{home},
+        logger    => $logger,
+        notest    => $self->{notest},
+        sudo      => $self->{sudo},
+        resolver  => $self->generate_resolver,
+        man_pages => $self->{man_pages},
+        retry     => $self->{retry},
         ($self->{global} ? () : (local_lib => $self->{local_lib})),
     );
-    my $pipes = Parallel::Pipes->new($self->{workers}, sub {
+
+    my $installed_distributions = 0;
+    my %artifact;
+    {
+        last unless $] < 5.016;
+        my $requirements = [
+            { package => 'ExtUtils::MakeMaker', version_range => '6.58' },
+            { package => 'ExtUtils::ParseXS',   version_range => '3.16' },
+        ];
+        my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirements);
+        last if $is_satisfied;
+        $master->add_job(type => "resolve", package => $_->{package}, version_range => $_->{version_range})
+            for @need_resolve;
+        $self->install($master, $worker, 1);
+        %artifact = (%artifact, %{$master->{_artifacts}});
+        $installed_distributions += $master->installed_distributions;
+        if (my $fail = $master->fail) {
+            local $App::cpm::Logger::VERBOSE = 0;
+            for my $type (qw(install resolve)) {
+                App::cpm::Logger->log(result => "FAIL", type => $type, message => $_) for @{$fail->{$type}};
+            }
+            warn "$installed_distributions distribution installed.\n";
+            if ($self->{_return_artifacts}) {
+                return (0, \%artifact);
+            } else {
+                warn "See $self->{home}/build.log for details.\n";
+                return 1;
+            }
+        }
+        $master->clear;
+    }
+
+    $self->register_initial_job($master) or return 0;
+    $self->install($master, $worker, $self->{workers});
+
+    $installed_distributions += $master->installed_distributions;
+    %artifact = (%artifact, %{$master->{_artifacts}});
+    if (my $fail = $master->fail) {
+        local $App::cpm::Logger::VERBOSE = 0;
+        for my $type (qw(install resolve)) {
+            App::cpm::Logger->log(result => "FAIL", type => $type, message => $_) for @{$fail->{$type}};
+        }
+    }
+    warn "$installed_distributions distribution installed.\n";
+    $self->cleanup;
+
+    if ($self->{_return_artifacts}) {
+        my $ok = $master->fail ? 0 : 1;
+        return ($ok, %artifact);
+    } else {
+        if ($master->fail) {
+            warn "See $self->{home}/build.log for details.\n";
+            return 1;
+        } else {
+            File::Path::rmtree($_) for values %{$master->{_artifacts}};
+            return 0;
+        }
+    }
+}
+
+sub install {
+    my ($self, $master, $worker, $num) = @_;
+
+    my $pipes = Parallel::Pipes->new($num, sub {
         my $job = shift;
         return $worker->work($job);
     });
-
     my $get_job; $get_job = sub {
         my $master = shift;
         if (my @job = $master->get_job) {
@@ -215,7 +280,6 @@ sub cmd_install {
             return;
         }
     };
-
     while (my @job = $master->$get_job) {
         my @ready = $pipes->is_ready;
         $master->register_result($_->read) for grep $_->is_written, @ready;
@@ -225,33 +289,6 @@ sub cmd_install {
         }
     }
     $pipes->close;
-
-    if (my $fail = $master->fail) {
-        local $App::cpm::Logger::VERBOSE = 0;
-        for my $type (qw(install resolve)) {
-            App::cpm::Logger->log(
-                result => "FAIL",
-                type => $type,
-                message => $_,
-            ) for @{$fail->{$type}};
-        }
-    }
-    my $num = $master->installed_distributions;
-    warn "$num distribution@{[$num > 1 ? 's' : '']} installed.\n";
-    $self->cleanup;
-
-    if ($self->{_return_artifacts}) {
-        my $ok = $master->fail ? 0 : 1;
-        return ($ok, $master->{_artifacts});
-    } else {
-        if ($master->fail) {
-            warn "See $self->{home}/build.log for details.\n";
-            return 1;
-        } else {
-            File::Path::rmtree($_) for values %{$master->{_artifacts}};
-            return 0;
-        }
-    }
 }
 
 sub cleanup {
@@ -268,7 +305,8 @@ sub register_initial_job {
     my ($self, $master) = @_;
 
     my @package;
-    for my $arg (@{$self->{argv}}) {
+    for (@{$self->{argv}}) {
+        my $arg = $_; # copy
         if (-d $arg || -f $arg || $arg =~ s{^file://}{}) {
             $arg = $self->maybe_abs($arg);
             my $dist = App::cpm::Distribution->new(source => "local", uri => "file://$arg", provides => []);
