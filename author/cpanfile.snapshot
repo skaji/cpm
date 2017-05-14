@@ -267,10 +267,10 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       Test::More 0
-  Menlo-1.9004
-    pathname: M/MI/MIYAGAWA/Menlo-1.9004.tar.gz
+  Menlo-1.9005
+    pathname: M/MI/MIYAGAWA/Menlo-1.9005.tar.gz
     provides:
-      Menlo 1.9004
+      Menlo 1.9005
       Menlo::Builder::Static undef
       Menlo::CLI::Compat 1.9004
       Menlo::Dependency undef

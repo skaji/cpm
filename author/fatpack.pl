@@ -9,7 +9,10 @@ use Config;
 use File::Path 'remove_tree';
 use Carton::Snapshot;
 use CPAN::Meta::Requirements;
+use Getopt::Long ();
 chdir $FindBin::Bin;
+
+Getopt::Long::GetOptions "f|force" => \my $force;
 
 sub cpm {
     App::cpm->new->run(@_) == 0 or die
@@ -46,7 +49,7 @@ my $shebang = <<'___';
 use 5.10.1;
 ___
 
-my $resolver = -f "cpanfile.snapshot" ? "snapshot" : "metadb";
+my $resolver = -f "cpanfile.snapshot" && !$force ? "snapshot" : "metadb";
 
 warn "Resolver: $resolver\n";
 cpm "install", "--cpanfile", "../cpanfile", "--target-perl", "5.10.1", "--resolver", $resolver;
