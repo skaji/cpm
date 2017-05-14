@@ -18,7 +18,7 @@ use File::Path ();
 use Cwd ();
 use Config;
 
-our $VERSION = '0.301';
+our $VERSION = '0.302';
 
 use constant WIN32 => $^O eq 'MSWin32';
 

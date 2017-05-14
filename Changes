@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.302  2017-05-14 18:15:22 CEST
+        - When perl < 5.16, cpm installs ExtUtils::MakeMaker, ExtUtils::ParseXS first
+        - Show "worker" pid in log
+
 0.301  2017-03-23 23:21:00 JST
         - Try to configure static-install, Build.PL and Makefile.PL in order (zakame #74, #75, #76)
 
