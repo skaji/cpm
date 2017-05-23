@@ -471,6 +471,10 @@ sub generate_resolver {
         mirror => $self->{mirror},
     );
     $cascade->add($resolver);
+    if (!$self->{dev}) {
+        $resolver = App::cpm::Resolver::MetaCPAN->new;
+        $cascade->add($resolver);
+    }
 
     $cascade;
 }
