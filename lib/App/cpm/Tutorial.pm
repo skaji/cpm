@@ -1,7 +1,7 @@
 package App::cpm::Tutorial;
 use strict;
 use warnings;
-our $VERSION = '0.302';
+our $VERSION = '0.303';
 1;
 __END__
 

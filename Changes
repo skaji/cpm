@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.303  2017-05-30 02:04:07 JST
+        - Clean up workspaces before downloading tarballs (papix #79)
+        - Default to fall back to MetaCPAN resolver
+
 0.302  2017-05-14 18:15:22 CEST
         - When perl < 5.16, cpm installs ExtUtils::MakeMaker, ExtUtils::ParseXS first
         - Show "worker" pid in log
