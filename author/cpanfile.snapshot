@@ -258,21 +258,22 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Test::More 0.31
       Time::HiRes 0
-  JSON-PP-2.27400
-    pathname: M/MA/MAKAMAKA/JSON-PP-2.27400.tar.gz
+  JSON-PP-2.94
+    pathname: I/IS/ISHIGAKI/JSON-PP-2.94.tar.gz
     provides:
-      JSON::PP 2.27400
-      JSON::PP::Boolean 2.27400
-      JSON::PP::IncrParser 2.27400
+      JSON::PP 2.94
+      JSON::PP::Boolean 2.94
+      JSON::PP::IncrParser 2.94
     requirements:
       ExtUtils::MakeMaker 0
+      Scalar::Util 1.08
       Test::More 0
   Menlo-1.9005
     pathname: M/MI/MIYAGAWA/Menlo-1.9005.tar.gz
     provides:
       Menlo 1.9005
       Menlo::Builder::Static undef
-      Menlo::CLI::Compat 1.9004
+      Menlo::CLI::Compat 1.9005
       Menlo::Dependency undef
       Menlo::Index::MetaCPAN undef
       Menlo::Index::MetaDB 0.007
