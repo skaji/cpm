@@ -13,12 +13,12 @@ my $installer = App::cpm::Worker::Installer->new(
     local_lib => $tempdir,
     base => $base,
     cache => $cache,
-    mirror => "http://www.cpan.org",
+    mirror => "https://cpan.metacpan.org",
 );
 
 my ($job, $result);
 
-my $mirror = "http://www.cpan.org";
+my $mirror = "https://cpan.metacpan.org";
 my $distfile = "S/SK/SKAJI/Distribution-Metadata-0.05.tar.gz";
 
 my %default = (

@@ -55,7 +55,7 @@ cpm - a fast CPAN module installer
         install modules as if verison is your perl is VERSION
       --mirror=URL
         base url for the CPAN mirror to use, you can use --mirror multiple times
-        default: http://www.cpan.org and http://backpan.perl.org
+        default: https://cpan.metacpan.org
   -r, --resolver=class,args (EXPERIMENTAL, will be removed or renamed)
         specify resolvers, you can use --resolver multiple times
         available classes: metadb/metacpan/02packages/snapshot

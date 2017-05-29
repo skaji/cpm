@@ -108,7 +108,7 @@ DISTRIBUTIONS
 };
 
 subtest '02packages_http' => sub {
-    my $r = cpm_install "-v", "--resolver", "02packages,http://www.cpan.org", "common::sense";
+    my $r = cpm_install "-v", "--resolver", "02packages,https://cpan.metacpan.org", "common::sense";
     is $r->exit, 0;
     like $r->err, qr/02Packages/;
 };
