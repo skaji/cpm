@@ -66,6 +66,7 @@ sub parse_options {
     or exit 1;
 
     $self->{local_lib} = $self->maybe_abs($self->{local_lib}) unless $self->{global};
+    $self->{home} = $self->maybe_abs($self->{home});
     $self->{resolver} = \@resolver;
     $self->{mirror} = \@mirror if @mirror;
     for my $mirror (@{$self->{mirror}}) {
