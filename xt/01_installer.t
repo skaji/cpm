@@ -15,7 +15,7 @@ my $installer = App::cpm::Worker::Installer->new(
     cache => $cache,
 );
 
-my $mirror = "http://www.cpan.org";
+my $mirror = "https://cpan.metacpan.org";
 my $distfile = "S/SK/SKAJI/Distribution-Metadata-0.05.tar.gz";
 my $job = { source => "cpan", uri => ["$mirror/authors/id/$distfile"], distfile => $distfile };
 my ($dir, $meta, $configure_requirements) = $installer->fetch($job);

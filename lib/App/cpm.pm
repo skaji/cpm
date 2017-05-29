@@ -31,7 +31,7 @@ sub new {
         cpanfile => "cpanfile",
         local_lib => "local",
         cpanmetadb => "http://cpanmetadb.plackperl.org/v1.0/",
-        mirror => ["http://www.cpan.org/", "http://backpan.perl.org/"],
+        mirror => ["https://cpan.metacpan.org/"],
         retry => 1,
         %option
     }, $class;

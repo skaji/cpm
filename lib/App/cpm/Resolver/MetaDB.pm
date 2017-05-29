@@ -12,7 +12,7 @@ use App::cpm::Logger;
 sub new {
     my ($class, %option) = @_;
     my $uri = $option{uri} || "http://cpanmetadb.plackperl.org/v1.0/";
-    my $mirror = $option{mirror} || ["http://www.cpan.org/", "http://backpan.perl.org/"];
+    my $mirror = $option{mirror} || ["https://cpan.metacpan.org/"];
     s{/*$}{/} for $uri, @$mirror;
     my $http = HTTP::Tiny->new(timeout => 15, keep_alive => 1, agent => "App::cpm/$VERSION");
     bless {
