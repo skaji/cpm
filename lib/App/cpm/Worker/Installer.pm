@@ -119,6 +119,7 @@ sub _fetch_git {
 my $clean = sub {
     my $uri = shift;
     my $basename = basename $uri;
+    unlink $basename if -e $basename;
     my ($old) = $basename =~ /^(.+)\.(?:tar\.gz|zip|tar\.bz2|tgz)$/;
     rmtree $old if $old && -d $old;
 };
@@ -141,22 +142,19 @@ sub fetch {
         for my $uri (@uri) {
             $self->{logger}->log("Copying $uri");
             $uri =~ s{^file://}{};
+            $uri = $self->menlo->maybe_abs($uri);
             my $basename = basename $uri;
+            my $g = pushd $self->menlo->{base};
             if (-d $uri) {
-                my $dest = File::Spec->catdir(
-                    $self->menlo->{base}, "$basename." . time
-                );
+                my $dest = "$basename." . time;
                 rmtree $dest if -d $dest;
                 File::Copy::Recursive::dircopy($uri, $dest);
-                $dir = $dest;
+                $dir = File::Spec->catdir($self->menlo->{base}, $dest);
                 last;
             } elsif (-f $uri) {
-                my $dest = File::Spec->catfile(
-                    $self->menlo->{base}, $basename,
-                );
-                File::Copy::copy($uri, $dest);
-                my $g = pushd $self->menlo->{base};
                 $clean->($uri);
+                my $dest = $basename;
+                File::Copy::copy($uri, $dest);
                 $dir = $self->menlo->unpack($basename);
                 $dir = File::Spec->catdir($self->menlo->{base}, $dir);
                 last;
