@@ -249,13 +249,12 @@ sub cmd_install {
 
     if ($self->{_return_artifacts}) {
         my $ok = $master->fail ? 0 : 1;
-        return ($ok, %artifact);
+        return ($ok, \%artifact);
     } else {
         if ($master->fail) {
             warn "See $self->{home}/build.log for details.\n";
             return 1;
         } else {
-            File::Path::rmtree($_) for values %{$master->{_artifacts}};
             return 0;
         }
     }
@@ -295,11 +294,23 @@ sub install {
 sub cleanup {
     my $self = shift;
     my $week = time - 7*24*60*60;
-    my @file = map  { $_->[0] }
-               grep { $_->[1] < $week }
-               map  { [$_, (stat $_)[9]] }
-               glob "$self->{home}/build.log.*";
-    unlink $_ for @file;
+    my @entry = glob "$self->{home}/build.log.*";
+    if (opendir my $dh, "$self->{home}/work") {
+        push @entry,
+            map File::Spec->catdir("$self->{home}/work", $_),
+            grep !/^\.{1,2}$/,
+            readdir $dh;
+    }
+    for my $entry (@entry) {
+        my $mtime = (stat $entry)[9];
+        if ($mtime < $week) {
+            if (-d $entry) {
+                File::Path::rmtree($entry);
+            } else {
+                unlink $entry;
+            }
+        }
+    }
 }
 
 sub register_initial_job {

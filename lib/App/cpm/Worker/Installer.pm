@@ -72,7 +72,7 @@ sub work {
 sub new {
     my ($class, %option) = @_;
     $option{logger} ||= App::cpm::Logger::File->new;
-    $option{base}   ||= "$ENV{HOME}/.perl-cpm/work";
+    $option{base}   ||= "$ENV{HOME}/.perl-cpm/work/" . time . ".$$";
     $option{cache}  ||= "$ENV{HOME}/.perl-cpm/cache";
     mkpath $_ for grep !-d, $option{base}, $option{cache};
 
@@ -116,14 +116,6 @@ sub _fetch_git {
     ($dir, $rev);
 }
 
-my $clean = sub {
-    my $uri = shift;
-    my $basename = basename $uri;
-    unlink $basename if -e $basename;
-    my ($old) = $basename =~ /^(.+)\.(?:tar\.gz|zip|tar\.bz2|tgz)$/;
-    rmtree $old if $old && -d $old;
-};
-
 sub fetch {
     my ($self, $job) = @_;
     my $guard = pushd;
@@ -152,7 +144,6 @@ sub fetch {
                 $dir = File::Spec->catdir($self->menlo->{base}, $dest);
                 last;
             } elsif (-f $uri) {
-                $clean->($uri);
                 my $dest = $basename;
                 File::Copy::copy($uri, $dest);
                 $dir = $self->menlo->unpack($basename);
@@ -163,7 +154,6 @@ sub fetch {
     } elsif ($source =~ /^(?:cpan|https?)$/) {
         my $g = pushd $self->menlo->{base};
         FETCH: for my $uri (@uri) {
-            $clean->($uri);
             my $basename = basename $uri;
             if ($uri =~ s{^file://}{}) {
                 $self->{logger}->log("Copying $uri");

@@ -17,7 +17,7 @@ sub new {
     %option = (
         %option,
         logger => $logger,
-        base => "$home/work",
+        base => "$home/work/" . time . ".$$",
         cache => "$home/cache",
     );
     my $installer = App::cpm::Worker::Installer->new(%option);
