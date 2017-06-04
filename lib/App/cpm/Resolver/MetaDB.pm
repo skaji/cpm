@@ -2,7 +2,7 @@ package App::cpm::Resolver::MetaDB;
 use strict;
 use warnings;
 use utf8;
-our $VERSION = '0.304';
+our $VERSION = '0.305';
 
 use HTTP::Tiny;
 use CPAN::Meta::YAML;
