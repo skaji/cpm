@@ -10,6 +10,7 @@ use File::Path 'remove_tree';
 use Carton::Snapshot;
 use CPAN::Meta::Requirements;
 use Getopt::Long ();
+use Path::Tiny ();
 chdir $FindBin::Bin;
 
 Getopt::Long::GetOptions "f|force" => \my $force;
@@ -44,9 +45,14 @@ my $exclude = join ",", qw(
     Test::Harness
 );
 
-my $shebang = <<'___';
+my $shebang = <<"___";
 #!/usr/bin/env perl
 use 5.10.1;
+
+=pod
+
+@{[ Path::Tiny->new("copyrights-and-licenses.txt")->slurp ]}
+=cut
 ___
 
 my $resolver = -f "cpanfile.snapshot" && !$force ? "snapshot" : "metadb";
