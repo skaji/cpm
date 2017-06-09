@@ -15,8 +15,9 @@ addons:
     packages:
     - libdb-dev
 install:
-  - curl -sL --compressed https://git.io/cpm | perl - install -g --with-develop
-  - curl -sL --compressed https://git.io/cpm | perl - install -g Carton
+  - curl -sSL --compressed -o /tmp/cpm https://git.io/cpm
+  - perl /tmp/cpm install -g --with-develop
+  - perl /tmp/cpm install -g Carton
 script:
   - prove --state save -l --timer t xt || { echo '--- retry failed tests ---'; prove --state failed -l --timer; }
 sudo: false
