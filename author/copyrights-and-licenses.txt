@@ -97,4 +97,56 @@ The following distributions are embedded into this script:
     Copyright: John Peacock
     License: the same as Perl 5
 
-The above copyrights and licenses were updated at 2017-06-08.
+  Algorithm-C3, https://metacpan.org/release/Algorithm-C3
+    Copyright: Infinity Interactive, Inc.
+    License: the same as Perl 5
+  Class-C3, https://metacpan.org/release/Class-C3
+    Copyright: Infinity Interactive, Inc.
+    License: the same as Perl 5
+  Exporter, https://metacpan.org/release/Exporter
+    Copyright: Unknown
+    License: the same as Perl 5
+  File-Fetch, https://metacpan.org/release/File-Fetch
+    Copyright: Jos Boumans
+    License: the same as Perl 5
+  File-Path, https://metacpan.org/release/File-Path
+    Copyright: Charles Bailey, Tim Bunce, David Landgren, James Keenan, and Richard Elberger
+    License: the same as Perl 5
+  File-Temp, https://metacpan.org/release/File-Temp
+    Copyright: Tim Jenness and the UK Particle Physics and Astronomy Research Council
+    License: the same as Perl 5
+  Getopt-Long, https://metacpan.org/release/Getopt-Long
+    Copyright: Johan Vromans
+    License: the terms of the Perl Artistic License or the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version
+  IPC-Cmd, https://metacpan.org/release/IPC-Cmd
+    Copyright: Jos Boumans
+    License: the same as Perl 5
+  Locale-Maketext-Simple, https://metacpan.org/release/Locale-Maketext-Simple
+    Copyright: Audrey Tang
+    License: MIT
+  MRO-Compat, https://metacpan.org/release/MRO-Compat
+    Copyright: Brandon L. Black
+    License: the same as Perl 5
+  Module-Load, https://metacpan.org/release/Module-Load
+    Copyright: Jos Boumans
+    License: the same as Perl 5
+  Pod-Escapes, https://metacpan.org/release/Pod-Escapes
+    Copyright: Sean M. Burke
+    License: the same as Perl 5
+  Pod-Simple, https://metacpan.org/release/Pod-Simple
+    Copyright: Sean M. Burke
+    License: the same as Perl 5
+  podlators, https://metacpan.org/release/podlators
+    Copyright: Russ Allbery
+    License: the same as Perl 5
+  Pod-Usage, https://metacpan.org/release/Pod-Usage
+    Copyright: Bradford Appleton, Marek Rouchal
+    License: the same as Perl 5
+  Text-ParseWords, https://metacpan.org/release/Text-ParseWords
+    Copyright: Unkwon
+    License: the same as Perl 5
+  parent, https://metacpan.org/release/parent
+    Copyright: Max Maischein
+    License: the same as Perl 5
+
+The above copyrights and licenses were updated at 2017-06-09.

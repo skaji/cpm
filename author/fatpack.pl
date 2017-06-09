@@ -74,7 +74,7 @@ my $shebang = <<"___";
 #!/usr/bin/env perl
 use $target;
 
-=pod
+=for LICENSE
 
 @{[ Path::Tiny->new("copyrights-and-licenses.txt")->slurp ]}
 =cut
