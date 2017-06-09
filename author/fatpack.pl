@@ -13,6 +13,14 @@ use Getopt::Long ();
 use Path::Tiny ();
 chdir $FindBin::Bin;
 
+=for hint
+
+Show new dependencies
+
+    git diff cpm | perl -nle 'print $1 if /^\+\$fatpacked\{"([^"]+)/'
+
+=cut
+
 Getopt::Long::GetOptions "f|force" => \my $force;
 
 sub cpm {
@@ -40,26 +48,43 @@ sub gen_snapshot {
 
 
 my $exclude = join ",", qw(
+    Carp
+    Digest::SHA
+    ExtUtils::CBuilder
+    ExtUtils::MakeMaker
     ExtUtils::MakeMaker::CPANfile
+    ExtUtils::ParseXS
+    File::Spec
     Module::Build::Tiny
+    Module::CoreList
+    Params::Check
+    Perl::OSType
+    Test
+    Test2
     Test::Harness
 );
+my @extra = qw(
+    Class::C3
+    Devel::GlobalDestruction
+    MRO::Compat
+);
+my $target = '5.8.1';
 
 my $shebang = <<"___";
 #!/usr/bin/env perl
-use 5.10.1;
+use $target;
 
-=pod
+=for LICENSE
 
 @{[ Path::Tiny->new("copyrights-and-licenses.txt")->slurp ]}
 =cut
 ___
 
-my $resolver = -f "cpanfile.snapshot" && !$force ? "snapshot" : "metadb";
+my $resolver = -f "cpanfile.snapshot" && !$force ? "snapshot" : "metacpan";
 
 warn "Resolver: $resolver\n";
-cpm "install", "--cpanfile", "../cpanfile", "--target-perl", "5.10.1", "--resolver", $resolver;
-cpm "install", "--cpanfile", "../cpanfile", "--target-perl", "5.10.1", "--resolver", $resolver, "Devel::GlobalDestruction"; # for Class::Tiny
+cpm "install", "--cpanfile", "../cpanfile", "--target-perl", $target, "--resolver", $resolver;
+cpm "install", "--cpanfile", "../cpanfile", "--target-perl", $target, "--resolver", $resolver, @extra;
 gen_snapshot;
 remove_version_xs;
 print STDERR "FatPacking...";
