@@ -143,7 +143,7 @@ The following distributions are embedded into this script:
     Copyright: Bradford Appleton, Marek Rouchal
     License: the same as Perl 5
   Text-ParseWords, https://metacpan.org/release/Text-ParseWords
-    Copyright: Unkwon
+    Copyright: Alexandr Ciornii
     License: the same as Perl 5
   parent, https://metacpan.org/release/parent
     Copyright: Max Maischein
