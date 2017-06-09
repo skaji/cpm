@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.306  2017-06-09 10:23:00 JST
+        - Remove IO::Uncompress::Gunzip dependency (#83)
+        - Now the fatpacked cpm can be used with perl 5.8 (#83)
+
 0.305  2017-06-04 21:37:38 JST
         - Use separate directory for each build
 

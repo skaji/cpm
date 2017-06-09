@@ -41,7 +41,8 @@
       },
       "runtime" : {
          "recommends" : {
-            "Carton::Snapshot" : "0"
+            "Carton::Snapshot" : "0",
+            "IO::Uncompress::Gunzip" : "0"
          },
          "requires" : {
             "CPAN::Common::Index::Mirror" : "0",
@@ -55,7 +56,6 @@
             "File::pushd" : "0",
             "HTTP::Tiny" : "0.055",
             "HTTP::Tinyish" : "0.12",
-            "IO::Uncompress::Gunzip" : "0",
             "JSON::PP" : "2.27300",
             "Menlo::CLI::Compat" : "0",
             "Module::CPANfile" : "0",
@@ -81,7 +81,7 @@
          "web" : "https://github.com/skaji/cpm"
       }
    },
-   "version" : "0.305",
+   "version" : "0.306",
    "x_contributors" : [
       "Olaf Alders <olaf@wundersolutions.com>",
       "Shoichi Kaji <skaji@outlook.com>"
