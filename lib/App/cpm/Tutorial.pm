@@ -26,12 +26,12 @@ From CPAN:
 
 Or, download a I<self-contained> cpm:
 
-  $ curl -sL https://git.io/cpm > cpm
+  $ curl -sL --compressed https://git.io/cpm > cpm
   $ chmod +x cpm
   $ ./cpm --version
 
   # you can even install modules without installing cpm
-  $ curl -sL https://git.io/cpm | perl - install Plack
+  $ curl -sL --compressed https://git.io/cpm | perl - install Plack
 
 =head2 First step
 
