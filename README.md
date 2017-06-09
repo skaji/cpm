@@ -8,24 +8,15 @@ a fast CPAN module installer
 
 There are 2 ways.
 
-### 1) install it from CPAN
-
-Make sure you have [cpanm](https://github.com/miyagawa/cpanminus).
-If not, install it first:
-
-```sh
-$ curl -sL http://cpanmin.us | perl - -nq App::cpanminus
-```
-
-Then:
+### 1) From CPAN
 
 ```sh
 $ cpanm -nq App::cpm
 ```
 
-### 2) install a self-contained version
+### 2) self-contained version
 
-If you have perl 5.10.1+, then you can use a _self-contained_ cpm:
+You can also use a _self-contained_ cpm:
 
 ```sh
 $ curl -sL https://git.io/cpm > cpm
