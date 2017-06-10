@@ -70,13 +70,18 @@ my @extra = qw(
 );
 my $target = '5.8.1';
 
+my @copyright = Path::Tiny->new("copyrights-and-licenses.json")->lines;
+@copyright = map { "  $_" } @copyright;
+
 my $shebang = <<"___";
 #!/usr/bin/env perl
 use $target;
 
 =for LICENSE
 
-@{[ Path::Tiny->new("copyrights-and-licenses.txt")->slurp ]}
+The following distributions are embedded into this script:
+
+@copyright
 =cut
 ___
 
