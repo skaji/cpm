@@ -4,7 +4,7 @@ Revision history for App-cpm
 
 0.350  2017-06-11 21:21:27 JST
         - Add --configure/build/test-timeout options (arodland #81, #88)
-        - Support --with-recommends/suggestsoptions; Note that this respects recommends/suggests in cpanfile only (#87)
+        - Support --with-recommends/suggests options; Note that this respects recommends/suggests in cpanfile only (#87)
 
 0.306  2017-06-09 10:23:00 JST
         - Remove IO::Uncompress::Gunzip dependency (#83)
