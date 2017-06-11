@@ -84,6 +84,9 @@ sub new {
         notest => $option{notest},
         sudo => $option{sudo},
         mirrors => ["https://cpan.metacpan.org/"], # this is dummy
+        configure_timeout => $option{configure_timeout},
+        build_timeout => $option{build_timeout},
+        test_timeout => $option{test_timeout},
     );
     if (my $local_lib = delete $option{local_lib}) {
         $menlo->{self_contained} = 1;

@@ -33,6 +33,9 @@ sub new {
         cpanmetadb => "http://cpanmetadb.plackperl.org/v1.0/",
         mirror => ["https://cpan.metacpan.org/"],
         retry => 1,
+        configure_timeout => 60,
+        build_timeout => 3600,
+        test_timeout => 1800,
         %option
     }, $class;
 }
@@ -65,6 +68,9 @@ sub parse_options {
         "with-recommends" => \($self->{with_recommends}),
         "with-suggests" => \($self->{with_suggests}),
         "retry!" => \($self->{retry}),
+        "configure-timeout=i" => \($self->{configure_timeout}),
+        "build-timeout=i" => \($self->{build_timeout}),
+        "test-timeout=i" => \($self->{test_timeout}),
     or exit 1;
 
     $self->{local_lib} = $self->maybe_abs($self->{local_lib}) unless $self->{global};
@@ -201,6 +207,9 @@ sub cmd_install {
         resolver  => $self->generate_resolver,
         man_pages => $self->{man_pages},
         retry     => $self->{retry},
+        configure_timeout => $self->{configure_timeout},
+        build_timeout     => $self->{build_timeout},
+        test_timeout      => $self->{test_timeout},
         ($self->{global} ? () : (local_lib => $self->{local_lib})),
     );
 
