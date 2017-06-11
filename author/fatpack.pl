@@ -70,19 +70,16 @@ my @extra = qw(
 );
 my $target = '5.8.1';
 
-my @copyright = Path::Tiny->new("copyrights-and-licenses.json")->lines;
-@copyright = map { "  $_" } @copyright;
+my @copyright = Path::Tiny->new("copyrights-and-licenses.json")->lines({chomp => 1});
+my $copyright = join "\n", map { "# $_" } @copyright;
 
 my $shebang = <<"___";
 #!/usr/bin/env perl
 use $target;
 
-=for LICENSE
-
-The following distributions are embedded into this script:
-
-@copyright
-=cut
+# The following distributions are embedded into this script:
+#
+$copyright
 ___
 
 my $resolver = -f "cpanfile.snapshot" && !$force ? "snapshot" : "metacpan";
