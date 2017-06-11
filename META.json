@@ -4,7 +4,7 @@
       "Shoichi Kaji <skaji@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Milla version v1.0.17, Dist::Zilla version 6.009, CPAN::Meta::Converter version 2.150010",
+   "generated_by" : "Dist::Milla version v1.0.18, Dist::Zilla version 6.009, CPAN::Meta::Converter version 2.150010",
    "license" : [
       "perl_5"
    ],
@@ -33,7 +33,7 @@
          "requires" : {
             "CPAN::Mirror::Tiny" : "0.10",
             "Capture::Tiny" : "0",
-            "Dist::Milla" : "v1.0.17",
+            "Dist::Milla" : "v1.0.18",
             "Path::Tiny" : "0",
             "Test::More" : "0.98",
             "Test::Pod" : "1.41"
@@ -81,7 +81,7 @@
          "web" : "https://github.com/skaji/cpm"
       }
    },
-   "version" : "0.306",
+   "version" : "0.350",
    "x_contributors" : [
       "Olaf Alders <olaf@wundersolutions.com>",
       "Shoichi Kaji <skaji@outlook.com>"

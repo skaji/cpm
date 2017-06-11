@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.350  2017-06-11 21:21:27 JST
+        - Add --configure/build/test-timeout options (arodland #81, #88)
+        - Support --with-recommends/suggestsoptions; Note that this respects recommends/suggests in cpanfile only (#87)
+
 0.306  2017-06-09 10:23:00 JST
         - Remove IO::Uncompress::Gunzip dependency (#83)
         - Now the fatpacked cpm can be used with perl 5.8 (#83)

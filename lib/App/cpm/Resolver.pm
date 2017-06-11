@@ -1,5 +1,5 @@
 package App::cpm::Resolver;
 use strict;
 use warnings;
-our $VERSION = '0.306';
+our $VERSION = '0.350';
 1;
