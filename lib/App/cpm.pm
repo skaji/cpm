@@ -62,6 +62,8 @@ sub parse_options {
         "man-pages" => \($self->{man_pages}),
         "home=s" => \($self->{home}),
         "with-develop" => \($self->{with_develop}),
+        "with-recommends" => \($self->{with_recommends}),
+        "with-suggests" => \($self->{with_suggests}),
         "retry!" => \($self->{retry}),
     or exit 1;
 
@@ -380,7 +382,10 @@ sub load_cpanfile {
     my $prereqs = $cpanfile->prereqs_with;
     my $phases = [qw(build test runtime)];
     push @$phases, 'develop' if $self->{with_develop};
-    my $requirements = $prereqs->merged_requirements($phases, ['requires']);
+    my $types = [qw(requires)];
+    push @$types, 'recommends' if $self->{with_recommends};
+    push @$types, 'suggests' if $self->{with_suggests};
+    my $requirements = $prereqs->merged_requirements($phases, $types);
     my $hash = $requirements->as_string_hash;
 
     my (@package, @distribution);
