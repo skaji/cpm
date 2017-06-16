@@ -18,7 +18,7 @@ sub new {
     my ($class, %option) = @_;
     my $uri = $option{uri} || "https://fastapi.metacpan.org/v1/download_url/";
     $uri =~ s{/*$}{/};
-    my $http = $HTTP_CLIENT_CLASS->new(timeout => 10, agent => "App::cpm/$VERSION");
+    my $http = $HTTP_CLIENT_CLASS->new(timeout => 10, agent => "App::cpm/$VERSION", verify_SSL => 1);
     bless { %option, uri => $uri, http => $http }, $class;
 }
 
