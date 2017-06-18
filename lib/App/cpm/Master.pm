@@ -293,11 +293,15 @@ sub _register_resolve_result {
         $self->{_fail_resolve}{$job->{package}}++;
         return;
     }
+
+    local $self->{logger}{context} = $job->{package};
     if ($job->{distfile} and $job->{distfile} =~ m{/perl-5[^/]+$}) {
+        my $message = "Cannot upgrade core module $job->{package}.";
+        $self->{logger}->log($message);
         App::cpm::Logger->log(
             result => "FAIL",
             type => "install",
-            message => "Cannot upgrade core module $job->{package}.",
+            message => $message,
         );
         $self->{_fail_install}{$job->{package}}++; # XXX
         return;
@@ -305,10 +309,12 @@ sub _register_resolve_result {
 
     if ($self->is_installed($job->{package}, "== $job->{version}")) { # XXX
         my $version = $job->{version} || 0;
+        my $message = "$job->{package} is up to date. ($version)";
+        $self->{logger}->log($message);
         App::cpm::Logger->log(
             result => "DONE",
             type => "install",
-            message => "$job->{package} is up to date. ($version)",
+            message => $message,
         );
         return;
     }
