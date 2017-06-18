@@ -6,6 +6,7 @@ use App::cpm::Distribution;
 use App::cpm::Job;
 use App::cpm::Logger;
 use Module::Metadata;
+use IO::Handle;
 use version;
 our $VERSION = '0.351';
 
@@ -84,10 +85,47 @@ sub register_result {
 
     %{$job} = %{$result}; # XXX
 
+    my $logged = $self->info($job);
     my $method = "_register_@{[$job->{type}]}_result";
     $self->$method($job);
     $self->remove_job($job);
+    $self->_show_progress if $logged && $self->{show_progress};
+
     return 1;
+}
+
+sub info {
+    my ($self, $job) = @_;
+    my $type = $job->type;
+    return if !$App::cpm::Logger::VERBOSE && $type ne "install";
+    my $name = $job->distvname;
+    my ($message, $optional);
+    if ($type eq "resolve") {
+        $message = $job->{package};
+        $message .= " -> $name" . ($job->{ref} ? "\@$job->{ref}" : "") if $job->{ok};
+        $optional = "from $job->{from}" if $job->{ok} and $job->{from};
+    } else {
+        $message = $name;
+        $optional = "using cache" if $type eq "fetch" and $job->{using_cache};
+    }
+    my $elapsed = defined $job->{elapsed} ? sprintf "(%.3fsec) ", $job->{elapsed} : "";
+
+    App::cpm::Logger->log(
+        pid => $job->{pid},
+        type => $type,
+        result => $job->{ok} ? "DONE" : "FAIL",
+        message => "$elapsed$message",
+        optional => $optional,
+    );
+    return 1;
+}
+
+sub _show_progress {
+    my $self = shift;
+    my $all = keys %{$self->{distributions}};
+    my $num = $self->installed_distributions;
+    print STDERR "--- $num/$all ---";
+    STDERR->flush; # this is needed at least with perl <= 5.24
 }
 
 sub remove_job {

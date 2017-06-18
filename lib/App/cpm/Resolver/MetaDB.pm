@@ -7,7 +7,6 @@ our $VERSION = '0.351';
 use HTTP::Tiny;
 use CPAN::Meta::YAML;
 use App::cpm::version;
-use App::cpm::Logger;
 
 sub new {
     my ($class, %option) = @_;

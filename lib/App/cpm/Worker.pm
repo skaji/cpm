@@ -6,8 +6,6 @@ our $VERSION = '0.351';
 
 use App::cpm::Worker::Installer;
 use App::cpm::Worker::Resolver;
-use App::cpm::Logger;
-use CPAN::DistnameInfo;
 use Time::HiRes qw(gettimeofday tv_interval);
 
 sub new {
@@ -41,33 +39,8 @@ sub work {
     }
     my $elapsed = $start ? tv_interval($start) : undef;
     $result ||= { ok => 0 };
-    $job->merge($result);
-    $self->info($job, $elapsed);
+    $job->merge({%$result, pid => $$, elapsed => $elapsed});
     return $job;
-}
-
-sub info {
-    my ($self, $job, $elapsed) = @_;
-    my $type = $job->type;
-    return if !$App::cpm::Logger::VERBOSE && $type ne "install";
-    my $name = $job->distvname;
-    my ($message, $optional);
-    if ($type eq "resolve") {
-        $message = $job->{package};
-        $message .= " -> $name" . ($job->{ref} ? "\@$job->{ref}" : "") if $job->{ok};
-        $optional = "from $job->{from}" if $job->{ok} and $job->{from};
-    } else {
-        $message = $name;
-        $optional = "using cache" if $type eq "fetch" and $job->{using_cache};
-    }
-    $elapsed = defined $elapsed ? sprintf "(%.3fsec) ", $elapsed : "";
-
-    App::cpm::Logger->log(
-        type => $type,
-        result => $job->{ok} ? "DONE" : "FAIL",
-        message => "$elapsed$message",
-        optional => $optional,
-    );
 }
 
 1;

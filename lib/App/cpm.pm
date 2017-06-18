@@ -80,6 +80,7 @@ sub parse_options {
         "configure-timeout=i" => \($self->{configure_timeout}),
         "build-timeout=i" => \($self->{build_timeout}),
         "test-timeout=i" => \($self->{test_timeout}),
+        "show-progress!" => \($self->{show_progress}),
         (map $with_option->($_), qw(requires recommends suggests)),
         (map $with_option->($_), qw(configure build test runtime develop)),
     or exit 1;
@@ -92,6 +93,7 @@ sub parse_options {
         $mirror = $self->normalize_mirror($mirror)
     }
     $self->{color} = 1 if !defined $self->{color} && -t STDOUT;
+    $self->{show_progress} = 1 if !WIN32 && !defined $self->{show_progress} && -t STDOUT;
     if ($target_perl) {
         die "--target-perl option conflicts with --global option\n" if $self->{global};
         die "--target-perl option can be used only if perl version >= 5.16.0\n" if $] < 5.016;
@@ -110,6 +112,7 @@ sub parse_options {
 
     $App::cpm::Logger::COLOR = 1 if $self->{color};
     $App::cpm::Logger::VERBOSE = 1 if $self->{verbose};
+    $App::cpm::Logger::SHOW_PROGRESS = 1 if $self->{show_progress};
     $self->{argv} = \@ARGV;
 }
 
@@ -202,6 +205,7 @@ sub cmd_install {
     my $master = App::cpm::Master->new(
         logger => $logger,
         inc    => $self->_inc,
+        show_progress => $self->{show_progress},
         (exists $self->{target_perl} ? (target_perl => $self->{target_perl}) : ()),
     );
 
@@ -224,8 +228,6 @@ sub cmd_install {
         ($self->{global} ? () : (local_lib => $self->{local_lib})),
     );
 
-    my $installed_distributions = 0;
-    my %artifact;
     {
         last unless $] < 5.016;
         my $requirements = [
@@ -236,42 +238,38 @@ sub cmd_install {
         last if $is_satisfied;
         $master->add_job(type => "resolve", %$_) for @need_resolve;
         $self->install($master, $worker, 1);
-        %artifact = (%artifact, %{$master->{_artifacts}});
-        $installed_distributions += $master->installed_distributions;
         if (my $fail = $master->fail) {
             local $App::cpm::Logger::VERBOSE = 0;
             for my $type (qw(install resolve)) {
                 App::cpm::Logger->log(result => "FAIL", type => $type, message => $_) for @{$fail->{$type}};
             }
-            warn "$installed_distributions distribution installed.\n";
+            print STDERR "\r" if $self->{show_progress};
+            warn sprintf "%d distribution installed.\n", $master->installed_distributions;
             if ($self->{_return_artifacts}) {
-                return (0, \%artifact);
+                return (0, $master->{_artifacts});
             } else {
                 warn "See $self->{home}/build.log for details.\n";
                 return 1;
             }
         }
-        $master->clear;
     }
 
     $master->add_job(type => "resolve", %$_) for @$packages;
     $master->add_distribution($_) for @$dists;
     $self->install($master, $worker, $self->{workers});
-
-    $installed_distributions += $master->installed_distributions;
-    %artifact = (%artifact, %{$master->{_artifacts}});
     if (my $fail = $master->fail) {
         local $App::cpm::Logger::VERBOSE = 0;
         for my $type (qw(install resolve)) {
             App::cpm::Logger->log(result => "FAIL", type => $type, message => $_) for @{$fail->{$type}};
         }
     }
-    warn "$installed_distributions distribution installed.\n";
+    print STDERR "\r" if $self->{show_progress};
+    warn sprintf "%d distribution installed.\n", $master->installed_distributions;
     $self->cleanup;
 
     if ($self->{_return_artifacts}) {
         my $ok = $master->fail ? 0 : 1;
-        return ($ok, \%artifact);
+        return ($ok, $master->{_artifacts});
     } else {
         if ($master->fail) {
             warn "See $self->{home}/build.log for details.\n";
