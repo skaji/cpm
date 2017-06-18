@@ -185,7 +185,7 @@ sub cmd_install {
     File::Path::mkpath($self->{home}) unless -d $self->{home};
     my $logger = App::cpm::Logger::File->new("$self->{home}/build.log.@{[time]}");
     $logger->symlink_to("$self->{home}/build.log");
-    $logger->log("Running cpm $VERSION ($0)");
+    $logger->log("Running cpm $VERSION ($0) with arguments: @ARGV");
     $logger->log("--", `$^X -V`, "--");
 
     my $master = App::cpm::Master->new(
