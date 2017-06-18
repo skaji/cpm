@@ -90,9 +90,12 @@ sub new {
         test_timeout => $option{test_timeout},
     );
     if (my $local_lib = delete $option{local_lib}) {
+        $local_lib = $menlo->maybe_abs($local_lib);
         $menlo->{self_contained} = 1;
-        $menlo->setup_local_lib($menlo->maybe_abs($local_lib));
+        $menlo->log("Setup local::lib $local_lib");
+        $menlo->setup_local_lib($local_lib);
     }
+    $menlo->log("--", `$^X -V`, "--");
     bless { %option, menlo => $menlo }, $class;
 }
 
