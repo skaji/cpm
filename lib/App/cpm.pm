@@ -195,8 +195,8 @@ sub cmd_install {
     );
 
     # dryrun
-    $self->register_initial_job($master) or return 0;
-    $master->clear;
+    my ($packages, $dists) = $self->initial_job($master);
+    return 0 unless $packages;
 
     my $worker = App::cpm::Worker->new(
         verbose   => $self->{verbose},
@@ -223,8 +223,7 @@ sub cmd_install {
         ];
         my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirements);
         last if $is_satisfied;
-        $master->add_job(type => "resolve", package => $_->{package}, version_range => $_->{version_range})
-            for @need_resolve;
+        $master->add_job(type => "resolve", %$_) for @need_resolve;
         $self->install($master, $worker, 1);
         %artifact = (%artifact, %{$master->{_artifacts}});
         $installed_distributions += $master->installed_distributions;
@@ -244,7 +243,8 @@ sub cmd_install {
         $master->clear;
     }
 
-    $self->register_initial_job($master) or return 0;
+    $master->add_job(type => "resolve", %$_) for @$packages;
+    $master->add_distribution($_) for @$dists;
     $self->install($master, $worker, $self->{workers});
 
     $installed_distributions += $master->installed_distributions;
@@ -324,64 +324,56 @@ sub cleanup {
     }
 }
 
-sub register_initial_job {
+sub initial_job {
     my ($self, $master) = @_;
 
-    my @package;
+    my (@package, @dist);
     for (@{$self->{argv}}) {
         my $arg = $_; # copy
+        my ($package, $dist);
         if (-d $arg || -f $arg || $arg =~ s{^file://}{}) {
             $arg = $self->maybe_abs($arg);
-            my $dist = App::cpm::Distribution->new(source => "local", uri => "file://$arg", provides => []);
-            $master->add_distribution($dist);
+            $dist = App::cpm::Distribution->new(source => "local", uri => "file://$arg", provides => []);
         } elsif ($arg =~ /(?:^git:|\.git(?:@.+)?$)/) {
             my %ref = $arg =~ s/(?<=\.git)@(.+)$// ? (ref => $1) : ();
-            my $dist = App::cpm::Distribution->new(source => "git", uri => $arg, provides => [], %ref);
-            $master->add_distribution($dist);
+            $dist = App::cpm::Distribution->new(source => "git", uri => $arg, provides => [], %ref);
         } elsif ($arg =~ m{^https?://}) {
-            my $dist = App::cpm::Distribution->new(source => "http", uri => $arg, provides => []);
-            $master->add_distribution($dist);
+            $dist = App::cpm::Distribution->new(source => "http", uri => $arg, provides => []);
         } else {
-            my ($package, $version_range, $dev);
+            my ($name, $version_range, $dev);
             # copy from Menlo
             # Plack@1.2 -> Plack~"==1.2"
             $arg =~ s/^([A-Za-z0-9_:]+)@([v\d\._]+)$/$1~== $2/;
             # support Plack~1.20, DBI~"> 1.0, <= 2.0"
             if ($arg =~ /\~[v\d\._,\!<>= ]+$/) {
-                ($package, $version_range) = split '~', $arg, 2;
+                ($name, $version_range) = split '~', $arg, 2;
             } else {
                 $arg =~ s/[~@]dev$// and $dev++;
-                $package = $arg;
+                $name = $arg;
             }
-            push @package, {package => $package, version_range => $version_range || 0, dev => $dev};
+            $package = {package => $name, version_range => $version_range || 0, dev => $dev};
         }
+        push @package, $package if $package;
+        push @dist, $dist if $dist;
     }
 
     if (!@{$self->{argv}}) {
-        my ($requirements, $dist) = $self->load_cpanfile($self->{cpanfile});
-        $master->add_distribution($_) for @$dist;
+        my ($requirements, $dists) = $self->load_cpanfile($self->{cpanfile});
+        push @dist, @$dists;
         my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirements);
-        if (!@$dist and $is_satisfied) {
+        if (!@$dists and $is_satisfied) {
             warn "All requirements are satisfied.\n";
-            return 0;
+            return;
         } elsif (!defined $is_satisfied) {
             my ($req) = grep { $_->{package} eq "perl" } @$requirements;
             die sprintf "%s requires perl %s, but you have only %s\n",
                 $self->{cpanfile}, $req->{version_range}, $self->{target_perl} || $];
         } else {
-            @package = @need_resolve;
+            push @package, @need_resolve;
         }
     }
 
-    for my $p (@package) {
-        $master->add_job(
-            type => "resolve",
-            package => $p->{package},
-            version_range => $p->{version_range} || 0,
-            dev => $p->{dev},
-        );
-    }
-    return 1;
+    return (\@package, \@dist);
 }
 
 sub load_cpanfile {
