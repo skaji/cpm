@@ -75,6 +75,7 @@ sub new {
     $option{base}   ||= "$ENV{HOME}/.perl-cpm/work/" . time . ".$$";
     $option{cache}  ||= "$ENV{HOME}/.perl-cpm/cache";
     mkpath $_ for grep !-d, $option{base}, $option{cache};
+    $option{logger}->log("Work directory is $option{base}");
 
     my $menlo = App::cpm::Worker::Installer::Menlo->new(
         base => $option{base},
