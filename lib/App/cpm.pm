@@ -47,7 +47,7 @@ sub parse_options {
     my (@mirror, @resolver);
     GetOptions
         "L|local-lib-contained=s" => \($self->{local_lib}),
-        "V|version" => sub { $self->cmd_version },
+        "V|version" => sub { $self->cmd_version; exit },
         "color!" => \($self->{color}),
         "g|global" => \($self->{global}),
         "h|help" => sub { $self->cmd_help },
@@ -161,9 +161,7 @@ sub cmd_help {
 }
 
 sub cmd_version {
-    my $class = ref $_[0] || $_[0];
-    printf "%s %s\n", $class, $class->VERSION;
-    exit 0;
+    print "cpm $VERSION ($0)\n";
 }
 
 sub cmd_exec {
@@ -187,7 +185,7 @@ sub cmd_install {
     File::Path::mkpath($self->{home}) unless -d $self->{home};
     my $logger = App::cpm::Logger::File->new("$self->{home}/build.log.@{[time]}");
     $logger->symlink_to("$self->{home}/build.log");
-    $logger->log("Running cpm (App::cpm) $VERSION");
+    $logger->log("Running cpm $VERSION ($0)");
     $logger->log("--", `$^X -V`, "--");
 
     my $master = App::cpm::Master->new(
