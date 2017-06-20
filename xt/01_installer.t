@@ -18,27 +18,27 @@ my $installer = App::cpm::Worker::Installer->new(
 my $mirror = "https://cpan.metacpan.org";
 my $distfile = "S/SK/SKAJI/Distribution-Metadata-0.05.tar.gz";
 my $job = { source => "cpan", uri => ["$mirror/authors/id/$distfile"], distfile => $distfile };
-my ($dir, $meta, $configure_requirements) = $installer->fetch($job);
+my $result = $installer->fetch($job);
 
-like $dir, qr{^/.*Distribution-Metadata-0\.05$}; # abs
-ok scalar(keys %$meta);
+like $result->{directory}, qr{^/.*Distribution-Metadata-0\.05$}; # abs
+ok scalar(keys %{$result->{meta}});
 
-my %reqs = map {; ($_->{package} => $_->{version_range}) } @$configure_requirements;
+my %reqs = map {; ($_->{package} => $_->{version_range}) } @{$result->{configure_requirements}};
 
 is_deeply \%reqs, {
     "ExtUtils::MakeMaker" => $] < 5.016 ? '6.58' : '0',
 };
 
-my ($distdata, $requirements) = $installer->configure({
-    directory => $dir,
+$result = $installer->configure({
+    directory => $result->{directory},
     distfile => $distfile,
-    meta => $meta,
+    meta => $result->{meta},
     source => "cpan",
 });
 
-is $distdata->{distvname}, "Distribution-Metadata-0.05";
+is $result->{distdata}{distvname}, "Distribution-Metadata-0.05";
 
-is_deeply $requirements->[-1], {
+is_deeply $result->{requirements}[-1], {
     package => "perl",
     version_range => "5.008001",
 };

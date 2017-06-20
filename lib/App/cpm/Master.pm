@@ -95,6 +95,7 @@ sub info {
     } else {
         $message = $name;
         $optional = "using cache" if $type eq "fetch" and $job->{using_cache};
+        $optional = "using prebuilt" if $job->{prebuilt};
     }
     my $elapsed = defined $job->{elapsed} ? sprintf "(%.3fsec) ", $job->{elapsed} : "";
 
@@ -195,6 +196,7 @@ sub _calculate_jobs {
                     distfile => $dist->{distfile},
                     uri => $dist->uri,
                     static_builder => $dist->static_builder,
+                    prebuilt => $dist->prebuilt,
                 );
             } elsif (@need_resolve and !$dist->deps_registered) {
                 $dist->deps_registered(1);
@@ -366,11 +368,18 @@ sub _register_fetch_result {
         return;
     }
     my $distribution = $self->distribution($job->distfile);
-    $distribution->fetched(1);
-    $distribution->configure_requirements($job->{configure_requirements});
     $distribution->directory($job->{directory});
     $distribution->meta($job->{meta});
     $distribution->provides($job->{provides});
+
+    if ($job->{prebuilt}) {
+        $distribution->configured(1);
+        $distribution->requirements($job->{requirements});
+        $distribution->prebuilt(1);
+    } else {
+        $distribution->fetched(1);
+        $distribution->configure_requirements($job->{configure_requirements});
+    }
     return 1;
 }
 

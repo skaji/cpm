@@ -6,6 +6,8 @@ our $VERSION = '0.352';
 
 use App::cpm::Worker::Installer;
 use App::cpm::Worker::Resolver;
+use Config;
+use Digest::MD5 ();
 use Time::HiRes qw(gettimeofday tv_interval);
 
 sub new {
@@ -17,10 +19,17 @@ sub new {
         logger => $logger,
         base => "$home/work/" . time . ".$$",
         cache => "$home/cache",
+        $option{prebuilt} ? (prebuilt_base => $class->prebuilt_base($home)) : (),
     );
     my $installer = App::cpm::Worker::Installer->new(%option);
     my $resolver  = App::cpm::Worker::Resolver->new(%option, impl => $option{resolver});
     bless { %option, installer => $installer, resolver => $resolver }, $class;
+}
+
+sub prebuilt_base {
+    my ($class, $home) = @_;
+    my $digest = substr Digest::MD5::md5_hex(Config->myconfig), 0, 8;
+    "$home/builds/$Config{version}-$Config{archname}-$digest";
 }
 
 sub work {

@@ -44,6 +44,8 @@ sub new {
         with_test => 1,
         with_runtime => 1,
         with_develop => 0,
+        notest => 1,
+        prebuilt => $] >= 5.012 && $ENV{PERL_CPM_PREBUILT} ? 1 : 0,
         %option
     }, $class;
 }
@@ -51,7 +53,6 @@ sub new {
 sub parse_options {
     my $self = shift;
     local @ARGV = @_;
-    $self->{notest} = 1;
     my (@mirror, @resolver);
     my $with_option = sub {
         my $n = shift;
@@ -81,6 +82,7 @@ sub parse_options {
         "build-timeout=i" => \($self->{build_timeout}),
         "test-timeout=i" => \($self->{test_timeout}),
         "show-progress!" => \($self->{show_progress}),
+        "prebuilt!" => \($self->{prebuilt}),
         (map $with_option->($_), qw(requires recommends suggests)),
         (map $with_option->($_), qw(configure build test runtime develop)),
     or exit 1;
@@ -108,6 +110,9 @@ sub parse_options {
     }
     if ($self->{sudo}) {
         !system "sudo", $^X, "-e1" or exit 1;
+    }
+    if ($self->{sudo} or !$self->{notest} or $] < 5.012) {
+        $self->{prebuilt} = 0;
     }
 
     $App::cpm::Logger::COLOR = 1 if $self->{color};
@@ -222,6 +227,7 @@ sub cmd_install {
         resolver  => $self->generate_resolver,
         man_pages => $self->{man_pages},
         retry     => $self->{retry},
+        prebuilt  => $self->{prebuilt},
         configure_timeout => $self->{configure_timeout},
         build_timeout     => $self->{build_timeout},
         test_timeout      => $self->{test_timeout},
@@ -521,9 +527,13 @@ App::cpm - a fast CPAN module installer
 =for html
 <a href="https://raw.githubusercontent.com/skaji/cpm/master/xt/demo.gif"><img src="https://raw.githubusercontent.com/skaji/cpm/master/xt/demo.gif" alt="demo" style="max-width:100%;"></a>
 
-B<THIS IS EXPERIMENTAL.>
-
 cpm is a fast CPAN module installer, which uses L<Menlo> in parallel.
+
+Moreover if C<--prebuilt> option is enabled, cpm keeps the each builds of distributions in your home directory.
+Then, C<cpm install> will use these prebuilt distributions.
+That is, if prebuilts are available, cpm never build distributions again, just copy the prebuilts into an appropriate directory.
+This is (of course!) inspired by L<Carmel>.
+
 For tutorial, check out L<App::cpm::Tutorial>.
 
 =head1 MOTIVATION
@@ -599,5 +609,7 @@ L<App::cpanminus>
 L<Menlo>
 
 L<Carton>
+
+L<Carmel>
 
 =cut

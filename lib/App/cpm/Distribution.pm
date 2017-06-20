@@ -34,6 +34,7 @@ for my $attr (qw(
     requirements
     ref
     static_builder
+    prebuilt
 )) {
     no strict 'refs';
     *$attr = sub {
