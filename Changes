@@ -2,6 +2,11 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.351  2017-06-24 15:08:09 JST
+        - Add all with/without options for consistency; try `cpm --help` (#93)
+        - Emit `perl -V` to build.log
+        - Internal refactor
+
 0.350  2017-06-11 21:21:27 JST
         - Add --configure/build/test-timeout options (arodland #81, #88)
         - Support --with-recommends/suggests options; Note that this respects recommends/suggests in cpanfile only (#87)

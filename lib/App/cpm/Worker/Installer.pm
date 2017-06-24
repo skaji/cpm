@@ -2,7 +2,7 @@ package App::cpm::Worker::Installer;
 use strict;
 use warnings;
 use utf8;
-our $VERSION = '0.350';
+our $VERSION = '0.351';
 
 use App::cpm::Logger::File;
 use App::cpm::Worker::Installer::Menlo;
