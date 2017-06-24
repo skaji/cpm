@@ -16,6 +16,10 @@ on develop => sub {
     recommends 'File::pushd';
     suggests 'Try::Tiny';
 };
+
+on configure => sub {
+    requires 'Devel::CheckBin';
+};
 ___
 
 subtest 'normal' => sub {
@@ -32,6 +36,7 @@ subtest 'develop' => sub {
     like   $r->err, qr/DONE install Parallel-Pipes/;
     unlike $r->err, qr/DONE install File-pushd/;
     unlike $r->err, qr/DONE install Try-Tiny/;
+    unlike $r->err, qr/DONE install Devel-CheckBin/;
 };
 
 subtest 'recommends' => sub {
@@ -42,6 +47,7 @@ subtest 'recommends' => sub {
     unlike $r->err, qr/DONE install Parallel-Pipes/;
     unlike $r->err, qr/DONE install File-pushd/;
     unlike $r->err, qr/DONE install Try-Tiny/;
+    unlike $r->err, qr/DONE install Devel-CheckBin/;
 };
 
 subtest 'suggests' => sub {
@@ -52,16 +58,29 @@ subtest 'suggests' => sub {
     unlike $r->err, qr/DONE install Parallel-Pipes/;
     unlike $r->err, qr/DONE install File-pushd/;
     unlike $r->err, qr/DONE install Try-Tiny/;
+    unlike $r->err, qr/DONE install Devel-CheckBin/;
 };
 
-subtest 'all' => sub {
+subtest 'mix1' => sub {
+    my $r = cpm_install '--with-configure', '--without-test', '--with-recommends', '--cpanfile', $cpanfile;
+    is $r->exit, 0;
+    unlike $r->err, qr/DONE install Process-Status/;
+    unlike $r->err, qr/DONE install App-ChangeShebang/;
+    unlike $r->err, qr/DONE install Parallel-Pipes/;
+    unlike $r->err, qr/DONE install File-pushd/;
+    unlike $r->err, qr/DONE install Try-Tiny/;
+    like   $r->err, qr/DONE install Devel-CheckBin/;
+};
+
+subtest 'mix2' => sub {
     my $r = cpm_install '--with-develop', '--with-recommends', '--with-suggests', '--cpanfile', $cpanfile;
     is $r->exit, 0;
-    like $r->err, qr/DONE install Process-Status/;
-    like $r->err, qr/DONE install App-ChangeShebang/;
-    like $r->err, qr/DONE install Parallel-Pipes/;
-    like $r->err, qr/DONE install File-pushd/;
-    like $r->err, qr/DONE install Try-Tiny/;
+    like   $r->err, qr/DONE install Process-Status/;
+    like   $r->err, qr/DONE install App-ChangeShebang/;
+    like   $r->err, qr/DONE install Parallel-Pipes/;
+    like   $r->err, qr/DONE install File-pushd/;
+    like   $r->err, qr/DONE install Try-Tiny/;
+    unlike $r->err, qr/DONE install Devel-CheckBin/;
 };
 
 done_testing;
