@@ -36,6 +36,14 @@ sub new {
         configure_timeout => 60,
         build_timeout => 3600,
         test_timeout => 1800,
+        with_requires => 1,
+        with_recommends => 0,
+        with_suggests => 0,
+        with_configure => 0,
+        with_build => 1,
+        with_test => 1,
+        with_runtime => 1,
+        with_develop => 0,
         %option
     }, $class;
 }
@@ -45,6 +53,10 @@ sub parse_options {
     local @ARGV = @_;
     $self->{notest} = 1;
     my (@mirror, @resolver);
+    my $with_option = sub {
+        my $n = shift;
+        ("with-$n", \$self->{"with_$n"}, "without-$n", sub { $self->{"with_$n"} = 0 });
+    };
     GetOptions
         "L|local-lib-contained=s" => \($self->{local_lib}),
         "V|version" => sub { $self->cmd_version; exit },
@@ -64,13 +76,12 @@ sub parse_options {
         "dev" => \($self->{dev}),
         "man-pages" => \($self->{man_pages}),
         "home=s" => \($self->{home}),
-        "with-develop" => \($self->{with_develop}),
-        "with-recommends" => \($self->{with_recommends}),
-        "with-suggests" => \($self->{with_suggests}),
         "retry!" => \($self->{retry}),
         "configure-timeout=i" => \($self->{configure_timeout}),
         "build-timeout=i" => \($self->{build_timeout}),
         "test-timeout=i" => \($self->{test_timeout}),
+        (map $with_option->($_), qw(requires recommends suggests)),
+        (map $with_option->($_), qw(configure build test runtime develop)),
     or exit 1;
 
     $self->{local_lib} = $self->maybe_abs($self->{local_lib}) unless $self->{global};
@@ -380,12 +391,9 @@ sub load_cpanfile {
     require Module::CPANfile;
     my $cpanfile = Module::CPANfile->load($file);
     my $prereqs = $cpanfile->prereqs_with;
-    my $phases = [qw(build test runtime)];
-    push @$phases, 'develop' if $self->{with_develop};
-    my $types = [qw(requires)];
-    push @$types, 'recommends' if $self->{with_recommends};
-    push @$types, 'suggests' if $self->{with_suggests};
-    my $requirements = $prereqs->merged_requirements($phases, $types);
+    my @phase = grep $self->{"with_$_"}, qw(configure build test runtime develop);
+    my @type  = grep $self->{"with_$_"}, qw(requires recommends suggests);
+    my $requirements = $prereqs->merged_requirements(\@phase, \@type);
     my $hash = $requirements->as_string_hash;
 
     my (@package, @distribution);

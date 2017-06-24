@@ -41,6 +41,9 @@ cpm - a fast CPAN module installer
   # use darkpan first, and if it fails, use metadb and normal CPAN
   > cpm install --resolver 02packages,http://example.com/darkpan --resolver metadb Your::Module
 
+  # specify types/phases in cpanfile by "--with-*" and "--without-*" options
+  > cpm install --with-recommends --without-test
+
 =head1 OPTIONS
 
   -w, --workers=N
@@ -67,12 +70,6 @@ cpm - a fast CPAN module installer
         run test cases, default: no
       --man-pages
         generate man pages
-      --with-develop (EXPERIMENTAL)
-        install dependencies of phase 'develop' in cpanfile too
-      --with-recommends (EXPERIMENTAL)
-        install dependencies of type 'recommends' in cpanfile too
-      --with-suggests (EXPERIMENTAL)
-        install dependencies of type 'suggests' in cpanfile too
       --retry, --no-retry
         retry configure/build/test/install if fails, default: retry
       --configure-timeout=sec, --build-timeout=sec, --test-timeout=sec
@@ -81,6 +78,15 @@ cpm - a fast CPAN module installer
         show version
   -h, --help
         show this help
+      --with-requires,   --without-requires   (default: with)
+      --with-recommends, --without-recommends (default: without)
+      --with-suggests,   --without-suggests   (default: without)
+      --with-configure,  --without-configure  (default: without)
+      --with-build,      --without-build      (default: with)
+      --with-test,       --without-test       (default: with)
+      --with-runtime,    --without-runtime    (default: with)
+      --with-develop,    --without-develop    (default: without)
+        specify types/phases of dependencies in cpanfile to be installed
 
 =head1 COPYRIGHT AND LICENSE
 
