@@ -259,6 +259,7 @@ sub save_prebuilt {
         eval { File::Path::mkpath($parent) };
     }
     return unless -d $parent;
+    $self->{logger}->log("Saving the build $job->{directory} in $dir");
     File::Copy::Recursive::dircopy($job->{directory}, $dir) or warn $!;
 }
 
