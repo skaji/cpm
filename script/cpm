@@ -74,6 +74,8 @@ cpm - a fast CPAN module installer
         retry configure/build/test/install if fails, default: retry
       --configure-timeout=sec, --build-timeout=sec, --test-timeout=sec
         specify configure/build/test timeout second, default: 60sec, 3600sec, 1800sec
+      --show-progress, --no-show-progress
+        show progress, default: on
   -V, --version
         show version
   -h, --help

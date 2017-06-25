@@ -7,6 +7,7 @@ our $VERSION = '0.351';
 
 our $COLOR;
 our $VERBOSE;
+our $SHOW_PROGRESS;
 
 my %color = (
     resolve => 33,
@@ -32,6 +33,7 @@ sub log {
     my $result = $option{result};
     my $is_color = ref $self ? $self->{color} : $COLOR;
     my $verbose = ref $self ? $self->{verbose} : $VERBOSE;
+    my $show_progress = ref $self ? $self->{show_progress} : $SHOW_PROGRESS;
 
     if ($is_color) {
         $type = "\e[$color{$type}m$type\e[m" if $type && $color{$type};
@@ -39,12 +41,13 @@ sub log {
         $optional = "\e[1;37m$optional\e[m" if $optional;
     }
 
+    my $r = $show_progress ? "\r" : "";
     if ($verbose) {
         # type -> 5 + 9 + 3
         $type = $is_color && $type ? sprintf("%-17s", $type) : sprintf("%-9s", $type || "");
-        warn sprintf "%d %s %s %s%s\n", $$, $result, $type, $message, $optional ? " $optional" : "";
+        warn $r . sprintf "%d %s %s %s%s\n", $option{pid} || $$, $result, $type, $message, $optional ? " $optional" : "";
     } else {
-        warn join(" ", $result, $type ? $type : (), $message) . "\n";
+        warn $r . join(" ", $result, $type ? $type : (), $message) . "\n";
     }
 }
 
