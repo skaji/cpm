@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use JSON::PP ();
 use HTTP::Tiny;
-our $VERSION = '0.352';
+our $VERSION = '0.900';
 
 my $HTTP_CLIENT_CLASS = do {
     if (HTTP::Tiny->can_ssl) {
