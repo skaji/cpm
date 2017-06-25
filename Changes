@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.352  2017-06-26 00:54:23 JST
+        - Show progress (#94)
+
 0.351  2017-06-24 15:08:09 JST
         - Add all with/without options for consistency; try `cpm --help` (#93)
         - Emit `perl -V` to build.log
