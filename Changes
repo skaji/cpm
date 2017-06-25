@@ -4,7 +4,7 @@ Revision history for App-cpm
 
 0.900  2017-06-26 03:04:19 JST
         - **BIG CHANGE** If --prebuilt option is enabled, cpm keeps builds of CPAN distributions in your home directory.
-          And use them later. This makes cpm much faster. This is of cource inspired by Carmel.
+          And use them later. This makes cpm much faster. This is of cource inspired by Carmel. (#91)
 
 0.352  2017-06-26 00:54:23 JST
         - Show progress (#94)
