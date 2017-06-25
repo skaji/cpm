@@ -233,26 +233,29 @@ sub cmd_install {
         ($self->{global} ? () : (local_lib => $self->{local_lib})),
     );
 
-    {
-        last unless $] < 5.016;
-        my @req;
-        for my $req (
-            { package => 'ExtUtils::MakeMaker', version_range => '6.58' },
-            { package => 'ExtUtils::ParseXS',   version_range => '3.16' },
-        ) {
-            if (my ($i) = grep { $packages->[$_]{package} eq $req->{package} } 0..$#{$packages}) {
-                my $user = splice @$packages, $i, 1;
-                my $range = eval { App::cpm::version::range_merge($user->{version_range}, $req->{version_range}) };
+    if ($] < 5.016) {
+        my %toolchain = ('ExtUtils::MakeMaker' => '6.58', 'ExtUtils::ParseXS' => '3.16');
+        for my $name (sort keys %toolchain) {
+            my ($req, $i);
+            my $req_range = $toolchain{$name};
+            if ( ($i) = grep { $packages->[$_]{package} eq $name } 0..$#{$packages} ) {
+                my $user = $packages->[$i];
+                my $range = eval { App::cpm::version::range_merge($user->{version_range}, $req_range) };
                 die sprintf "We have to install %s %s or later first, but you requested that of %s\n",
-                    $req->{package}, $req->{version_range}, $user->{version_range} if $@;
-                push @req, { package => $req->{package}, version_range => $range, dev => $user->{dev} };
+                    $name, $req_range, $user->{version_range} if $@;
+                $req = { package => $name, version_range => $range, dev => $user->{dev} };
             } else {
-                push @req, $req;
+                $req = { package => $name, version_range => $req_range };
+            }
+            my ($is_satisfied, @need_resolve) = $master->is_satisfied([$req]);
+            if ($is_satisfied) {
+                # nothing to do
+            } else {
+                $master->add_job(type => "resolve", %$_) for @need_resolve;
+                splice @$packages, $i, 1 if defined $i;
             }
         }
-        my ($is_satisfied, @need_resolve) = $master->is_satisfied(\@req);
-        last if $is_satisfied;
-        $master->add_job(type => "resolve", %$_) for @need_resolve;
+
         $self->install($master, $worker, 1);
         if (my $fail = $master->fail) {
             local $App::cpm::Logger::VERBOSE = 0;
