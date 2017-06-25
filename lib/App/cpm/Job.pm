@@ -44,6 +44,16 @@ sub distvname {
     }
 }
 
+sub distname {
+    my $self = shift;
+    $self->{_distname} ||= CPAN::DistnameInfo->new($self->distfile)->dist || 'UNKNOWN';
+}
+
+sub cpanid {
+    my $self = shift;
+    $self->{_cpanid} ||= CPAN::DistnameInfo->new($self->distfile)->cpanid || 'UNKNOWN';
+}
+
 sub type {
     my $self = shift;
     $self->{type};

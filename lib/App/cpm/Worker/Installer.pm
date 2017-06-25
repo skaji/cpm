@@ -8,6 +8,9 @@ use App::cpm::Logger::File;
 use App::cpm::Worker::Installer::Menlo;
 use CPAN::DistnameInfo;
 use CPAN::Meta;
+use Config;
+use ExtUtils::Install ();
+use ExtUtils::InstallPaths ();
 use File::Basename 'basename';
 use File::Copy ();
 use File::Copy::Recursive ();
@@ -15,10 +18,11 @@ use File::Path qw(mkpath rmtree);
 use File::Spec;
 use File::Temp ();
 use File::pushd 'pushd';
+use JSON::PP ();
 
 use constant NEED_INJECT_TOOLCHAIN_REQS => $] < 5.016;
 
-my $CACHED_MIRROR = sub {
+my $TRUSTED_MIRROR = sub {
     my $uri = shift;
     !!( $uri =~ m{^https?://(?:www.cpan.org|backpan.perl.org|cpan.metacpan.org)} );
 };
@@ -28,40 +32,36 @@ sub work {
     my $type = $job->{type} || "(undef)";
     local $self->{logger}{context} = $job->distvname;
     if ($type eq "fetch") {
-        my ($directory, $meta, $configure_requirements, $provides, $using_cache)
-            = $self->fetch($job);
-        if ($configure_requirements) {
+        if (my $result = $self->fetch($job)) {
             return +{
                 ok => 1,
-                directory => $directory,
-                meta => $meta,
-                configure_requirements => $configure_requirements,
-                provides => $provides,
-                using_cache => $using_cache,
+                directory => $result->{directory},
+                meta => $result->{meta},
+                configure_requirements => $result->{configure_requirements},
+                provides => $result->{provides},
+                using_cache => $result->{using_cache},
+                prebuilt => $result->{prebuilt},
+                requirements => $result->{requirements},
             };
         } else {
             $self->{logger}->log("Failed to fetch/configure distribution");
         }
     } elsif ($type eq "configure") {
-        my ($distdata, $requirements, $static_builder)
-            = $self->configure($job); # $job->{directory}, $job->{distfile}, $job->{meta});
-        if ($requirements) {
+        # $job->{directory}, $job->{distfile}, $job->{meta});
+        if (my $result = $self->configure($job)) {
             return +{
                 ok => 1,
-                distdata => $distdata,
-                requirements => $requirements,
-                static_builder => $static_builder,
+                distdata => $result->{distdata},
+                requirements => $result->{requirements},
+                static_builder => $result->{static_builder},
             };
         } else {
             $self->{logger}->log("Failed to configure distribution");
         }
     } elsif ($type eq "install") {
         my $ok = $self->install($job);
-        if ($ok) {
-            $self->{logger}->log("Successfully installed distribution");
-        } else {
-            $self->{logger}->log("Failed to install distribution");
-        }
+        my $message = $ok ? "Successfully installed distribution" : "Failed to install distribution";
+        $self->{logger}->log($message);
         return { ok => $ok, directory => $job->{directory} };
     } else {
         die "Unknown type: $type\n";
@@ -89,8 +89,8 @@ sub new {
         build_timeout => $option{build_timeout},
         test_timeout => $option{test_timeout},
     );
-    if (my $local_lib = delete $option{local_lib}) {
-        $local_lib = $menlo->maybe_abs($local_lib);
+    if ($option{local_lib}) {
+        my $local_lib = $option{local_lib} = $menlo->maybe_abs($option{local_lib});
         $menlo->{self_contained} = 1;
         $menlo->log("Setup local::lib $local_lib");
         $menlo->setup_local_lib($local_lib);
@@ -123,6 +123,11 @@ sub _fetch_git {
     ($dir, $rev);
 }
 
+sub enable_prebuilt {
+    my ($self, $uri) = @_;
+    $self->{prebuilt} && $TRUSTED_MIRROR->(ref $uri ? $uri->[0] : $uri);
+}
+
 sub fetch {
     my ($self, $job) = @_;
     my $guard = pushd;
@@ -130,6 +135,13 @@ sub fetch {
     my $source   = $job->{source};
     my $distfile = $job->{distfile};
     my @uri      = ref $job->{uri} ? @{$job->{uri}} : ($job->{uri});
+
+    if ($self->enable_prebuilt($uri[0])) {
+        if (my $result = $self->find_prebuilt($uri[0])) {
+            $self->{logger}->log("Using prebuilt $result->{directory}");
+            return $result;
+        }
+    }
 
     my ($dir, $rev, $using_cache);
     if ($source eq "git") {
@@ -171,7 +183,7 @@ sub fetch {
                 last FETCH;
             } else {
                 local $self->menlo->{save_dists};
-                if ($distfile and $CACHED_MIRROR->($uri)) {
+                if ($distfile and $TRUSTED_MIRROR->($uri)) {
                     my $cache = File::Spec->catfile($self->{cache}, "authors/id/$distfile");
                     if (-f $cache) {
                         $self->{logger}->log("Using cache $cache");
@@ -199,7 +211,55 @@ sub fetch {
     chdir $dir or die;
     my ($meta, $configure_requirements, $provides)
         = $self->_get_configure_requirements($distfile);
-    return ($dir, $meta, $configure_requirements, $provides, $using_cache);
+    return +{
+        directory => $dir,
+        meta => $meta,
+        configure_requirements => $configure_requirements,
+        provides => $provides,
+        using_cache => $using_cache,
+    };
+}
+
+sub find_prebuilt {
+    my ($self, $uri) = @_;
+    my $info = CPAN::DistnameInfo->new($uri);
+    my $dir = File::Spec->catdir($self->{prebuilt_base}, $info->cpanid, $info->distvname);
+    return unless -d $dir;
+
+    my $metafile = File::Spec->catfile($dir, "blib/meta/MYMETA.json");
+    my $installfile = File::Spec->catfile($dir, "blib/meta/install.json");
+    return unless -f $metafile && -f $installfile;
+
+    my $phase = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
+    my $mymeta = CPAN::Meta->load_file($metafile);
+    my $requirements = $self->_extract_requirements($mymeta, $phase) || [];
+    my $provides = do {
+        open my $fh, "<", $installfile or die;
+        my $json = JSON::PP::decode_json(do { local $/; <$fh> });
+        my $provides = $json->{provides};
+        [ map +{ package => $_, version => $provides->{$_}{version} || undef }, keys %$provides ];
+    };
+    return +{
+        directory => $dir,
+        meta => $mymeta->as_struct,
+        provides => $provides,
+        prebuilt => 1,
+        requirements => $requirements,
+    };
+}
+
+sub save_prebuilt {
+    my ($self, $job) = @_;
+    my $dir = File::Spec->catdir($self->{prebuilt_base}, $job->cpanid, $job->distvname);
+    return if -d $dir;
+
+    my $parent = File::Basename::dirname($dir);
+    for (1..3) {
+        last if -d $parent;
+        eval { File::Path::mkpath($parent) };
+    }
+    return unless -d $parent;
+    File::Copy::Recursive::dircopy($job->{directory}, $dir) or warn $!;
 }
 
 sub _inject_toolchain_reqs {
@@ -336,7 +396,11 @@ sub configure {
         my $mymeta = CPAN::Meta->load_file($file);
         $requirements = $self->_extract_requirements($mymeta, $phase);
     }
-    return ($distdata, $requirements, $static_builder);
+    return +{
+        distdata => $distdata,
+        requirements => $requirements,
+        static_builder => $static_builder,
+    };
 }
 
 sub _build_distdata {
@@ -364,6 +428,8 @@ sub _build_distdata {
 
 sub install {
     my ($self, $job) = @_;
+    return $self->install_prebuilt($job) if $job->{prebuilt};
+
     my ($dir, $distdata, $static_builder) = @{$job}{qw(directory distdata static_builder)};
     my $guard = pushd $dir;
     my $menlo = $self->menlo;
@@ -393,8 +459,45 @@ sub install {
             $distdata,
             $distdata->{module_name},
         );
+        $self->save_prebuilt($job) if $self->enable_prebuilt($job->{uri});
     }
     return $installed;
+}
+
+sub install_prebuilt {
+    my ($self, $job) = @_;
+
+    my $install_base = $self->{local_lib};
+    if (!$install_base && ($ENV{PERL_MM_OPT} || '') =~ /INSTALL_BASE=(\S+)/) {
+        $install_base = $1;
+    }
+
+    $self->{logger}->log("Copying prebuilt $job->{directory}/blib");
+    my $guard = pushd $job->{directory};
+    my $paths = ExtUtils::InstallPaths->new(
+        dist_name => $job->distname, # this enables the installation of packlist
+        $install_base ? (install_base => $install_base) : (),
+    );
+    my $install_base_meta = $install_base ? "$install_base/lib/perl5" : $Config{sitelibexp};
+    my $distvname = $job->distvname;
+    open my $fh, ">", \my $stdout;
+    {
+        local *STDOUT = $fh;
+        ExtUtils::Install::install([
+            from_to => $paths->install_map,
+            verbose => 0,
+            dry_run => 0,
+            uninstall_shadows => 0,
+            skip => undef,
+            always_copy => 1,
+            result => \my %result,
+        ]);
+        ExtUtils::Install::install({
+            'blib/meta' => "$install_base_meta/$Config{archname}/.meta/$distvname",
+        });
+    }
+    $self->{logger}->log($stdout);
+    return 1;
 }
 
 1;

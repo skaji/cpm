@@ -17,6 +17,11 @@ cpm - a fast CPAN module installer
   # install modules into local/
   > cpm install Module1 Module2 ...
 
+  # install Plack, and at the same time, keep builds of CPAN distributions in ~/.perl-cpm/builds
+  > cpm install --prebuilt Plack
+  # install the prebuilts in ~/.perl-cpm/builds
+  > cd another-dir; cpm install --prebuilt Plack
+
   # install modules with verbose messages
   > cpm install -v Module
 
@@ -54,6 +59,8 @@ cpm - a fast CPAN module installer
         install modules into current @INC instead of local/
   -v, --verbose
         verbose mode; you can see what is going on
+      --prebuilt, --no-prebuilt
+        save builds for CPAN distributions; and later, install the prebuilts if available
       --target-perl=VERSION  (EXPERIMENTAL)
         install modules as if verison is your perl is VERSION
       --mirror=URL

@@ -29,7 +29,7 @@ sub log {
     my $type = $option{type} || "";
     my $message = $option{message};
     chomp $message;
-    my $optional = $option{optional} ? "($option{optional})" : "";
+    my $optional = $option{optional} ? " ($option{optional})" : "";
     my $result = $option{result};
     my $is_color = ref $self ? $self->{color} : $COLOR;
     my $verbose = ref $self ? $self->{verbose} : $VERBOSE;
@@ -45,9 +45,9 @@ sub log {
     if ($verbose) {
         # type -> 5 + 9 + 3
         $type = $is_color && $type ? sprintf("%-17s", $type) : sprintf("%-9s", $type || "");
-        warn $r . sprintf "%d %s %s %s%s\n", $option{pid} || $$, $result, $type, $message, $optional ? " $optional" : "";
+        warn $r . sprintf "%d %s %s %s%s\n", $option{pid} || $$, $result, $type, $message, $optional;
     } else {
-        warn $r . join(" ", $result, $type ? $type : (), $message) . "\n";
+        warn $r . join(" ", $result, $type ? $type : (), $message . $optional) . "\n";
     }
 }
 
