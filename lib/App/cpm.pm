@@ -251,12 +251,8 @@ sub cmd_install {
             }
             print STDERR "\r" if $self->{show_progress};
             warn sprintf "%d distribution installed.\n", $master->installed_distributions;
-            if ($self->{_return_artifacts}) {
-                return (0, $master->{_artifacts});
-            } else {
-                warn "See $self->{home}/build.log for details.\n";
-                return 1;
-            }
+            warn "See $self->{home}/build.log for details.\n";
+            return 1;
         }
     }
 
@@ -273,16 +269,11 @@ sub cmd_install {
     warn sprintf "%d distribution installed.\n", $master->installed_distributions;
     $self->cleanup;
 
-    if ($self->{_return_artifacts}) {
-        my $ok = $master->fail ? 0 : 1;
-        return ($ok, $master->{_artifacts});
+    if ($master->fail) {
+        warn "See $self->{home}/build.log for details.\n";
+        return 1;
     } else {
-        if ($master->fail) {
-            warn "See $self->{home}/build.log for details.\n";
-            return 1;
-        } else {
-            return 0;
-        }
+        return 0;
     }
 }
 

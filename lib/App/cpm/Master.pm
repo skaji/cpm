@@ -20,7 +20,6 @@ sub new {
         _fail_resolve => +{},
         _fail_install => +{},
         _is_installed => +{},
-        _artifacts => +{},
     }, $class;
     if ($self->{target_perl}) {
         require Module::CoreList;
@@ -406,7 +405,6 @@ sub _register_install_result {
     my $distribution = $self->distribution($job->distfile);
     $distribution->installed(1);
     $self->{installed_distributions}++;
-    $self->{_artifacts}{$job->distvname} = $job->{directory};
     return 1;
 }
 
