@@ -214,7 +214,6 @@ sub cmd_install {
         (exists $self->{target_perl} ? (target_perl => $self->{target_perl}) : ()),
     );
 
-    # dryrun
     my ($packages, $dists) = $self->initial_job($master);
     return 0 unless $packages;
 
@@ -236,11 +235,22 @@ sub cmd_install {
 
     {
         last unless $] < 5.016;
-        my $requirements = [
+        my @req;
+        for my $req (
             { package => 'ExtUtils::MakeMaker', version_range => '6.58' },
             { package => 'ExtUtils::ParseXS',   version_range => '3.16' },
-        ];
-        my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirements);
+        ) {
+            if (my ($i) = grep { $packages->[$_]{package} eq $req->{package} } 0..$#{$packages}) {
+                my $user = splice @$packages, $i, 1;
+                my $range = eval { App::cpm::version::range_merge($user->{version_range}, $req->{version_range}) };
+                die sprintf "We have to install %s %s or later first, but you requested that of %s\n",
+                    $req->{package}, $req->{version_range}, $user->{version_range} if $@;
+                push @req, { package => $req->{package}, version_range => $range, dev => $user->{dev} };
+            } else {
+                push @req, $req;
+            }
+        }
+        my ($is_satisfied, @need_resolve) = $master->is_satisfied(\@req);
         last if $is_satisfied;
         $master->add_job(type => "resolve", %$_) for @need_resolve;
         $self->install($master, $worker, 1);

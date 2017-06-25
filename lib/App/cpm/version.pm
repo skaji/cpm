@@ -30,4 +30,12 @@ sub parse {
     shift->SUPER::parse(@_);
 }
 
+# utility function
+sub range_merge {
+    my ($range1, $range2) = @_;
+    my $req = CPAN::Meta::Requirements->new;
+    $req->add_string_requirement('DummyModule', $_) for $range1, $range2; # may die
+    $req->requirements_for_module('DummyModule');
+}
+
 1;
