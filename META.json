@@ -41,23 +41,24 @@
       },
       "runtime" : {
          "recommends" : {
-            "Carton::Snapshot" : "0",
+            "Carton" : "0",
             "IO::Uncompress::Gunzip" : "0"
          },
          "requires" : {
-            "CPAN::Common::Index::Mirror" : "0",
+            "CPAN::Common::Index" : "0",
             "CPAN::DistnameInfo" : "0",
             "CPAN::Meta" : "0",
             "CPAN::Meta::Requirements" : "2.130",
             "CPAN::Meta::YAML" : "0",
             "Capture::Tiny" : "0",
             "Class::Tiny" : "0",
+            "ExtUtils::InstallPaths" : "0",
             "File::Copy::Recursive" : "0",
             "File::pushd" : "0",
             "HTTP::Tiny" : "0.055",
             "HTTP::Tinyish" : "0.12",
             "JSON::PP" : "2.27300",
-            "Menlo::CLI::Compat" : "0",
+            "Menlo" : "0",
             "Module::CPANfile" : "0",
             "Module::Metadata" : "0",
             "Parallel::Pipes" : "0",
