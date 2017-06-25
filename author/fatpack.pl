@@ -21,7 +21,7 @@ Show new dependencies
 
 =cut
 
-Getopt::Long::GetOptions "f|force" => \my $force;
+Getopt::Long::GetOptions "f|force" => \my $force, "t|test" => \my $test;
 
 sub cpm {
     App::cpm->new->run(@_) == 0 or die
@@ -82,13 +82,16 @@ use $target;
 $copyright
 ___
 
-my $resolver = -f "cpanfile.snapshot" && !$force ? "snapshot" : "metacpan";
+my $resolver = -f "cpanfile.snapshot" && !$force && !$test ? "snapshot" : "metacpan";
 
 warn "Resolver: $resolver\n";
 cpm "install", "--cpanfile", "../cpanfile", "--target-perl", $target, "--resolver", $resolver;
 cpm "install", "--cpanfile", "../cpanfile", "--target-perl", $target, "--resolver", $resolver, @extra;
-gen_snapshot;
+gen_snapshot if !$test;
 remove_version_xs;
 print STDERR "FatPacking...";
-fatpack "-q", "-o", "../cpm", "-d", "../lib,local", "-e", $exclude, "--shebang", $shebang, "../script/cpm";
+
+my $fatpack_dir = $test ? "local" : "../lib,local";
+my $output = $test ? "../cpm.test" : "../cpm";
+fatpack "-q", "-o", $output, "-d", $fatpack_dir, "-e", $exclude, "--shebang", $shebang, "../script/cpm";
 print STDERR " DONE\n";
