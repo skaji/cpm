@@ -7,6 +7,7 @@ our $VERSION = '0.900';
 use App::cpm::Worker::Installer;
 use App::cpm::Worker::Resolver;
 use Config;
+use Cwd ();
 use Digest::MD5 ();
 use Time::HiRes qw(gettimeofday tv_interval);
 
@@ -28,7 +29,21 @@ sub new {
 
 sub prebuilt_base {
     my ($class, $home) = @_;
-    my $digest = substr Digest::MD5::md5_hex(Config->myconfig), 0, 8;
+
+    # XXX Taking account of relocatable perls, we use the absolute path of perl
+    my $perlpath = "";
+    for my $this_perl ($^X, $Config{perlpath}) {
+        # See perldoc perlvar for $^X
+        if ($^O ne 'VMS') {
+            $this_perl .= $Config{_exe} unless $this_perl =~ m/$Config{_exe}$/i;
+        }
+        $perlpath = eval { Cwd::abs_path($this_perl) };
+        last if $perlpath
+    }
+
+    my $identity = $perlpath . Config->myconfig;
+    my $digest = Digest::MD5::md5_hex($identity);
+    $digest = substr $digest, 0, 8;
     "$home/builds/$Config{version}-$Config{archname}-$digest";
 }
 
