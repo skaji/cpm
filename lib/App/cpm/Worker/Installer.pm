@@ -6,6 +6,7 @@ our $VERSION = '0.900';
 
 use App::cpm::Logger::File;
 use App::cpm::Worker::Installer::Menlo;
+use App::cpm::version;
 use CPAN::DistnameInfo;
 use CPAN::Meta;
 use Config;
@@ -20,7 +21,7 @@ use File::Temp ();
 use File::pushd 'pushd';
 use JSON::PP ();
 
-use constant NEED_INJECT_TOOLCHAIN_REQS => $] < 5.016;
+use constant NEED_INJECT_TOOLCHAIN_REQUIREMENTS => $] < 5.016;
 
 my $TRUSTED_MIRROR = sub {
     my $uri = shift;
@@ -209,8 +210,18 @@ sub fetch {
     return unless $dir;
 
     chdir $dir or die;
-    my ($meta, $configure_requirements, $provides)
-        = $self->_get_configure_requirements($distfile);
+
+    my $meta = $self->_load_metafile($distfile, 'META.json', 'META.yml');
+    my $p = $meta->{provides} || $self->menlo->extract_packages($meta, ".");
+    my $provides = [ map +{ package => $_, version => $p->{$_}{version} }, sort keys %$p ];
+
+    my $configure_requirements = [];
+    if ($self->menlo->opts_in_static_install($meta)) {
+        $self->{logger}->log("Distribution opts in x_static_install: $meta->{x_static_install}");
+    } else {
+        $configure_requirements = $self->_extract_configure_requirements($meta, $distfile);
+    }
+
     return +{
         directory => $dir,
         meta => $meta,
@@ -226,25 +237,28 @@ sub find_prebuilt {
     my $dir = File::Spec->catdir($self->{prebuilt_base}, $info->cpanid, $info->distvname);
     return unless -d $dir;
 
-    my $installfile = File::Spec->catfile($dir, 'blib/meta/install.json');
-    my $mymetafile  = File::Spec->catfile($dir, 'blib/meta/MYMETA.json');
-    my @metafile    = map File::Spec->catfile($dir, $_), 'META.json', 'META.yml';
-    my $meta   = $self->_load_metafile($uri, @metafile);
-    my $mymeta = $self->_load_metafile($uri, $mymetafile);
+    my $guard = pushd $dir;
+
+    my $meta   = $self->_load_metafile($uri, 'META.json', 'META.yml');
+    my $mymeta = $self->_load_metafile($uri, 'blib/meta/MYMETA.json');
     my $phase  = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
     my @req;
-    push @req, @{ $self->_extract_requirements($meta, ['configure']) }; # XXX
+    if (!$self->menlo->opts_in_static_install($meta)) {
+        # XXX Actually we don't need configure requirements for prebuilt.
+        # But requires them for consistency for now.
+        push @req, @{ $self->_extract_configure_requirements($meta, $uri) };
+    }
     push @req, @{ $self->_extract_requirements($mymeta, $phase) };
 
     my $provides = do {
-        open my $fh, "<", $installfile or die;
+        open my $fh, "<", 'blib/meta/install.json' or die;
         my $json = JSON::PP::decode_json(do { local $/; <$fh> });
         my $provides = $json->{provides};
         [ map +{ package => $_, version => $provides->{$_}{version} || undef }, keys %$provides ];
     };
     return +{
         directory => $dir,
-        meta => $mymeta->as_struct,
+        meta => $meta->as_struct,
         provides => $provides,
         prebuilt => 1,
         requirements => \@req,
@@ -266,41 +280,34 @@ sub save_prebuilt {
     File::Copy::Recursive::dircopy($job->{directory}, $dir) or warn $!;
 }
 
-sub _inject_toolchain_reqs {
+sub _inject_toolchain_requirements {
     my ($self, $distfile, $reqs) = @_;
     $distfile ||= "";
 
     my %deps = map { $_->{package} => $_ } @$reqs;
-
     if (    -f "Makefile.PL"
         and !$deps{'ExtUtils::MakeMaker'}
         and !-f "Build.PL"
         and $distfile !~ m{/ExtUtils-MakeMaker-[0-9v]}
     ) {
-        $deps{'ExtUtils::MakeMaker'} = {package => "ExtUtils::MakeMaker", version_range => '6.58'};
+        $deps{'ExtUtils::MakeMaker'} ||= { package => "ExtUtils::MakeMaker", version_range => 0 };
+    }
+    if ($deps{'Module::Build'}) {
+        $deps{'ExtUtils::Install'} ||= { package => 'ExtUtils::Install', version_range => 0 };
     }
 
-    # copy from Menlo/cpanminus
-    my $toolchain = CPAN::Meta::Requirements->from_string_hash({
+    my %inject = (
         'Module::Build' => '0.38',
         'ExtUtils::MakeMaker' => '6.58',
         'ExtUtils::Install' => '1.46',
-    });
-    my $merge = sub {
-        my $dep = shift;
-        $toolchain->add_string_requirement($dep->{package}, $dep->{version_range} || 0); # may die
-        $toolchain->requirements_for_module($dep->{package});
-    };
+    );
 
-    my $dep;
-    if ($dep = $deps{"ExtUtils::MakeMaker"}) {
-        $dep->{version_range} = $merge->($dep);
+    for my $package (sort keys %inject) {
+        my $inject = $inject{$package};
+        my $dep = $deps{$package} or next;
+        $dep->{version_range} = App::cpm::version::range_merge($dep->{version_range}, $inject);
     }
-    if ($dep = $deps{"Module::Build"}) {
-        $dep->{version_range} = $merge->($dep);
-        $dep = $deps{"ExtUtils::Install"} ||= {package => 'ExtUtils::Install', version_range => 0};
-        $dep->{version_range} = $merge->($dep);
-    }
+
     @$reqs = values %deps;
 }
 
@@ -319,31 +326,19 @@ sub _load_metafile {
     $meta;
 }
 
-sub _get_configure_requirements {
-    my ($self, $distfile) = @_;
-    my $meta = $self->_load_metafile($distfile, 'META.json', 'META.yml');
-    my $p = $meta->{provides} || $self->menlo->extract_packages($meta, ".");
-    my $provides = [map +{
-        package => $_,
-        version => $p->{$_}{version} || undef,
-    }, sort keys %$p];
-
-    my $requirements = [];
-    if ($self->menlo->opts_in_static_install($meta)) {
-        $self->{logger}->log("Distribution opts in x_static_install: $meta->{x_static_install}");
-    } else {
-        $requirements = $self->_extract_requirements($meta, [qw(configure)]);
-        if (!@$requirements and -f "Build.PL" and ($distfile || "") !~ m{/Module-Build-[0-9v]}) {
-            push @$requirements, {package => "Module::Build", version_range => "0.38"};
-        }
-
-        if (NEED_INJECT_TOOLCHAIN_REQS) {
-            $self->_inject_toolchain_reqs($distfile, $requirements);
-        }
+# XXX Assume current directory is distribution directory
+# because the test "-f Build.PL" or similar is present
+sub _extract_configure_requirements {
+    my ($self, $meta, $distfile) = @_;
+    my $requirements = $self->_extract_requirements($meta, [qw(configure)]);
+    if (!@$requirements and -f "Build.PL" and ($distfile || "") !~ m{/Module-Build-[0-9v]}) {
+        push @$requirements, { package => "Module::Build", version_range => "0.38" };
     }
-    return ($meta ? $meta->as_struct : +{}, $requirements, $provides);
+    if (NEED_INJECT_TOOLCHAIN_REQUIREMENTS) {
+        $self->_inject_toolchain_requirements($distfile, $requirements);
+    }
+    return $requirements;
 }
-
 
 sub _extract_requirements {
     my ($self, $meta, $phases) = @_;
