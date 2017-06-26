@@ -226,13 +226,16 @@ sub find_prebuilt {
     my $dir = File::Spec->catdir($self->{prebuilt_base}, $info->cpanid, $info->distvname);
     return unless -d $dir;
 
-    my $metafile = File::Spec->catfile($dir, "blib/meta/MYMETA.json");
-    my $installfile = File::Spec->catfile($dir, "blib/meta/install.json");
-    return unless -f $metafile && -f $installfile;
+    my $installfile = File::Spec->catfile($dir, 'blib/meta/install.json');
+    my $mymetafile  = File::Spec->catfile($dir, 'blib/meta/MYMETA.json');
+    my @metafile    = map File::Spec->catfile($dir, $_), 'META.json', 'META.yml';
+    my $meta   = $self->_load_metafile($uri, @metafile);
+    my $mymeta = $self->_load_metafile($uri, $mymetafile);
+    my $phase  = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
+    my @req;
+    push @req, @{ $self->_extract_requirements($meta, ['configure']) }; # XXX
+    push @req, @{ $self->_extract_requirements($mymeta, $phase) };
 
-    my $phase = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
-    my $mymeta = CPAN::Meta->load_file($metafile);
-    my $requirements = $self->_extract_requirements($mymeta, $phase) || [];
     my $provides = do {
         open my $fh, "<", $installfile or die;
         my $json = JSON::PP::decode_json(do { local $/; <$fh> });
@@ -244,7 +247,7 @@ sub find_prebuilt {
         meta => $mymeta->as_struct,
         provides => $provides,
         prebuilt => 1,
-        requirements => $requirements,
+        requirements => \@req,
     };
 }
 
@@ -301,18 +304,24 @@ sub _inject_toolchain_reqs {
     @$reqs = values %deps;
 }
 
-sub _get_configure_requirements {
-    my ($self, $distfile) = @_;
+sub _load_metafile {
+    my ($self, $distfile, @file) = @_;
     my $meta;
-    if (my ($file) = grep -f, qw(META.json META.yml)) {
+    if (my ($file) = grep -f, @file) {
         $meta = eval { CPAN::Meta->load_file($file) };
+        $self->{logger}->log("Invalid $file: $@") if $@;
     }
 
-    unless ($meta) {
+    if (!$meta and $distfile) {
         my $d = CPAN::DistnameInfo->new($distfile);
         $meta = CPAN::Meta->new({name => $d->dist, version => $d->version});
     }
+    $meta;
+}
 
+sub _get_configure_requirements {
+    my ($self, $distfile) = @_;
+    my $meta = $self->_load_metafile($distfile, 'META.json', 'META.yml');
     my $p = $meta->{provides} || $self->menlo->extract_packages($meta, ".");
     my $provides = [map +{
         package => $_,
@@ -391,12 +400,9 @@ sub configure {
     return unless $configure_ok;
 
     my $distdata = $self->_build_distdata($source, $distfile, $meta);
-    my $requirements = [];
     my $phase = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
-    if (my ($file) = grep -f, qw(MYMETA.json MYMETA.yml)) {
-        my $mymeta = CPAN::Meta->load_file($file);
-        $requirements = $self->_extract_requirements($mymeta, $phase);
-    }
+    my $mymeta = $self->_load_metafile($distfile, 'MYMETA.json', 'MYMETA.yml');
+    my $requirements = $self->_extract_requirements($mymeta, $phase);
     return +{
         distdata => $distdata,
         requirements => $requirements,
