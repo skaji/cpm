@@ -7,7 +7,6 @@ our $VERSION = '0.900';
 use App::cpm::Worker::Installer;
 use App::cpm::Worker::Resolver;
 use Config;
-use Cwd ();
 use Digest::MD5 ();
 use Time::HiRes qw(gettimeofday tv_interval);
 
