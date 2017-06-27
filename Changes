@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.901  2017-06-27 22:50:29 JST
+        - Install configure requirements even when --prebuilt is enabled
+        - Change the directory name of ~/.perl-cpm/builds/* for relocatable perls
+
 0.900  2017-06-26 03:04:19 JST
         - **BIG CHANGE** If --prebuilt option is enabled, cpm keeps builds of CPAN distributions in your home directory.
           And use them later. This makes cpm much faster. This is of cource inspired by Carmel. (#91)
