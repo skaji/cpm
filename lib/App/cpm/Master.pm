@@ -2,6 +2,7 @@ package App::cpm::Master;
 use strict;
 use warnings;
 use utf8;
+use App::cpm::CircularDependency;
 use App::cpm::Distribution;
 use App::cpm::Job;
 use App::cpm::Logger;
@@ -32,11 +33,38 @@ sub new {
 
 sub fail {
     my $self = shift;
+    return $self->{_fail} if exists $self->{_fail};
+
     my @fail_resolve = sort keys %{$self->{_fail_resolve}};
     my @fail_install = sort keys %{$self->{_fail_install}};
-    return if !@fail_resolve && !@fail_install;
-    my @name = map { CPAN::DistnameInfo->new($_)->distvname || $_ } @fail_install;
-    { resolve => \@fail_resolve, install => \@name };
+    my @not_installed = grep { !$self->{_fail_install}{$_->distfile} && !$_->installed } $self->distributions;
+    return if !@fail_resolve && !@fail_install && !@not_installed;
+
+    my $detector = App::cpm::CircularDependency->new;
+    for my $dist (@not_installed) {
+        my @requirements = (
+            @{ $dist->requirements || [] },
+            @{ $dist->configure_requirements || [] },
+        );
+        $detector->add($dist->distfile, $dist->provides, \@requirements);
+    }
+
+    my @name;
+    if (my $result = $detector->detect) {
+        for my $distfile (sort keys %$result) {
+            my $distvname = $self->distribution($distfile)->distvname;
+            App::cpm::Logger->log(result => "FAIL", type => "install", message => "$distvname, detect circular dependencies");
+            push @name, $distvname;
+            my @requirement = @{ $result->{$distfile} };
+            my $msg = join " -> ", map { $self->distribution($_)->distvname } @requirement, $requirement[0];
+            local $self->{logger}{context} = $distvname;
+            $self->{logger}->log("Circular dependencies are found: $msg");
+            $self->{logger}->log("Failed to install distribution");
+        }
+    }
+
+    push @name, map { CPAN::DistnameInfo->new($_)->distvname || $_ } @fail_install;
+    $self->{_fail} = { resolve => \@fail_resolve, install => [sort @name] };
 }
 
 sub jobs { values %{shift->{jobs}} }
