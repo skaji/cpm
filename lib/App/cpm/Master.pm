@@ -334,7 +334,7 @@ sub _register_resolve_result {
         return;
     }
 
-    if ($self->is_installed($job->{package}, "== $job->{version}")) { # XXX
+    if (!$job->{reinstall} and $self->is_installed($job->{package}, "== $job->{version}")) { # XXX
         my $version = $job->{version} || 0;
         my $message = "$job->{package} is up to date. ($version)";
         $self->{logger}->log($message);
