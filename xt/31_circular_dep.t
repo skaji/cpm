@@ -11,8 +11,7 @@ like $r->err, qr/FAIL install CPAN-Test-Dummy-Perl5-Make-CircDepeOne/;
 like $r->err, qr/FAIL install CPAN-Test-Dummy-Perl5-Make-CircDepeThree/;
 like $r->err, qr/FAIL install CPAN-Test-Dummy-Perl5-Make-CircDepeTwo/;
 
-like $r->err, qr/(detect circular dependencies.*){3}/sm;
-like $r->log, qr/(Circular dependencies are found.*){3}/sm;
+like $r->log, qr/(Detected circular dependencies.*){3}/sm;
 
 note $r->err;
 note $r->log;

@@ -53,12 +53,11 @@ sub fail {
     if (my $result = $detector->detect) {
         for my $distfile (sort keys %$result) {
             my $distvname = $self->distribution($distfile)->distvname;
-            App::cpm::Logger->log(result => "FAIL", type => "install", message => "$distvname, detect circular dependencies");
             push @name, $distvname;
             my @requirement = @{ $result->{$distfile} };
             my $msg = join " -> ", map { $self->distribution($_)->distvname } @requirement, $requirement[0];
             local $self->{logger}{context} = $distvname;
-            $self->{logger}->log("Circular dependencies are found: $msg");
+            $self->{logger}->log("Detected circular dependencies: $msg");
             $self->{logger}->log("Failed to install distribution");
         }
     }
