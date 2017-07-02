@@ -22,10 +22,25 @@ our $VERSION = '0.901';
 
 use constant WIN32 => $^O eq 'MSWin32';
 
+sub determine_home { # taken from Menlo
+    my $class = shift;
+
+    my $homedir = $ENV{HOME}
+      || eval { require File::HomeDir; File::HomeDir->my_home }
+      || join('', @ENV{qw(HOMEDRIVE HOMEPATH)}); # Win32
+
+    if (WIN32) {
+        require Win32; # no fatpack
+        $homedir = Win32::GetShortPathName($homedir);
+    }
+
+    return "$homedir/.perl-cpm";
+}
+
 sub new {
     my ($class, %option) = @_;
     bless {
-        home => "$ENV{HOME}/.perl-cpm",
+        home => $class->determine_home,
         workers => WIN32 ? 1 : 5,
         snapshot => "cpanfile.snapshot",
         cpanfile => "cpanfile",
