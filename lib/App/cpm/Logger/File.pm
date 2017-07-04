@@ -27,10 +27,11 @@ sub new {
 }
 
 sub symlink_to {
-    return unless eval { symlink "", ""; 1 };
     my ($self, $dest) = @_;
     unlink $dest;
-    symlink $self->file, $dest;
+    if (!eval { symlink $self->file, $dest }) {
+        $self->{file} = $dest;
+    }
 }
 
 sub file {
