@@ -40,7 +40,7 @@ sub prefix {
 
 sub log {
     my ($self, @line) = @_;
-    my $now = POSIX::strftime('%FT%T', localtime);
+    my $now = POSIX::strftime('%Y-%m-%dT%H:%M:%S', localtime);
     my $prefix = $self->prefix;
     for my $line (@line) {
         chomp $line;
@@ -53,7 +53,7 @@ sub log_with_fh {
     my $prefix = $self->prefix;
     while (my $line = <$fh>) {
         chomp $line;
-        print { $self->{fh} } "@{[POSIX::strftime('%FT%T', localtime)]},$prefix| $line\n";
+        print { $self->{fh} } "@{[POSIX::strftime('%Y-%m-%dT%H:%M:%S', localtime)]},$prefix| $line\n";
     }
 }
 
