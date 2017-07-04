@@ -5,10 +5,15 @@ use POSIX ();
 use File::Temp ();
 our $VERSION = '0.901';
 
+use constant WIN32 => $^O eq 'MSWin32';
+
 sub new {
     my ($class, $file) = @_;
     my $fh;
-    if ($file) {
+    if (WIN32) {
+        require IO::File;
+        $file ||= File::Temp::tmpnam();
+    } elsif ($file) {
         open $fh, ">>:unix", $file or die "$file: $!";
     } else {
         ($fh, $file) = File::Temp::tempfile(UNLINK => 1);
@@ -42,6 +47,7 @@ sub log {
     my ($self, @line) = @_;
     my $now = POSIX::strftime('%Y-%m-%dT%H:%M:%S', localtime);
     my $prefix = $self->prefix;
+    local $self->{fh} = IO::File->new($self->{file}, 'a') if WIN32;
     for my $line (@line) {
         chomp $line;
         print { $self->{fh} } "$now,$prefix| $_\n" for split /\n/, $line;
@@ -51,6 +57,7 @@ sub log {
 sub log_with_fh {
     my ($self, $fh) = @_;
     my $prefix = $self->prefix;
+    local $self->{fh} = IO::File->new($self->{file}, 'a') if WIN32;
     while (my $line = <$fh>) {
         chomp $line;
         print { $self->{fh} } "@{[POSIX::strftime('%Y-%m-%dT%H:%M:%S', localtime)]},$prefix| $line\n";
