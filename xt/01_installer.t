@@ -5,6 +5,7 @@ use Test::More;
 use App::cpm::Worker::Installer;
 use Config;
 use File::Temp 'tempdir';
+use File::Spec;
 
 my $tempdir = tempdir CLEANUP => 1;
 my $base    = tempdir CLEANUP => 1;
@@ -20,7 +21,8 @@ my $distfile = "S/SK/SKAJI/Distribution-Metadata-0.05.tar.gz";
 my $job = { source => "cpan", uri => ["$mirror/authors/id/$distfile"], distfile => $distfile };
 my $result = $installer->fetch($job);
 
-like $result->{directory}, qr{^/.*Distribution-Metadata-0\.05$}; # abs
+ok(File::Spec->file_name_is_absolute($result->{directory}));
+like $result->{directory}, qr{\bDistribution-Metadata-0\.05$};
 ok scalar(keys %{$result->{meta}});
 
 my %reqs = map {; ($_->{package} => $_->{version_range}) } @{$result->{configure_requirements}};
