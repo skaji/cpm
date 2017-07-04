@@ -78,6 +78,7 @@ sub parse_options {
         "man-pages" => \($self->{man_pages}),
         "home=s" => \($self->{home}),
         "retry!" => \($self->{retry}),
+        "exclude-vendor!" => \($self->{exclude_vendor}),
         "configure-timeout=i" => \($self->{configure_timeout}),
         "build-timeout=i" => \($self->{build_timeout}),
         "test-timeout=i" => \($self->{test_timeout}),
