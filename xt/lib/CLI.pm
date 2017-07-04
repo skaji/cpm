@@ -28,7 +28,7 @@ my $TEMPDIR = tempdir CLEANUP => 1;
     sub log {
         my $self = shift;
         return $self->{_log} if $self->{_log};
-        open my $fh, "<", $self->logfile or die;
+        open my $fh, "<", $self->logfile or die "$self->{logfile}: $!";
         $self->{_log} = do { local $/; <$fh> };
     }
 }
