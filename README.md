@@ -2,6 +2,9 @@
 
 a fast CPAN module installer
 
+If you have any idea or comment around CPAN clients, why don't you join the chat?
+[![chat](https://badges.gitter.im/gitter.svg)](https://gitter.im/skaji/cpm)
+
 ![demo](xt/demo.gif)
 
 ## Install
