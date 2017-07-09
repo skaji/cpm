@@ -28,7 +28,7 @@ my $TEMPDIR = tempdir CLEANUP => 1;
     sub log {
         my $self = shift;
         return $self->{_log} if $self->{_log};
-        open my $fh, "<", $self->logfile or die;
+        open my $fh, "<", $self->logfile or die "$self->{logfile}: $!";
         $self->{_log} = do { local $/; <$fh> };
     }
 }
@@ -51,7 +51,7 @@ sub cpm_install {
     my $local = $_LOCAL || tempdir DIR => $TEMPDIR;
     my $home  = $_HOME  || tempdir DIR => $TEMPDIR;
     my ($out, $err, $exit) = capture {
-        system $^X, "-I$base/lib", "$base/script/cpm", "install", "-L", $local, "--home", $home, @argv;
+        system $^X, "-I$base/lib", "$base/script/cpm", "install", "-L", $local, "--home", $home, "--exclude-vendor", @argv;
     };
     my $logfile = "$home/build.log";
     Result->new(home => $home, local => $local, out => $out, err => $err, exit => $exit, logfile => $logfile);
