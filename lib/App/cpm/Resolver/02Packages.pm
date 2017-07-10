@@ -1,6 +1,7 @@
 package App::cpm::Resolver::02Packages;
 use strict;
 use warnings;
+use App::cpm::Home;
 use App::cpm::version;
 use Cwd ();
 use File::Path ();
@@ -62,7 +63,7 @@ our $VERSION = '0.901';
 
 sub new {
     my ($class, %option) = @_;
-    my $cache_base = $option{cache} || "$ENV{HOME}/.perl-cpm/sources";
+    my $cache_base = $option{cache} || App::cpm::Home->dir."/sources";
     my $mirror = $option{mirror} or die "mirror option is required\n";
     $mirror =~ s{/*$}{/};
 
