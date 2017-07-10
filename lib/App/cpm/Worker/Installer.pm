@@ -4,6 +4,7 @@ use warnings;
 use utf8;
 our $VERSION = '0.901';
 
+use App::cpm::Home;
 use App::cpm::Logger::File;
 use App::cpm::Worker::Installer::Menlo;
 use App::cpm::version;
@@ -73,8 +74,8 @@ sub work {
 sub new {
     my ($class, %option) = @_;
     $option{logger} ||= App::cpm::Logger::File->new;
-    $option{base}   ||= "$ENV{HOME}/.perl-cpm/work/" . time . ".$$";
-    $option{cache}  ||= "$ENV{HOME}/.perl-cpm/cache";
+    $option{base}   ||= App::cpm::Home->dir."/work/" . time . ".$$";
+    $option{cache}  ||= App::cpm::Home->dir."/cache";
     mkpath $_ for grep !-d, $option{base}, $option{cache};
     $option{logger}->log("Work directory is $option{base}");
 

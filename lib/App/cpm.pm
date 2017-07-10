@@ -2,6 +2,7 @@ package App::cpm;
 use 5.008001;
 use strict;
 use warnings;
+use App::cpm::Home;
 use App::cpm::Master;
 use App::cpm::Worker;
 use App::cpm::Logger;
@@ -25,7 +26,7 @@ use constant WIN32 => $^O eq 'MSWin32';
 sub new {
     my ($class, %option) = @_;
     bless {
-        home => "$ENV{HOME}/.perl-cpm",
+        home => App::cpm::Home->dir,
         workers => WIN32 ? 1 : 5,
         snapshot => "cpanfile.snapshot",
         cpanfile => "cpanfile",
