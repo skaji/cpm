@@ -40,7 +40,7 @@ sub log {
 
     if ($is_color and WIN32) {
         if (!defined $HAS_WIN32_COLOR) {
-            $HAS_WIN32_COLOR = eval 'require Win32::Console::ANSI; 1' ? 1 : 0;
+            $HAS_WIN32_COLOR = eval { require Win32::Console::ANSI; 1 } ? 1 : 0;
         }
         $is_color = 0 unless $HAS_WIN32_COLOR;
     }
