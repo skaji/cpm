@@ -272,7 +272,8 @@ sub cmd_install {
     $master->add_job(type => "resolve", %$_) for @$packages;
     $master->add_distribution($_) for @$dists;
     $self->install($master, $worker, $self->{workers});
-    if (my $fail = $master->fail) {
+    my $fail = $master->fail;
+    if ($fail) {
         local $App::cpm::Logger::VERBOSE = 0;
         for my $type (qw(install resolve)) {
             App::cpm::Logger->log(result => "FAIL", type => $type, message => $_) for @{$fail->{$type}};
@@ -282,7 +283,7 @@ sub cmd_install {
     warn sprintf "%d distribution installed.\n", $master->installed_distributions;
     $self->cleanup;
 
-    if ($master->fail) {
+    if ($fail) {
         warn "See $self->{home}/build.log for details.\n";
         return 1;
     } else {

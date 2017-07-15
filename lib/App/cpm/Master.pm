@@ -33,7 +33,6 @@ sub new {
 
 sub fail {
     my $self = shift;
-    return $self->{_fail} if exists $self->{_fail};
 
     my @fail_resolve = sort keys %{$self->{_fail_resolve}};
     my @fail_install = sort keys %{$self->{_fail_install}};
@@ -57,13 +56,13 @@ sub fail {
             my @requirement = @{ $result->{$distfile} };
             my $msg = join " -> ", map { $self->distribution($_)->distvname } @requirement, $requirement[0];
             local $self->{logger}{context} = $distvname;
-            $self->{logger}->log("Detected circular dependencies: $msg");
+            $self->{logger}->log("Detected circular dependencies $msg");
             $self->{logger}->log("Failed to install distribution");
         }
     }
 
     push @name, map { CPAN::DistnameInfo->new($_)->distvname || $_ } @fail_install;
-    $self->{_fail} = { resolve => \@fail_resolve, install => [sort @name] };
+    { resolve => \@fail_resolve, install => [sort @name] };
 }
 
 sub jobs { values %{shift->{jobs}} }
