@@ -1,9 +1,8 @@
-# cpm [![Build Status](https://travis-ci.org/skaji/cpm.svg?branch=master)](https://travis-ci.org/skaji/cpm) [![AppVeyor Status](https://ci.appveyor.com/api/projects/status/github/skaji/cpm?branch=master&svg=true)](https://ci.appveyor.com/project/skaji/cpm)
+# cpm [![Build Status](https://travis-ci.org/skaji/cpm.svg?branch=master)](https://travis-ci.org/skaji/cpm) [![AppVeyor Status](https://ci.appveyor.com/api/projects/status/github/skaji/cpm?branch=master&svg=true)](https://ci.appveyor.com/project/skaji/cpm) [![chat](https://badges.gitter.im/gitter.svg)](https://gitter.im/skaji/cpm)
 
 a fast CPAN module installer
 
-If you have any idea or comment around CPAN clients, why don't you join the chat?
-[![chat](https://badges.gitter.im/gitter.svg)](https://gitter.im/skaji/cpm)
+If you have any idea or comment around CPAN clients, why don't you join [the chat](https://gitter.im/skaji/cpm)?
 
 ![demo](xt/demo.gif)
 
