@@ -70,6 +70,8 @@ cpm - a fast CPAN module installer
   -r, --resolver=class,args (EXPERIMENTAL, will be removed or renamed)
         specify resolvers, you can use --resolver multiple times
         available classes: metadb/metacpan/02packages/snapshot
+      --reinstall
+        reinstall the distribution even if you already have the latest version installed
       --dev (EXPERIMENTAL)
         resolve TRIAL distributions too
       --color, --no-color

@@ -99,6 +99,7 @@ sub parse_options {
         "test-timeout=i" => \($self->{test_timeout}),
         "show-progress!" => \($self->{show_progress}),
         "prebuilt!" => \($self->{prebuilt}),
+        "reinstall" => \($self->{reinstall}),
         (map $with_option->($_), qw(requires recommends suggests)),
         (map $with_option->($_), qw(configure build test runtime develop)),
     or exit 1;
@@ -387,7 +388,12 @@ sub initial_job {
                 $arg =~ s/[~@]dev$// and $dev++;
                 $name = $arg;
             }
-            $package = {package => $name, version_range => $version_range || 0, dev => $dev};
+            $package = +{
+                package => $name,
+                version_range => $version_range || 0,
+                dev => $dev,
+                reinstall => $self->{reinstall},
+            };
         }
         push @package, $package if $package;
         push @dist, $dist if $dist;
