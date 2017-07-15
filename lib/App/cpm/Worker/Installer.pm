@@ -73,8 +73,8 @@ sub work {
 sub new {
     my ($class, %option) = @_;
     $option{logger} ||= App::cpm::Logger::File->new;
-    $option{base}   ||= "$ENV{HOME}/.perl-cpm/work/" . time . ".$$";
-    $option{cache}  ||= "$ENV{HOME}/.perl-cpm/cache";
+    $option{base}  or die "base option is required\n";
+    $option{cache} or die "cache option is required\n";
     mkpath $_ for grep !-d, $option{base}, $option{cache};
     $option{logger}->log("Work directory is $option{base}");
 
