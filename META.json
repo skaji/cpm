@@ -4,7 +4,7 @@
       "Shoichi Kaji <skaji@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Milla version v1.0.18, Dist::Zilla version 6.009, CPAN::Meta::Converter version 2.150010",
+   "generated_by" : "Dist::Milla version v1.0.18, Dist::Zilla version 6.010, CPAN::Meta::Converter version 2.150010",
    "license" : [
       "perl_5"
    ],
@@ -31,11 +31,11 @@
       },
       "develop" : {
          "requires" : {
-            "CPAN::Mirror::Tiny" : "0.10",
+            "CPAN::Mirror::Tiny" : "0.20",
             "Capture::Tiny" : "0",
             "Dist::Milla" : "v1.0.18",
             "Path::Tiny" : "0",
-            "Test::More" : "0.98",
+            "Test2::Harness" : "0",
             "Test::Pod" : "1.41"
          }
       },
@@ -84,6 +84,7 @@
    },
    "version" : "0.901",
    "x_contributors" : [
+      "Kenichi Ishigaki <ishigaki@cpan.org>",
       "Olaf Alders <olaf@wundersolutions.com>",
       "Shoichi Kaji <skaji@outlook.com>"
    ],

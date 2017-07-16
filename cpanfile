@@ -26,8 +26,8 @@ recommends 'IO::Uncompress::Gunzip';
 recommends 'Carton';
 
 on develop => sub {
+    requires 'CPAN::Mirror::Tiny', '0.20';
     requires 'Capture::Tiny';
     requires 'Path::Tiny';
-    requires 'CPAN::Mirror::Tiny', '0.10';
-    requires 'Test::More', '0.98';
+    requires 'Test2::Harness';
 };
