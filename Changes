@@ -2,6 +2,13 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.910  2017-07-16 21:26:17 JST
+        - Improve Windows support (charsbar, zmughal, ZzZombo #97, #98, #100, #101, #102, #48, #77);
+          Many thanks to charsbar;
+          Note that the Windows support is still a work in progress, especially we need to address a issue in upstream Menlo
+        - Detect circular dependencies (#96, #69)
+        - Introduce --reinstall option (#95)
+
 0.901  2017-06-27 22:50:29 JST
         - Install configure requirements even when --prebuilt is enabled
         - Change the directory name of ~/.perl-cpm/builds/* for relocatable perls
