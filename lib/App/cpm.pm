@@ -638,6 +638,8 @@ Code repository and issue tracker
 
 Chat room. I would like to hear your thoughts about CPAN clients (not necessary about cpm)
 
+=back
+
 =head1 SEE ALSO
 
 L<Perl Advent Calendar 2015|http://www.perladvent.org/2015/2015-12-02.html>
