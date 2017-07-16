@@ -1,6 +1,8 @@
 # cf http://qiita.com/pine613/items/3fdc4e1bd06065cc056d
 build: off
 shallow_clone: true
+skip_tags: true
+skip_branch_with_pr: true
 init:
   - git config --global core.autocrlf input
 install:
