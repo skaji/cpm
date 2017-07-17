@@ -8,11 +8,10 @@ use File::pushd 'tempd';
 use Path::Tiny;
 use version;
 
-my $perl_version = version->parse($])->numify;
-plan skip_all => 'only for perl 5.16+' unless 5.016 <= $perl_version;
+plan skip_all => 'only for perl 5.16+' if $] < 5.016;
 
 subtest test1 => sub {
-    plan skip_all => 'only for perl 5.22' unless 5.022 <= $perl_version && $perl_version < 5.023;
+    plan skip_all => 'only for perl 5.22+' if $] < 5.022;
     my $guard = tempd;
     path("cpanfile")->spew(qq{requires "Module::Build";\n});
     my $r = cpm_install "--target-perl", "5.10.1";
