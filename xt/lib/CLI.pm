@@ -51,6 +51,8 @@ sub cpm_install {
     my $local = $_LOCAL || tempdir DIR => $TEMPDIR;
     my $home  = $_HOME  || tempdir DIR => $TEMPDIR;
     my ($out, $err, $exit) = capture {
+        local %ENV = %ENV;
+        delete $ENV{$_} for grep /^PERL_CPM_/, keys %ENV;
         system $^X, "-I$base/lib", "$base/script/cpm", "install", "-L", $local, "--home", $home, "--exclude-vendor", @argv;
     };
     my $logfile = "$home/build.log";
