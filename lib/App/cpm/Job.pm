@@ -2,7 +2,7 @@ package App::cpm::Job;
 use strict;
 use warnings;
 use utf8;
-our $VERSION = '0.910';
+our $VERSION = '0.911';
 
 sub new {
     my ($class, %option) = @_;
