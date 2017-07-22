@@ -575,12 +575,12 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       JSON::PP 2.27300
       parent 0
-  Module-CoreList-5.20170715
-    pathname: B/BI/BINGOS/Module-CoreList-5.20170715.tar.gz
+  Module-CoreList-5.20170720
+    pathname: B/BI/BINGOS/Module-CoreList-5.20170720.tar.gz
     provides:
-      Module::CoreList 5.20170715
-      Module::CoreList::TieHashDelta 5.20170715
-      Module::CoreList::Utils 5.20170715
+      Module::CoreList 5.20170720
+      Module::CoreList::TieHashDelta 5.20170720
+      Module::CoreList::Utils 5.20170720
     requirements:
       ExtUtils::MakeMaker 0
       List::Util 0
