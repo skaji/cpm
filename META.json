@@ -82,7 +82,7 @@
          "web" : "https://github.com/skaji/cpm"
       }
    },
-   "version" : "0.911",
+   "version" : "0.912",
    "x_contributors" : [
       "Kenichi Ishigaki <ishigaki@cpan.org>",
       "Olaf Alders <olaf@wundersolutions.com>",
