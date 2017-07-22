@@ -75,10 +75,8 @@ sub parse_options {
     };
     GetOptions
         "L|local-lib-contained=s" => \($self->{local_lib}),
-        "V|version" => sub { $self->cmd_version; exit },
         "color!" => \($self->{color}),
         "g|global" => \($self->{global}),
-        "h|help" => sub { $self->cmd_help },
         "mirror=s@" => \@mirror,
         "v|verbose" => \($self->{verbose}),
         "w|workers=i" => \($self->{workers}),
@@ -198,6 +196,7 @@ sub cmd_help {
 
 sub cmd_version {
     print "cpm $VERSION ($0)\n";
+    return 0;
 }
 
 sub cmd_exec {
