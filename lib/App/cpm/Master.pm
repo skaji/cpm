@@ -316,15 +316,14 @@ sub is_satisfied {
             next;
         }
         next if $self->{target_perl} and $self->is_core($package, $version_range);
-
+        next if $self->is_installed($package, $version_range);
         my ($resolved) = grep { $_->providing($package, $version_range) } @distributions;
-        if ($resolved) {
-            next if $resolved->installed;
-        } else {
-            next if $self->is_installed($package, $version_range);
+        next if $resolved && $resolved->installed;
+
+        $is_satisfied = 0 if defined $is_satisfied;
+        if (!$resolved) {
             push @need_resolve, $req;
         }
-        $is_satisfied = 0 if defined $is_satisfied;
     }
     return ($is_satisfied, @need_resolve);
 }
