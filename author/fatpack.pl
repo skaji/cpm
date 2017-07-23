@@ -46,6 +46,26 @@ sub gen_snapshot {
     $snapshot->save;
 }
 
+sub git_info {
+    my $describe = `git describe --tags --dirty`;
+    chomp $describe;
+    my $hash = `git rev-parse --short HEAD`;
+    chomp $hash;
+    my $url = "https://github.com/skaji/cpm/tree/$hash";
+    ($describe, $url);
+}
+
+sub inject_git_info {
+    my ($file, $describe, $url) = @_;
+    my $inject = <<~"___";
+    \$App::cpm::GIT_DESCRIBE = '$describe';
+    \$App::cpm::GIT_URL = '$url';
+    ___
+    my $content = Path::Tiny->new($file)->slurp_raw;
+    $content =~ s/^use App::cpm;/use App::cpm;\n$inject/sm;
+    Path::Tiny->new($file)->spew_raw($content);
+}
+
 
 my $exclude = join ",", qw(
     Carp
@@ -68,7 +88,11 @@ my @extra = qw(
     Devel::GlobalDestruction
     MRO::Compat
 );
+
 my $target = '5.8.1';
+
+my ($git_describe, $git_url) = git_info;
+warn "\e[1;31m!!! GIT IS DIRTY !!!\e[m\n" if $git_describe =~ /dirty/;
 
 my @copyright = Path::Tiny->new("copyrights-and-licenses.json")->lines({chomp => 1});
 my $copyright = join "\n", map { "# $_" } @copyright;
@@ -95,3 +119,4 @@ my $fatpack_dir = $test ? "local" : "../lib,local";
 my $output = $test ? "../cpm.test" : "../cpm";
 fatpack "-q", "-o", $output, "-d", $fatpack_dir, "-e", $exclude, "--shebang", $shebang, "../script/cpm";
 print STDERR " DONE\n";
+inject_git_info($output, $git_describe, $git_url);

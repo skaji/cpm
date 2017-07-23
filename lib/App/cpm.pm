@@ -19,6 +19,8 @@ use Cwd ();
 use Config;
 
 our $VERSION = '0.912';
+our $GIT_DESCRIBE;
+our $GIT_URL;
 
 use constant WIN32 => $^O eq 'MSWin32';
 
@@ -196,6 +198,9 @@ sub cmd_help {
 
 sub cmd_version {
     print "cpm $VERSION ($0)\n";
+    if ($GIT_DESCRIBE && $GIT_URL) {
+        print "This is a self-contained version, $GIT_DESCRIBE ($GIT_URL)\n";
+    }
     return 0;
 }
 
@@ -223,6 +228,7 @@ sub cmd_install {
     my $logger = App::cpm::Logger::File->new("$self->{home}/build.log.@{[time]}");
     $logger->symlink_to("$self->{home}/build.log");
     $logger->log("Running cpm $VERSION ($0) on perl $Config{version} built for $Config{archname} ($^X)");
+    $logger->log("This is a self-contained version, $GIT_DESCRIBE ($GIT_URL)") if $GIT_DESCRIBE && $GIT_URL;
     $logger->log("Command line arguments are: @ARGV");
 
     my $master = App::cpm::Master->new(
