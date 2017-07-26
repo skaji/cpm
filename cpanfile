@@ -1,6 +1,6 @@
 requires 'perl', '5.008001';
 
-requires 'CPAN::Common::Index', dev => 1;
+requires 'CPAN::Common::Index';
 requires 'CPAN::DistnameInfo';
 requires 'CPAN::Meta';
 requires 'CPAN::Meta::Requirements', '2.130'; # for v-strings
