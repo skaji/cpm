@@ -86,6 +86,10 @@ cpm - a fast CPAN module installer
         specify configure/build/test timeout second, default: 60sec, 3600sec, 1800sec
       --show-progress, --no-show-progress
         show progress, default: on
+      --cpanfile=path
+        specify cpanfile path, default: ./cpanfile
+      --snapshot=path
+        specify cpanfile.snapshot path, default: ./cpanfile.snapshot
   -V, --version
         show version
   -h, --help
