@@ -287,7 +287,8 @@ sub cmd_install {
                 App::cpm::Logger->log(result => "FAIL", type => $type, message => $_) for @{$fail->{$type}};
             }
             print STDERR "\r" if $self->{show_progress};
-            warn sprintf "%d distribution installed.\n", $master->installed_distributions;
+            warn sprintf "%d distribution%s installed.\n",
+                $master->installed_distributions, $master->installed_distributions > 1 ? "s" : "";
             warn "See $self->{home}/build.log for details.\n";
             return 1;
         }
@@ -304,7 +305,8 @@ sub cmd_install {
         }
     }
     print STDERR "\r" if $self->{show_progress};
-    warn sprintf "%d distribution installed.\n", $master->installed_distributions;
+    warn sprintf "%d distribution%s installed.\n",
+        $master->installed_distributions, $master->installed_distributions > 1 ? "s" : "";
     $self->cleanup;
 
     if ($fail) {
