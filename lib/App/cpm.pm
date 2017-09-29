@@ -223,22 +223,6 @@ sub cmd_version {
     return 0;
 }
 
-sub cmd_exec {
-    my ($self, @argv) = @_;
-    warn "WARN: exec subcommand is deprecated.\n"
-        ."WARN: Please use `perl -I\$PWD/local/lib/perl5 ...` or `env PERL5LIB=\$PWD/local/lib/perl5 perl ...`.\n";
-    my $local_lib = $self->maybe_abs($self->{local_lib});
-    if (-d "$local_lib/lib/perl5") {
-        $ENV{PERL5LIB} = "$local_lib/lib/perl5"
-                       . ($ENV{PERL5LIB} ? ":$ENV{PERL5LIB}" : "");
-    }
-    if (-d "$local_lib/bin") {
-        $ENV{PATH} = "$local_lib/bin:$ENV{PATH}";
-    }
-    exec @argv;
-    exit 255;
-}
-
 sub cmd_install {
     my $self = shift;
     die "Need arguments or cpanfile.\n"
