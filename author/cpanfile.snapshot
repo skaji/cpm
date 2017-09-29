@@ -9,14 +9,14 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Test::More 0.47
       perl 5.006
-  CPAN-Common-Index-0.009-TRIAL
-    pathname: D/DA/DAGOLDEN/CPAN-Common-Index-0.009-TRIAL.tar.gz
+  CPAN-Common-Index-0.010
+    pathname: D/DA/DAGOLDEN/CPAN-Common-Index-0.010.tar.gz
     provides:
-      CPAN::Common::Index 0.009
-      CPAN::Common::Index::LocalPackage 0.009
-      CPAN::Common::Index::MetaDB 0.009
-      CPAN::Common::Index::Mirror 0.009
-      CPAN::Common::Index::Mux::Ordered 0.009
+      CPAN::Common::Index 0.010
+      CPAN::Common::Index::LocalPackage 0.010
+      CPAN::Common::Index::MetaDB 0.010
+      CPAN::Common::Index::Mirror 0.010
+      CPAN::Common::Index::Mux::Ordered 0.010
     requirements:
       CPAN::DistnameInfo 0
       CPAN::Meta::YAML 0
@@ -168,10 +168,10 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Sub::Exporter::Progressive 0.001011
       perl 5.006
-  Digest-SHA-5.96
-    pathname: M/MS/MSHELOR/Digest-SHA-5.96.tar.gz
+  Digest-SHA-5.97
+    pathname: M/MS/MSHELOR/Digest-SHA-5.97.tar.gz
     provides:
-      Digest::SHA 5.96
+      Digest::SHA 5.97
     requirements:
       ExtUtils::MakeMaker 0
       perl 5.003
@@ -306,19 +306,19 @@ DISTRIBUTIONS
       Module::CPANfile 0
       Test::More 0.88
       version 0.76
-  ExtUtils-ParseXS-3.30
-    pathname: S/SM/SMUELLER/ExtUtils-ParseXS-3.30.tar.gz
+  ExtUtils-ParseXS-3.35
+    pathname: S/SM/SMUELLER/ExtUtils-ParseXS-3.35.tar.gz
     provides:
-      ExtUtils::ParseXS 3.30
-      ExtUtils::ParseXS::Constants 3.30
-      ExtUtils::ParseXS::CountLines 3.30
-      ExtUtils::ParseXS::Eval 3.30
-      ExtUtils::ParseXS::Utilities 3.30
-      ExtUtils::Typemaps 3.30
-      ExtUtils::Typemaps::Cmd 3.30
-      ExtUtils::Typemaps::InputMap 3.30
-      ExtUtils::Typemaps::OutputMap 3.30
-      ExtUtils::Typemaps::Type 3.30
+      ExtUtils::ParseXS 3.35
+      ExtUtils::ParseXS::Constants 3.35
+      ExtUtils::ParseXS::CountLines 3.35
+      ExtUtils::ParseXS::Eval 3.35
+      ExtUtils::ParseXS::Utilities 3.35
+      ExtUtils::Typemaps 3.35
+      ExtUtils::Typemaps::Cmd 3.35
+      ExtUtils::Typemaps::InputMap 3.35
+      ExtUtils::Typemaps::OutputMap 3.35
+      ExtUtils::Typemaps::Type 3.35
     requirements:
       Carp 0
       Cwd 0
@@ -338,10 +338,10 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       File::Copy 0
       File::Spec 0
-  File-Fetch-0.52
-    pathname: B/BI/BINGOS/File-Fetch-0.52.tar.gz
+  File-Fetch-0.54
+    pathname: B/BI/BINGOS/File-Fetch-0.54.tar.gz
     provides:
-      File::Fetch 0.52
+      File::Fetch 0.54
     requirements:
       ExtUtils::MakeMaker 0
       File::Basename 0
@@ -353,10 +353,10 @@ DISTRIBUTIONS
       Module::Load::Conditional 0.66
       Params::Check 0.07
       Test::More 0
-  File-Path-2.14
-    pathname: J/JK/JKEENAN/File-Path-2.14.tar.gz
+  File-Path-2.15
+    pathname: J/JK/JKEENAN/File-Path-2.15.tar.gz
     provides:
-      File::Path 2.14
+      File::Path 2.15
     requirements:
       Cwd 0
       Exporter 0
@@ -387,10 +387,10 @@ DISTRIBUTIONS
       parent 0.221
       strict 0
       vars 0
-  File-Which-1.21
-    pathname: P/PL/PLICEASE/File-Which-1.21.tar.gz
+  File-Which-1.22
+    pathname: P/PL/PLICEASE/File-Which-1.22.tar.gz
     provides:
-      File::Which 1.21
+      File::Which 1.22
     requirements:
       ExtUtils::MakeMaker 0
       perl 5.006
@@ -575,12 +575,12 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       JSON::PP 2.27300
       parent 0
-  Module-CoreList-5.20170720
-    pathname: B/BI/BINGOS/Module-CoreList-5.20170720.tar.gz
+  Module-CoreList-5.20170923
+    pathname: B/BI/BINGOS/Module-CoreList-5.20170923.tar.gz
     provides:
-      Module::CoreList 5.20170720
-      Module::CoreList::TieHashDelta 5.20170720
-      Module::CoreList::Utils 5.20170720
+      Module::CoreList 5.20170923
+      Module::CoreList::TieHashDelta 5.20170923
+      Module::CoreList::Utils 5.20170923
     requirements:
       ExtUtils::MakeMaker 0
       List::Util 0
@@ -831,58 +831,72 @@ DISTRIBUTIONS
       Test::Harness 3.39
     requirements:
       ExtUtils::MakeMaker 0
-  Test-Simple-1.302086
-    pathname: E/EX/EXODIST/Test-Simple-1.302086.tar.gz
+  Test-Simple-1.302096
+    pathname: E/EX/EXODIST/Test-Simple-1.302096.tar.gz
     provides:
-      Test2 1.302086
-      Test2::API 1.302086
-      Test2::API::Breakage 1.302086
-      Test2::API::Context 1.302086
-      Test2::API::Instance 1.302086
-      Test2::API::Stack 1.302086
-      Test2::Event 1.302086
-      Test2::Event::Bail 1.302086
-      Test2::Event::Diag 1.302086
-      Test2::Event::Encoding 1.302086
-      Test2::Event::Exception 1.302086
-      Test2::Event::Generic 1.302086
-      Test2::Event::Note 1.302086
-      Test2::Event::Ok 1.302086
-      Test2::Event::Plan 1.302086
-      Test2::Event::Skip 1.302086
-      Test2::Event::Subtest 1.302086
-      Test2::Event::TAP::Version 1.302086
-      Test2::Event::Waiting 1.302086
-      Test2::Formatter 1.302086
-      Test2::Formatter::TAP 1.302086
-      Test2::Hub 1.302086
-      Test2::Hub::Interceptor 1.302086
-      Test2::Hub::Interceptor::Terminator 1.302086
-      Test2::Hub::Subtest 1.302086
-      Test2::IPC 1.302086
-      Test2::IPC::Driver 1.302086
-      Test2::IPC::Driver::Files 1.302086
-      Test2::Tools::Tiny 1.302086
-      Test2::Util 1.302086
-      Test2::Util::ExternalMeta 1.302086
-      Test2::Util::HashBase 0.002
-      Test2::Util::Trace 1.302086
-      Test::Builder 1.302086
-      Test::Builder::Formatter 1.302086
+      Test2 1.302096
+      Test2::API 1.302096
+      Test2::API::Breakage 1.302096
+      Test2::API::Context 1.302096
+      Test2::API::Instance 1.302096
+      Test2::API::Stack 1.302096
+      Test2::Event 1.302096
+      Test2::Event::Bail 1.302096
+      Test2::Event::Diag 1.302096
+      Test2::Event::Encoding 1.302096
+      Test2::Event::Exception 1.302096
+      Test2::Event::Fail 1.302096
+      Test2::Event::Generic 1.302096
+      Test2::Event::Note 1.302096
+      Test2::Event::Ok 1.302096
+      Test2::Event::Pass 1.302096
+      Test2::Event::Plan 1.302096
+      Test2::Event::Skip 1.302096
+      Test2::Event::Subtest 1.302096
+      Test2::Event::TAP::Version 1.302096
+      Test2::Event::Waiting 1.302096
+      Test2::EventFacet 1.302096
+      Test2::EventFacet::About 1.302096
+      Test2::EventFacet::Amnesty 1.302096
+      Test2::EventFacet::Assert 1.302096
+      Test2::EventFacet::Control 1.302096
+      Test2::EventFacet::Error 1.302096
+      Test2::EventFacet::Info 1.302096
+      Test2::EventFacet::Meta 1.302096
+      Test2::EventFacet::Parent 1.302096
+      Test2::EventFacet::Plan 1.302096
+      Test2::EventFacet::Trace 1.302096
+      Test2::Formatter 1.302096
+      Test2::Formatter::TAP 1.302096
+      Test2::Hub 1.302096
+      Test2::Hub::Interceptor 1.302096
+      Test2::Hub::Interceptor::Terminator 1.302096
+      Test2::Hub::Subtest 1.302096
+      Test2::IPC 1.302096
+      Test2::IPC::Driver 1.302096
+      Test2::IPC::Driver::Files 1.302096
+      Test2::Tools::Tiny 1.302096
+      Test2::Util 1.302096
+      Test2::Util::ExternalMeta 1.302096
+      Test2::Util::Facets2Legacy 1.302096
+      Test2::Util::HashBase 0.005
+      Test2::Util::Trace 1.302096
+      Test::Builder 1.302096
+      Test::Builder::Formatter 1.302096
       Test::Builder::IO::Scalar 2.113
-      Test::Builder::Module 1.302086
-      Test::Builder::Tester 1.302086
-      Test::Builder::Tester::Color 1.302086
-      Test::Builder::Tester::Tie 1.302086
-      Test::Builder::TodoDiag 1.302086
-      Test::More 1.302086
-      Test::Simple 1.302086
-      Test::Tester 1.302086
-      Test::Tester::Capture 1.302086
-      Test::Tester::CaptureRunner 1.302086
-      Test::Tester::Delegate 1.302086
-      Test::use::ok 1.302086
-      ok 1.302086
+      Test::Builder::Module 1.302096
+      Test::Builder::Tester 1.302096
+      Test::Builder::Tester::Color 1.302096
+      Test::Builder::Tester::Tie 1.302096
+      Test::Builder::TodoDiag 1.302096
+      Test::More 1.302096
+      Test::Simple 1.302096
+      Test::Tester 1.302096
+      Test::Tester::Capture 1.302096
+      Test::Tester::CaptureRunner 1.302096
+      Test::Tester::Delegate 1.302096
+      Test::use::ok 1.302096
+      ok 1.302096
     requirements:
       ExtUtils::MakeMaker 0
       File::Spec 0
@@ -911,70 +925,70 @@ DISTRIBUTIONS
       Test::More 0
       Tie::Handle 0
       strict 0
-  URI-1.71
-    pathname: E/ET/ETHER/URI-1.71.tar.gz
+  URI-1.72
+    pathname: E/ET/ETHER/URI-1.72.tar.gz
     provides:
-      URI 1.71
+      URI 1.72
       URI::Escape 3.31
       URI::Heuristic 4.20
-      URI::IRI 1.71
-      URI::QueryParam 1.71
-      URI::Split 1.71
+      URI::IRI 1.72
+      URI::QueryParam 1.72
+      URI::Split 1.72
       URI::URL 5.04
       URI::WithBase 2.20
-      URI::_foreign 1.71
-      URI::_generic 1.71
-      URI::_idna 1.71
-      URI::_ldap 1.71
-      URI::_login 1.71
-      URI::_punycode 1.71
-      URI::_query 1.71
-      URI::_segment 1.71
-      URI::_server 1.71
-      URI::_userpass 1.71
-      URI::data 1.71
+      URI::data 1.72
       URI::file 4.21
-      URI::file::Base 1.71
-      URI::file::FAT 1.71
-      URI::file::Mac 1.71
-      URI::file::OS2 1.71
-      URI::file::QNX 1.71
-      URI::file::Unix 1.71
-      URI::file::Win32 1.71
-      URI::ftp 1.71
-      URI::gopher 1.71
-      URI::http 1.71
-      URI::https 1.71
-      URI::ldap 1.71
-      URI::ldapi 1.71
-      URI::ldaps 1.71
-      URI::mailto 1.71
-      URI::mms 1.71
-      URI::news 1.71
-      URI::nntp 1.71
-      URI::pop 1.71
-      URI::rlogin 1.71
-      URI::rsync 1.71
-      URI::rtsp 1.71
-      URI::rtspu 1.71
-      URI::sftp 1.71
-      URI::sip 1.71
-      URI::sips 1.71
-      URI::snews 1.71
-      URI::ssh 1.71
-      URI::telnet 1.71
-      URI::tn3270 1.71
-      URI::urn 1.71
-      URI::urn::isbn undef
-      URI::urn::oid 1.71
+      URI::file::Base 1.72
+      URI::file::FAT 1.72
+      URI::file::Mac 1.72
+      URI::file::OS2 1.72
+      URI::file::QNX 1.72
+      URI::file::Unix 1.72
+      URI::file::Win32 1.72
+      URI::ftp 1.72
+      URI::gopher 1.72
+      URI::http 1.72
+      URI::https 1.72
+      URI::ldap 1.72
+      URI::ldapi 1.72
+      URI::ldaps 1.72
+      URI::mailto 1.72
+      URI::mms 1.72
+      URI::news 1.72
+      URI::nntp 1.72
+      URI::pop 1.72
+      URI::rlogin 1.72
+      URI::rsync 1.72
+      URI::rtsp 1.72
+      URI::rtspu 1.72
+      URI::sftp 1.72
+      URI::sip 1.72
+      URI::sips 1.72
+      URI::snews 1.72
+      URI::ssh 1.72
+      URI::telnet 1.72
+      URI::tn3270 1.72
+      URI::urn 1.72
+      URI::urn::isbn 1.72
+      URI::urn::oid 1.72
     requirements:
+      Carp 0
+      Cwd 0
+      Data::Dumper 0
+      Encode 0
       Exporter 5.57
       ExtUtils::MakeMaker 0
       MIME::Base64 2
+      Net::Domain 0
       Scalar::Util 0
+      constant 0
+      integer 0
+      overload 0
       parent 0
       perl 5.008001
+      strict 0
       utf8 0
+      warnings 0
   Win32-ShellQuote-0.003001
     pathname: H/HA/HAARG/Win32-ShellQuote-0.003001.tar.gz
     provides:
