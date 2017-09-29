@@ -18,8 +18,11 @@ subtest test => sub {
     $r = cpm_install "--no-test", "Data::Section::Simple";
     unlike $r->err, qr/Test-Requires/;
 
-    $r = cpm_install "--test", "Data::Section::Simple";
-    like $r->err, qr/Test-Requires/;
+    with_same_local {
+        cpm_install "ExtUtils::MakeMaker"; # no test for ExtUtils-MakeMaker
+        $r = cpm_install "--test", "Data::Section::Simple";
+        like $r->err, qr/Test-Requires/;
+    };
 };
 
 subtest range => sub {
