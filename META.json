@@ -35,6 +35,7 @@
             "Capture::Tiny" : "0",
             "Dist::Milla" : "v1.0.18",
             "Path::Tiny" : "0",
+            "Term::ANSIColor" : "4.06",
             "Test2::Harness" : "0",
             "Test::Pod" : "1.41"
          }
@@ -88,7 +89,7 @@
       "Olaf Alders <olaf@wundersolutions.com>",
       "Shoichi Kaji <skaji@outlook.com>"
    ],
-   "x_serialization_backend" : "Cpanel::JSON::XS version 3.0233",
+   "x_serialization_backend" : "Cpanel::JSON::XS version 3.0239",
    "x_static_install" : 1
 }
 

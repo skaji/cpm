@@ -30,4 +30,5 @@ on develop => sub {
     requires 'Capture::Tiny';
     requires 'Path::Tiny';
     requires 'Test2::Harness';
+    requires 'Term::ANSIColor', '4.06';
 };
