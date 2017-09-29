@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.913  2017-09-29 21:14:12 JST
+        - Add possibility to read modules list from STDIN (zdm #31, #103)
+        - Remove exec command
+
 0.912  2017-07-23 01:40:05 JST
         - Revert 'Slightly improve how to check whether modules are installed or not';
           which sometimes causes installation failures
