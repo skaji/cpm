@@ -135,7 +135,26 @@ sub parse_options {
     $App::cpm::Logger::COLOR = 1 if $self->{color};
     $App::cpm::Logger::VERBOSE = 1 if $self->{verbose};
     $App::cpm::Logger::SHOW_PROGRESS = 1 if $self->{show_progress};
-    $self->{argv} = \@ARGV;
+
+    if (@ARGV && $ARGV[0] eq "-") {
+        $self->{argv} = $self->read_argv_from_stdin;
+        $self->{cpanfile} = undef;
+    } else {
+        $self->{argv} = \@ARGV;
+    }
+}
+
+sub read_argv_from_stdin {
+    my $self = shift;
+    my @argv;
+    while (my $line = <STDIN>) {
+        next if $line !~ /\S/;
+        next if $line =~ /^\s*#/;
+        $line =~ s/^\s*//;
+        $line =~ s/\s*$//;
+        push @argv, split /\s+/, $line;
+    }
+    return \@argv;
 }
 
 sub _inc {
@@ -222,7 +241,8 @@ sub cmd_exec {
 
 sub cmd_install {
     my $self = shift;
-    die "Need arguments or cpanfile.\n" if !@{$self->{argv}} && !-f $self->{cpanfile};
+    die "Need arguments or cpanfile.\n"
+        if !@{$self->{argv}} && (!$self->{cpanfile} || !-f $self->{cpanfile});
 
     File::Path::mkpath($self->{home}) unless -d $self->{home};
     my $logger = App::cpm::Logger::File->new("$self->{home}/build.log.@{[time]}");
