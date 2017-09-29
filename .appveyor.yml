@@ -12,4 +12,4 @@ install:
   - cpanm -nq --installdeps --with-develop .
   - cpanm -nq Carton
 test_script:
-  - yath -l t xt
+  - prove -l t xt
