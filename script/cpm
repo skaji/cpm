@@ -94,6 +94,8 @@ cpm - a fast CPAN module installer
         show version
   -h, --help
         show this help
+      --feature=identifier
+        specify the feature to enable in cpanfile; you can use --feature multiple times
       --with-requires,   --without-requires   (default: with)
       --with-recommends, --without-recommends (default: without)
       --with-suggests,   --without-suggests   (default: without)
