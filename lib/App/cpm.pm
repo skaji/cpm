@@ -61,6 +61,7 @@ sub new {
         with_test => 1,
         with_runtime => 1,
         with_develop => 0,
+        feature => [],
         notest => 1,
         prebuilt => $] >= 5.012 && $ENV{PERL_CPM_PREBUILT} ? 1 : 0,
         %option
@@ -70,7 +71,7 @@ sub new {
 sub parse_options {
     my $self = shift;
     local @ARGV = @_;
-    my (@mirror, @resolver);
+    my (@mirror, @resolver, @feature);
     my $with_option = sub {
         my $n = shift;
         ("with-$n", \$self->{"with_$n"}, "without-$n", sub { $self->{"with_$n"} = 0 });
@@ -102,11 +103,13 @@ sub parse_options {
         "reinstall" => \($self->{reinstall}),
         (map $with_option->($_), qw(requires recommends suggests)),
         (map $with_option->($_), qw(configure build test runtime develop)),
+        "feature=s@" => \@feature,
     or exit 1;
 
     $self->{local_lib} = $self->maybe_abs($self->{local_lib}) unless $self->{global};
     $self->{home} = $self->maybe_abs($self->{home});
     $self->{resolver} = \@resolver;
+    $self->{feature} = \@feature if @feature;
     $self->{mirror} = \@mirror if @mirror;
     for my $mirror (@{$self->{mirror}}) {
         $mirror = $self->normalize_mirror($mirror)
@@ -435,7 +438,7 @@ sub load_cpanfile {
     my ($self, $file) = @_;
     require Module::CPANfile;
     my $cpanfile = Module::CPANfile->load($file);
-    my $prereqs = $cpanfile->prereqs_with;
+    my $prereqs = $cpanfile->prereqs_with(@{ $self->{"feature"} });
     my @phase = grep $self->{"with_$_"}, qw(configure build test runtime develop);
     my @type  = grep $self->{"with_$_"}, qw(requires recommends suggests);
     my $requirements = $prereqs->merged_requirements(\@phase, \@type);
