@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.914  2017-09-30 17:56:43 JST
+        - Support selecting cpanfile "features" (arodland #104)
+
 0.913  2017-09-29 21:14:12 JST
         - Add possibility to read modules list from STDIN (zdm #31, #103)
         - Remove exec command

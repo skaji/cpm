@@ -18,7 +18,7 @@ use File::Path ();
 use Cwd ();
 use Config;
 
-our $VERSION = '0.913';
+our $VERSION = '0.914';
 our $GIT_DESCRIBE;
 our $GIT_URL;
 
