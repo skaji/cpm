@@ -226,6 +226,23 @@ sub cmd_version {
     return 0;
 }
 
+sub cmd_exec {
+    my ($self, @args) = @_;
+
+    die "Subcommand `exec` require program may be with args\n"
+        unless scalar @args;
+
+    my $local = $self->maybe_abs($self->{local_lib});
+
+    local $ENV{PATH}         = "$local/bin:$ENV{PATH}";
+    local $ENV{PERL5LIB}     = "$local/lib/perl5:$ENV{PERL5LIB}";
+    local $ENV{INSTALL_BASE} = "$local";
+    local $ENV{PERL_MM_OPT}  = "INSTALL_BASE=$local";
+    local $ENV{PERL_MB_OPT}  = "--install_base $local";
+
+    system @args;
+}
+
 sub cmd_install {
     my $self = shift;
     die "Need arguments or cpanfile.\n"
