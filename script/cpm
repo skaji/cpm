@@ -16,11 +16,16 @@ cpm - a fast CPAN module installer
 
   # install modules into local/
   > cpm install Module1 Module2 ...
+  # execute propgram with local environment
+  > cpm exec env
 
   # install Plack, and at the same time, keep builds of CPAN distributions in ~/.perl-cpm/builds
   > cpm install --prebuilt Plack
   # install the prebuilts in ~/.perl-cpm/builds
   > cd another-dir; cpm install --prebuilt Plack
+  # execute plack server
+  > cpm exec plackup hello.psgi
+
 
   # install modules with verbose messages
   > cpm install -v Module
