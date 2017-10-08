@@ -21,6 +21,7 @@ use File::Spec;
 use File::Temp ();
 use File::pushd 'pushd';
 use JSON::PP ();
+use Time::HiRes ();
 
 use constant NEED_INJECT_TOOLCHAIN_REQUIREMENTS => $] < 5.016;
 
@@ -361,6 +362,7 @@ sub _retry {
     my ($self, $sub) = @_;
     return 1 if $sub->();
     return unless $self->{retry};
+    Time::HiRes::sleep(0.1);
     $self->{logger}->log("! Retrying (you can turn off this behavior by --no-retry)");
     return $sub->();
 }
