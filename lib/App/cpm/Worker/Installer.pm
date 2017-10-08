@@ -6,6 +6,7 @@ our $VERSION = '0.914';
 
 use App::cpm::Logger::File;
 use App::cpm::Worker::Installer::Menlo;
+use App::cpm::Worker::Installer::Prebuilt;
 use App::cpm::version;
 use CPAN::DistnameInfo;
 use CPAN::Meta;
@@ -97,6 +98,7 @@ sub new {
         $menlo->setup_local_lib($local_lib);
     }
     $menlo->log("--", `$^X -V`, "--");
+    $option{prebuilt} = App::cpm::Worker::Installer::Prebuilt->new if $option{prebuilt};
     bless { %option, menlo => $menlo }, $class;
 }
 
@@ -125,8 +127,9 @@ sub _fetch_git {
 }
 
 sub enable_prebuilt {
-    my ($self, $uri) = @_;
-    $self->{prebuilt} && $TRUSTED_MIRROR->(ref $uri ? $uri->[0] : $uri);
+    my $self = shift;
+    my $uri = ref $_[0] ? $_[0][0] : $_[0];
+    $self->{prebuilt} && !$self->{prebuilt}->skip($uri) && $TRUSTED_MIRROR->($uri);
 }
 
 sub fetch {

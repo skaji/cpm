@@ -39,4 +39,13 @@ with_same_home {
     ok !!grep { $_ eq $expect } @line;
 };
 
+with_same_home {
+    cpm_install "--prebuilt", "XML::SAX";
+    my $r = cpm_install "--prebuilt", "XML::SAX";
+    is $r->exit, 0;
+    my $v = qr/v?[\d\.]+/;
+    unlike $r->err, qr/XML-SAX-$v \(using prebuilt\)/i;
+    note $r->err;
+};
+
 done_testing;
