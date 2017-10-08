@@ -168,10 +168,10 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Sub::Exporter::Progressive 0.001011
       perl 5.006
-  Digest-SHA-5.97
-    pathname: M/MS/MSHELOR/Digest-SHA-5.97.tar.gz
+  Digest-SHA-5.98
+    pathname: M/MS/MSHELOR/Digest-SHA-5.98.tar.gz
     provides:
-      Digest::SHA 5.97
+      Digest::SHA 5.98
     requirements:
       ExtUtils::MakeMaker 0
       perl 5.003
@@ -831,80 +831,79 @@ DISTRIBUTIONS
       Test::Harness 3.39
     requirements:
       ExtUtils::MakeMaker 0
-  Test-Simple-1.302096
-    pathname: E/EX/EXODIST/Test-Simple-1.302096.tar.gz
+  Test-Simple-1.302098
+    pathname: E/EX/EXODIST/Test-Simple-1.302098.tar.gz
     provides:
-      Test2 1.302096
-      Test2::API 1.302096
-      Test2::API::Breakage 1.302096
-      Test2::API::Context 1.302096
-      Test2::API::Instance 1.302096
-      Test2::API::Stack 1.302096
-      Test2::Event 1.302096
-      Test2::Event::Bail 1.302096
-      Test2::Event::Diag 1.302096
-      Test2::Event::Encoding 1.302096
-      Test2::Event::Exception 1.302096
-      Test2::Event::Fail 1.302096
-      Test2::Event::Generic 1.302096
-      Test2::Event::Note 1.302096
-      Test2::Event::Ok 1.302096
-      Test2::Event::Pass 1.302096
-      Test2::Event::Plan 1.302096
-      Test2::Event::Skip 1.302096
-      Test2::Event::Subtest 1.302096
-      Test2::Event::TAP::Version 1.302096
-      Test2::Event::Waiting 1.302096
-      Test2::EventFacet 1.302096
-      Test2::EventFacet::About 1.302096
-      Test2::EventFacet::Amnesty 1.302096
-      Test2::EventFacet::Assert 1.302096
-      Test2::EventFacet::Control 1.302096
-      Test2::EventFacet::Error 1.302096
-      Test2::EventFacet::Info 1.302096
-      Test2::EventFacet::Meta 1.302096
-      Test2::EventFacet::Parent 1.302096
-      Test2::EventFacet::Plan 1.302096
-      Test2::EventFacet::Trace 1.302096
-      Test2::Formatter 1.302096
-      Test2::Formatter::TAP 1.302096
-      Test2::Hub 1.302096
-      Test2::Hub::Interceptor 1.302096
-      Test2::Hub::Interceptor::Terminator 1.302096
-      Test2::Hub::Subtest 1.302096
-      Test2::IPC 1.302096
-      Test2::IPC::Driver 1.302096
-      Test2::IPC::Driver::Files 1.302096
-      Test2::Tools::Tiny 1.302096
-      Test2::Util 1.302096
-      Test2::Util::ExternalMeta 1.302096
-      Test2::Util::Facets2Legacy 1.302096
+      Test2 1.302098
+      Test2::API 1.302098
+      Test2::API::Breakage 1.302098
+      Test2::API::Context 1.302098
+      Test2::API::Instance 1.302098
+      Test2::API::Stack 1.302098
+      Test2::Event 1.302098
+      Test2::Event::Bail 1.302098
+      Test2::Event::Diag 1.302098
+      Test2::Event::Encoding 1.302098
+      Test2::Event::Exception 1.302098
+      Test2::Event::Fail 1.302098
+      Test2::Event::Generic 1.302098
+      Test2::Event::Note 1.302098
+      Test2::Event::Ok 1.302098
+      Test2::Event::Pass 1.302098
+      Test2::Event::Plan 1.302098
+      Test2::Event::Skip 1.302098
+      Test2::Event::Subtest 1.302098
+      Test2::Event::TAP::Version 1.302098
+      Test2::Event::Waiting 1.302098
+      Test2::EventFacet 1.302098
+      Test2::EventFacet::About 1.302098
+      Test2::EventFacet::Amnesty 1.302098
+      Test2::EventFacet::Assert 1.302098
+      Test2::EventFacet::Control 1.302098
+      Test2::EventFacet::Error 1.302098
+      Test2::EventFacet::Info 1.302098
+      Test2::EventFacet::Meta 1.302098
+      Test2::EventFacet::Parent 1.302098
+      Test2::EventFacet::Plan 1.302098
+      Test2::EventFacet::Trace 1.302098
+      Test2::Formatter 1.302098
+      Test2::Formatter::TAP 1.302098
+      Test2::Hub 1.302098
+      Test2::Hub::Interceptor 1.302098
+      Test2::Hub::Interceptor::Terminator 1.302098
+      Test2::Hub::Subtest 1.302098
+      Test2::IPC 1.302098
+      Test2::IPC::Driver 1.302098
+      Test2::IPC::Driver::Files 1.302098
+      Test2::Tools::Tiny 1.302098
+      Test2::Util 1.302098
+      Test2::Util::ExternalMeta 1.302098
+      Test2::Util::Facets2Legacy 1.302098
       Test2::Util::HashBase 0.005
-      Test2::Util::Trace 1.302096
-      Test::Builder 1.302096
-      Test::Builder::Formatter 1.302096
+      Test2::Util::Trace 1.302098
+      Test::Builder 1.302098
+      Test::Builder::Formatter 1.302098
       Test::Builder::IO::Scalar 2.113
-      Test::Builder::Module 1.302096
-      Test::Builder::Tester 1.302096
-      Test::Builder::Tester::Color 1.302096
-      Test::Builder::Tester::Tie 1.302096
-      Test::Builder::TodoDiag 1.302096
-      Test::More 1.302096
-      Test::Simple 1.302096
-      Test::Tester 1.302096
-      Test::Tester::Capture 1.302096
-      Test::Tester::CaptureRunner 1.302096
-      Test::Tester::Delegate 1.302096
-      Test::use::ok 1.302096
-      ok 1.302096
+      Test::Builder::Module 1.302098
+      Test::Builder::Tester 1.302098
+      Test::Builder::Tester::Color 1.302098
+      Test::Builder::Tester::Tie 1.302098
+      Test::Builder::TodoDiag 1.302098
+      Test::More 1.302098
+      Test::Simple 1.302098
+      Test::Tester 1.302098
+      Test::Tester::Capture 1.302098
+      Test::Tester::CaptureRunner 1.302098
+      Test::Tester::Delegate 1.302098
+      Test::use::ok 1.302098
+      ok 1.302098
     requirements:
       ExtUtils::MakeMaker 0
       File::Spec 0
       File::Temp 0
-      PerlIO 0
       Scalar::Util 1.13
       Storable 0
-      perl 5.008001
+      perl 5.006002
       utf8 0
   Text-ParseWords-3.30
     pathname: C/CH/CHORNY/Text-ParseWords-3.30.tar.gz
@@ -995,11 +994,11 @@ DISTRIBUTIONS
       Win32::ShellQuote 0.003001
     requirements:
       perl 5.006
-  local-lib-2.000023
-    pathname: H/HA/HAARG/local-lib-2.000023.tar.gz
+  local-lib-2.000024
+    pathname: H/HA/HAARG/local-lib-2.000024.tar.gz
     provides:
       lib::core::only undef
-      local::lib 2.000023
+      local::lib 2.000024
     requirements:
       perl 5.006
   parent-0.236
