@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.950  2017-10-09 02:26:11 JST
+        - **BIG CHANGE** Enable prebuilt by default (#107)
+
 0.914  2017-09-30 17:56:43 JST
         - Support selecting cpanfile "features" (arodland #104)
 
