@@ -575,7 +575,7 @@ cpm is a fast CPAN module installer, which uses L<Menlo> in parallel.
 
 Moreover cpm keeps the each builds of distributions in your home directory,
 and reuses them later.
-That is, if prebuilts are available, cpm never build distributions again, just copy the prebuilts into an appropriate directory.
+That is, if prebuilts are available, cpm never builds distributions again, just copies the prebuilts into an appropriate directory.
 This is (of course!) inspired by L<Carmel>.
 
 For tutorial, check out L<App::cpm::Tutorial>.
