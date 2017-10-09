@@ -573,8 +573,8 @@ App::cpm - a fast CPAN module installer
 
 cpm is a fast CPAN module installer, which uses L<Menlo> in parallel.
 
-Moreover if C<--prebuilt> option is enabled, cpm keeps the each builds of distributions in your home directory.
-Then, C<cpm install --prebuilt> will use these prebuilt distributions.
+Moreover cpm keeps the each builds of distributions in your home directory,
+and reuses them later.
 That is, if prebuilts are available, cpm never build distributions again, just copy the prebuilts into an appropriate directory.
 This is (of course!) inspired by L<Carmel>.
 
