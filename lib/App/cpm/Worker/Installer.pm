@@ -239,7 +239,7 @@ sub find_prebuilt {
     my ($self, $uri) = @_;
     my $info = CPAN::DistnameInfo->new($uri);
     my $dir = File::Spec->catdir($self->{prebuilt_base}, $info->cpanid, $info->distvname);
-    return unless -d $dir;
+    return unless -f File::Spec->catfile($dir, ".prebuilt");
 
     my $guard = pushd $dir;
 
@@ -272,7 +272,10 @@ sub find_prebuilt {
 sub save_prebuilt {
     my ($self, $job) = @_;
     my $dir = File::Spec->catdir($self->{prebuilt_base}, $job->cpanid, $job->distvname);
-    return if -d $dir;
+
+    if (-d $dir and !File::Path::rmtree($dir)) {
+        return;
+    }
 
     my $parent = File::Basename::dirname($dir);
     for (1..3) {
@@ -280,8 +283,13 @@ sub save_prebuilt {
         eval { File::Path::mkpath($parent) };
     }
     return unless -d $parent;
+
     $self->{logger}->log("Saving the build $job->{directory} in $dir");
-    File::Copy::Recursive::dircopy($job->{directory}, $dir) or warn $!;
+    if (File::Copy::Recursive::dircopy($job->{directory}, $dir)) {
+        open my $fh, ">", File::Spec->catfile($dir, ".prebuilt") or die $!;
+    } else {
+        warn "dircopy $job->{directory} $dir: $!";
+    }
 }
 
 sub _inject_toolchain_requirements {
