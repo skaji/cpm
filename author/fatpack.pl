@@ -106,7 +106,7 @@ use $target;
 $copyright
 ___
 
-my $resolver = -f "cpanfile.snapshot" && !$force && !$test ? "snapshot" : "metacpan";
+my $resolver = -f "cpanfile.snapshot" && !$force && !$test ? "snapshot" : "metadb";
 
 warn "Resolver: $resolver\n";
 cpm "install", "--cpanfile", "../cpanfile", "--target-perl", $target, "--resolver", $resolver;
