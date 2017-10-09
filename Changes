@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.951  2017-10-09 20:55:33 JST
+        - Check prebuilt integrity more carefully
+
 0.950  2017-10-09 02:26:11 JST
         - **BIG CHANGE** Enable prebuilt by default (#107)
 

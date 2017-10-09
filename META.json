@@ -83,7 +83,7 @@
          "web" : "https://github.com/skaji/cpm"
       }
    },
-   "version" : "0.950",
+   "version" : "0.951",
    "x_contributors" : [
       "Andrew Rodland <andrew@cleverdomain.org>",
       "Kenichi Ishigaki <ishigaki@cpan.org>",
