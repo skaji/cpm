@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.952  2017-10-14 23:49:47 JST
+        - Change prebuilt base (I think it does not change anymore)
+        - Save perl version in prebuilt base
+
 0.951  2017-10-09 20:55:33 JST
         - Check prebuilt integrity more carefully
 
