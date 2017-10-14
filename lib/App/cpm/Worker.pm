@@ -8,18 +8,29 @@ use App::cpm::Worker::Installer;
 use App::cpm::Worker::Resolver;
 use Config;
 use Digest::MD5 ();
+use File::Path ();
 use Time::HiRes qw(gettimeofday tv_interval);
 
 sub new {
     my ($class, %option) = @_;
     my $home = $option{home};
     my $logger = $option{logger} || App::cpm::Logger::File->new("$home/build.log.@{[time]}");
+    my $prebuilt_base;
+    if ($option{prebuilt}) {
+        $prebuilt_base = $class->prebuilt_base($home);
+        File::Path::mkpath($prebuilt_base) if !-d $prebuilt_base;
+        my $file = "$prebuilt_base/version";
+        if (!-f $file) {
+            open my $fh, ">", $file or die "$file: $!";
+            print {$fh} "$Config{perlpath}\n";
+        }
+    }
     %option = (
         %option,
         logger => $logger,
         base => "$home/work/" . time . ".$$",
         cache => "$home/cache",
-        $option{prebuilt} ? (prebuilt_base => $class->prebuilt_base($home)) : (),
+        $prebuilt_base ? (prebuilt_base => $prebuilt_base) : (),
     );
     my $installer = App::cpm::Worker::Installer->new(%option);
     my $resolver  = App::cpm::Worker::Resolver->new(%option, impl => $option{resolver});
@@ -30,7 +41,7 @@ sub prebuilt_base {
     my ($class, $home) = @_;
 
     # XXX Taking account of relocatable perls, we also use $Config{startperl}
-    my $identity = $Config{startperl} . Config->myconfig;
+    my $identity = $Config{perlpath} . Config->myconfig;
     my $digest = Digest::MD5::md5_hex($identity);
     $digest = substr $digest, 0, 8;
     "$home/builds/$Config{version}-$Config{archname}-$digest";
