@@ -34,6 +34,13 @@ subtest range => sub {
 subtest http => sub {
     my $r = cpm_install "https://cpan.metacpan.org/authors/id/L/LE/LEONT/ExtUtils-Config-0.008.tar.gz";
     is $r->exit, 0;
+    like $r->err, qr/DONE install ExtUtils-Config-0.008/;
+};
+
+subtest distfile => sub {
+    my $r = cpm_install "LEONT/ExtUtils-Config-0.008.tar.gz";
+    is $r->exit, 0;
+    like $r->err, qr/DONE install ExtUtils-Config-0.008/;
 };
 
 subtest configure => sub {
