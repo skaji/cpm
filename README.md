@@ -31,8 +31,8 @@ $ ./cpm --version
 cpm is a fast CPAN module installer, which uses
 [Menlo](https://metacpan.org/pod/Menlo) (cpanm 2.0) in parallel.
 
-Moreover if `--prebuilt` option is enabled, cpm keeps the each builds of distributions in your home directory.
-Then, `cpm install --prebuilt` will use these prebuilt distributions.
+Moreover cpm keeps the each builds of distributions in your home directory.
+Then, `cpm install` will use these prebuilt distributions.
 That is, if prebuilts are available, cpm never build distributions again, just copy the prebuilts into an appropriate directory.
 This is (of course!) inspired by [Carmel](https://github.com/miyagawa/Carmel).
 
