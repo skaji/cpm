@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.953  2017-10-15 03:32:46 JST
+        - Support distfile as an argument; eg `cpm install SKAJI/App-cpm-0.952.tar.gz` (#108)
+        - Fix handling of `cpm install https://www.cpan.org/authors/...tar.gz`
+
 0.952  2017-10-14 23:49:47 JST
         - Change prebuilt base (I think it does not change anymore)
         - Save perl version in prebuilt base
