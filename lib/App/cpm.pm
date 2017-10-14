@@ -402,6 +402,16 @@ sub initial_job {
                 $distfile ? (distfile => $distfile) : (),
                 provides => [],
             );
+        } elsif ($arg =~ m!^(?:[A-Z]/[A-Z]{2}/)?([A-Z]{2}[\-A-Z0-9]*/.*)$!) {
+            my $distfile = $1;
+            $distfile =~ m{^((.).)};
+            $distfile = "$2/$1/$distfile";
+            $dist = App::cpm::Distribution->new(
+                source => "cpan",
+                uri => [map { "${_}authors/id/$distfile" } @{$self->{mirror}}],
+                distfile => $distfile,
+                provides => [],
+            );
         } else {
             my ($name, $version_range, $dev);
             # copy from Menlo
