@@ -392,7 +392,16 @@ sub initial_job {
             my %ref = $arg =~ s/(?<=\.git)@(.+)$// ? (ref => $1) : ();
             $dist = App::cpm::Distribution->new(source => "git", uri => $arg, provides => [], %ref);
         } elsif ($arg =~ m{^https?://}) {
-            $dist = App::cpm::Distribution->new(source => "http", uri => $arg, provides => []);
+            my ($source, $distfile) = ("http", undef);
+            if ($arg =~ m{^https?://(?:www.cpan.org|backpan.perl.org|cpan.metacpan.org)/authors/id/(.+)}) {
+                ($source, $distfile) = ("cpan", $1);
+            }
+            $dist = App::cpm::Distribution->new(
+                source => $source,
+                uri => $arg,
+                $distfile ? (distfile => $distfile) : (),
+                provides => [],
+            );
         } else {
             my ($name, $version_range, $dev);
             # copy from Menlo
