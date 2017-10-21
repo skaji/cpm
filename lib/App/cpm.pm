@@ -132,7 +132,7 @@ sub parse_options {
     if ($self->{sudo}) {
         !system "sudo", $^X, "-e1" or exit 1;
     }
-    if ($self->{sudo} or $] < 5.012) {
+    if ($self->{sudo} or $self->{man_pages} or $] < 5.012) {
         $self->{prebuilt} = 0;
     }
 
