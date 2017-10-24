@@ -47,14 +47,15 @@ sub fail {
         );
         $detector->add($dist->distfile, $dist->provides, \@requirements);
     }
+    $detector->finalize;
 
     my @name;
     if (my $result = $detector->detect) {
         for my $distfile (sort keys %$result) {
             my $distvname = $self->distribution($distfile)->distvname;
             push @name, $distvname;
-            my @requirement = @{ $result->{$distfile} };
-            my $msg = join " -> ", map { $self->distribution($_)->distvname } @requirement, $requirement[0];
+            my @circular = @{ $result->{$distfile} };
+            my $msg = join " -> ", map { $self->distribution($_)->distvname } @circular;
             local $self->{logger}{context} = $distvname;
             $self->{logger}->log("Detected circular dependencies $msg");
             $self->{logger}->log("Failed to install distribution");
