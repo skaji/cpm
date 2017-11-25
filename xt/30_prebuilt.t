@@ -35,8 +35,8 @@ with_same_home {
     ok $_->is_file for $packlist1, $packlist2, $packlist3;
 
     my @line = $packlist1->lines({chomp => 1});
-    my $expect = File::Spec->catfile($r->local, "bin/change-shebang");
-    ok !!grep { $_ eq $expect } @line;
+    my $expect = quotemeta File::Spec->catfile($r->local, "bin/change-shebang");
+    ok !!grep { $_ =~ /$expect/ } @line;
 };
 
 with_same_home {
