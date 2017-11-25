@@ -35,8 +35,7 @@
             "Capture::Tiny" : "0",
             "Dist::Milla" : "v1.0.18",
             "Path::Tiny" : "0",
-            "Term::ANSIColor" : "4.06",
-            "Test2::Harness" : "0",
+            "Test::More" : "0.98",
             "Test::Pod" : "1.41"
          }
       },

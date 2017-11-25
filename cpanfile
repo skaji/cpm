@@ -29,6 +29,5 @@ on develop => sub {
     requires 'CPAN::Mirror::Tiny', '0.20';
     requires 'Capture::Tiny';
     requires 'Path::Tiny';
-    requires 'Test2::Harness';
-    requires 'Term::ANSIColor', '4.06';
+    requires 'Test::More', '0.98';
 };
