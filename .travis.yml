@@ -11,5 +11,5 @@ addons:
 install:
   - curl -sSL --compressed https://git.io/cpm | perl - install -g --with-develop --with-recommends
 script:
-  - prove -l t xt
+  - prove -l --timer t xt
 sudo: false
