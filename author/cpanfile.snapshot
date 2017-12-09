@@ -168,10 +168,10 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Sub::Exporter::Progressive 0.001011
       perl 5.006
-  Digest-SHA-5.98
-    pathname: M/MS/MSHELOR/Digest-SHA-5.98.tar.gz
+  Digest-SHA-6.00
+    pathname: M/MS/MSHELOR/Digest-SHA-6.00.tar.gz
     provides:
-      Digest::SHA 5.98
+      Digest::SHA 6.00
     requirements:
       ExtUtils::MakeMaker 0
       perl 5.003
@@ -183,23 +183,23 @@ DISTRIBUTIONS
     requirements:
       Carp 1.05
       ExtUtils::MakeMaker 0
-  ExtUtils-CBuilder-0.280226
-    pathname: A/AM/AMBS/ExtUtils-CBuilder-0.280226.tar.gz
+  ExtUtils-CBuilder-0.280230
+    pathname: A/AM/AMBS/ExtUtils-CBuilder-0.280230.tar.gz
     provides:
-      ExtUtils::CBuilder 0.280226
-      ExtUtils::CBuilder::Base 0.280226
-      ExtUtils::CBuilder::Platform::Unix 0.280226
-      ExtUtils::CBuilder::Platform::VMS 0.280226
-      ExtUtils::CBuilder::Platform::Windows 0.280226
-      ExtUtils::CBuilder::Platform::Windows::BCC 0.280226
-      ExtUtils::CBuilder::Platform::Windows::GCC 0.280226
-      ExtUtils::CBuilder::Platform::Windows::MSVC 0.280226
-      ExtUtils::CBuilder::Platform::aix 0.280226
-      ExtUtils::CBuilder::Platform::android 0.280226
-      ExtUtils::CBuilder::Platform::cygwin 0.280226
-      ExtUtils::CBuilder::Platform::darwin 0.280226
-      ExtUtils::CBuilder::Platform::dec_osf 0.280226
-      ExtUtils::CBuilder::Platform::os2 0.280226
+      ExtUtils::CBuilder 0.280230
+      ExtUtils::CBuilder::Base 0.280230
+      ExtUtils::CBuilder::Platform::Unix 0.280230
+      ExtUtils::CBuilder::Platform::VMS 0.280230
+      ExtUtils::CBuilder::Platform::Windows 0.280230
+      ExtUtils::CBuilder::Platform::Windows::BCC 0.280230
+      ExtUtils::CBuilder::Platform::Windows::GCC 0.280230
+      ExtUtils::CBuilder::Platform::Windows::MSVC 0.280230
+      ExtUtils::CBuilder::Platform::aix 0.280230
+      ExtUtils::CBuilder::Platform::android 0.280230
+      ExtUtils::CBuilder::Platform::cygwin 0.280230
+      ExtUtils::CBuilder::Platform::darwin 0.280230
+      ExtUtils::CBuilder::Platform::dec_osf 0.280230
+      ExtUtils::CBuilder::Platform::os2 0.280230
     requirements:
       Cwd 0
       ExtUtils::MakeMaker 6.30
@@ -338,10 +338,10 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       File::Copy 0
       File::Spec 0
-  File-Fetch-0.54
-    pathname: B/BI/BINGOS/File-Fetch-0.54.tar.gz
+  File-Fetch-0.56
+    pathname: B/BI/BINGOS/File-Fetch-0.56.tar.gz
     provides:
-      File::Fetch 0.54
+      File::Fetch 0.56
     requirements:
       ExtUtils::MakeMaker 0
       File::Basename 0
@@ -471,12 +471,12 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Test::More 0.31
       Time::HiRes 0
-  JSON-PP-2.94
-    pathname: I/IS/ISHIGAKI/JSON-PP-2.94.tar.gz
+  JSON-PP-2.97000
+    pathname: I/IS/ISHIGAKI/JSON-PP-2.97000.tar.gz
     provides:
-      JSON::PP 2.94
-      JSON::PP::Boolean 2.94
-      JSON::PP::IncrParser 2.94
+      JSON::PP 2.97000
+      JSON::PP::Boolean 2.97000
+      JSON::PP::IncrParser 2.97000
     requirements:
       ExtUtils::MakeMaker 0
       Scalar::Util 1.08
@@ -575,12 +575,12 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       JSON::PP 2.27300
       parent 0
-  Module-CoreList-5.20170923
-    pathname: B/BI/BINGOS/Module-CoreList-5.20170923.tar.gz
+  Module-CoreList-5.20171120
+    pathname: B/BI/BINGOS/Module-CoreList-5.20171120.tar.gz
     provides:
-      Module::CoreList 5.20170923
-      Module::CoreList::TieHashDelta 5.20170923
-      Module::CoreList::Utils 5.20170923
+      Module::CoreList 5.20171120
+      Module::CoreList::TieHashDelta 5.20171120
+      Module::CoreList::Utils 5.20171120
     requirements:
       ExtUtils::MakeMaker 0
       List::Util 0
@@ -831,72 +831,72 @@ DISTRIBUTIONS
       Test::Harness 3.39
     requirements:
       ExtUtils::MakeMaker 0
-  Test-Simple-1.302101
-    pathname: E/EX/EXODIST/Test-Simple-1.302101.tar.gz
+  Test-Simple-1.302120
+    pathname: E/EX/EXODIST/Test-Simple-1.302120.tar.gz
     provides:
-      Test2 1.302101
-      Test2::API 1.302101
-      Test2::API::Breakage 1.302101
-      Test2::API::Context 1.302101
-      Test2::API::Instance 1.302101
-      Test2::API::Stack 1.302101
-      Test2::Event 1.302101
-      Test2::Event::Bail 1.302101
-      Test2::Event::Diag 1.302101
-      Test2::Event::Encoding 1.302101
-      Test2::Event::Exception 1.302101
-      Test2::Event::Fail 1.302101
-      Test2::Event::Generic 1.302101
-      Test2::Event::Note 1.302101
-      Test2::Event::Ok 1.302101
-      Test2::Event::Pass 1.302101
-      Test2::Event::Plan 1.302101
-      Test2::Event::Skip 1.302101
-      Test2::Event::Subtest 1.302101
-      Test2::Event::TAP::Version 1.302101
-      Test2::Event::Waiting 1.302101
-      Test2::EventFacet 1.302101
-      Test2::EventFacet::About 1.302101
-      Test2::EventFacet::Amnesty 1.302101
-      Test2::EventFacet::Assert 1.302101
-      Test2::EventFacet::Control 1.302101
-      Test2::EventFacet::Error 1.302101
-      Test2::EventFacet::Info 1.302101
-      Test2::EventFacet::Meta 1.302101
-      Test2::EventFacet::Parent 1.302101
-      Test2::EventFacet::Plan 1.302101
-      Test2::EventFacet::Trace 1.302101
-      Test2::Formatter 1.302101
-      Test2::Formatter::TAP 1.302101
-      Test2::Hub 1.302101
-      Test2::Hub::Interceptor 1.302101
-      Test2::Hub::Interceptor::Terminator 1.302101
-      Test2::Hub::Subtest 1.302101
-      Test2::IPC 1.302101
-      Test2::IPC::Driver 1.302101
-      Test2::IPC::Driver::Files 1.302101
-      Test2::Tools::Tiny 1.302101
-      Test2::Util 1.302101
-      Test2::Util::ExternalMeta 1.302101
-      Test2::Util::Facets2Legacy 1.302101
-      Test2::Util::HashBase 0.005
-      Test2::Util::Trace 1.302101
-      Test::Builder 1.302101
-      Test::Builder::Formatter 1.302101
+      Test2 1.302120
+      Test2::API 1.302120
+      Test2::API::Breakage 1.302120
+      Test2::API::Context 1.302120
+      Test2::API::Instance 1.302120
+      Test2::API::Stack 1.302120
+      Test2::Event 1.302120
+      Test2::Event::Bail 1.302120
+      Test2::Event::Diag 1.302120
+      Test2::Event::Encoding 1.302120
+      Test2::Event::Exception 1.302120
+      Test2::Event::Fail 1.302120
+      Test2::Event::Generic 1.302120
+      Test2::Event::Note 1.302120
+      Test2::Event::Ok 1.302120
+      Test2::Event::Pass 1.302120
+      Test2::Event::Plan 1.302120
+      Test2::Event::Skip 1.302120
+      Test2::Event::Subtest 1.302120
+      Test2::Event::TAP::Version 1.302120
+      Test2::Event::Waiting 1.302120
+      Test2::EventFacet 1.302120
+      Test2::EventFacet::About 1.302120
+      Test2::EventFacet::Amnesty 1.302120
+      Test2::EventFacet::Assert 1.302120
+      Test2::EventFacet::Control 1.302120
+      Test2::EventFacet::Error 1.302120
+      Test2::EventFacet::Info 1.302120
+      Test2::EventFacet::Meta 1.302120
+      Test2::EventFacet::Parent 1.302120
+      Test2::EventFacet::Plan 1.302120
+      Test2::EventFacet::Trace 1.302120
+      Test2::Formatter 1.302120
+      Test2::Formatter::TAP 1.302120
+      Test2::Hub 1.302120
+      Test2::Hub::Interceptor 1.302120
+      Test2::Hub::Interceptor::Terminator 1.302120
+      Test2::Hub::Subtest 1.302120
+      Test2::IPC 1.302120
+      Test2::IPC::Driver 1.302120
+      Test2::IPC::Driver::Files 1.302120
+      Test2::Tools::Tiny 1.302120
+      Test2::Util 1.302120
+      Test2::Util::ExternalMeta 1.302120
+      Test2::Util::Facets2Legacy 1.302120
+      Test2::Util::HashBase 1.302120
+      Test2::Util::Trace 1.302120
+      Test::Builder 1.302120
+      Test::Builder::Formatter 1.302120
       Test::Builder::IO::Scalar 2.114
-      Test::Builder::Module 1.302101
-      Test::Builder::Tester 1.302101
-      Test::Builder::Tester::Color 1.302101
-      Test::Builder::Tester::Tie 1.302101
-      Test::Builder::TodoDiag 1.302101
-      Test::More 1.302101
-      Test::Simple 1.302101
-      Test::Tester 1.302101
-      Test::Tester::Capture 1.302101
-      Test::Tester::CaptureRunner 1.302101
-      Test::Tester::Delegate 1.302101
-      Test::use::ok 1.302101
-      ok 1.302101
+      Test::Builder::Module 1.302120
+      Test::Builder::Tester 1.302120
+      Test::Builder::Tester::Color 1.302120
+      Test::Builder::Tester::Tie 1.302120
+      Test::Builder::TodoDiag 1.302120
+      Test::More 1.302120
+      Test::Simple 1.302120
+      Test::Tester 1.302120
+      Test::Tester::Capture 1.302120
+      Test::Tester::CaptureRunner 1.302120
+      Test::Tester::Delegate 1.302120
+      Test::use::ok 1.302120
+      ok 1.302120
     requirements:
       ExtUtils::MakeMaker 0
       File::Spec 0
