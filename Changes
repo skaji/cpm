@@ -2,6 +2,11 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.954  2017-12-10 01:23:54 JST
+        - Improve detection of circular dependencies (#109, #110)
+        - Emit warnings when dist does not have META.json
+        - Disable prebuilt when --man-pages is specified
+
 0.953  2017-10-15 03:32:46 JST
         - Support distfile as an argument; eg `cpm install SKAJI/App-cpm-0.952.tar.gz` (#108)
         - Fix handling of `cpm install https://www.cpan.org/authors/...tar.gz`
