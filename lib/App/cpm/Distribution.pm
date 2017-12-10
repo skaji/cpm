@@ -4,7 +4,7 @@ use warnings;
 use App::cpm::version;
 use App::cpm::Logger;
 use CPAN::DistnameInfo;
-our $VERSION = '0.954';
+our $VERSION = '0.955';
 
 use constant STATE_REGISTERED      => 0b000001;
 use constant STATE_DEPS_REGISTERED => 0b000010;

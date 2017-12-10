@@ -9,7 +9,7 @@ use App::cpm::Logger;
 use Module::Metadata;
 use IO::Handle;
 use version;
-our $VERSION = '0.954';
+our $VERSION = '0.955';
 
 sub new {
     my ($class, %option) = @_;

@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.955  2017-12-10 21:40:00 JST
+        - Emit log for all failed distributions (#111)
+
 0.954  2017-12-10 01:23:54 JST
         - Improve detection of circular dependencies (#109, #110)
         - Emit warnings when dist does not have META.json
