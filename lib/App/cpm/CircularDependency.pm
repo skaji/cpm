@@ -80,7 +80,7 @@ sub detect {
             $result{$distfile} = [$detected->values, $distfile];
         }
     }
-    return %result ? \%result : undef;
+    return \%result;
 }
 
 sub _detect {
