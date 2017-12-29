@@ -210,24 +210,6 @@
       "url" : "https://metacpan.org/release/Parse-PMFile"
    },
    {
-      "copyright" : "Sean M. Burke",
-      "license" : "the same as Perl 5",
-      "name" : "Pod-Escapes",
-      "url" : "https://metacpan.org/release/Pod-Escapes"
-   },
-   {
-      "copyright" : "Sean M. Burke",
-      "license" : "the same as Perl 5",
-      "name" : "Pod-Simple",
-      "url" : "https://metacpan.org/release/Pod-Simple"
-   },
-   {
-      "copyright" : "Bradford Appleton, Marek Rouchal",
-      "license" : "the same as Perl 5",
-      "name" : "Pod-Usage",
-      "url" : "https://metacpan.org/release/Pod-Usage"
-   },
-   {
       "copyright" : "The Perl 5 Porters",
       "license" : "the same as Perl 5",
       "name" : "Search-Dict",
@@ -274,12 +256,6 @@
       "license" : "the same as Perl 5",
       "name" : "local-lib",
       "url" : "https://metacpan.org/release/local-lib"
-   },
-   {
-      "copyright" : "Russ Allbery",
-      "license" : "the same as Perl 5",
-      "name" : "podlators",
-      "url" : "https://metacpan.org/release/podlators"
    },
    {
       "copyright" : "John Peacock",
