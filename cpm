@@ -215,24 +215,6 @@ use 5.8.1;
 #       "url" : "https://metacpan.org/release/Parse-PMFile"
 #    },
 #    {
-#       "copyright" : "Sean M. Burke",
-#       "license" : "the same as Perl 5",
-#       "name" : "Pod-Escapes",
-#       "url" : "https://metacpan.org/release/Pod-Escapes"
-#    },
-#    {
-#       "copyright" : "Sean M. Burke",
-#       "license" : "the same as Perl 5",
-#       "name" : "Pod-Simple",
-#       "url" : "https://metacpan.org/release/Pod-Simple"
-#    },
-#    {
-#       "copyright" : "Bradford Appleton, Marek Rouchal",
-#       "license" : "the same as Perl 5",
-#       "name" : "Pod-Usage",
-#       "url" : "https://metacpan.org/release/Pod-Usage"
-#    },
-#    {
 #       "copyright" : "The Perl 5 Porters",
 #       "license" : "the same as Perl 5",
 #       "name" : "Search-Dict",
@@ -279,12 +261,6 @@ use 5.8.1;
 #       "license" : "the same as Perl 5",
 #       "name" : "local-lib",
 #       "url" : "https://metacpan.org/release/local-lib"
-#    },
-#    {
-#       "copyright" : "Russ Allbery",
-#       "license" : "the same as Perl 5",
-#       "name" : "podlators",
-#       "url" : "https://metacpan.org/release/podlators"
 #    },
 #    {
 #       "copyright" : "John Peacock",
@@ -1433,8 +1409,8 @@ use warnings;
 use utf8;
 
 use App::cpm;
-$App::cpm::GIT_DESCRIBE = '0.955-3-gcdfec1a';
-$App::cpm::GIT_URL = 'https://github.com/skaji/cpm/tree/cdfec1a';
+$App::cpm::GIT_DESCRIBE = '0.955-5-ge32c8cd';
+$App::cpm::GIT_URL = 'https://github.com/skaji/cpm/tree/e32c8cd';
 
 exit App::cpm->new->run(@ARGV);
 
