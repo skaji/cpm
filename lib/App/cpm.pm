@@ -12,7 +12,7 @@ use App::cpm::Resolver::Cascade;
 use Parallel::Pipes;
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use List::Util ();
-use Pod::Usage ();
+use Pod::Text ();
 use File::Spec;
 use File::Path ();
 use Cwd ();
@@ -216,7 +216,11 @@ sub run {
 }
 
 sub cmd_help {
-    Pod::Usage::pod2usage(0);
+    open my $fh, ">", \my $out;
+    Pod::Text->new->parse_from_file($0, $fh);
+    $out =~ s/^[ ]{6}/    /mg;
+    print $out;
+    return 0;
 }
 
 sub cmd_version {
