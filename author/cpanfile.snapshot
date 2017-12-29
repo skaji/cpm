@@ -168,10 +168,10 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Sub::Exporter::Progressive 0.001011
       perl 5.006
-  Digest-SHA-6.00
-    pathname: M/MS/MSHELOR/Digest-SHA-6.00.tar.gz
+  Digest-SHA-6.01
+    pathname: M/MS/MSHELOR/Digest-SHA-6.01.tar.gz
     provides:
-      Digest::SHA 6.00
+      Digest::SHA 6.01
     requirements:
       ExtUtils::MakeMaker 0
       perl 5.003
@@ -471,12 +471,12 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Test::More 0.31
       Time::HiRes 0
-  JSON-PP-2.97000
-    pathname: I/IS/ISHIGAKI/JSON-PP-2.97000.tar.gz
+  JSON-PP-2.97001
+    pathname: I/IS/ISHIGAKI/JSON-PP-2.97001.tar.gz
     provides:
-      JSON::PP 2.97000
-      JSON::PP::Boolean 2.97000
-      JSON::PP::IncrParser 2.97000
+      JSON::PP 2.97001
+      JSON::PP::Boolean 2.97001
+      JSON::PP::IncrParser 2.97001
     requirements:
       ExtUtils::MakeMaker 0
       Scalar::Util 1.08
@@ -575,12 +575,12 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       JSON::PP 2.27300
       parent 0
-  Module-CoreList-5.20171120
-    pathname: B/BI/BINGOS/Module-CoreList-5.20171120.tar.gz
+  Module-CoreList-5.20171220
+    pathname: B/BI/BINGOS/Module-CoreList-5.20171220.tar.gz
     provides:
-      Module::CoreList 5.20171120
-      Module::CoreList::TieHashDelta 5.20171120
-      Module::CoreList::Utils 5.20171120
+      Module::CoreList 5.20171220
+      Module::CoreList::TieHashDelta 5.20171220
+      Module::CoreList::Utils 5.20171220
     requirements:
       ExtUtils::MakeMaker 0
       List::Util 0
@@ -678,76 +678,6 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
-  Pod-Escapes-1.07
-    pathname: N/NE/NEILB/Pod-Escapes-1.07.tar.gz
-    provides:
-      Pod::Escapes 1.07
-    requirements:
-      Exporter 0
-      ExtUtils::MakeMaker 0
-      perl 5.006
-      strict 0
-      vars 0
-      warnings 0
-  Pod-Simple-3.35
-    pathname: K/KH/KHW/Pod-Simple-3.35.tar.gz
-    provides:
-      Pod::Simple 3.35
-      Pod::Simple::BlackBox 3.35
-      Pod::Simple::Checker 3.35
-      Pod::Simple::Debug 3.35
-      Pod::Simple::DumpAsText 3.35
-      Pod::Simple::DumpAsXML 3.35
-      Pod::Simple::HTML 3.35
-      Pod::Simple::HTMLBatch 3.35
-      Pod::Simple::HTMLLegacy 5.01
-      Pod::Simple::LinkSection 3.35
-      Pod::Simple::Methody 3.35
-      Pod::Simple::Progress 3.35
-      Pod::Simple::PullParser 3.35
-      Pod::Simple::PullParserEndToken 3.35
-      Pod::Simple::PullParserStartToken 3.35
-      Pod::Simple::PullParserTextToken 3.35
-      Pod::Simple::PullParserToken 3.35
-      Pod::Simple::RTF 3.35
-      Pod::Simple::Search 3.35
-      Pod::Simple::SimpleTree 3.35
-      Pod::Simple::Text 3.35
-      Pod::Simple::TextContent 3.35
-      Pod::Simple::TiedOutFH 3.35
-      Pod::Simple::Transcode 3.35
-      Pod::Simple::TranscodeDumb 3.35
-      Pod::Simple::TranscodeSmart 3.35
-      Pod::Simple::XHTML 3.35
-      Pod::Simple::XMLOutStream 3.35
-    requirements:
-      Carp 0
-      Config 0
-      Cwd 0
-      ExtUtils::MakeMaker 0
-      File::Basename 0
-      File::Find 0
-      File::Spec 0
-      Pod::Escapes 1.04
-      Symbol 0
-      Test 1.25
-      Test::More 0
-      Text::Wrap 98.112902
-      integer 0
-      overload 0
-      strict 0
-  Pod-Usage-1.69
-    pathname: M/MA/MAREKR/Pod-Usage-1.69.tar.gz
-    provides:
-      Pod::Usage 1.69
-    requirements:
-      Cwd 0
-      ExtUtils::MakeMaker 0
-      File::Basename 0
-      File::Spec 0.82
-      Pod::Text 4
-      Test::More 0.6
-      blib 0
   Search-Dict-1.07
     pathname: D/DA/DAGOLDEN/Search-Dict-1.07.tar.gz
     provides:
@@ -769,14 +699,6 @@ DISTRIBUTIONS
       Sub::Exporter::Progressive 0.001013
     requirements:
       ExtUtils::MakeMaker 0
-  Test-1.26
-    pathname: J/JE/JESSE/Test-1.26.tar.gz
-    provides:
-      Test 1.26
-    requirements:
-      ExtUtils::MakeMaker 0
-      File::Spec 0
-      Test::Harness 1.1601
   Test-Harness-3.39
     pathname: L/LE/LEONT/Test-Harness-3.39.tar.gz
     provides:
@@ -1008,21 +930,6 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       Test::More 0.4
-  podlators-4.09
-    pathname: R/RR/RRA/podlators-4.09.tar.gz
-    provides:
-      Pod undef
-      Pod::Man 4.09
-      Pod::ParseLink 4.09
-      Pod::Text 4.09
-      Pod::Text::Color 4.09
-      Pod::Text::Overstrike 4.09
-      Pod::Text::Termcap 4.09
-    requirements:
-      Encode 0
-      ExtUtils::MakeMaker 0
-      Pod::Simple 3.06
-      perl 5.006
   version-0.9918
     pathname: J/JP/JPEACOCK/version-0.9918.tar.gz
     provides:
