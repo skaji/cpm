@@ -107,7 +107,14 @@ sub menlo { shift->{menlo} }
 
 sub _fetch_git {
     my ($self, $uri, $ref) = @_;
-    my $dir = File::Temp::tempdir(CLEANUP => 1);
+    my $basename = File::Basename::basename($uri);
+    $basename =~ s/\.git$//;
+    $basename =~ s/[^a-zA-Z0-9_.-]/-/g;
+    my $dir = File::Temp::tempdir(
+        "$basename-XXXXX",
+        CLEANUP => 0,
+        DIR => $self->menlo->{base},
+    );
     $self->menlo->mask_output( diag_progress => "Cloning $uri" );
     $self->menlo->run_command([ 'git', 'clone', $uri, $dir ]);
 
@@ -162,10 +169,13 @@ sub fetch {
             my $basename = basename $uri;
             my $g = pushd $self->menlo->{base};
             if (-d $uri) {
-                my $dest = "$basename." . time;
-                rmtree $dest if -d $dest;
+                my $dest = File::Temp::tempdir(
+                    "$basename-XXXXX",
+                    CLEANUP => 0,
+                    DIR => $self->menlo->{base},
+                );
                 File::Copy::Recursive::dircopy($uri, $dest);
-                $dir = File::Spec->catdir($self->menlo->{base}, $dest);
+                $dir = $dest;
                 last;
             } elsif (-f $uri) {
                 my $dest = $basename;
