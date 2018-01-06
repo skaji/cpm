@@ -109,8 +109,8 @@ ___
 my $resolver = -f "cpanfile.snapshot" && !$force && !$test ? "snapshot" : "metadb";
 
 warn "Resolver: $resolver\n";
-cpm "install", "--cpanfile", "../cpanfile", "--target-perl", $target, "--resolver", $resolver;
-cpm "install", "--cpanfile", "../cpanfile", "--target-perl", $target, "--resolver", $resolver, @extra;
+cpm "install", "--target-perl", $target, "--resolver", $resolver;
+cpm "install", "--target-perl", $target, "--resolver", $resolver, @extra;
 gen_snapshot if !$test;
 remove_version_xs;
 print STDERR "FatPacking...";
