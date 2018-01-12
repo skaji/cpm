@@ -846,52 +846,52 @@ DISTRIBUTIONS
       Test::More 0
       Tie::Handle 0
       strict 0
-  URI-1.72
-    pathname: E/ET/ETHER/URI-1.72.tar.gz
+  URI-1.73
+    pathname: E/ET/ETHER/URI-1.73.tar.gz
     provides:
-      URI 1.72
+      URI 1.73
       URI::Escape 3.31
       URI::Heuristic 4.20
-      URI::IRI 1.72
-      URI::QueryParam 1.72
-      URI::Split 1.72
+      URI::IRI 1.73
+      URI::QueryParam 1.73
+      URI::Split 1.73
       URI::URL 5.04
       URI::WithBase 2.20
-      URI::data 1.72
+      URI::data 1.73
       URI::file 4.21
-      URI::file::Base 1.72
-      URI::file::FAT 1.72
-      URI::file::Mac 1.72
-      URI::file::OS2 1.72
-      URI::file::QNX 1.72
-      URI::file::Unix 1.72
-      URI::file::Win32 1.72
-      URI::ftp 1.72
-      URI::gopher 1.72
-      URI::http 1.72
-      URI::https 1.72
-      URI::ldap 1.72
-      URI::ldapi 1.72
-      URI::ldaps 1.72
-      URI::mailto 1.72
-      URI::mms 1.72
-      URI::news 1.72
-      URI::nntp 1.72
-      URI::pop 1.72
-      URI::rlogin 1.72
-      URI::rsync 1.72
-      URI::rtsp 1.72
-      URI::rtspu 1.72
-      URI::sftp 1.72
-      URI::sip 1.72
-      URI::sips 1.72
-      URI::snews 1.72
-      URI::ssh 1.72
-      URI::telnet 1.72
-      URI::tn3270 1.72
-      URI::urn 1.72
-      URI::urn::isbn 1.72
-      URI::urn::oid 1.72
+      URI::file::Base 1.73
+      URI::file::FAT 1.73
+      URI::file::Mac 1.73
+      URI::file::OS2 1.73
+      URI::file::QNX 1.73
+      URI::file::Unix 1.73
+      URI::file::Win32 1.73
+      URI::ftp 1.73
+      URI::gopher 1.73
+      URI::http 1.73
+      URI::https 1.73
+      URI::ldap 1.73
+      URI::ldapi 1.73
+      URI::ldaps 1.73
+      URI::mailto 1.73
+      URI::mms 1.73
+      URI::news 1.73
+      URI::nntp 1.73
+      URI::pop 1.73
+      URI::rlogin 1.73
+      URI::rsync 1.73
+      URI::rtsp 1.73
+      URI::rtspu 1.73
+      URI::sftp 1.73
+      URI::sip 1.73
+      URI::sips 1.73
+      URI::snews 1.73
+      URI::ssh 1.73
+      URI::telnet 1.73
+      URI::tn3270 1.73
+      URI::urn 1.73
+      URI::urn::isbn 1.73
+      URI::urn::oid 1.73
     requirements:
       Carp 0
       Cwd 0
