@@ -2,6 +2,11 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.956  2018-01-12 22:45:13 JST
+        - Use Pod::Text instead of Pod::Usage (#112)
+        - Disable prebuilt if --test option is specified
+        - Use more appropriate name for temporary directories
+
 0.955  2017-12-10 21:40:00 JST
         - Emit log for all failed distributions (#111)
 
