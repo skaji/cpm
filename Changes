@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.957  2018-01-14 14:04:14 JST
+        - Bump Parallel::Pipes prereq
+
 0.956  2018-01-12 22:45:13 JST
         - Use Pod::Text instead of Pod::Usage (#112)
         - Disable prebuilt if --test option is specified
