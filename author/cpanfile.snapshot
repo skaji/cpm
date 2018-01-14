@@ -620,10 +620,10 @@ DISTRIBUTIONS
       strict 0
       version 0.87
       warnings 0
-  Parallel-Pipes-0.003
-    pathname: S/SK/SKAJI/Parallel-Pipes-0.003.tar.gz
+  Parallel-Pipes-0.004
+    pathname: S/SK/SKAJI/Parallel-Pipes-0.004.tar.gz
     provides:
-      Parallel::Pipes 0.003
+      Parallel::Pipes 0.004
     requirements:
       Module::Build::Tiny 0.034
       perl 5.008001
