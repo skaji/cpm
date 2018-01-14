@@ -16,7 +16,7 @@ requires 'JSON::PP', '2.27300'; # for perl 5.8.6 or below
 requires 'Menlo';
 requires 'Module::CPANfile';
 requires 'Module::Metadata';
-requires 'Parallel::Pipes';
+requires 'Parallel::Pipes', '0.004';
 requires 'local::lib', '2.000018';
 requires 'parent';
 requires 'version', '0.77';

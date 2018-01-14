@@ -61,7 +61,7 @@
             "Menlo" : "0",
             "Module::CPANfile" : "0",
             "Module::Metadata" : "0",
-            "Parallel::Pipes" : "0",
+            "Parallel::Pipes" : "0.004",
             "local::lib" : "2.000018",
             "parent" : "0",
             "perl" : "5.008001",
