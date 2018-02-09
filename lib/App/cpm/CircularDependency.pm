@@ -1,7 +1,7 @@
 package App::cpm::CircularDependency;
 use strict;
 use warnings;
-our $VERSION = '0.957';
+our $VERSION = '0.958';
 
 {
     package

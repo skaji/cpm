@@ -81,14 +81,15 @@
          "web" : "https://github.com/skaji/cpm"
       }
    },
-   "version" : "0.957",
+   "version" : "0.958",
    "x_contributors" : [
       "Andrew Rodland <andrew@cleverdomain.org>",
       "Kenichi Ishigaki <ishigaki@cpan.org>",
+      "Mikhail Ivanov <m.ivanych@gmail.com>",
       "Olaf Alders <olaf@wundersolutions.com>",
       "Shoichi Kaji <skaji@outlook.com>"
    ],
-   "x_serialization_backend" : "Cpanel::JSON::XS version 3.0239",
+   "x_serialization_backend" : "Cpanel::JSON::XS version 4.01",
    "x_static_install" : 1
 }
 

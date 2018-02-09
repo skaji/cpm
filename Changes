@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.958  2018-02-10 06:56:52 JST
+        - Examples git/dist syntax in cpanfile were added (ivanych #113, #114)
+
 0.957  2018-01-14 14:04:14 JST
         - Bump Parallel::Pipes prereq
 

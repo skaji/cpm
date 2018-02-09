@@ -4,7 +4,7 @@ use warnings;
 use App::cpm::version;
 use Cwd ();
 use File::Path ();
-our $VERSION = '0.957';
+our $VERSION = '0.958';
 
 {
     package
