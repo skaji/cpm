@@ -24,7 +24,6 @@ my $TEMPDIR = tempdir CLEANUP => 1;
     for my $attr (qw(local out err exit home logfile)) {
         *$attr = sub { shift->{$attr} };
     }
-    sub success { shift->exit == 0 }
     sub log {
         my $self = shift;
         return $self->{_log} if $self->{_log};
