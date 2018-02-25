@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.959  2018-02-25 13:56:03 JST
+        - Set "provides" properly after configuring (#116)
+        - Emit "Distribution provides: ..." log (#116)
+
 0.958  2018-02-10 06:56:52 JST
         - Examples git/dist syntax in cpanfile were added (ivanych #113, #114)
 
