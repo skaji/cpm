@@ -407,6 +407,9 @@ sub _register_fetch_result {
         $distribution->configured(1);
         $distribution->requirements($job->{requirements});
         $distribution->prebuilt(1);
+        local $self->{logger}{context} = $distribution->distvname;
+        my $msg = join ", ", map { sprintf "%s (%s)", $_->{package}, $_->{version} || 0 } @{$distribution->provides};
+        $self->{logger}->log("Distribution provides: $msg");
     } else {
         $distribution->fetched(1);
         $distribution->configure_requirements($job->{configure_requirements});
@@ -422,9 +425,19 @@ sub _register_configure_result {
     }
     my $distribution = $self->distribution($job->distfile);
     $distribution->configured(1);
-    $distribution->distdata($job->{distdata});
     $distribution->requirements($job->{requirements});
     $distribution->static_builder($job->{static_builder});
+    $distribution->distdata($job->{distdata});
+
+    # After configuring, the final "provides" is fixed.
+    # So we need to re-define "provides" here
+    my $p = $job->{distdata}{provides};
+    my @provide = map +{ package => $_, version => $p->{$_}{version} }, sort keys %$p;
+    $distribution->provides(\@provide);
+    local $self->{logger}{context} = $distribution->distvname;
+    my $msg = join ", ", map { sprintf "%s (%s)", $_->{package}, $_->{version} || 0 } @{$distribution->provides};
+    $self->{logger}->log("Distribution provides: $msg");
+
     return 1;
 }
 

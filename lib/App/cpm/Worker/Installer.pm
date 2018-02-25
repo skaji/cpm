@@ -272,7 +272,7 @@ sub find_prebuilt {
         open my $fh, "<", 'blib/meta/install.json' or die;
         my $json = JSON::PP::decode_json(do { local $/; <$fh> });
         my $provides = $json->{provides};
-        [ map +{ package => $_, version => $provides->{$_}{version} || undef }, keys %$provides ];
+        [ map +{ package => $_, version => $provides->{$_}{version} }, sort keys %$provides ];
     };
     return +{
         directory => $dir,
