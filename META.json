@@ -69,6 +69,88 @@
          }
       }
    },
+   "provides" : {
+      "App::cpm" : {
+         "file" : "lib/App/cpm.pm",
+         "version" : "0.960"
+      },
+      "App::cpm::CircularDependency" : {
+         "file" : "lib/App/cpm/CircularDependency.pm",
+         "version" : "0.960"
+      },
+      "App::cpm::Distribution" : {
+         "file" : "lib/App/cpm/Distribution.pm",
+         "version" : "0.960"
+      },
+      "App::cpm::Job" : {
+         "file" : "lib/App/cpm/Job.pm",
+         "version" : "0.960"
+      },
+      "App::cpm::Logger" : {
+         "file" : "lib/App/cpm/Logger.pm",
+         "version" : "0.960"
+      },
+      "App::cpm::Logger::File" : {
+         "file" : "lib/App/cpm/Logger/File.pm",
+         "version" : "0.960"
+      },
+      "App::cpm::Master" : {
+         "file" : "lib/App/cpm/Master.pm",
+         "version" : "0.960"
+      },
+      "App::cpm::Resolver" : {
+         "file" : "lib/App/cpm/Resolver.pm",
+         "version" : "0.960"
+      },
+      "App::cpm::Resolver::02Packages" : {
+         "file" : "lib/App/cpm/Resolver/02Packages.pm",
+         "version" : "0.960"
+      },
+      "App::cpm::Resolver::Cascade" : {
+         "file" : "lib/App/cpm/Resolver/Cascade.pm",
+         "version" : "0.960"
+      },
+      "App::cpm::Resolver::MetaCPAN" : {
+         "file" : "lib/App/cpm/Resolver/MetaCPAN.pm",
+         "version" : "0.960"
+      },
+      "App::cpm::Resolver::MetaDB" : {
+         "file" : "lib/App/cpm/Resolver/MetaDB.pm",
+         "version" : "0.960"
+      },
+      "App::cpm::Resolver::Snapshot" : {
+         "file" : "lib/App/cpm/Resolver/Snapshot.pm",
+         "version" : "0.960"
+      },
+      "App::cpm::Tutorial" : {
+         "file" : "lib/App/cpm/Tutorial.pm",
+         "version" : "0.960"
+      },
+      "App::cpm::Worker" : {
+         "file" : "lib/App/cpm/Worker.pm",
+         "version" : "0.960"
+      },
+      "App::cpm::Worker::Installer" : {
+         "file" : "lib/App/cpm/Worker/Installer.pm",
+         "version" : "0.960"
+      },
+      "App::cpm::Worker::Installer::Menlo" : {
+         "file" : "lib/App/cpm/Worker/Installer/Menlo.pm",
+         "version" : "0.960"
+      },
+      "App::cpm::Worker::Installer::Prebuilt" : {
+         "file" : "lib/App/cpm/Worker/Installer/Prebuilt.pm",
+         "version" : "0.960"
+      },
+      "App::cpm::Worker::Resolver" : {
+         "file" : "lib/App/cpm/Worker/Resolver.pm",
+         "version" : "0.960"
+      },
+      "App::cpm::version" : {
+         "file" : "lib/App/cpm/version.pm",
+         "version" : "0.960"
+      }
+   },
    "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
@@ -81,7 +163,7 @@
          "web" : "https://github.com/skaji/cpm"
       }
    },
-   "version" : "0.959",
+   "version" : "0.960",
    "x_contributors" : [
       "Andrew Rodland <andrew@cleverdomain.org>",
       "Kenichi Ishigaki <ishigaki@cpan.org>",
