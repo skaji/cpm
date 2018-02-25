@@ -230,8 +230,6 @@ sub fetch {
         $self->{logger}->log("Distribution does not have META.json nor META.yml");
         return;
     }
-    my $p = $meta->{provides} || $self->menlo->extract_packages($meta, ".");
-    my $provides = [ map +{ package => $_, version => $p->{$_}{version} }, sort keys %$p ];
 
     my $configure_requirements = [];
     if ($self->menlo->opts_in_static_install($meta)) {
@@ -244,7 +242,6 @@ sub fetch {
         directory => $dir,
         meta => $meta,
         configure_requirements => $configure_requirements,
-        provides => $provides,
         using_cache => $using_cache,
     };
 }
@@ -271,8 +268,7 @@ sub find_prebuilt {
     my $provides = do {
         open my $fh, "<", 'blib/meta/install.json' or die;
         my $json = JSON::PP::decode_json(do { local $/; <$fh> });
-        my $provides = $json->{provides};
-        [ map +{ package => $_, version => $provides->{$_}{version} || undef }, keys %$provides ];
+        $json->{provides};
     };
     return +{
         directory => $dir,

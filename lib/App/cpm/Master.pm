@@ -401,12 +401,18 @@ sub _register_fetch_result {
     my $distribution = $self->distribution($job->distfile);
     $distribution->directory($job->{directory});
     $distribution->meta($job->{meta});
-    $distribution->provides($job->{provides});
 
     if ($job->{prebuilt}) {
         $distribution->configured(1);
         $distribution->requirements($job->{requirements});
         $distribution->prebuilt(1);
+
+        my @provide = map +{ package => $_, version => $job->{provides}{$_}{version} },
+            sort keys %{$job->{provides}};
+        $distribution->provides(\@provide);
+        local $self->{logger}{context} = $distribution->distvname;
+        my $msg = join ", ", map { sprintf "%s (%s)", $_->{package}, $_->{version} || 0 } @provide;
+        $self->{logger}->log("This distribution provides: $msg");
     } else {
         $distribution->fetched(1);
         $distribution->configure_requirements($job->{configure_requirements});
@@ -425,6 +431,13 @@ sub _register_configure_result {
     $distribution->distdata($job->{distdata});
     $distribution->requirements($job->{requirements});
     $distribution->static_builder($job->{static_builder});
+
+    my @provide = map +{ package => $_, version => $job->{distdata}{provides}{$_}{version} },
+        sort keys %{$job->{distdata}{provides}};
+    $distribution->provides(\@provide);
+    local $self->{logger}{context} = $distribution->distvname;
+    my $msg = join ", ", map { sprintf "%s (%s)", $_->{package}, $_->{version} || 0 } @provide;
+    $self->{logger}->log("This distribution provides: $msg");
     return 1;
 }
 
