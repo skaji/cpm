@@ -91,7 +91,13 @@ my @extra = qw(
 
 my $target = '5.8.1';
 
-my ($git_describe, $git_url) = git_info;
+my ($git_describe, $git_url);
+if (my $version = $ENV{CPAN_RELEASE_VERSION}) {
+    $git_describe = $version;
+    $git_url = "https://github.com/skaji/cpm/tree/$version";
+} else {
+    ($git_describe, $git_url) = git_info;
+}
 warn "\e[1;31m!!! GIT IS DIRTY !!!\e[m\n" if $git_describe =~ /dirty/;
 
 my @copyright = Path::Tiny->new("copyrights-and-licenses.json")->lines({chomp => 1});
