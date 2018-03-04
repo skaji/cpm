@@ -2,6 +2,11 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.961  2018-03-04 13:35:48 JST
+        - Fatpack cpm before git commit; this allows you to download fatpack cpm by
+          curl --compressed -o cpm https://raw.githubusercontent.com/skaji/cpm/0.961/cpm
+          (requested by akiym #117)
+
 0.960  2018-02-25 15:52:43 JST
         - Specify "provides" in META.json
 

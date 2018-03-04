@@ -2,7 +2,7 @@ package App::cpm::Worker;
 use strict;
 use warnings;
 use utf8;
-our $VERSION = '0.960';
+our $VERSION = '0.961';
 
 use App::cpm::Worker::Installer;
 use App::cpm::Worker::Resolver;
