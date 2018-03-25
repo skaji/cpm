@@ -1,7 +1,7 @@
 package App::cpm::Worker::Installer::Prebuilt;
 use strict;
 use warnings;
-our $VERSION = '0.962';
+our $VERSION = '0.963';
 
 my @SKIP = (
     qr{/XML-SAX-v?[0-9\.]+\.tar\.gz$},

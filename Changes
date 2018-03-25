@@ -2,6 +2,12 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.963  2018-03-25 17:23:08 JST
+        - Do not install module;
+            - if resolved version is in requested version range, or
+            - if resolved version is lower than installed version
+        - Check Module::CoreList have $] entry
+
 0.962  2018-03-04 14:10:58 JST
         - Fix git describe and git url in fatpacked cpm
 
