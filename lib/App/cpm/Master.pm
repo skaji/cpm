@@ -278,14 +278,18 @@ sub is_satisfied_perl_version {
 
 sub is_installed {
     my ($self, $package, $version_range) = @_;
+    my $wantarray = wantarray;
     if (exists $self->{_is_installed}{$package}) {
-        return 1 if $self->{_is_installed}{$package}->satisfy($version_range);
+        if ($self->{_is_installed}{$package}->satisfy($version_range)) {
+            return $wantarray ? (1, $self->{_is_installed}{$package}) : 1;
+        }
     }
     my $info = Module::Metadata->new_from_module($package, inc => $self->{inc});
     return unless $info;
     my $current_version = $self->{_is_installed}{$package}
                         = App::cpm::version->parse($info->version);
-    return $current_version->satisfy($version_range);
+    my $ok = $current_version->satisfy($version_range);
+    $wantarray ? ($ok, $current_version) : $ok;
 }
 
 sub is_core {
@@ -369,16 +373,23 @@ sub _register_resolve_result {
         return;
     }
 
-    if (!$job->{reinstall} and $self->is_installed($job->{package}, "== $job->{version}")) { # XXX
-        my $version = $job->{version} || 0;
-        my $message = "$job->{package} is up to date. ($version)";
-        $self->{logger}->log($message);
-        App::cpm::Logger->log(
-            result => "DONE",
-            type => "install",
-            message => $message,
-        );
-        return;
+    if (!$job->{reinstall}) {
+        my $want = $job->{version_range} || $job->{version};
+        my ($ok, $local) = $self->is_installed($job->{package}, $want);
+        if ($ok) {
+            my $message = $job->{package} . (
+                App::cpm::version->parse($job->{version}) != $local
+                ? ", you already have $local"
+                : " is up to date. ($local)"
+            );
+            $self->{logger}->log($message);
+            App::cpm::Logger->log(
+                result => "DONE",
+                type => "install",
+                message => $message,
+            );
+            return;
+        }
     }
 
     my $provides = $job->{provides};
