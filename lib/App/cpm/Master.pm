@@ -178,6 +178,7 @@ sub _calculate_jobs {
                 source => $dist->source,
                 uri => $dist->uri,
                 ref => $dist->ref,
+                queried_package => $dist->queried_package,
             );
         }
     }
@@ -196,6 +197,7 @@ sub _calculate_jobs {
                     distfile => $dist->{distfile},
                     source => $dist->source,
                     uri => $dist->uri,
+                    hook => $dist->hook,
                 );
             } elsif (@need_resolve and !$dist->deps_registered) {
                 $dist->deps_registered(1);
@@ -231,6 +233,7 @@ sub _calculate_jobs {
                     uri => $dist->uri,
                     static_builder => $dist->static_builder,
                     prebuilt => $dist->prebuilt,
+                    hook => $dist->hook,
                 );
             } elsif (@need_resolve and !$dist->deps_registered) {
                 $dist->deps_registered(1);
@@ -402,6 +405,7 @@ sub _register_resolve_result {
         uri      => $job->{uri},
         provides => $provides,
         distfile => $job->{distfile},
+        queried_package => $job->{package},
     );
     $self->add_distribution($distribution);
 }
@@ -416,6 +420,7 @@ sub _register_fetch_result {
     $distribution->directory($job->{directory});
     $distribution->meta($job->{meta});
     $distribution->provides($job->{provides});
+    $distribution->hook($job->{hook});
 
     if ($job->{prebuilt}) {
         $distribution->configured(1);

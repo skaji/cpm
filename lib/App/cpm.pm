@@ -7,6 +7,7 @@ use App::cpm::Master;
 use App::cpm::Worker;
 use App::cpm::Logger;
 use App::cpm::version;
+use App::cpm::Util;
 use App::cpm::Resolver::MetaDB;
 use App::cpm::Resolver::MetaCPAN;
 use App::cpm::Resolver::Cascade;
@@ -46,8 +47,9 @@ sub new {
     bless {
         home => $class->determine_home,
         workers => WIN32 ? 1 : 5,
-        snapshot => "cpanfile.snapshot",
-        cpanfile => "cpanfile",
+        snapshot_path => "cpanfile.snapshot",
+        cpanfile_path => "cpanfile",
+        cpanfile => undef,
         local_lib => "local",
         cpanmetadb => "http://cpanmetadb.plackperl.org/v1.0/",
         mirror => ["https://cpan.metacpan.org/"],
@@ -67,6 +69,7 @@ sub new {
         notest => 1,
         prebuilt => $] >= 5.012 && $prebuilt,
         pureperl_only => 0,
+        cwd => Cwd::cwd(),
         %option
     }, $class;
 }
@@ -88,8 +91,8 @@ sub parse_options {
         "w|workers=i" => \($self->{workers}),
         "target-perl=s" => \my $target_perl,
         "test!" => sub { $self->{notest} = $_[1] ? 0 : 1 },
-        "cpanfile=s" => \($self->{cpanfile}),
-        "snapshot=s" => \($self->{snapshot}),
+        "cpanfile=s" => \($self->{cpanfile_path}),
+        "snapshot=s" => \($self->{snapshot_path}),
         "sudo" => \($self->{sudo}),
         "r|resolver=s@" => \@resolver,
         "mirror-only" => \($self->{mirror_only}),
@@ -110,8 +113,8 @@ sub parse_options {
         "feature=s@" => \@feature,
     or exit 1;
 
-    $self->{local_lib} = $self->maybe_abs($self->{local_lib}) unless $self->{global};
-    $self->{home} = $self->maybe_abs($self->{home});
+    $self->{local_lib} = App::cpm::Util::maybe_abs($self->{cwd}, $self->{local_lib}) unless $self->{global};
+    $self->{home} = App::cpm::Util::maybe_abs($self->{cwd}, $self->{home});
     $self->{resolver} = \@resolver;
     $self->{feature} = \@feature if @feature;
     $self->{mirror} = \@mirror if @mirror;
@@ -145,7 +148,7 @@ sub parse_options {
 
     if (@ARGV && $ARGV[0] eq "-") {
         $self->{argv} = $self->read_argv_from_stdin;
-        $self->{cpanfile} = undef;
+        $self->{cpanfile_path} = undef;
     } else {
         $self->{argv} = \@ARGV;
     }
@@ -185,22 +188,13 @@ sub _inc {
     }
 }
 
-sub maybe_abs {
-    my ($self, $path) = @_;
-    if (File::Spec->file_name_is_absolute($path)) {
-        return $path;
-    } else {
-        File::Spec->canonpath(File::Spec->catdir(Cwd::cwd(), $path));
-    }
-}
-
 sub normalize_mirror {
     my ($self, $mirror) = @_;
     $mirror =~ s{/*$}{/};
     return $mirror if $mirror =~ m{^https?://};
     $mirror =~ s{^file://}{};
     die "$mirror: No such directory.\n" unless -d $mirror;
-    "file://" . $self->maybe_abs($mirror);
+    "file://" . App::cpm::Util::maybe_abs($self->{cwd}, $mirror);
 }
 
 sub run {
@@ -237,7 +231,7 @@ sub cmd_version {
 sub cmd_install {
     my $self = shift;
     die "Need arguments or cpanfile.\n"
-        if !@{$self->{argv}} && (!$self->{cpanfile} || !-f $self->{cpanfile});
+        if !@{$self->{argv}} && (!$self->{cpanfile_path} || !-f $self->{cpanfile_path});
 
     File::Path::mkpath($self->{home}) unless -d $self->{home};
     my $logger = App::cpm::Logger::File->new("$self->{home}/build.log.@{[time]}");
@@ -257,6 +251,9 @@ sub cmd_install {
     return 0 unless $packages;
 
     my $worker = App::cpm::Worker->new(
+        mirror    => $self->{mirror},
+        cwd       => $self->{cwd},
+        cpanfile  => $self->{cpanfile},
         verbose   => $self->{verbose},
         home      => $self->{home},
         logger    => $logger,
@@ -385,7 +382,7 @@ sub initial_job {
         my $arg = $_; # copy
         my ($package, $dist);
         if (-d $arg || -f $arg || $arg =~ s{^file://}{}) {
-            $arg = $self->maybe_abs($arg);
+            $arg = App::cpm::Util::maybe_abs($self->{cwd}, $arg);
             $dist = App::cpm::Distribution->new(source => "local", uri => "file://$arg", provides => []);
         } elsif ($arg =~ /(?:^git:|\.git(?:@.+)?$)/) {
             my %ref = $arg =~ s/(?<=\.git)@(.+)$// ? (ref => $1) : ();
@@ -435,7 +432,7 @@ sub initial_job {
     }
 
     if (!@{$self->{argv}}) {
-        my ($requirements, $dists) = $self->load_cpanfile($self->{cpanfile});
+        my ($requirements, $dists) = $self->load_cpanfile($self->{cpanfile_path});
         push @dist, @$dists;
         my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirements);
         if (!@$dists and $is_satisfied) {
@@ -444,7 +441,7 @@ sub initial_job {
         } elsif (!defined $is_satisfied) {
             my ($req) = grep { $_->{package} eq "perl" } @$requirements;
             die sprintf "%s requires perl %s, but you have only %s\n",
-                $self->{cpanfile}, $req->{version_range}, $self->{target_perl} || $];
+                $self->{cpanfile_path}, $req->{version_range}, $self->{target_perl} || $];
         } else {
             push @package, @need_resolve;
         }
@@ -456,7 +453,7 @@ sub initial_job {
 sub load_cpanfile {
     my ($self, $file) = @_;
     require Module::CPANfile;
-    my $cpanfile = Module::CPANfile->load($file);
+    my $cpanfile = $self->{cpanfile} = Module::CPANfile->load($file);
     my $prereqs = $cpanfile->prereqs_with(@{ $self->{"feature"} });
     my @phase = grep $self->{"with_$_"}, qw(configure build test runtime develop);
     my @type  = grep $self->{"with_$_"}, qw(requires recommends suggests);
@@ -471,12 +468,14 @@ sub load_cpanfile {
             push @distribution, App::cpm::Distribution->new(
                 source => "git", uri => $uri, ref => $option->{ref},
                 provides => [{package => $package}],
+                queried_package => $package,
             );
         } elsif ($uri = $option->{dist}) {
             my $source = $uri =~ m{^file://} ? "local" : "http";
             push @distribution, App::cpm::Distribution->new(
                 source => $source, uri => $uri,
                 provides => [{package => $package}],
+                queried_package => $package,
             );
         } else {
             push @package, {
@@ -519,7 +518,7 @@ sub generate_resolver {
             } elsif ($klass =~ /^snapshot$/i) {
                 require App::cpm::Resolver::Snapshot;
                 $resolver = App::cpm::Resolver::Snapshot->new(
-                    path => $self->{snapshot},
+                    path => $self->{snapshot_path},
                     mirror => @arg ? [map $self->normalize_mirror($_), @arg] : $self->{mirror},
                 );
             } else {
@@ -542,13 +541,13 @@ sub generate_resolver {
         return $cascade;
     }
 
-    if (!@{$self->{argv}} and -f $self->{snapshot}) {
+    if (!@{$self->{argv}} and -f $self->{snapshot_path}) {
         if (!eval { require App::cpm::Resolver::Snapshot }) {
-            die "To load $self->{snapshot}, you need to install Carton::Snapshot.\n";
+            die "To load $self->{snapshot_path}, you need to install Carton::Snapshot.\n";
         }
-        warn "Loading distributions from $self->{snapshot}...\n";
+        warn "Loading distributions from $self->{snapshot_path}...\n";
         my $resolver = App::cpm::Resolver::Snapshot->new(
-            path => $self->{snapshot},
+            path => $self->{snapshot_path},
             mirror => $self->{mirror},
         );
         $cascade->add($resolver);

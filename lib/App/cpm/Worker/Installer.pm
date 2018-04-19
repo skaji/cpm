@@ -9,6 +9,9 @@ use App::cpm::Worker::Installer::Menlo;
 use App::cpm::Worker::Installer::Prebuilt;
 use App::cpm::version;
 use App::cpm::Requirement;
+use App::cpm::Hook;
+use App::cpm::Hook::Context;
+use App::cpm::Util;
 use CPAN::DistnameInfo;
 use CPAN::Meta;
 use Config;
@@ -46,6 +49,7 @@ sub work {
                 using_cache => $result->{using_cache},
                 prebuilt => $result->{prebuilt},
                 requirements => $result->{requirements},
+                hook => $result->{hook},
             };
         } else {
             $self->{logger}->log("Failed to fetch/configure distribution");
@@ -135,6 +139,37 @@ sub _fetch_git {
     ($dir, $rev);
 }
 
+sub _fetch_patch {
+    my ($self, $patch) = @_;
+
+    my $uri = $patch;
+    if ($patch =~ m!^(?:[A-Z]/[A-Z]{2}/)?([A-Z]{2}[\-A-Z0-9]*)/(.+)$!) {
+        my ($author, $path) = ($1, $2);
+        $uri = sprintf "%sauthors/id/%s/%s/%s/%s",
+            $self->{mirror}[0], substr($author,0,1), substr($author,0,2), $author, $path;
+    }
+    if ($uri =~ s{^file://}{}) {
+        return App::cpm::Util::maybe_abs($self->{cwd}, $uri);
+    } elsif ($patch =~ s{^file://}{} or $uri !~ m{^https?://}) {
+        return App::cpm::Util::maybe_abs($self->{cwd}, $patch);
+    }
+
+    my $basename = File::Basename::basename($uri);
+    $basename =~ s/[^a-zA-Z0-9_.-]/-/g;
+    (undef, my $tempfile) = File::Temp::tempfile(
+        "$basename-XXXXX",
+        DIR => $self->menlo->{base},
+        UNLINK => 0,
+        OPEN => 0,
+        EXLOCK => 0,
+    );
+    $self->{logger}->log("Downloading patch $uri as $tempfile");
+    my $res = $self->{menlo}->mirror($uri => $tempfile);
+    return $tempfile if $res->{success};
+    $self->{logger}->log("$res->{status} $res->{reason}, $uri");
+    return;
+}
+
 sub enable_prebuilt {
     my $self = shift;
     my $uri = ref $_[0] ? $_[0][0] : $_[0];
@@ -149,7 +184,14 @@ sub fetch {
     my $distfile = $job->{distfile};
     my @uri      = ref $job->{uri} ? @{$job->{uri}} : ($job->{uri});
 
-    if ($self->enable_prebuilt($uri[0])) {
+    my $hook_code; {
+        my $package = $job->{queried_package} or last;
+        my $cpanfile = $self->{cpanfile} or last;
+        my $options = $cpanfile->options_for_module($package) or last;
+        $hook_code = $options->{hook};
+    }
+
+    if (!$hook_code && $self->enable_prebuilt($uri[0])) {
         if (my $result = $self->find_prebuilt($uri[0])) {
             $self->{logger}->log("Using prebuilt $result->{directory}");
             return $result;
@@ -226,6 +268,26 @@ sub fetch {
 
     chdir $dir or die;
 
+    my $hook = App::cpm::Hook->new;
+    if ($hook_code) {
+        my $context = App::cpm::Hook::Context->new;
+        eval {
+            local $_ = $context;
+            $hook_code->();
+        }; if (my $err = $@) {
+            $self->{logger}->log($err);
+            return;
+        }
+        $hook = $context->as_hook; # real hook
+    }
+
+    if (my @patch = $hook->patch) {
+        if (!$self->apply_patch(@patch)) {
+            $self->{logger}->log("Failed to apply patch");
+            return;
+        }
+    }
+
     my $meta = $self->_load_metafile($distfile, 'META.json', 'META.yml');
     if (!$meta) {
         $self->{logger}->log("Distribution does not have META.json nor META.yml");
@@ -240,6 +302,8 @@ sub fetch {
     } else {
         $configure_requirement = $self->_extract_configure_requirements($meta, $distfile);
     }
+    $hook->requirement(['configure'], $configure_requirement)
+        or return;
 
     return +{
         directory => $dir,
@@ -247,7 +311,23 @@ sub fetch {
         configure_requirements => $configure_requirement->as_array,
         provides => $provides,
         using_cache => $using_cache,
+        hook => $hook,
     };
+}
+
+sub apply_patch {
+    my ($self, @patch) = @_;
+    my $ok;
+    for my $patch (@patch) {
+        my $local_patch = $self->_fetch_patch($patch);
+        if (!$local_patch) {
+            $ok = 0, last;
+        }
+        $self->{logger}->log("Applying patch $patch");
+        $ok = $self->{menlo}->run_command(["patch", "--batch", "-p0", "-i", $local_patch]);
+        last if !$ok;
+    }
+    $ok;
 }
 
 sub find_prebuilt {
@@ -392,8 +472,13 @@ sub configure {
     my ($dir, $distfile, $meta, $source) = @{$job}{qw(directory distfile meta source)};
     my $guard = pushd $dir;
     my $menlo = $self->menlo;
+    my $hook  = $job->{hook};
 
     $self->{logger}->log("Configuring distribution");
+    my %env = $hook->env;
+    $self->{logger}->log("Set environment variables " . (join " ", map { "$_=$env{$_}" } sort keys %env)) if %env;
+    local %ENV = (%ENV, %env) if %env;
+
     my ($static_builder, $configure_ok);
     {
         if ($menlo->opts_in_static_install($meta)) {
@@ -403,16 +488,16 @@ sub configure {
             ++$configure_ok and last;
         }
         if (-f 'Build.PL') {
-            my @cmd = ($menlo->{perl}, 'Build.PL');
-            push @cmd, '--pureperl-only' if $self->{pureperl_only};
+            my @cmd = ($menlo->{perl}, 'Build.PL', $hook->args('configure'));
+            push @cmd, '--pureperl-only' if $self->{pureperl_only} || $hook->pureperl_only;
             $self->_retry(sub {
                 $menlo->configure(\@cmd, 1);
                 -f 'Build';
             }) and ++$configure_ok and last;
         }
         if (-f 'Makefile.PL') {
-            my @cmd = ($menlo->{perl}, 'Makefile.PL');
-            push @cmd, 'PUREPERL_ONLY=1' if $self->{pureperl_only};
+            my @cmd = ($menlo->{perl}, 'Makefile.PL', $hook->args('configure'));
+            push @cmd, 'PUREPERL_ONLY=1' if $self->{pureperl_only} || $hook->pureperl_only;
             $self->_retry(sub {
                 $menlo->configure(\@cmd, 1); # XXX depth == 1?
                 -f 'Makefile';
@@ -425,6 +510,9 @@ sub configure {
     my $phase = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
     my $mymeta = $self->_load_metafile($distfile, 'MYMETA.json', 'MYMETA.yml');
     my $requirement = $self->_extract_requirements($mymeta, $phase);
+    $hook->requirement($phase, $requirement)
+        or return;
+
     return +{
         distdata => $distdata,
         requirements => $requirement->as_array,
@@ -462,8 +550,13 @@ sub install {
     my ($dir, $distdata, $static_builder) = @{$job}{qw(directory distdata static_builder)};
     my $guard = pushd $dir;
     my $menlo = $self->menlo;
+    my $hook = $job->{hook};
 
     $self->{logger}->log("Building " . ($menlo->{notest} ? "" : "and testing ") . "distribution");
+    my %env = $hook->env;
+    $self->{logger}->log("Set environment variables " . (join " ", map { "$_=$env{$_}" } sort keys %env)) if %env;
+    local %ENV = (%ENV, %env) if %env;
+
     my $installed;
     if ($static_builder) {
         $menlo->build(sub { $static_builder->build }, )
@@ -471,14 +564,14 @@ sub install {
         && $menlo->install(sub { $static_builder->build("install") }, [])
         && $installed++;
     } elsif (-f 'Build') {
-        $self->_retry(sub { $menlo->build([ $menlo->{perl}, "./Build" ], )  })
-        && $self->_retry(sub { $menlo->test([ $menlo->{perl}, "./Build", "test" ], )  })
-        && $self->_retry(sub { $menlo->install([ $menlo->{perl}, "./Build", "install" ], [])  })
+        $self->_retry(sub { $menlo->build([ $menlo->{perl}, "./Build", $hook->args('build') ], )  })
+        && $self->_retry(sub { $menlo->test([ $menlo->{perl}, "./Build", "test", $hook->args('test') ], )  })
+        && $self->_retry(sub { $menlo->install([ $menlo->{perl}, "./Build", "install", $hook->args('install') ], [])  })
         && $installed++;
     } else {
-        $self->_retry(sub { $menlo->build([ $menlo->{make} ], )  })
-        && $self->_retry(sub { $menlo->test([ $menlo->{make}, "test" ], )  })
-        && $self->_retry(sub { $menlo->install([ $menlo->{make}, "install" ], []) })
+        $self->_retry(sub { $menlo->build([ $menlo->{make}, $hook->args('build') ], )  })
+        && $self->_retry(sub { $menlo->test([ $menlo->{make}, "test", $hook->args('test') ], )  })
+        && $self->_retry(sub { $menlo->install([ $menlo->{make}, "install", $hook->args('install') ], []) })
         && $installed++;
     }
 
@@ -488,7 +581,7 @@ sub install {
             $distdata,
             $distdata->{module_name},
         );
-        $self->save_prebuilt($job) if $self->enable_prebuilt($job->{uri});
+        $self->save_prebuilt($job) if !$hook->is_effective && $self->enable_prebuilt($job->{uri});
     }
     return $installed;
 }

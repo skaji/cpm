@@ -24,6 +24,8 @@ sub new {
 }
 
 for my $attr (qw(
+    hook
+    queried_package
     source
     configure_requirements
     directory
