@@ -65,7 +65,7 @@ sub new {
         feature => [],
         notest => 1,
         prebuilt => $] >= 5.012 && $prebuilt,
-        pureperl_only => 1,
+        pureperl_only => 0,
         %option
     }, $class;
 }
