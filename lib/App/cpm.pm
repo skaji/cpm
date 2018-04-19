@@ -2,6 +2,7 @@ package App::cpm;
 use 5.008001;
 use strict;
 use warnings;
+use App::cpm::Requirement;
 use App::cpm::Master;
 use App::cpm::Worker;
 use App::cpm::Logger;
@@ -272,26 +273,19 @@ sub cmd_install {
         ($self->{global} ? () : (local_lib => $self->{local_lib})),
     );
 
-    if ($] < 5.016) {
-        my %toolchain = ('ExtUtils::MakeMaker' => '6.58', 'ExtUtils::ParseXS' => '3.16');
-        for my $name (sort keys %toolchain) {
-            my ($req, $i);
-            my $req_range = $toolchain{$name};
-            if ( ($i) = grep { $packages->[$_]{package} eq $name } 0..$#{$packages} ) {
-                my $user = $packages->[$i];
-                my $range = eval { App::cpm::version::range_merge($user->{version_range}, $req_range) };
-                die sprintf "We have to install %s %s or later first, but you requested that of %s\n",
-                    $name, $req_range, $user->{version_range} if $@;
-                $req = { package => $name, version_range => $range, dev => $user->{dev} };
-                splice @$packages, $i, 1 if defined $i;
-            } else {
-                $req = { package => $name, version_range => $req_range };
-            }
-            my ($is_satisfied, @need_resolve) = $master->is_satisfied([$req]);
-            if (!$is_satisfied) {
-                $master->add_job(type => "resolve", %$_) for @need_resolve;
+    {
+        last if $] >= 5.016;
+        my $requirement = App::cpm::Requirement->new('ExtUtils::MakeMaker' => '6.58', 'ExtUtils::ParseXS' => '3.16');
+        for my $name ('ExtUtils::MakeMaker', 'ExtUtils::ParseXS') {
+            if (my ($i) = grep { $packages->[$_]{package} eq $name } 0..$#{$packages}) {
+                $requirement->add($name, $packages->[$i]{version_range})
+                    or die sprintf "We have to install newer $name first: $@\n";
+                splice @$packages, $i, 1;
             }
         }
+        my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirement->as_array);
+        last if $is_satisfied;
+        $master->add_job(type => "resolve", %$_) for @need_resolve;
 
         $self->install($master, $worker, 1);
         if (my $fail = $master->fail) {
