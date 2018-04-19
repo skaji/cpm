@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.964  2018-04-19 11:57:02 CEST
+        - Support pureperl only build
+
 0.963  2018-03-25 17:23:08 JST
         - Do not install module;
             - if resolved version is in requested version range, or
