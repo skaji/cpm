@@ -62,6 +62,8 @@ cpm - a fast CPAN module installer
       --mirror=URL
         base url for the CPAN mirror to use, you can use --mirror multiple times
         default: https://cpan.metacpan.org
+      --pp, --pureperl-only
+        prefer pureperl only build
   -r, --resolver=class,args (EXPERIMENTAL, will be removed or renamed)
         specify resolvers, you can use --resolver multiple times
         available classes: metadb/metacpan/02packages/snapshot

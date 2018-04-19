@@ -65,6 +65,7 @@ sub new {
         feature => [],
         notest => 1,
         prebuilt => $] >= 5.012 && $prebuilt,
+        pureperl_only => 1,
         %option
     }, $class;
 }
@@ -102,6 +103,7 @@ sub parse_options {
         "show-progress!" => \($self->{show_progress}),
         "prebuilt!" => \($self->{prebuilt}),
         "reinstall" => \($self->{reinstall}),
+        "pp|pureperl|pureperl-only" => \($self->{pureperl_only}),
         (map $with_option->($_), qw(requires recommends suggests)),
         (map $with_option->($_), qw(configure build test runtime develop)),
         "feature=s@" => \@feature,
@@ -132,7 +134,7 @@ sub parse_options {
     if ($self->{sudo}) {
         !system "sudo", $^X, "-e1" or exit 1;
     }
-    if ($self->{sudo} or !$self->{notest} or $self->{man_pages} or $] < 5.012) {
+    if ($self->{pureperl_only} or $self->{sudo} or !$self->{notest} or $self->{man_pages} or $] < 5.012) {
         $self->{prebuilt} = 0;
     }
 
@@ -263,6 +265,7 @@ sub cmd_install {
         man_pages => $self->{man_pages},
         retry     => $self->{retry},
         prebuilt  => $self->{prebuilt},
+        pureperl_only => $self->{pureperl_only},
         configure_timeout => $self->{configure_timeout},
         build_timeout     => $self->{build_timeout},
         test_timeout      => $self->{test_timeout},

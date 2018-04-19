@@ -405,14 +405,18 @@ sub configure {
             ++$configure_ok and last;
         }
         if (-f 'Build.PL') {
+            my @cmd = ($menlo->{perl}, 'Build.PL');
+            push @cmd, '--pureperl-only' if $self->{pureperl_only};
             $self->_retry(sub {
-                $menlo->configure([ $menlo->{perl}, 'Build.PL' ], 1);
+                $menlo->configure(\@cmd, 1);
                 -f 'Build';
             }) and ++$configure_ok and last;
         }
         if (-f 'Makefile.PL') {
+            my @cmd = ($menlo->{perl}, 'Makefile.PL');
+            push @cmd, 'PUREPERL_ONLY=1' if $self->{pureperl_only};
             $self->_retry(sub {
-                $menlo->configure([ $menlo->{perl}, 'Makefile.PL' ], 1); # XXX depth == 1?
+                $menlo->configure(\@cmd, 1); # XXX depth == 1?
                 -f 'Makefile';
             }) and ++$configure_ok and last;
         }
