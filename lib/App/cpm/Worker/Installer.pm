@@ -8,6 +8,7 @@ use App::cpm::Logger::File;
 use App::cpm::Worker::Installer::Menlo;
 use App::cpm::Worker::Installer::Prebuilt;
 use App::cpm::version;
+use App::cpm::Requirement;
 use CPAN::DistnameInfo;
 use CPAN::Meta;
 use Config;
@@ -233,17 +234,17 @@ sub fetch {
     my $p = $meta->{provides} || $self->menlo->extract_packages($meta, ".");
     my $provides = [ map +{ package => $_, version => $p->{$_}{version} }, sort keys %$p ];
 
-    my $configure_requirements = [];
+    my $configure_requirement = App::cpm::Requirement->new;
     if ($self->menlo->opts_in_static_install($meta)) {
         $self->{logger}->log("Distribution opts in x_static_install: $meta->{x_static_install}");
     } else {
-        $configure_requirements = $self->_extract_configure_requirements($meta, $distfile);
+        $configure_requirement = $self->_extract_configure_requirements($meta, $distfile);
     }
 
     return +{
         directory => $dir,
         meta => $meta,
-        configure_requirements => $configure_requirements,
+        configure_requirements => $configure_requirement->as_array,
         provides => $provides,
         using_cache => $using_cache,
     };
@@ -260,13 +261,13 @@ sub find_prebuilt {
     my $meta   = $self->_load_metafile($uri, 'META.json', 'META.yml');
     my $mymeta = $self->_load_metafile($uri, 'blib/meta/MYMETA.json');
     my $phase  = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
-    my @req;
+    my $requirement = App::cpm::Requirement->new;
     if (!$self->menlo->opts_in_static_install($meta)) {
         # XXX Actually we don't need configure requirements for prebuilt.
         # But requires them for consistency for now.
-        push @req, @{ $self->_extract_configure_requirements($meta, $uri) };
+        $requirement = $self->_extract_configure_requirements($meta, $uri);
     }
-    push @req, @{ $self->_extract_requirements($mymeta, $phase) };
+    $requirement->merge($self->_extract_requirements($mymeta, $phase));
 
     my $provides = do {
         open my $fh, "<", 'blib/meta/install.json' or die;
@@ -279,7 +280,7 @@ sub find_prebuilt {
         meta => $meta->as_struct,
         provides => $provides,
         prebuilt => 1,
-        requirements => \@req,
+        requirements => $requirement->as_array,
     };
 }
 
@@ -307,19 +308,18 @@ sub save_prebuilt {
 }
 
 sub _inject_toolchain_requirements {
-    my ($self, $distfile, $reqs) = @_;
+    my ($self, $distfile, $requirement) = @_;
     $distfile ||= "";
 
-    my %deps = map { $_->{package} => $_ } @$reqs;
     if (    -f "Makefile.PL"
-        and !$deps{'ExtUtils::MakeMaker'}
+        and !$requirement->has('ExtUtils::MakeMaker')
         and !-f "Build.PL"
         and $distfile !~ m{/ExtUtils-MakeMaker-[0-9v]}
     ) {
-        $deps{'ExtUtils::MakeMaker'} ||= { package => "ExtUtils::MakeMaker", version_range => 0 };
+        $requirement->add('ExtUtils::MakeMaker');
     }
-    if ($deps{'Module::Build'}) {
-        $deps{'ExtUtils::Install'} ||= { package => 'ExtUtils::Install', version_range => 0 };
+    if ($requirement->has('Module::Build')) {
+        $requirement->add('ExtUtils::Install');
     }
 
     my %inject = (
@@ -329,12 +329,10 @@ sub _inject_toolchain_requirements {
     );
 
     for my $package (sort keys %inject) {
-        my $inject = $inject{$package};
-        my $dep = $deps{$package} or next;
-        $dep->{version_range} = App::cpm::version::range_merge($dep->{version_range}, $inject);
+        $requirement->has($package) or next;
+        $requirement->add($package, $inject{$package});
     }
-
-    @$reqs = values %deps;
+    $requirement;
 }
 
 sub _load_metafile {
@@ -356,28 +354,28 @@ sub _load_metafile {
 # because the test "-f Build.PL" or similar is present
 sub _extract_configure_requirements {
     my ($self, $meta, $distfile) = @_;
-    my $requirements = $self->_extract_requirements($meta, [qw(configure)]);
-    if (!@$requirements and -f "Build.PL" and ($distfile || "") !~ m{/Module-Build-[0-9v]}) {
-        push @$requirements, { package => "Module::Build", version_range => "0.38" };
+    my $requirement = $self->_extract_requirements($meta, [qw(configure)]);
+    if ($requirement->empty and -f "Build.PL" and ($distfile || "") !~ m{/Module-Build-[0-9v]}) {
+        $requirement->add("Module::Build" => "0.38");
     }
     if (NEED_INJECT_TOOLCHAIN_REQUIREMENTS) {
-        $self->_inject_toolchain_requirements($distfile, $requirements);
+        $self->_inject_toolchain_requirements($distfile, $requirement);
     }
-    return $requirements;
+    return $requirement;
 }
 
 sub _extract_requirements {
     my ($self, $meta, $phases) = @_;
     $phases = [$phases] unless ref $phases;
     my $hash = $meta->effective_prereqs->as_string_hash;
-    my @requirements;
+    my $requirement = App::cpm::Requirement->new;
     for my $phase (@$phases) {
         my $reqs = ($hash->{$phase} || +{})->{requires} || +{};
         for my $package (sort keys %$reqs) {
-            push @requirements, {package => $package, version_range => $reqs->{$package}};
+            $requirement->add($package, $reqs->{$package});
         }
     }
-    \@requirements;
+    $requirement;
 }
 
 sub _retry {
@@ -426,10 +424,10 @@ sub configure {
     my $distdata = $self->_build_distdata($source, $distfile, $meta);
     my $phase = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
     my $mymeta = $self->_load_metafile($distfile, 'MYMETA.json', 'MYMETA.yml');
-    my $requirements = $self->_extract_requirements($mymeta, $phase);
+    my $requirement = $self->_extract_requirements($mymeta, $phase);
     return +{
         distdata => $distdata,
-        requirements => $requirements,
+        requirements => $requirement->as_array,
         static_builder => $static_builder,
     };
 }
