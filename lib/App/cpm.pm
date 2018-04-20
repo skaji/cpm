@@ -19,7 +19,7 @@ use File::Path ();
 use Cwd ();
 use Config;
 
-our $VERSION = '0.965';
+our $VERSION = '0.966';
 our $GIT_DESCRIBE;
 our $GIT_URL;
 

@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.966  2018-04-20 15:33:30 CEST
+        - Use Command::Runner (#120)
+        - Bump Menlo prereq
+
 0.965  2018-04-19 15:20:38 CEST
         - Introduce App::cpm::Requirement class; this will improve merging versions for requirements
 
