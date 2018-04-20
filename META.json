@@ -58,7 +58,7 @@
             "HTTP::Tiny" : "0.055",
             "HTTP::Tinyish" : "0.12",
             "JSON::PP" : "2.27300",
-            "Menlo" : "0",
+            "Menlo" : "1.9011",
             "Module::CPANfile" : "0",
             "Module::Metadata" : "0",
             "Parallel::Pipes" : "0.004",
