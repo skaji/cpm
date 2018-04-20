@@ -194,6 +194,24 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 6.30
       strict 0
       warnings 0
+  ExtUtils-Helpers-0.026
+    pathname: L/LE/LEONT/ExtUtils-Helpers-0.026.tar.gz
+    provides:
+      ExtUtils::Helpers 0.026
+      ExtUtils::Helpers::Unix 0.026
+      ExtUtils::Helpers::VMS 0.026
+      ExtUtils::Helpers::Windows 0.026
+    requirements:
+      Carp 0
+      Exporter 5.57
+      ExtUtils::MakeMaker 0
+      File::Basename 0
+      File::Copy 0
+      File::Spec::Functions 0
+      Text::ParseWords 3.24
+      perl 5.006
+      strict 0
+      warnings 0
   ExtUtils-InstallPaths-0.011
     pathname: L/LE/LEONT/ExtUtils-InstallPaths-0.011.tar.gz
     provides:
@@ -343,6 +361,15 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
+  Getopt-Long-2.50
+    pathname: J/JV/JV/Getopt-Long-2.50.tar.gz
+    provides:
+      Getopt::Long 2.5
+      Getopt::Long::CallBack 2.5
+      Getopt::Long::Parser 2.5
+    requirements:
+      ExtUtils::MakeMaker 0
+      Pod::Usage 1.14
   HTTP-Tiny-0.070
     pathname: D/DA/DAGOLDEN/HTTP-Tiny-0.070.tar.gz
     provides:
@@ -473,12 +500,11 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       JSON::PP 2.27300
       parent 0
-  Module-CoreList-5.20180120
-    pathname: B/BI/BINGOS/Module-CoreList-5.20180120.tar.gz
+  Module-CoreList-5.20180415
+    pathname: B/BI/BINGOS/Module-CoreList-5.20180415.tar.gz
     provides:
-      Module::CoreList 5.20180120
-      Module::CoreList::TieHashDelta 5.20180120
-      Module::CoreList::Utils 5.20180120
+      Module::CoreList 5.20180415
+      Module::CoreList::Utils 5.20180415
     requirements:
       ExtUtils::MakeMaker 0
       List::Util 0
@@ -643,6 +669,13 @@ DISTRIBUTIONS
       Storable 0
       perl 5.006002
       utf8 0
+  Text-ParseWords-3.30
+    pathname: C/CH/CHORNY/Text-ParseWords-3.30.tar.gz
+    provides:
+      Text::ParseWords 3.30
+    requirements:
+      ExtUtils::MakeMaker 0
+      perl 5.006
   Tie-Handle-Offset-0.003
     pathname: D/DA/DAGOLDEN/Tie-Handle-Offset-0.003.tar.gz
     provides:

@@ -8,9 +8,13 @@ requires 'CPAN::Meta::YAML';
 requires 'Capture::Tiny';
 requires 'Class::Tiny';
 requires 'Command::Runner';
-requires 'ExtUtils::InstallPaths';
+requires 'ExtUtils::Config';
+requires 'ExtUtils::Helpers', '0.020';
+requires 'ExtUtils::Install';
+requires 'ExtUtils::InstallPaths', '0.002';
 requires 'File::Copy::Recursive';
 requires 'File::pushd';
+requires 'Getopt::Long', '2.36';
 requires 'HTTP::Tiny', '0.055';
 requires 'HTTP::Tinyish', '0.12';
 requires 'JSON::PP', '2.27300'; # for perl 5.8.6 or below
