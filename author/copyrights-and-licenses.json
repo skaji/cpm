@@ -60,6 +60,12 @@
       "url" : "https://metacpan.org/release/Class-Tiny"
    },
    {
+      "copyright" : "Shoichi Kaji",
+      "license" : "the same as Perl 5",
+      "name" : "Command-Runner",
+      "url" : "https://metacpan.org/release/Command-Runner"
+   },
+   {
       "copyright" : "Yuval Kogman",
       "license" : "the same as Perl 5",
       "name" : "Devel-GlobalDestruction",
