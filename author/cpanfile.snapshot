@@ -140,10 +140,10 @@ DISTRIBUTIONS
       overload 0
       strict 0
       warnings 0
-  Class-C3-0.33
-    pathname: H/HA/HAARG/Class-C3-0.33.tar.gz
+  Class-C3-0.34
+    pathname: H/HA/HAARG/Class-C3-0.34.tar.gz
     provides:
-      Class::C3 0.33
+      Class::C3 0.34
     requirements:
       Algorithm::C3 0.07
       ExtUtils::MakeMaker 0
@@ -160,6 +160,15 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
+  Command-Runner-0.001
+    pathname: S/SK/SKAJI/Command-Runner-0.001.tar.gz
+    provides:
+      Command::Runner 0.001
+      Command::Runner::LineBuffer undef
+    requirements:
+      Capture::Tiny 0
+      Module::Build::Tiny 0.034
+      perl 5.008001
   Devel-GlobalDestruction-0.14
     pathname: H/HA/HAARG/Devel-GlobalDestruction-0.14.tar.gz
     provides:
@@ -168,13 +177,6 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Sub::Exporter::Progressive 0.001011
       perl 5.006
-  Digest-SHA-6.01
-    pathname: M/MS/MSHELOR/Digest-SHA-6.01.tar.gz
-    provides:
-      Digest::SHA 6.01
-    requirements:
-      ExtUtils::MakeMaker 0
-      perl 5.003
   Exporter-5.72
     pathname: T/TO/TODDR/Exporter-5.72.tar.gz
     provides:
@@ -183,33 +185,6 @@ DISTRIBUTIONS
     requirements:
       Carp 1.05
       ExtUtils::MakeMaker 0
-  ExtUtils-CBuilder-0.280230
-    pathname: A/AM/AMBS/ExtUtils-CBuilder-0.280230.tar.gz
-    provides:
-      ExtUtils::CBuilder 0.280230
-      ExtUtils::CBuilder::Base 0.280230
-      ExtUtils::CBuilder::Platform::Unix 0.280230
-      ExtUtils::CBuilder::Platform::VMS 0.280230
-      ExtUtils::CBuilder::Platform::Windows 0.280230
-      ExtUtils::CBuilder::Platform::Windows::BCC 0.280230
-      ExtUtils::CBuilder::Platform::Windows::GCC 0.280230
-      ExtUtils::CBuilder::Platform::Windows::MSVC 0.280230
-      ExtUtils::CBuilder::Platform::aix 0.280230
-      ExtUtils::CBuilder::Platform::android 0.280230
-      ExtUtils::CBuilder::Platform::cygwin 0.280230
-      ExtUtils::CBuilder::Platform::darwin 0.280230
-      ExtUtils::CBuilder::Platform::dec_osf 0.280230
-      ExtUtils::CBuilder::Platform::os2 0.280230
-    requirements:
-      Cwd 0
-      ExtUtils::MakeMaker 6.30
-      File::Basename 0
-      File::Spec 3.13
-      File::Temp 0
-      IO::File 0
-      IPC::Cmd 0
-      Perl::OSType 1
-      Text::ParseWords 0
   ExtUtils-Config-0.008
     pathname: L/LE/LEONT/ExtUtils-Config-0.008.tar.gz
     provides:
@@ -217,24 +192,6 @@ DISTRIBUTIONS
     requirements:
       Data::Dumper 0
       ExtUtils::MakeMaker 6.30
-      strict 0
-      warnings 0
-  ExtUtils-Helpers-0.026
-    pathname: L/LE/LEONT/ExtUtils-Helpers-0.026.tar.gz
-    provides:
-      ExtUtils::Helpers 0.026
-      ExtUtils::Helpers::Unix 0.026
-      ExtUtils::Helpers::VMS 0.026
-      ExtUtils::Helpers::Windows 0.026
-    requirements:
-      Carp 0
-      Exporter 5.57
-      ExtUtils::MakeMaker 0
-      File::Basename 0
-      File::Copy 0
-      File::Spec::Functions 0
-      Text::ParseWords 3.24
-      perl 5.006
       strict 0
       warnings 0
   ExtUtils-InstallPaths-0.011
@@ -306,30 +263,6 @@ DISTRIBUTIONS
       Module::CPANfile 0
       Test::More 0.88
       version 0.76
-  ExtUtils-ParseXS-3.35
-    pathname: S/SM/SMUELLER/ExtUtils-ParseXS-3.35.tar.gz
-    provides:
-      ExtUtils::ParseXS 3.35
-      ExtUtils::ParseXS::Constants 3.35
-      ExtUtils::ParseXS::CountLines 3.35
-      ExtUtils::ParseXS::Eval 3.35
-      ExtUtils::ParseXS::Utilities 3.35
-      ExtUtils::Typemaps 3.35
-      ExtUtils::Typemaps::Cmd 3.35
-      ExtUtils::Typemaps::InputMap 3.35
-      ExtUtils::Typemaps::OutputMap 3.35
-      ExtUtils::Typemaps::Type 3.35
-    requirements:
-      Carp 0
-      Cwd 0
-      DynaLoader 0
-      Exporter 5.57
-      ExtUtils::CBuilder 0
-      ExtUtils::MakeMaker 6.46
-      File::Basename 0
-      File::Spec 0
-      Symbol 0
-      Test::More 0.47
   File-Copy-Recursive-0.38
     pathname: D/DM/DMUEY/File-Copy-Recursive-0.38.tar.gz
     provides:
@@ -410,15 +343,6 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
-  Getopt-Long-2.50
-    pathname: J/JV/JV/Getopt-Long-2.50.tar.gz
-    provides:
-      Getopt::Long 2.5
-      Getopt::Long::CallBack 2.5
-      Getopt::Long::Parser 2.5
-    requirements:
-      ExtUtils::MakeMaker 0
-      Pod::Usage 1.14
   HTTP-Tiny-0.070
     pathname: D/DA/DAGOLDEN/HTTP-Tiny-0.070.tar.gz
     provides:
@@ -435,10 +359,10 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
-  HTTP-Tinyish-0.13
-    pathname: M/MI/MIYAGAWA/HTTP-Tinyish-0.13.tar.gz
+  HTTP-Tinyish-0.14
+    pathname: M/MI/MIYAGAWA/HTTP-Tinyish-0.14.tar.gz
     provides:
-      HTTP::Tinyish 0.13
+      HTTP::Tinyish 0.14
       HTTP::Tinyish::Base undef
       HTTP::Tinyish::Curl undef
       HTTP::Tinyish::HTTPTiny undef
@@ -494,12 +418,12 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       perl 5.006
-  Menlo-1.9005
-    pathname: M/MI/MIYAGAWA/Menlo-1.9005.tar.gz
+  Menlo-1.9011
+    pathname: M/MI/MIYAGAWA/Menlo-1.9011.tar.gz
     provides:
-      Menlo 1.9005
+      Menlo 1.9011
       Menlo::Builder::Static undef
-      Menlo::CLI::Compat 1.9005
+      Menlo::CLI::Compat 1.9011
       Menlo::Dependency undef
       Menlo::Index::MetaCPAN undef
       Menlo::Index::MetaDB 0.007
@@ -514,7 +438,6 @@ DISTRIBUTIONS
       CPAN::Meta::YAML 0
       Capture::Tiny 0
       Class::Tiny 1.001
-      Digest::SHA 0
       Exporter 0
       ExtUtils::MakeMaker 0
       File::Temp 0
@@ -523,44 +446,19 @@ DISTRIBUTIONS
       Getopt::Long 0
       HTTP::Tiny 0.054
       HTTP::Tinyish 0.04
-      IPC::Run3 0
       JSON::PP 0
-      Module::Build::Tiny 0
       Module::CPANfile 0
       Module::CoreList 0
       Module::Metadata 0
       Parse::CPAN::Meta 0
       Parse::PMFile 0.26
       String::ShellQuote 0
+      URI 0
       Win32::ShellQuote 0
       local::lib 0
+      parent 0
       perl 5.008001
       version 0
-  Module-Build-Tiny-0.039
-    pathname: L/LE/LEONT/Module-Build-Tiny-0.039.tar.gz
-    provides:
-      Module::Build::Tiny 0.039
-    requirements:
-      CPAN::Meta 0
-      DynaLoader 0
-      Exporter 5.57
-      ExtUtils::CBuilder 0
-      ExtUtils::Config 0.003
-      ExtUtils::Helpers 0.020
-      ExtUtils::Install 0
-      ExtUtils::InstallPaths 0.002
-      ExtUtils::ParseXS 0
-      File::Basename 0
-      File::Find 0
-      File::Path 0
-      File::Spec::Functions 0
-      Getopt::Long 2.36
-      JSON::PP 2
-      Pod::Man 0
-      TAP::Harness::Env 0
-      perl 5.006
-      strict 0
-      warnings 0
   Module-CPANfile-1.1002
     pathname: M/MI/MIYAGAWA/Module-CPANfile-1.1002.tar.gz
     provides:
@@ -575,11 +473,12 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       JSON::PP 2.27300
       parent 0
-  Module-CoreList-5.20180414
-    pathname: B/BI/BINGOS/Module-CoreList-5.20180414.tar.gz
+  Module-CoreList-5.20180120
+    pathname: B/BI/BINGOS/Module-CoreList-5.20180120.tar.gz
     provides:
-      Module::CoreList 5.20180414
-      Module::CoreList::Utils 5.20180414
+      Module::CoreList 5.20180120
+      Module::CoreList::TieHashDelta 5.20180120
+      Module::CoreList::Utils 5.20180120
     requirements:
       ExtUtils::MakeMaker 0
       List::Util 0
@@ -646,36 +545,6 @@ DISTRIBUTIONS
       JSON::PP 2.00
       Safe 0
       version 0.83
-  PathTools-3.74
-    pathname: X/XS/XSAWYERX/PathTools-3.74.tar.gz
-    provides:
-      Cwd 3.74
-      File::Spec 3.74
-      File::Spec::AmigaOS 3.74
-      File::Spec::Cygwin 3.74
-      File::Spec::Epoc 3.74
-      File::Spec::Functions 3.74
-      File::Spec::Mac 3.74
-      File::Spec::OS2 3.74
-      File::Spec::Unix 3.74
-      File::Spec::VMS 3.74
-      File::Spec::Win32 3.74
-    requirements:
-      Carp 0
-      ExtUtils::MakeMaker 0
-      File::Basename 0
-      Scalar::Util 0
-      Test::More 0.88
-  Perl-OSType-1.010
-    pathname: D/DA/DAGOLDEN/Perl-OSType-1.010.tar.gz
-    provides:
-      Perl::OSType 1.010
-    requirements:
-      Exporter 0
-      ExtUtils::MakeMaker 6.17
-      perl 5.006
-      strict 0
-      warnings 0
   Search-Dict-1.07
     pathname: D/DA/DAGOLDEN/Search-Dict-1.07.tar.gz
     provides:
@@ -695,60 +564,6 @@ DISTRIBUTIONS
     pathname: F/FR/FREW/Sub-Exporter-Progressive-0.001013.tar.gz
     provides:
       Sub::Exporter::Progressive 0.001013
-    requirements:
-      ExtUtils::MakeMaker 0
-  Test-Harness-3.42
-    pathname: L/LE/LEONT/Test-Harness-3.42.tar.gz
-    provides:
-      App::Prove 3.42
-      App::Prove::State 3.42
-      App::Prove::State::Result 3.42
-      App::Prove::State::Result::Test 3.42
-      Harness::Hook undef
-      TAP::Base 3.42
-      TAP::Formatter::Base 3.42
-      TAP::Formatter::Color 3.42
-      TAP::Formatter::Console 3.42
-      TAP::Formatter::Console::ParallelSession 3.42
-      TAP::Formatter::Console::Session 3.42
-      TAP::Formatter::File 3.42
-      TAP::Formatter::File::Session 3.42
-      TAP::Formatter::Session 3.42
-      TAP::Harness 3.42
-      TAP::Harness::Env 3.42
-      TAP::Object 3.42
-      TAP::Parser 3.42
-      TAP::Parser::Aggregator 3.42
-      TAP::Parser::Grammar 3.42
-      TAP::Parser::Iterator 3.42
-      TAP::Parser::Iterator::Array 3.42
-      TAP::Parser::Iterator::Process 3.42
-      TAP::Parser::Iterator::Stream 3.42
-      TAP::Parser::IteratorFactory 3.42
-      TAP::Parser::Multiplexer 3.42
-      TAP::Parser::Result 3.42
-      TAP::Parser::Result::Bailout 3.42
-      TAP::Parser::Result::Comment 3.42
-      TAP::Parser::Result::Plan 3.42
-      TAP::Parser::Result::Pragma 3.42
-      TAP::Parser::Result::Test 3.42
-      TAP::Parser::Result::Unknown 3.42
-      TAP::Parser::Result::Version 3.42
-      TAP::Parser::Result::YAML 3.42
-      TAP::Parser::ResultFactory 3.42
-      TAP::Parser::Scheduler 3.42
-      TAP::Parser::Scheduler::Job 3.42
-      TAP::Parser::Scheduler::Spinner 3.42
-      TAP::Parser::Source 3.42
-      TAP::Parser::SourceHandler 3.42
-      TAP::Parser::SourceHandler::Executable 3.42
-      TAP::Parser::SourceHandler::File 3.42
-      TAP::Parser::SourceHandler::Handle 3.42
-      TAP::Parser::SourceHandler::Perl 3.42
-      TAP::Parser::SourceHandler::RawTAP 3.42
-      TAP::Parser::YAMLish::Reader 3.42
-      TAP::Parser::YAMLish::Writer 3.42
-      Test::Harness 3.42
     requirements:
       ExtUtils::MakeMaker 0
   Test-Simple-1.302136
@@ -828,13 +643,6 @@ DISTRIBUTIONS
       Storable 0
       perl 5.006002
       utf8 0
-  Text-ParseWords-3.30
-    pathname: C/CH/CHORNY/Text-ParseWords-3.30.tar.gz
-    provides:
-      Text::ParseWords 3.30
-    requirements:
-      ExtUtils::MakeMaker 0
-      perl 5.006
   Tie-Handle-Offset-0.003
     pathname: D/DA/DAGOLDEN/Tie-Handle-Offset-0.003.tar.gz
     provides:
@@ -931,13 +739,13 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       Test::More 0.4
-  version-0.9923
-    pathname: J/JP/JPEACOCK/version-0.9923.tar.gz
+  version-0.9924
+    pathname: J/JP/JPEACOCK/version-0.9924.tar.gz
     provides:
-      version 0.9923
-      version::regex 0.9923
-      version::vpp 0.9923
-      version::vxs 0.9923
+      version 0.9924
+      version::regex 0.9924
+      version::vpp 0.9924
+      version::vxs 0.9924
     requirements:
       ExtUtils::MakeMaker 0
       perl 5.006002
