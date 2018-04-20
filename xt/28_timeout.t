@@ -4,8 +4,6 @@ use Test::More;
 use lib "xt/lib";
 use CLI;
 
-plan skip_all => 'timeout is disabled on Win32' if $^O eq 'MSWin32';
-
 my $r = cpm_install "--configure-timeout", 2,
     "git://github.com/skaji/CPAN-Test-Dummy-Perl5-SleepSteps.git",
     "File::pushd";
