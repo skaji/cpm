@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use POSIX ();
 use File::Temp ();
-our $VERSION = '0.966';
+our $VERSION = '0.967';
 
 use constant WIN32 => $^O eq 'MSWin32';
 

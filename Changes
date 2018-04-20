@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.967  2018-04-20 16:27:14 CEST
+        - Add some requirements for static install
+
 0.966  2018-04-20 15:33:30 CEST
         - Use Command::Runner (#120)
         - Bump Menlo prereq

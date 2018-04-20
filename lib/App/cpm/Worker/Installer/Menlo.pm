@@ -7,7 +7,7 @@ use App::cpm::Logger::File;
 use Menlo::Builder::Static;
 use Command::Runner;
 
-our $VERSION = '0.966';
+our $VERSION = '0.967';
 
 use constant WIN32 => Menlo::CLI::Compat::WIN32();
 
