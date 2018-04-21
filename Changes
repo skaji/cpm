@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.968  2018-04-21 19:32:57 CEST
+        - Support dist/url/mirror syntax in cpanfile (#123)
+        - Fix a minor typo for instead (atoomic #122)
+
 0.967  2018-04-20 16:27:14 CEST
         - Add some requirements for static install
 

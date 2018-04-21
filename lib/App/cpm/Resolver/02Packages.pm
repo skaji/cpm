@@ -5,7 +5,7 @@ use App::cpm::version;
 use App::cpm::DistNotation;
 use Cwd ();
 use File::Path ();
-our $VERSION = '0.967';
+our $VERSION = '0.968';
 
 {
     package

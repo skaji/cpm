@@ -4,7 +4,7 @@ use warnings;
 use JSON::PP ();
 use HTTP::Tiny;
 use App::cpm::DistNotation;
-our $VERSION = '0.967';
+our $VERSION = '0.968';
 
 my $HTTP_CLIENT_CLASS = do {
     if (HTTP::Tiny->can_ssl) {
