@@ -14,7 +14,7 @@ requires 'File::pushd';
 requires 'HTTP::Tiny', '0.055';
 requires 'HTTP::Tinyish', '0.12';
 requires 'JSON::PP', '2.27300'; # for perl 5.8.6 or below
-requires 'Menlo', '1.9011';
+requires 'Menlo', '1.9017';
 requires 'Module::CPANfile';
 requires 'Module::Metadata';
 requires 'Parallel::Pipes', '0.004';
