@@ -457,8 +457,10 @@ sub initial_job {
 
 sub cmd_search {
     my $self = shift;
-    my $query = $self->{argv}[0]
+    @{$self->{argv}}
         or die "search subcommand needs argument\n";
+    my $query = join ' ', @{$self->{argv}};
+
     my $uri = URI->new('https://fastapi.metacpan.org/v1/release/_search');
     $uri->query_form(
         q => "(authorized:true) AND (status:latest) AND $query",
@@ -476,9 +478,10 @@ sub cmd_search {
     print "\n";
     for my $i (0..$#hit) {
         my $hit = $hit[$i];
-        printf " %d. \e[32m%s by %s\e[m\n    %s\n",
+        printf " %d. \e[32m%s\e[m %s by %s\n    %s\n",
             $i + 1,
             $show->($hit, 'main_module'),
+            $show->($hit, 'version'),
             $show->($hit, 'author'),
             $show->($hit, 'abstract');
     }
@@ -495,7 +498,9 @@ sub cmd_search {
     my $want = $hit[$answer-1]{main_module};
     warn sprintf "Installing %s to %s...\n",
         $want, $self->{global} ? "global INC" : $self->{local_lib};
-    $self->cmd_install($want);
+
+    @{$self->{argv}} = ($want);
+    $self->cmd_install;
 }
 
 sub load_cpanfile {
