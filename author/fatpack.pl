@@ -1,6 +1,5 @@
 #!/usr/bin/env perl
-BEGIN { $ENV{PERL_JSON_BACKEND} = 0 } # force JSON::PP, https://github.com/perl-carton/carton/issues/214
-use 5.24.0;
+use 5.26.2;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use App::FatPacker::Simple;
