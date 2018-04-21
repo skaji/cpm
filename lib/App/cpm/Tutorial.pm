@@ -71,7 +71,7 @@ And cpm can install modules from git repositories directly.
 
   $ cpm install git://github.com/skaji/Carl.git
 
-=head2 cpanfile and experimental git/dist syntax
+=head2 cpanfile and dist/url/mirror/git syntax
 
 If you omit arguments, and there exists C<cpanfile> in the current directory,
 then cpm loads modules from cpanfile, and install them
@@ -81,24 +81,36 @@ then cpm loads modules from cpanfile, and install them
   requires 'Plack', '> 1.000, <= 2.000';
   $ cpm install
 
-Moreover if you have C<cpanfile.snapshot>,
+If you have C<cpanfile.snapshot>,
 then cpm tries to resolve distribution names from it
 
   $ cpm install -v
   30186 DONE resolve (0.001sec) Plack -> Plack-1.0030 (from Snapshot)
   ...
 
-This is an experimental and fun part! cpm supports git/dist syntax in cpanfile.
+cpm supports dist/url/mirror syntax in cpanfile just like cpanminus:
 
-  $ cat cpanfile
+  requires 'Path::Class', 0.26,
+    dist => "KWILLIAMS/Path-Class-0.26.tar.gz";
+
+  # use dist + mirror
+  requires 'Cookie::Baker',
+    dist => "KAZEBURO/Cookie-Baker-0.08.tar.gz",
+    mirror => "http://cpan.cpantesters.org/";
+
+  # use the full URL
+  requires 'Try::Tiny', 0.28,
+    url => "http://backpan.perl.org/authors/id/E/ET/ETHER/Try-Tiny-0.28.tar.gz";
+
+And yes, this is an experimental and fun part! cpm also supports git syntax in cpanfile.
+
   requires 'Carl', git => 'git://github.com/skaji/Carl.git';
-  requires 'Plack', git => 'ssh://git@github.com/plack/Plack.git';
   requires 'App::cpm', git => 'https://login:password@github.com/skaji/cpm.git';
   requires 'Perl::PrereqDistributionGatherer',
     git => 'https://github.com/skaji/Perl-PrereqDistributionGatherer',
     ref => '3850305'; # ref can be revision/branch/tag
 
-Please note that to support git/dist syntax in cpanfile wholly,
+Please note that to support git syntax in cpanfile wholly,
 there are several TODOs.
 
 =head2 Darkpan integration

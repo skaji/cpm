@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use JSON::PP ();
 use HTTP::Tiny;
+use App::cpm::DistNotation;
 our $VERSION = '0.967';
 
 my $HTTP_CLIENT_CLASS = do {
@@ -52,10 +53,10 @@ sub resolve {
     }
 
     my $hash = eval { JSON::PP::decode_json($res->{content}) } or return;
-    my ($distfile) = $hash->{download_url} =~ m{/authors/id/(.+)};
+    my $dist = App::cpm::DistNotation->new_from_uri($hash->{download_url});
     return {
         source => "cpan", # XXX
-        distfile => $distfile,
+        distfile => $dist->distfile,
         package => $job->{package},
         version => $hash->{version} || 0,
         uri => $hash->{download_url},

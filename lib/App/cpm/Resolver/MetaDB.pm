@@ -7,6 +7,7 @@ our $VERSION = '0.967';
 use HTTP::Tiny;
 use CPAN::Meta::YAML;
 use App::cpm::version;
+use App::cpm::DistNotation;
 
 sub new {
     my ($class, %option) = @_;
@@ -69,13 +70,13 @@ sub resolve {
         }
 
         if ($match) {
-            my $distfile = $match->{distfile};
+            my $dist = App::cpm::DistNotation->new_from_dist($match->{distfile});
             return {
                 source => "cpan",
                 package => $job->{package},
                 version => $match->{version},
-                uri     => [map { "${_}authors/id/$distfile" } @{$self->{mirror}}],
-                distfile => $distfile,
+                uri => [ map { $dist->cpan_uri($_) } @{$self->{mirror}} ],
+                distfile => $dist->distfile,
             };
         } else {
             return { error => "found versions @{[join ',', _uniq map $_->{version}, @found]}, but they do not satisfy $job->{version_range}, $uri" };
@@ -101,11 +102,11 @@ sub resolve {
             +{ package => $package, version => $version };
         } sort keys %{$meta->{provides}};
 
-        my $distfile = $meta->{distfile};
+        my $dist = App::cpm::DistNotation->new_from_dist($meta->{distfile});
         return {
             source => "cpan",
-            distfile => $distfile,
-            uri => [map { "${_}authors/id/$distfile" } @{$self->{mirror}}],
+            distfile => $dist->distfile,
+            uri => [ map { $dist->cpan_uri($_) } @{$self->{mirror}} ],
             version  => $meta->{version},
             provides => \@provides,
         };

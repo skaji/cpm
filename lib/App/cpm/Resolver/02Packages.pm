@@ -2,6 +2,7 @@ package App::cpm::Resolver::02Packages;
 use strict;
 use warnings;
 use App::cpm::version;
+use App::cpm::DistNotation;
 use Cwd ();
 use File::Path ();
 our $VERSION = '0.967';
@@ -110,14 +111,13 @@ sub resolve {
             return { error => "found version $version, but it does not satisfy $version_range, @{[$self->cached_package]}" };
         }
     }
-    my $distfile = $result->{uri};
-    $distfile =~ s{^cpan:///distfile/}{};
-    $distfile =~ m{^((.).)};
-    $distfile = "$2/$1/$distfile";
+    my $uri = $result->{uri};
+    $uri =~ s{^cpan:///distfile/}{};
+    my $dist = App::cpm::DistNotation->new_from_dist($uri);
     return +{
         source => "cpan", # XXX
-        distfile => $distfile,
-        uri => "$self->{mirror}authors/id/$distfile",
+        distfile => $dist->distfile,
+        uri => $dist->cpan_uri($self->{mirror}),
         version => $result->{version} || 0,
         package => $result->{package},
     };

@@ -10,6 +10,7 @@ use App::cpm::version;
 use App::cpm::Resolver::MetaDB;
 use App::cpm::Resolver::MetaCPAN;
 use App::cpm::Resolver::Cascade;
+use App::cpm::DistNotation;
 use Parallel::Pipes;
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use List::Util ();
@@ -390,10 +391,10 @@ sub initial_job {
         } elsif ($arg =~ /(?:^git:|\.git(?:@.+)?$)/) {
             my %ref = $arg =~ s/(?<=\.git)@(.+)$// ? (ref => $1) : ();
             $dist = App::cpm::Distribution->new(source => "git", uri => $arg, provides => [], %ref);
-        } elsif ($arg =~ m{^https?://}) {
-            my ($source, $distfile) = ("http", undef);
-            if ($arg =~ m{^https?://(?:www.cpan.org|backpan.perl.org|cpan.metacpan.org)/authors/id/(.+)}) {
-                ($source, $distfile) = ("cpan", $1);
+        } elsif ($arg =~ m{^(https?|file)://}) {
+            my ($source, $distfile) = ($1 eq "file" ? "local" : "http", undef);
+            if (my $d = App::cpm::DistNotation->new_from_uri($arg)) {
+                ($source, $distfile) = ("cpan", $d->distfile);
             }
             $dist = App::cpm::Distribution->new(
                 source => $source,
@@ -401,14 +402,11 @@ sub initial_job {
                 $distfile ? (distfile => $distfile) : (),
                 provides => [],
             );
-        } elsif ($arg =~ m!^(?:[A-Z]/[A-Z]{2}/)?([A-Z]{2}[\-A-Z0-9]*/.*)$!) {
-            my $distfile = $1;
-            $distfile =~ m{^((.).)};
-            $distfile = "$2/$1/$distfile";
+        } elsif (my $d = App::cpm::DistNotation->new_from_dist($arg)) {
             $dist = App::cpm::Distribution->new(
                 source => "cpan",
-                uri => [map { "${_}authors/id/$distfile" } @{$self->{mirror}}],
-                distfile => $distfile,
+                uri => [map { $d->cpan_uri($_) } @{$self->{mirror}}],
+                distfile => $d->distfile,
                 provides => [],
             );
         } else {
@@ -473,9 +471,21 @@ sub load_cpanfile {
                 provides => [{package => $package}],
             );
         } elsif ($uri = $option->{dist}) {
-            my $source = $uri =~ m{^file://} ? "local" : "http";
+            my $dist = App::cpm::DistNotation->new_from_dist($uri);
+            die "Unsupported dist '$uri' found in $file\n" unless $dist;
+            my $cpan_uri = $dist->cpan_uri($option->{mirror} || $self->{mirror}[0]);
             push @distribution, App::cpm::Distribution->new(
-                source => $source, uri => $uri,
+                source => "cpan", uri => $cpan_uri,
+                distfile => $dist->distfile,
+                provides => [{package => $package}],
+            );
+        } elsif ($uri = $option->{url}) {
+            die "Unsupported url '$uri' found in $file\n" if $uri !~ m{^(?:https?|file)://};
+            my $dist = App::cpm::DistNotation->new_from_uri($uri);
+            my $source = $dist ? 'cpan' : $uri =~ m{^file://} ? 'local' : 'http';
+            push @distribution, App::cpm::Distribution->new(
+                source => $source, uri => $dist ? $dist->cpan_uri : $uri,
+                ($dist ? (distfile => $dist->distfile) : ()),
                 provides => [{package => $package}],
             );
         } else {
