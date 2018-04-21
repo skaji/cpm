@@ -281,13 +281,15 @@ DISTRIBUTIONS
       Module::CPANfile 0
       Test::More 0.88
       version 0.76
-  File-Copy-Recursive-0.38
-    pathname: D/DM/DMUEY/File-Copy-Recursive-0.38.tar.gz
+  File-Copy-Recursive-0.42
+    pathname: D/DM/DMUEY/File-Copy-Recursive-0.42.tar.gz
     provides:
-      File::Copy::Recursive 0.38
+      File::Copy::Recursive 0.42
     requirements:
+      Cwd 0
       ExtUtils::MakeMaker 0
       File::Copy 0
+      File::Glob 0
       File::Spec 0
   File-Fetch-0.56
     pathname: B/BI/BINGOS/File-Fetch-0.56.tar.gz
@@ -445,10 +447,10 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       perl 5.006
-  Menlo-1.9011
-    pathname: M/MI/MIYAGAWA/Menlo-1.9011.tar.gz
+  Menlo-1.9016
+    pathname: M/MI/MIYAGAWA/Menlo-1.9016.tar.gz
     provides:
-      Menlo 1.9011
+      Menlo 1.9016
       Menlo::Builder::Static undef
       Menlo::CLI::Compat 1.9011
       Menlo::Dependency undef
@@ -466,14 +468,17 @@ DISTRIBUTIONS
       Capture::Tiny 0
       Class::Tiny 1.001
       Exporter 0
+      ExtUtils::Config 0.003
+      ExtUtils::Helpers 0.020
+      ExtUtils::InstallPaths 0.002
       ExtUtils::MakeMaker 0
       File::Temp 0
       File::Which 0
       File::pushd 0
-      Getopt::Long 0
+      Getopt::Long 2.36
       HTTP::Tiny 0.054
       HTTP::Tinyish 0.04
-      JSON::PP 0
+      JSON::PP 2
       Module::CPANfile 0
       Module::CoreList 0
       Module::Metadata 0
@@ -500,11 +505,11 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       JSON::PP 2.27300
       parent 0
-  Module-CoreList-5.20180415
-    pathname: B/BI/BINGOS/Module-CoreList-5.20180415.tar.gz
+  Module-CoreList-5.20180420
+    pathname: B/BI/BINGOS/Module-CoreList-5.20180420.tar.gz
     provides:
-      Module::CoreList 5.20180415
-      Module::CoreList::Utils 5.20180415
+      Module::CoreList 5.20180420
+      Module::CoreList::Utils 5.20180420
     requirements:
       ExtUtils::MakeMaker 0
       List::Util 0
