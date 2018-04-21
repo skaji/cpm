@@ -4,16 +4,16 @@ use warnings;
 use utf8;
 our $VERSION = '0.967';
 
-use HTTP::Tiny;
 use CPAN::Meta::YAML;
 use App::cpm::version;
+use App::cpm::HTTP;
 
 sub new {
     my ($class, %option) = @_;
     my $uri = $option{uri} || "http://cpanmetadb.plackperl.org/v1.0/";
     my $mirror = $option{mirror} || ["https://cpan.metacpan.org/"];
     s{/*$}{/} for $uri, @$mirror;
-    my $http = HTTP::Tiny->new(timeout => 15, keep_alive => 1, agent => "App::cpm/$VERSION");
+    my $http = App::cpm::HTTP->new(_ssl => 0);
     bless {
         %option,
         http => $http,

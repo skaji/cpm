@@ -14,7 +14,7 @@ our $VERSION = '0.967';
     use File::Spec;
     use File::Basename ();
     use File::Copy ();
-    use HTTP::Tinyish;
+    use App::cpm::HTTP;
 
     our $HAS_IO_UNCOMPRESS_GUNZIP = eval { require IO::Uncompress::Gunzip };
 
@@ -33,7 +33,7 @@ our $VERSION = '0.967';
         my $path = $self->path;
         my $dest = File::Spec->catfile($self->cache, File::Basename::basename($path));
         if ($path =~ m{^https?://}) {
-            my $res = HTTP::Tinyish->new(agent => "App::cpm/$VERSION", verify_SSL => 1)->mirror($path => $dest);
+            my $res = App::cpm::HTTP->new->mirror($path => $dest);
             die "$res->{status} $res->{reason}, $path\n" unless $res->{success};
         } else {
             $path =~ s{^file://}{};

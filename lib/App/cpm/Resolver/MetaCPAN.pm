@@ -2,24 +2,14 @@ package App::cpm::Resolver::MetaCPAN;
 use strict;
 use warnings;
 use JSON::PP ();
-use HTTP::Tiny;
+use App::cpm::HTTP;
 our $VERSION = '0.967';
-
-my $HTTP_CLIENT_CLASS = do {
-    if (HTTP::Tiny->can_ssl) {
-        "HTTP::Tiny";
-    } else {
-        require HTTP::Tinyish;
-        "HTTP::Tinyish";
-    }
-};
 
 sub new {
     my ($class, %option) = @_;
     my $uri = $option{uri} || "https://fastapi.metacpan.org/v1/download_url/";
     $uri =~ s{/*$}{/};
-    my $http = $HTTP_CLIENT_CLASS->new(timeout => 10, agent => "App::cpm/$VERSION", verify_SSL => 1);
-    bless { %option, uri => $uri, http => $http }, $class;
+    bless { %option, uri => $uri, http => App::cpm::HTTP->new }, $class;
 }
 
 sub _encode {

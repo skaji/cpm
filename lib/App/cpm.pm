@@ -10,6 +10,8 @@ use App::cpm::version;
 use App::cpm::Resolver::MetaDB;
 use App::cpm::Resolver::MetaCPAN;
 use App::cpm::Resolver::Cascade;
+use App::cpm::HTTP;
+use URI;
 use Parallel::Pipes;
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use List::Util ();
@@ -451,6 +453,49 @@ sub initial_job {
     }
 
     return (\@package, \@dist);
+}
+
+sub cmd_search {
+    my $self = shift;
+    my $query = $self->{argv}[0]
+        or die "search subcommand needs argument\n";
+    my $uri = URI->new('https://fastapi.metacpan.org/v1/release/_search');
+    $uri->query_form(
+        q => "(authorized:true) AND (status:latest) AND $query",
+        fields => 'main_module,version,author,abstract',
+        size => 15,
+    );
+    my $res = App::cpm::HTTP->new->get($uri);
+    die "$res->{status} $res->{reason}, $uri\n" unless $res->{success};
+    my $r = JSON::PP::decode_json($res->{content});
+    my @hit = map { $_->{fields} } @{$r->{hits}{hits}};
+    die "There is no modules that match '$query'\n" if @hit == 0;
+
+    my $show = sub { my ($hit, $attr) = @_; $hit->{$attr} || "(no $attr)" };
+
+    print "\n";
+    for my $i (0..$#hit) {
+        my $hit = $hit[$i];
+        printf " %d. \e[32m%s by %s\e[m\n    %s\n",
+            $i + 1,
+            $show->($hit, 'main_module'),
+            $show->($hit, 'author'),
+            $show->($hit, 'abstract');
+    }
+    print "\n";
+    {
+        local $| = 1;
+        print "Do you want to install above modules? Then, which one? ";
+    }
+    my $answer = <STDIN>;
+    chomp $answer;
+
+    die "Please type 1-@{[ scalar @hit ]}, abort.\n" if $answer !~ /^\d+$/
+            or !(1 <= $answer && $answer <= @hit);
+    my $want = $hit[$answer-1]{main_module};
+    warn sprintf "Installing %s to %s...\n",
+        $want, $self->{global} ? "global INC" : $self->{local_lib};
+    $self->cmd_install($want);
 }
 
 sub load_cpanfile {

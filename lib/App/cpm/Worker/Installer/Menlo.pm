@@ -6,6 +6,7 @@ use parent 'Menlo::CLI::Compat';
 use App::cpm::Logger::File;
 use Menlo::Builder::Static;
 use Command::Runner;
+use App::cpm::HTTP;
 
 our $VERSION = '0.967';
 
@@ -16,24 +17,8 @@ sub new {
     $option{log} ||= $option{logger}->file;
     my $self = $class->SUPER::new(%option);
     $self->init_tools;
-    $self->_set_http_agent;
+    $self->{http} = App::cpm::HTTP->new; # overwrite
     $self;
-}
-
-sub _set_http_agent {
-    my $self = shift;
-    my $agent = "App::cpm/$VERSION";
-    my $http = $self->{http};
-    my $klass = ref $http;
-    if ($klass =~ /HTTP::Tinyish::(Curl|Wget)/) {
-        $http->{agent} = $agent;
-    } elsif ($klass eq 'HTTP::Tinyish::LWP') {
-        $http->{ua}->agent($agent);
-    } elsif ($klass eq 'HTTP::Tinyish::HTTPTiny') {
-        $http->{tiny}->agent($agent);
-    } else {
-        die "Unknown http class: $klass\n";
-    }
 }
 
 sub log {
