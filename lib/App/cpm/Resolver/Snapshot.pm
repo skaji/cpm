@@ -2,6 +2,7 @@ package App::cpm::Resolver::Snapshot;
 use strict;
 use warnings;
 use App::cpm::version;
+use App::cpm::DistNotation;
 use Carton::Snapshot;
 our $VERSION = '0.967';
 
@@ -41,11 +42,11 @@ sub resolve {
         +{ package => $package, version => $version };
     } sort keys %{$found->provides};
 
-    my $distfile = $found->distfile;
+    my $dist = App::cpm::DistNotation->new_from_dist($found->distfile);
     return {
         source => "cpan",
-        distfile => $distfile,
-        uri => [map { "${_}authors/id/$distfile" } @{$self->{mirror}}],
+        distfile => $dist->distfile,
+        uri => [map { $dist->cpan_uri($_) } @{$self->{mirror}}],
         version  => $version || 0,
         provides => \@provides,
     };
