@@ -160,10 +160,10 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
-  Command-Runner-0.001
-    pathname: S/SK/SKAJI/Command-Runner-0.001.tar.gz
+  Command-Runner-0.002
+    pathname: S/SK/SKAJI/Command-Runner-0.002.tar.gz
     provides:
-      Command::Runner 0.001
+      Command::Runner 0.002
       Command::Runner::LineBuffer undef
     requirements:
       Capture::Tiny 0
@@ -447,12 +447,12 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       perl 5.006
-  Menlo-1.9016
-    pathname: M/MI/MIYAGAWA/Menlo-1.9016.tar.gz
+  Menlo-1.9017
+    pathname: M/MI/MIYAGAWA/Menlo-1.9017.tar.gz
     provides:
-      Menlo 1.9016
+      Menlo 1.9017
       Menlo::Builder::Static undef
-      Menlo::CLI::Compat 1.9011
+      Menlo::CLI::Compat 1.9016
       Menlo::Dependency undef
       Menlo::Index::MetaCPAN undef
       Menlo::Index::MetaDB 0.007
