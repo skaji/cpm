@@ -23,7 +23,7 @@ cpm - a fast CPAN module installer
   # from cpanfile (with cpanfile.snapshot if any)
   > cpm install
 
-  # install module into current @INC istead of local/
+  # install module into current @INC instead of local/
   > cpm install -g Module
 
   # prefer TRIAL release
