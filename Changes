@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.969  2018-04-21 21:06:56 CEST
+        - Use Command::Runner 0.002
+        - Follow Menlo-1.9017 change
+
 0.968  2018-04-21 19:32:57 CEST
         - Support dist/url/mirror syntax in cpanfile (#123)
         - Fix a minor typo for instead (atoomic #122)
