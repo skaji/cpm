@@ -473,12 +473,17 @@ sub cmd_search {
     my @hit = map { $_->{fields} } @{$r->{hits}{hits}};
     die "There is no modules that match '$query'\n" if @hit == 0;
 
-    my $show = sub { my ($hit, $attr) = @_; $hit->{$attr} || "(no $attr)" };
+    my $show = sub {
+        my ($hit, $attr) = @_;
+        my $value = $hit->{$attr} || "(no $attr)";
+        $value =~ s/\n/ /g;
+        $value;
+    };
 
     print "\n";
     for my $i (0..$#hit) {
         my $hit = $hit[$i];
-        printf " %d. \e[32m%s\e[m %s by %s\n    %s\n",
+        printf " %2d. \e[32m%s\e[m %s by %s\n     %s\n",
             $i + 1,
             $show->($hit, 'main_module'),
             $show->($hit, 'version'),
