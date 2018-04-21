@@ -52,7 +52,7 @@
             "CPAN::Meta::YAML" : "0",
             "Capture::Tiny" : "0",
             "Class::Tiny" : "0",
-            "Command::Runner" : "0",
+            "Command::Runner" : "0.002",
             "ExtUtils::InstallPaths" : "0.002",
             "File::Copy::Recursive" : "0",
             "File::pushd" : "0",

@@ -61,12 +61,13 @@ sub run_timeout {
         timeout => $timeout,
         on => { stdout => sub { $self->log(@_) } },
     );
-    my ($status, $is_timeout) = $runner->run;
-    if ($is_timeout) {
+    my $res = $runner->run;
+    if ($res->{timeout}) {
         $self->diag_fail("Timed out (> ${timeout}s).");
         return;
     }
-    ref $cmd eq 'CODE' ? $status : $status == 0;
+    my $result = $res->{result};
+    ref $cmd eq 'CODE' ? $result : $result == 0;
 }
 
 1;
