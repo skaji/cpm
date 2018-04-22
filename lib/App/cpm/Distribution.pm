@@ -29,6 +29,7 @@ for my $attr (qw(
     directory
     distdata
     meta
+    mymeta
     uri
     provides
     requirements

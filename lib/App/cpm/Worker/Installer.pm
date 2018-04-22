@@ -35,13 +35,14 @@ sub work {
     my ($self, $job) = @_;
     my $type = $job->{type} || "(undef)";
     local $self->{logger}{context} = $job->distvname;
-    local $self->{cpantester}{context} = $job->distvname;
+    local $self->{cpantester}{context} = $job->distvname if $self->{cpantester};
     if ($type eq "fetch") {
         if (my $result = $self->fetch($job)) {
             return +{
                 ok => 1,
                 directory => $result->{directory},
                 meta => $result->{meta},
+                mymeta => $result->{mymeta},
                 configure_requirements => $result->{configure_requirements},
                 provides => $result->{provides},
                 using_cache => $result->{using_cache},
@@ -56,6 +57,7 @@ sub work {
         if (my $result = $self->configure($job)) {
             return +{
                 ok => 1,
+                mymeta => $result->{mymeta},
                 distdata => $result->{distdata},
                 requirements => $result->{requirements},
                 static_builder => $result->{static_builder},
@@ -83,6 +85,7 @@ sub new {
     $option{logger}->log("Work directory is $option{base}");
 
     my $menlo = App::cpm::Worker::Installer::Menlo->new(
+        cpantester => $option{cpantester},
         base => $option{base},
         logger => $option{logger},
         quiet => 1,
@@ -278,7 +281,8 @@ sub find_prebuilt {
     };
     return +{
         directory => $dir,
-        meta => $meta->as_struct,
+        meta => $meta,
+        mymeta => $mymeta,
         provides => $provides,
         prebuilt => 1,
         requirements => $requirement->as_array,
@@ -427,6 +431,7 @@ sub configure {
     my $mymeta = $self->_load_metafile($distfile, 'MYMETA.json', 'MYMETA.yml');
     my $requirement = $self->_extract_requirements($mymeta, $phase);
     return +{
+        mymeta => $mymeta,
         distdata => $distdata,
         requirements => $requirement->as_array,
         static_builder => $static_builder,
@@ -464,6 +469,7 @@ sub install {
     my $guard = pushd $dir;
     my $menlo = $self->menlo;
 
+    $self->_dump_prereqs($job) if $self->{cpantester};
     $self->{logger}->log("Building " . ($menlo->{notest} ? "" : "and testing ") . "distribution");
     my $installed;
     if ($static_builder) {
@@ -528,6 +534,32 @@ sub install_prebuilt {
     }
     $self->{logger}->log($stdout);
     return 1;
+}
+
+sub _dump_prereqs {
+    my ($self, $job) = @_;
+
+    my $cpantester = $self->{cpantester};
+    my %prereq;
+    my $meta = $job->{meta};
+    my $mymeta = $job->{mymeta};
+    for my $phase (qw(configure build test runtime)) {
+        my $reqs = $self->_extract_requirements($phase eq 'configure' ? $mymeta : $meta, [$phase]);
+        for my $req (@{ $reqs->as_array }) {
+            my $local;
+            if ($req->{package} eq 'perl') {
+                $local = { filename => $^X, version => "$]" },
+            } else {
+                $local = $cpantester->local_module($req->{package});
+            }
+            $prereq{$phase}{ $req->{package} } = {
+                have => $local->{version},
+                need => $req->{version_range},
+                filename => $local->{filename},
+            };
+        }
+    }
+    $cpantester->write('test,prereqs' => \%prereq);
 }
 
 1;

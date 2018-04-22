@@ -64,13 +64,15 @@ sub run_timeout {
         on => { stdout => sub { $self->log(@_) } },
     );
     my $res = $runner->run;
-    $self->diag_fail("Timed out (> ${timeout}s).") if $res->{timeout};
     if ($self->{cpantester}) {
-        $res->{cmd} = $str; # XXX
-        return $res;
+        $res->{cmd} = $str;
+        $self->{_last_run} = $res;
     }
-    return if $res->{timeout};
 
+    if ($res->{timeout}) {
+        $self->diag_fail("Timed out (> ${timeout}s).");
+        return;
+    }
     my $result = $res->{result};
     ref $cmd eq 'CODE' ? $result : $result == 0;
 }
@@ -80,20 +82,20 @@ sub _wrap_for_cpanteser {
 
     my $super = "SUPER::$method";
     my $start = 0+Time::HiRes::time();
-    my $res = $self->$super(@argv);
+    my $ok = $self->$super(@argv);
     my $end = 0+Time::HiRes::time();
 
+    my $last = $self->{_last_run};
     my $context = {
-        status => $res->{result},
-        cmd => $res->{cmd} || '(CODE)',
+        status => $last->{result},
+        cmd => $last->{cmd} || 'STATIC_INSTALL',
         start => $start,
         end => $end,
     };
     my $cpantester = $self->{cpantester};
     $cpantester->write("$method,context" => $context);
-    $cpantester->write("$method,output" => $res->{stdout});
-
-    $res->{cmd} ? $res->{result} == 0 : $res->{result} ? 1 : 0;
+    $cpantester->write("$method,output" => $last->{stdout});
+    $ok;
 }
 
 sub configure {

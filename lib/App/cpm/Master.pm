@@ -34,13 +34,74 @@ sub new {
     $self;
 }
 
-sub fail {
+{
+    package
+        App::cpm::Master::Result;
+
+    # status
+    #  0 OK
+    #  1 FAIL TO INSTALL for itself
+    #  2 FAIL TO INSTALL for prereqs
+    #  3 FAIL TO RESOLVE
+
+    sub new {
+        my $class = shift;
+        bless { distribution => {}, package => {} } , $class;
+    }
+    sub success {
+        my $self = shift;
+        return 0 if grep { $_ != 0 } map { $_->{status} } values %{$self->{distribution}};
+        return 0 if grep { $_ != 0 } map { $_->{status} } values %{$self->{package}};
+        return 1;
+    }
+    sub add_distribution {
+        my ($self, $distvname, $value) = @_;
+        $self->{distribution}{$distvname} = $value;
+    }
+    sub add_package {
+        my ($self, $package, $value) = @_;
+         $self->{package}{$package} = $value;
+    }
+    sub as_hash {
+        my $self = shift;
+        +{
+            distribution => $self->{distribution},
+            package => $self->{package},
+        }
+    }
+    sub fail_package {
+        my $self = shift;
+        grep { $self->{package}{$_}{status} != 0 } sort keys %{$self->{package}};
+    }
+    sub fail_distribution {
+        my $self = shift;
+        grep { $self->{distribution}{$_}{status} != 0 } sort keys %{$self->{distribution}};
+    }
+}
+
+sub result {
     my $self = shift;
+    my $result = App::cpm::Master::Result->new;
 
     my @fail_resolve = sort keys %{$self->{_fail_resolve}};
+    $result->add_package($_, { status => 3, reason => 'FAIL TO RESOLVE' }) for @fail_resolve;
+
     my @fail_install = sort keys %{$self->{_fail_install}};
     my @not_installed = grep { !$self->{_fail_install}{$_->distfile} && !$_->installed } $self->distributions;
-    return if !@fail_resolve && !@fail_install && !@not_installed;
+    $result->add_distribution($_->distvname => {
+        distfile => $_->distfile,
+        uri => $_->uri->[0],
+        status => 1,
+        reason => 'FAIL',
+    }) for grep { $self->{_fail_install}{$_->distfile} } $self->distributions;
+    $result->add_distribution($_->distvname => {
+        distfile => $_->distfile,
+        uri => $_->uri->[0],
+        status => 0,
+        reason => 'OK',
+    }) for grep { $_->installed } $self->distributions;
+
+    return $result if !@fail_resolve && !@fail_install && !@not_installed;
 
     my $detector = App::cpm::CircularDependency->new;
     for my $dist (@not_installed) {
@@ -54,24 +115,33 @@ sub fail {
 
     my $detected = $detector->detect;
     for my $distfile (sort keys %$detected) {
-        my $distvname = $self->distribution($distfile)->distvname;
+        my $dist = $self->distribution($distfile);
+        my $distvname = $dist->distvname;
         my @circular = @{$detected->{$distfile}};
         my $msg = join " -> ", map { $self->distribution($_)->distvname } @circular;
         local $self->{logger}{context} = $distvname;
         $self->{logger}->log("Detected circular dependencies $msg");
         $self->{logger}->log("Failed to install distribution");
+
+        $result->add_distribution($distvname => {
+            distfile => $distfile,
+            uri => $dist->uri->[0],
+            status => 1,
+            reason => "CIRCULAR DEPENDENCIES $msg"
+        });
     }
     for my $dist (sort { $a->distvname cmp $b->distvname } grep { !$detected->{$_->distfile} } @not_installed) {
         local $self->{logger}{context} = $dist->distvname;
         $self->{logger}->log("Failed to install distribution, "
                             ."because of installing some dependencies failed");
+        $result->add_distribution($dist->distvname => {
+            distfile => $dist->distfile,
+            uri => $dist->uri->[0],
+            status => 2,
+            reason => 'FAIL, BECAUSE OF PREREQS',
+        });
     }
-
-    my @name = (
-        (map { CPAN::DistnameInfo->new($_)->distvname || $_ } @fail_install),
-        (map { $_->distvname } @not_installed),
-    );
-    { resolve => \@fail_resolve, install => [sort @name] };
+    $result;
 }
 
 sub jobs { values %{shift->{jobs}} }
@@ -225,6 +295,7 @@ sub _calculate_jobs {
                 $self->add_job(
                     type => "install",
                     meta => $dist->meta,
+                    mymeta => $dist->mymeta,
                     distdata => $dist->distdata,
                     directory => $dist->directory,
                     distfile => $dist->{distfile},
@@ -420,6 +491,7 @@ sub _register_fetch_result {
     if ($job->{prebuilt}) {
         $distribution->configured(1);
         $distribution->requirements($job->{requirements});
+        $distribution->mymeta($job->{mymeta});
         $distribution->prebuilt(1);
         local $self->{logger}{context} = $distribution->distvname;
         my $msg = join ", ", map { sprintf "%s (%s)", $_->{package}, $_->{version} || 0 } @{$distribution->provides};
@@ -439,6 +511,7 @@ sub _register_configure_result {
     }
     my $distribution = $self->distribution($job->distfile);
     $distribution->configured(1);
+    $distribution->mymeta($job->{mymeta});
     $distribution->requirements($job->{requirements});
     $distribution->static_builder($job->{static_builder});
     $distribution->distdata($job->{distdata});

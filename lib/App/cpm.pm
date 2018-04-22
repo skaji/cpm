@@ -11,6 +11,7 @@ use App::cpm::Resolver::MetaDB;
 use App::cpm::Resolver::MetaCPAN;
 use App::cpm::Resolver::Cascade;
 use App::cpm::DistNotation;
+use App::cpm::CPANTester;
 use Parallel::Pipes;
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use List::Util ();
@@ -138,13 +139,14 @@ sub parse_options {
         !system "sudo", $^X, "-e1" or exit 1;
     }
     if ($self->{cpantester}) {
+        $self->{workers} = 1;
+        $self->{retry} = 0;
         $self->{notest} = 0;
         $self->{prebuilt} = 0;
     }
     if ($self->{pureperl_only} or $self->{sudo} or !$self->{notest} or $self->{man_pages} or $] < 5.012) {
         $self->{prebuilt} = 0;
     }
-
 
     $App::cpm::Logger::COLOR = 1 if $self->{color};
     $App::cpm::Logger::VERBOSE = 1 if $self->{verbose};
@@ -254,25 +256,28 @@ sub cmd_install {
     $logger->log("This is a self-contained version, $GIT_DESCRIBE ($GIT_URL)") if $GIT_DESCRIBE && $GIT_URL;
     $logger->log("Command line arguments are: @ARGV");
 
-    my $cpantester;
-    if ($self->{cpantester}) {
-        $cpantester = App::cpm::CPANTester->new("$self->{home}/cpantester.log.$now");
-        #$cpantester->symlink_to("$self->{home}/cpantester.log");
-        $cpantester->write_header;
-        $cpantester->write('context', 'cpm', { version => $VERSION, path => $0, git_describe => $GIT_DESCRIBE, git_url => $GIT_URL });
-        $cpantester->write('context', 'argv', [@ARGV]);
-    }
-
     my $master = App::cpm::Master->new(
         logger => $logger,
         inc    => $self->_inc,
         show_progress => $self->{show_progress},
-        cpantester => $cpantester,
         (exists $self->{target_perl} ? (target_perl => $self->{target_perl}) : ()),
     );
 
     my ($packages, $dists) = $self->initial_job($master);
     return 0 unless $packages;
+
+    my $cpantester;
+    if ($self->{cpantester}) {
+        $cpantester = App::cpm::CPANTester->new(
+            file => "$self->{home}/cpantester.log.$now",
+            finalfile => "$self->{home}/cpantester.json.$now",
+            inc => $self->_inc,
+        );
+        $cpantester->symlink_to(
+            file => "$self->{home}/cpantester.log",
+            finalfile => "$self->{home}/cpantester.json",
+        );
+    }
 
     my $worker = App::cpm::Worker->new(
         verbose   => $self->{verbose},
@@ -284,13 +289,18 @@ sub cmd_install {
         man_pages => $self->{man_pages},
         retry     => $self->{retry},
         prebuilt  => $self->{prebuilt},
+        cpantester => $cpantester,
         pureperl_only => $self->{pureperl_only},
         configure_timeout => $self->{configure_timeout},
         build_timeout     => $self->{build_timeout},
         test_timeout      => $self->{test_timeout},
-        cpantester => $cpantester,
         ($self->{global} ? () : (local_lib => $self->{local_lib})),
     );
+    if ($cpantester) {
+        local $cpantester->{context} = "main";
+        $cpantester->write('cpm', { version => $VERSION, path => $0, git_describe => $GIT_DESCRIBE, git_url => $GIT_URL, argv => \@ARGV });
+        $cpantester->write_header;
+    }
 
     {
         last if $] >= 5.016;
@@ -307,11 +317,11 @@ sub cmd_install {
         $master->add_job(type => "resolve", %$_) for @need_resolve;
 
         $self->install($master, $worker, 1);
-        if (my $fail = $master->fail) {
+        my $result = $master->result;
+        if (!$result->success) {
             local $App::cpm::Logger::VERBOSE = 0;
-            for my $type (qw(install resolve)) {
-                App::cpm::Logger->log(result => "FAIL", type => $type, message => $_) for @{$fail->{$type}};
-            }
+            App::cpm::Logger->log(result => "FAIL", type => 'resolve', message => $_) for $result->fail_package;
+            App::cpm::Logger->log(result => "FAIL", type => 'install', message => $_) for $result->fail_distribution;
             print STDERR "\r" if $self->{show_progress};
             warn sprintf "%d distribution%s installed.\n",
                 $master->installed_distributions, $master->installed_distributions > 1 ? "s" : "";
@@ -323,23 +333,29 @@ sub cmd_install {
     $master->add_job(type => "resolve", %$_) for @$packages;
     $master->add_distribution($_) for @$dists;
     $self->install($master, $worker, $self->{workers});
-    my $fail = $master->fail;
-    if ($fail) {
+    my $result = $master->result;
+    if (!$result->success) {
         local $App::cpm::Logger::VERBOSE = 0;
-        for my $type (qw(install resolve)) {
-            App::cpm::Logger->log(result => "FAIL", type => $type, message => $_) for @{$fail->{$type}};
-        }
+        App::cpm::Logger->log(result => "FAIL", type => 'resolve', message => $_) for $result->fail_package;
+        App::cpm::Logger->log(result => "FAIL", type => 'install', message => $_) for $result->fail_distribution;
     }
     print STDERR "\r" if $self->{show_progress};
     warn sprintf "%d distribution%s installed.\n",
         $master->installed_distributions, $master->installed_distributions > 1 ? "s" : "";
     $self->cleanup;
 
-    if ($fail) {
-        warn "See $self->{home}/build.log for details.\n";
-        return 1;
-    } else {
+    if ($cpantester) {
+        local $cpantester->{context} = 'main';
+        $cpantester->write("result" => $result->as_hash);
+        $cpantester->finalize;
+        warn "See $self->{home}/cpantester.json for CPANTester\n";
+    }
+
+    if ($result->success) {
         return 0;
+    } else {
+        warn "See $self->{home}/build.log for details.\n" unless $cpantester;
+        return 1;
     }
 }
 
