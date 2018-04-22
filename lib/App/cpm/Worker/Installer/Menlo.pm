@@ -6,6 +6,7 @@ use parent 'Menlo::CLI::Compat';
 use App::cpm::Logger::File;
 use Menlo::Builder::Static;
 use Command::Runner;
+use Time::HiRes ();
 
 our $VERSION = '0.969';
 
@@ -56,18 +57,79 @@ sub run_timeout {
     $self->{logger}->log("Executing $str") if $str;
 
     my $runner = Command::Runner->new(
+        keep => $self->{cpantester} ? 1 : 0,
         command => $cmd,
         redirect => 1,
         timeout => $timeout,
         on => { stdout => sub { $self->log(@_) } },
     );
     my $res = $runner->run;
-    if ($res->{timeout}) {
-        $self->diag_fail("Timed out (> ${timeout}s).");
-        return;
+    $self->diag_fail("Timed out (> ${timeout}s).") if $res->{timeout};
+    if ($self->{cpantester}) {
+        $res->{cmd} = $str; # XXX
+        return $res;
     }
+    return if $res->{timeout};
+
     my $result = $res->{result};
     ref $cmd eq 'CODE' ? $result : $result == 0;
+}
+
+sub _wrap_for_cpanteser {
+    my ($self, $method, @argv) = @_;
+
+    my $super = "SUPER::$method";
+    my $start = 0+Time::HiRes::time();
+    my $res = $self->$super(@argv);
+    my $end = 0+Time::HiRes::time();
+
+    my $context = {
+        status => $res->{result},
+        cmd => $res->{cmd} || '(CODE)',
+        start => $start,
+        end => $end,
+    };
+    my $cpantester = $self->{cpantester};
+    $cpantester->write("$method,context" => $context);
+    $cpantester->write("$method,output" => $res->{stdout});
+
+    $res->{cmd} ? $res->{result} == 0 : $res->{result} ? 1 : 0;
+}
+
+sub configure {
+    my $self = shift;
+    if ($self->{cpantester}) {
+        $self->_wrap_for_cpanteser(configure => @_);
+    } else {
+        $self->SUPER::configure(@_);
+    }
+}
+
+sub build {
+    my $self = shift;
+    if ($self->{cpantester}) {
+        $self->_wrap_for_cpanteser(build => @_);
+    } else {
+        $self->SUPER::build(@_);
+    }
+}
+
+sub test {
+    my $self = shift;
+    if ($self->{cpantester}) {
+        $self->_wrap_for_cpanteser(test => @_);
+    } else {
+        $self->SUPER::test(@_);
+    }
+}
+
+sub install {
+    my $self = shift;
+    if ($self->{cpantester}) {
+        $self->_wrap_for_cpanteser(install => @_);
+    } else {
+        $self->SUPER::install(@_);
+    }
 }
 
 1;

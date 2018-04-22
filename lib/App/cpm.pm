@@ -106,6 +106,7 @@ sub parse_options {
         "prebuilt!" => \($self->{prebuilt}),
         "reinstall" => \($self->{reinstall}),
         "pp|pureperl|pureperl-only" => \($self->{pureperl_only}),
+        "cpantester" => \($self->{cpantester}),
         (map $with_option->($_), qw(requires recommends suggests)),
         (map $with_option->($_), qw(configure build test runtime develop)),
         "feature=s@" => \@feature,
@@ -136,9 +137,14 @@ sub parse_options {
     if ($self->{sudo}) {
         !system "sudo", $^X, "-e1" or exit 1;
     }
+    if ($self->{cpantester}) {
+        $self->{notest} = 0;
+        $self->{prebuilt} = 0;
+    }
     if ($self->{pureperl_only} or $self->{sudo} or !$self->{notest} or $self->{man_pages} or $] < 5.012) {
         $self->{prebuilt} = 0;
     }
+
 
     $App::cpm::Logger::COLOR = 1 if $self->{color};
     $App::cpm::Logger::VERBOSE = 1 if $self->{verbose};
@@ -241,16 +247,27 @@ sub cmd_install {
         if !@{$self->{argv}} && (!$self->{cpanfile} || !-f $self->{cpanfile});
 
     File::Path::mkpath($self->{home}) unless -d $self->{home};
-    my $logger = App::cpm::Logger::File->new("$self->{home}/build.log.@{[time]}");
+    my $now = time;
+    my $logger = App::cpm::Logger::File->new("$self->{home}/build.log.$now");
     $logger->symlink_to("$self->{home}/build.log");
     $logger->log("Running cpm $VERSION ($0) on perl $Config{version} built for $Config{archname} ($^X)");
     $logger->log("This is a self-contained version, $GIT_DESCRIBE ($GIT_URL)") if $GIT_DESCRIBE && $GIT_URL;
     $logger->log("Command line arguments are: @ARGV");
 
+    my $cpantester;
+    if ($self->{cpantester}) {
+        $cpantester = App::cpm::CPANTester->new("$self->{home}/cpantester.log.$now");
+        #$cpantester->symlink_to("$self->{home}/cpantester.log");
+        $cpantester->write_header;
+        $cpantester->write('context', 'cpm', { version => $VERSION, path => $0, git_describe => $GIT_DESCRIBE, git_url => $GIT_URL });
+        $cpantester->write('context', 'argv', [@ARGV]);
+    }
+
     my $master = App::cpm::Master->new(
         logger => $logger,
         inc    => $self->_inc,
         show_progress => $self->{show_progress},
+        cpantester => $cpantester,
         (exists $self->{target_perl} ? (target_perl => $self->{target_perl}) : ()),
     );
 
@@ -271,6 +288,7 @@ sub cmd_install {
         configure_timeout => $self->{configure_timeout},
         build_timeout     => $self->{build_timeout},
         test_timeout      => $self->{test_timeout},
+        cpantester => $cpantester,
         ($self->{global} ? () : (local_lib => $self->{local_lib})),
     );
 

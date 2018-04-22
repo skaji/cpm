@@ -35,6 +35,7 @@ sub work {
     my ($self, $job) = @_;
     my $type = $job->{type} || "(undef)";
     local $self->{logger}{context} = $job->distvname;
+    local $self->{cpantester}{context} = $job->distvname;
     if ($type eq "fetch") {
         if (my $result = $self->fetch($job)) {
             return +{
