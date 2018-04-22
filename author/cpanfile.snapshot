@@ -111,10 +111,10 @@ DISTRIBUTIONS
       perl 5.008001
       strict 0
       warnings 0
-  Capture-Tiny-0.46
-    pathname: D/DA/DAGOLDEN/Capture-Tiny-0.46.tar.gz
+  Capture-Tiny-0.48
+    pathname: D/DA/DAGOLDEN/Capture-Tiny-0.48.tar.gz
     provides:
-      Capture::Tiny 0.46
+      Capture::Tiny 0.48
     requirements:
       Carp 0
       Exporter 0
@@ -281,10 +281,10 @@ DISTRIBUTIONS
       Module::CPANfile 0
       Test::More 0.88
       version 0.76
-  File-Copy-Recursive-0.42
-    pathname: D/DM/DMUEY/File-Copy-Recursive-0.42.tar.gz
+  File-Copy-Recursive-0.43
+    pathname: D/DM/DMUEY/File-Copy-Recursive-0.43.tar.gz
     provides:
-      File::Copy::Recursive 0.42
+      File::Copy::Recursive 0.43
     requirements:
       Cwd 0
       ExtUtils::MakeMaker 0
@@ -491,10 +491,10 @@ DISTRIBUTIONS
       parent 0
       perl 5.008001
       version 0
-  Module-CPANfile-1.1002
-    pathname: M/MI/MIYAGAWA/Module-CPANfile-1.1002.tar.gz
+  Module-CPANfile-1.1003
+    pathname: M/MI/MIYAGAWA/Module-CPANfile-1.1003.tar.gz
     provides:
-      Module::CPANfile 1.1002
+      Module::CPANfile 1.1003
       Module::CPANfile::Environment undef
       Module::CPANfile::Prereq undef
       Module::CPANfile::Prereqs undef
@@ -503,7 +503,6 @@ DISTRIBUTIONS
       CPAN::Meta 2.12091
       CPAN::Meta::Prereqs 2.12091
       ExtUtils::MakeMaker 0
-      JSON::PP 2.27300
       parent 0
   Module-CoreList-5.20180420
     pathname: B/BI/BINGOS/Module-CoreList-5.20180420.tar.gz
