@@ -4,7 +4,7 @@ use warnings;
 use App::cpm::version;
 use App::cpm::DistNotation;
 use Carton::Snapshot;
-our $VERSION = '0.969';
+our $VERSION = '0.970';
 
 sub new {
     my ($class, %option) = @_;

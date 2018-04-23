@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.970  2018-04-23 07:04:56 CEST
+        - Follow Menlo; support x_use_unsafe_inc specifier in META (akiym #124, #125)
+
 0.969  2018-04-21 21:06:56 CEST
         - Use Command::Runner 0.002
         - Follow Menlo-1.9017 change
