@@ -392,13 +392,14 @@ sub configure {
     my ($dir, $distfile, $meta, $source) = @{$job}{qw(directory distfile meta source)};
     my $guard = pushd $dir;
     my $menlo = $self->menlo;
+    my $menlo_dist = { meta => $meta, cpanmeta => $meta }; # XXX
 
     $self->{logger}->log("Configuring distribution");
     my ($static_builder, $configure_ok);
     {
         if ($menlo->opts_in_static_install($meta)) {
             my $state = {};
-            $menlo->static_install_configure($state, { cpanmeta => $meta }, 1);
+            $menlo->static_install_configure($state, $menlo_dist, 1);
             $static_builder = $state->{static_install};
             ++$configure_ok and last;
         }
@@ -406,7 +407,7 @@ sub configure {
             my @cmd = ($menlo->{perl}, 'Build.PL');
             push @cmd, '--pureperl-only' if $self->{pureperl_only};
             $self->_retry(sub {
-                $menlo->configure(\@cmd, 1);
+                $menlo->configure(\@cmd, $menlo_dist, 1);
                 -f 'Build';
             }) and ++$configure_ok and last;
         }
@@ -414,7 +415,7 @@ sub configure {
             my @cmd = ($menlo->{perl}, 'Makefile.PL');
             push @cmd, 'PUREPERL_ONLY=1' if $self->{pureperl_only};
             $self->_retry(sub {
-                $menlo->configure(\@cmd, 1); # XXX depth == 1?
+                $menlo->configure(\@cmd, $menlo_dist, 1); # XXX depth == 1?
                 -f 'Makefile';
             }) and ++$configure_ok and last;
         }
@@ -459,26 +460,28 @@ sub install {
     my ($self, $job) = @_;
     return $self->install_prebuilt($job) if $job->{prebuilt};
 
-    my ($dir, $distdata, $static_builder) = @{$job}{qw(directory distdata static_builder)};
+    my ($dir, $distdata, $static_builder, $distvname, $meta)
+        = @{$job}{qw(directory distdata static_builder distvname meta)};
     my $guard = pushd $dir;
     my $menlo = $self->menlo;
+    my $menlo_dist = { meta => $meta }; # XXX
 
     $self->{logger}->log("Building " . ($menlo->{notest} ? "" : "and testing ") . "distribution");
     my $installed;
     if ($static_builder) {
-        $menlo->build(sub { $static_builder->build }, )
-        && $menlo->test(sub { $static_builder->build("test") }, )
-        && $menlo->install(sub { $static_builder->build("install") }, [])
+        $menlo->build(sub { $static_builder->build }, $distvname, $menlo_dist)
+        && $menlo->test(sub { $static_builder->build("test") }, $distvname, $menlo_dist)
+        && $menlo->install(sub { $static_builder->build("install") }, [], $distvname, $menlo_dist)
         && $installed++;
     } elsif (-f 'Build') {
-        $self->_retry(sub { $menlo->build([ $menlo->{perl}, "./Build" ], )  })
-        && $self->_retry(sub { $menlo->test([ $menlo->{perl}, "./Build", "test" ], )  })
-        && $self->_retry(sub { $menlo->install([ $menlo->{perl}, "./Build", "install" ], [])  })
+        $self->_retry(sub { $menlo->build([ $menlo->{perl}, "./Build" ], $distvname, $menlo_dist)  })
+        && $self->_retry(sub { $menlo->test([ $menlo->{perl}, "./Build", "test" ], $distvname, $menlo_dist)  })
+        && $self->_retry(sub { $menlo->install([ $menlo->{perl}, "./Build", "install" ], [], $distvname, $menlo_dist)  })
         && $installed++;
     } else {
-        $self->_retry(sub { $menlo->build([ $menlo->{make} ], )  })
-        && $self->_retry(sub { $menlo->test([ $menlo->{make}, "test" ], )  })
-        && $self->_retry(sub { $menlo->install([ $menlo->{make}, "install" ], []) })
+        $self->_retry(sub { $menlo->build([ $menlo->{make} ], $distvname, $menlo_dist)  })
+        && $self->_retry(sub { $menlo->test([ $menlo->{make}, "test" ], $distvname, $menlo_dist)  })
+        && $self->_retry(sub { $menlo->install([ $menlo->{make}, "install" ], [], $distvname, $menlo_dist) })
         && $installed++;
     }
 
