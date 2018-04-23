@@ -196,6 +196,7 @@ sub _calculate_jobs {
                     distfile => $dist->{distfile},
                     source => $dist->source,
                     uri => $dist->uri,
+                    distvname => $dist->distvname,
                 );
             } elsif (@need_resolve and !$dist->deps_registered) {
                 $dist->deps_registered(1);
