@@ -281,10 +281,10 @@ DISTRIBUTIONS
       Module::CPANfile 0
       Test::More 0.88
       version 0.76
-  File-Copy-Recursive-0.43
-    pathname: D/DM/DMUEY/File-Copy-Recursive-0.43.tar.gz
+  File-Copy-Recursive-0.44
+    pathname: D/DM/DMUEY/File-Copy-Recursive-0.44.tar.gz
     provides:
-      File::Copy::Recursive 0.43
+      File::Copy::Recursive 0.44
     requirements:
       Cwd 0
       ExtUtils::MakeMaker 0
@@ -447,15 +447,14 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       perl 5.006
-  Menlo-1.9018
-    pathname: M/MI/MIYAGAWA/Menlo-1.9018.tar.gz
+  Menlo-1.9019
+    pathname: M/MI/MIYAGAWA/Menlo-1.9019.tar.gz
     provides:
-      Menlo 1.9018
+      Menlo 1.9019
       Menlo::Builder::Static undef
-      Menlo::CLI::Compat 1.9017
       Menlo::Dependency undef
       Menlo::Index::MetaCPAN undef
-      Menlo::Index::MetaDB 0.007
+      Menlo::Index::MetaDB 1.9019
       Menlo::Index::Mirror undef
       Menlo::Util undef
     requirements:
@@ -491,6 +490,15 @@ DISTRIBUTIONS
       parent 0
       perl 5.008001
       version 0
+  Menlo-Legacy-1.9020
+    pathname: M/MI/MIYAGAWA/Menlo-Legacy-1.9020.tar.gz
+    provides:
+      Menlo::CLI::Compat 1.9020
+      Menlo::Legacy 1.9020
+    requirements:
+      ExtUtils::MakeMaker 0
+      Menlo 1.9018
+      perl 5.008001
   Module-CPANfile-1.1003
     pathname: M/MI/MIYAGAWA/Module-CPANfile-1.1003.tar.gz
     provides:
@@ -680,64 +688,62 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       perl 5.006
-  Tie-Handle-Offset-0.003
-    pathname: D/DA/DAGOLDEN/Tie-Handle-Offset-0.003.tar.gz
+  Tie-Handle-Offset-0.004
+    pathname: D/DA/DAGOLDEN/Tie-Handle-Offset-0.004.tar.gz
     provides:
-      Tie::Handle::Offset 0.003
-      Tie::Handle::SkipHeader 0.003
+      Tie::Handle::Offset 0.004
+      Tie::Handle::SkipHeader 0.004
     requirements:
       ExtUtils::MakeMaker 6.17
-      File::Find 0
-      File::Temp 0
-      Test::More 0
       Tie::Handle 0
+      perl 5.006
       strict 0
-  URI-1.73
-    pathname: E/ET/ETHER/URI-1.73.tar.gz
+  URI-1.74
+    pathname: E/ET/ETHER/URI-1.74.tar.gz
     provides:
-      URI 1.73
+      URI 1.74
       URI::Escape 3.31
       URI::Heuristic 4.20
-      URI::IRI 1.73
-      URI::QueryParam 1.73
-      URI::Split 1.73
+      URI::IRI 1.74
+      URI::QueryParam 1.74
+      URI::Split 1.74
       URI::URL 5.04
       URI::WithBase 2.20
-      URI::data 1.73
+      URI::data 1.74
       URI::file 4.21
-      URI::file::Base 1.73
-      URI::file::FAT 1.73
-      URI::file::Mac 1.73
-      URI::file::OS2 1.73
-      URI::file::QNX 1.73
-      URI::file::Unix 1.73
-      URI::file::Win32 1.73
-      URI::ftp 1.73
-      URI::gopher 1.73
-      URI::http 1.73
-      URI::https 1.73
-      URI::ldap 1.73
-      URI::ldapi 1.73
-      URI::ldaps 1.73
-      URI::mailto 1.73
-      URI::mms 1.73
-      URI::news 1.73
-      URI::nntp 1.73
-      URI::pop 1.73
-      URI::rlogin 1.73
-      URI::rsync 1.73
-      URI::rtsp 1.73
-      URI::rtspu 1.73
-      URI::sftp 1.73
-      URI::sip 1.73
-      URI::sips 1.73
-      URI::snews 1.73
-      URI::ssh 1.73
-      URI::telnet 1.73
-      URI::tn3270 1.73
-      URI::urn 1.73
-      URI::urn::isbn 1.73
-      URI::urn::oid 1.73
+      URI::file::Base 1.74
+      URI::file::FAT 1.74
+      URI::file::Mac 1.74
+      URI::file::OS2 1.74
+      URI::file::QNX 1.74
+      URI::file::Unix 1.74
+      URI::file::Win32 1.74
+      URI::ftp 1.74
+      URI::gopher 1.74
+      URI::http 1.74
+      URI::https 1.74
+      URI::ldap 1.74
+      URI::ldapi 1.74
+      URI::ldaps 1.74
+      URI::mailto 1.74
+      URI::mms 1.74
+      URI::news 1.74
+      URI::nntp 1.74
+      URI::pop 1.74
+      URI::rlogin 1.74
+      URI::rsync 1.74
+      URI::rtsp 1.74
+      URI::rtspu 1.74
+      URI::sftp 1.74
+      URI::sip 1.74
+      URI::sips 1.74
+      URI::snews 1.74
+      URI::ssh 1.74
+      URI::telnet 1.74
+      URI::tn3270 1.74
+      URI::urn 1.74
+      URI::urn::isbn 1.74
+      URI::urn::oid 1.74
     requirements:
       Carp 0
       Cwd 0
