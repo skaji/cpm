@@ -2,7 +2,7 @@ package App::cpm::version;
 use strict;
 use warnings;
 use CPAN::Meta::Requirements;
-our $VERSION = '0.970';
+our $VERSION = '0.971';
 
 use parent 'version';
 
