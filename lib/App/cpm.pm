@@ -68,6 +68,7 @@ sub new {
         notest => 1,
         prebuilt => $] >= 5.012 && $prebuilt,
         pureperl_only => 0,
+        static_install => 1,
         %option
     }, $class;
 }
@@ -106,6 +107,7 @@ sub parse_options {
         "prebuilt!" => \($self->{prebuilt}),
         "reinstall" => \($self->{reinstall}),
         "pp|pureperl|pureperl-only" => \($self->{pureperl_only}),
+        "static-install!" => \($self->{static_install}),
         (map $with_option->($_), qw(requires recommends suggests)),
         (map $with_option->($_), qw(configure build test runtime develop)),
         "feature=s@" => \@feature,
@@ -268,6 +270,7 @@ sub cmd_install {
         retry     => $self->{retry},
         prebuilt  => $self->{prebuilt},
         pureperl_only => $self->{pureperl_only},
+        static_install => $self->{static_install},
         configure_timeout => $self->{configure_timeout},
         build_timeout     => $self->{build_timeout},
         test_timeout      => $self->{test_timeout},

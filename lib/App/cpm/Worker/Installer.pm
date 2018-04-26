@@ -82,6 +82,7 @@ sub new {
     $option{logger}->log("Work directory is $option{base}");
 
     my $menlo = App::cpm::Worker::Installer::Menlo->new(
+        static_install => $option{static_install},
         base => $option{base},
         logger => $option{logger},
         quiet => 1,
