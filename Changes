@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.972  2018-04-28 15:09:51 JST
+        - Follow Menlo; support --no-static-install to disable static install
+
 0.971  2018-04-26 08:20:39 JST
         - Depend on Menlo::CLI::Compat 1.9020
 
