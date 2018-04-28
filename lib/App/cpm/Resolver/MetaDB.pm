@@ -2,10 +2,10 @@ package App::cpm::Resolver::MetaDB;
 use strict;
 use warnings;
 use utf8;
-our $VERSION = '0.972';
 
 use HTTP::Tiny;
 use CPAN::Meta::YAML;
+use App::cpm;
 use App::cpm::version;
 use App::cpm::DistNotation;
 
@@ -14,7 +14,7 @@ sub new {
     my $uri = $option{uri} || "http://cpanmetadb.plackperl.org/v1.0/";
     my $mirror = $option{mirror} || ["https://cpan.metacpan.org/"];
     s{/*$}{/} for $uri, @$mirror;
-    my $http = HTTP::Tiny->new(timeout => 15, keep_alive => 1, agent => "App::cpm/$VERSION");
+    my $http = HTTP::Tiny->new(timeout => 15, keep_alive => 1, agent => "App::cpm/$App::cpm::VERSION");
     bless {
         %option,
         http => $http,

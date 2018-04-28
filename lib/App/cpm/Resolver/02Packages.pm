@@ -1,11 +1,11 @@
 package App::cpm::Resolver::02Packages;
 use strict;
 use warnings;
+use App::cpm;
 use App::cpm::version;
 use App::cpm::DistNotation;
 use Cwd ();
 use File::Path ();
-our $VERSION = '0.972';
 
 {
     package
@@ -34,7 +34,7 @@ our $VERSION = '0.972';
         my $path = $self->path;
         my $dest = File::Spec->catfile($self->cache, File::Basename::basename($path));
         if ($path =~ m{^https?://}) {
-            my $res = HTTP::Tinyish->new(agent => "App::cpm/$VERSION", verify_SSL => 1)->mirror($path => $dest);
+            my $res = HTTP::Tinyish->new(agent => "App::cpm/$App::cpm::VERSION", verify_SSL => 1)->mirror($path => $dest);
             die "$res->{status} $res->{reason}, $path\n" unless $res->{success};
         } else {
             $path =~ s{^file://}{};

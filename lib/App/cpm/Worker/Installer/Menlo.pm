@@ -3,11 +3,11 @@ use strict;
 use warnings;
 use parent 'Menlo::CLI::Compat';
 
+use App::cpm;
 use App::cpm::Logger::File;
 use Menlo::Builder::Static;
 use Command::Runner;
 
-our $VERSION = '0.972';
 
 use constant WIN32 => Menlo::CLI::Compat::WIN32();
 
@@ -22,7 +22,7 @@ sub new {
 
 sub _set_http_agent {
     my $self = shift;
-    my $agent = "App::cpm/$VERSION";
+    my $agent = "App::cpm/$App::cpm::VERSION";
     my $http = $self->{http};
     my $klass = ref $http;
     if ($klass =~ /HTTP::Tinyish::(Curl|Wget)/) {
