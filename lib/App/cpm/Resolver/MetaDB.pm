@@ -3,9 +3,8 @@ use strict;
 use warnings;
 use utf8;
 
-use HTTP::Tiny;
+use App::cpm::HTTP;
 use CPAN::Meta::YAML;
-use App::cpm;
 use App::cpm::version;
 use App::cpm::DistNotation;
 
@@ -14,7 +13,7 @@ sub new {
     my $uri = $option{uri} || "http://cpanmetadb.plackperl.org/v1.0/";
     my $mirror = $option{mirror} || ["https://cpan.metacpan.org/"];
     s{/*$}{/} for $uri, @$mirror;
-    my $http = HTTP::Tiny->new(timeout => 15, keep_alive => 1, agent => "App::cpm/$App::cpm::VERSION");
+    my $http = App::cpm::HTTP->create;
     bless {
         %option,
         http => $http,

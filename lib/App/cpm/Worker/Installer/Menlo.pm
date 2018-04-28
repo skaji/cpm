@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use parent 'Menlo::CLI::Compat';
 
-use App::cpm;
+use App::cpm::HTTP;
 use App::cpm::Logger::File;
 use Menlo::Builder::Static;
 use Command::Runner;
@@ -16,24 +16,14 @@ sub new {
     $option{log} ||= $option{logger}->file;
     my $self = $class->SUPER::new(%option);
     $self->init_tools;
-    $self->_set_http_agent;
     $self;
 }
 
-sub _set_http_agent {
+sub configure_http {
     my $self = shift;
-    my $agent = "App::cpm/$App::cpm::VERSION";
-    my $http = $self->{http};
-    my $klass = ref $http;
-    if ($klass =~ /HTTP::Tinyish::(Curl|Wget)/) {
-        $http->{agent} = $agent;
-    } elsif ($klass eq 'HTTP::Tinyish::LWP') {
-        $http->{ua}->agent($agent);
-    } elsif ($klass eq 'HTTP::Tinyish::HTTPTiny') {
-        $http->{tiny}->agent($agent);
-    } else {
-        die "Unknown http class: $klass\n";
-    }
+    my ($http, $desc) = App::cpm::HTTP->create;
+    $self->{logger}->log("You have $desc");
+    $http;
 }
 
 sub log {
