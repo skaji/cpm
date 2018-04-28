@@ -188,6 +188,12 @@
    {
       "copyright" : "Tatsuhiko Miyagawa",
       "license" : "the same as Perl 5",
+      "name" : "Menlo-Legacy",
+      "url" : "https://metacpan.org/release/Menlo-Legacy"
+   },
+   {
+      "copyright" : "Tatsuhiko Miyagawa",
+      "license" : "the same as Perl 5",
       "name" : "Module-CPANfile",
       "url" : "https://metacpan.org/release/Module-CPANfile"
    },
