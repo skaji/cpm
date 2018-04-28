@@ -1,10 +1,9 @@
 #!perl
 use strict;
 use warnings;
-use utf8;
 
-use App::cpm;
-exit App::cpm->new->run(@ARGV);
+use App::cpm::CLI;
+exit App::cpm::CLI->new->run(@ARGV);
 
 __END__
 

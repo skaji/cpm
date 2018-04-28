@@ -75,87 +75,71 @@
          "file" : "lib/App/cpm.pm",
          "version" : "0.972"
       },
+      "App::cpm::CLI" : {
+         "file" : "lib/App/cpm/CLI.pm"
+      },
       "App::cpm::CircularDependency" : {
-         "file" : "lib/App/cpm/CircularDependency.pm",
-         "version" : "0.972"
+         "file" : "lib/App/cpm/CircularDependency.pm"
       },
       "App::cpm::DistNotation" : {
          "file" : "lib/App/cpm/DistNotation.pm"
       },
       "App::cpm::Distribution" : {
-         "file" : "lib/App/cpm/Distribution.pm",
-         "version" : "0.972"
+         "file" : "lib/App/cpm/Distribution.pm"
       },
       "App::cpm::Job" : {
-         "file" : "lib/App/cpm/Job.pm",
-         "version" : "0.972"
+         "file" : "lib/App/cpm/Job.pm"
       },
       "App::cpm::Logger" : {
-         "file" : "lib/App/cpm/Logger.pm",
-         "version" : "0.972"
+         "file" : "lib/App/cpm/Logger.pm"
       },
       "App::cpm::Logger::File" : {
-         "file" : "lib/App/cpm/Logger/File.pm",
-         "version" : "0.972"
+         "file" : "lib/App/cpm/Logger/File.pm"
       },
       "App::cpm::Master" : {
-         "file" : "lib/App/cpm/Master.pm",
-         "version" : "0.972"
+         "file" : "lib/App/cpm/Master.pm"
       },
       "App::cpm::Requirement" : {
          "file" : "lib/App/cpm/Requirement.pm"
       },
       "App::cpm::Resolver" : {
-         "file" : "lib/App/cpm/Resolver.pm",
-         "version" : "0.972"
+         "file" : "lib/App/cpm/Resolver.pm"
       },
       "App::cpm::Resolver::02Packages" : {
-         "file" : "lib/App/cpm/Resolver/02Packages.pm",
-         "version" : "0.972"
+         "file" : "lib/App/cpm/Resolver/02Packages.pm"
       },
       "App::cpm::Resolver::Cascade" : {
-         "file" : "lib/App/cpm/Resolver/Cascade.pm",
-         "version" : "0.972"
+         "file" : "lib/App/cpm/Resolver/Cascade.pm"
       },
       "App::cpm::Resolver::MetaCPAN" : {
-         "file" : "lib/App/cpm/Resolver/MetaCPAN.pm",
-         "version" : "0.972"
+         "file" : "lib/App/cpm/Resolver/MetaCPAN.pm"
       },
       "App::cpm::Resolver::MetaDB" : {
-         "file" : "lib/App/cpm/Resolver/MetaDB.pm",
-         "version" : "0.972"
+         "file" : "lib/App/cpm/Resolver/MetaDB.pm"
       },
       "App::cpm::Resolver::Snapshot" : {
-         "file" : "lib/App/cpm/Resolver/Snapshot.pm",
-         "version" : "0.972"
+         "file" : "lib/App/cpm/Resolver/Snapshot.pm"
       },
       "App::cpm::Tutorial" : {
-         "file" : "lib/App/cpm/Tutorial.pm",
-         "version" : "0.972"
+         "file" : "lib/App/cpm/Tutorial.pm"
       },
       "App::cpm::Worker" : {
-         "file" : "lib/App/cpm/Worker.pm",
-         "version" : "0.972"
+         "file" : "lib/App/cpm/Worker.pm"
       },
       "App::cpm::Worker::Installer" : {
-         "file" : "lib/App/cpm/Worker/Installer.pm",
-         "version" : "0.972"
+         "file" : "lib/App/cpm/Worker/Installer.pm"
       },
       "App::cpm::Worker::Installer::Menlo" : {
-         "file" : "lib/App/cpm/Worker/Installer/Menlo.pm",
-         "version" : "0.972"
+         "file" : "lib/App/cpm/Worker/Installer/Menlo.pm"
       },
       "App::cpm::Worker::Installer::Prebuilt" : {
-         "file" : "lib/App/cpm/Worker/Installer/Prebuilt.pm",
-         "version" : "0.972"
+         "file" : "lib/App/cpm/Worker/Installer/Prebuilt.pm"
       },
       "App::cpm::Worker::Resolver" : {
-         "file" : "lib/App/cpm/Worker/Resolver.pm",
-         "version" : "0.972"
+         "file" : "lib/App/cpm/Worker/Resolver.pm"
       },
       "App::cpm::version" : {
-         "file" : "lib/App/cpm/version.pm",
-         "version" : "0.972"
+         "file" : "lib/App/cpm/version.pm"
       }
    },
    "release_status" : "stable",

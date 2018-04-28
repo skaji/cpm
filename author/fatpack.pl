@@ -3,7 +3,7 @@ use 5.26.2;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use App::FatPacker::Simple;
-use App::cpm;
+use App::cpm::CLI;
 use Config;
 use File::Path 'remove_tree';
 use Carton::Snapshot;
@@ -23,7 +23,7 @@ Show new dependencies
 Getopt::Long::GetOptions "f|force" => \my $force, "t|test" => \my $test;
 
 sub cpm {
-    App::cpm->new->run(@_) == 0 or die
+    App::cpm::CLI->new->run(@_) == 0 or die
 }
 
 sub fatpack {
@@ -57,11 +57,12 @@ sub git_info {
 sub inject_git_info {
     my ($file, $describe, $url) = @_;
     my $inject = <<~"___";
+    use App::cpm;
     \$App::cpm::GIT_DESCRIBE = '$describe';
     \$App::cpm::GIT_URL = '$url';
     ___
     my $content = Path::Tiny->new($file)->slurp_raw;
-    $content =~ s/^use App::cpm;/use App::cpm;\n$inject/sm;
+    $content =~ s/^use App::cpm::CLI;/$inject\nuse App::cpm::CLI;/sm;
     Path::Tiny->new($file)->spew_raw($content);
 }
 
