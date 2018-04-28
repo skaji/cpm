@@ -1,13 +1,13 @@
 package App::cpm::Worker::Installer::Menlo;
 use strict;
 use warnings;
+
 use parent 'Menlo::CLI::Compat';
 
 use App::cpm::HTTP;
 use App::cpm::Logger::File;
-use Menlo::Builder::Static;
 use Command::Runner;
-
+use Menlo::Builder::Static;
 
 use constant WIN32 => Menlo::CLI::Compat::WIN32();
 

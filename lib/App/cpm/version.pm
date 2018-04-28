@@ -1,6 +1,7 @@
 package App::cpm::version;
 use strict;
 use warnings;
+
 use CPAN::Meta::Requirements;
 
 use parent 'version';

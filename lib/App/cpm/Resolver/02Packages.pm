@@ -1,8 +1,9 @@
 package App::cpm::Resolver::02Packages;
 use strict;
 use warnings;
-use App::cpm::version;
+
 use App::cpm::DistNotation;
+use App::cpm::version;
 use Cwd ();
 use File::Path ();
 
@@ -10,11 +11,11 @@ use File::Path ();
     package
         App::cpm::Resolver::02Packages::Impl;
     use parent 'CPAN::Common::Index::Mirror';
+    use App::cpm::HTTP;
     use Class::Tiny qw(path);
-    use File::Spec;
     use File::Basename ();
     use File::Copy ();
-    use App::cpm::HTTP;
+    use File::Spec;
 
     our $HAS_IO_UNCOMPRESS_GUNZIP = eval { require IO::Uncompress::Gunzip };
 

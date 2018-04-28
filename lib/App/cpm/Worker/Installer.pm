@@ -1,13 +1,12 @@
 package App::cpm::Worker::Installer;
 use strict;
 use warnings;
-use utf8;
 
 use App::cpm::Logger::File;
+use App::cpm::Requirement;
 use App::cpm::Worker::Installer::Menlo;
 use App::cpm::Worker::Installer::Prebuilt;
 use App::cpm::version;
-use App::cpm::Requirement;
 use CPAN::DistnameInfo;
 use CPAN::Meta;
 use Config;

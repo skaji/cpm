@@ -1,9 +1,10 @@
 package App::cpm::Resolver::MetaCPAN;
 use strict;
 use warnings;
-use JSON::PP ();
-use App::cpm::HTTP;
+
 use App::cpm::DistNotation;
+use App::cpm::HTTP;
+use JSON::PP ();
 
 sub new {
     my ($class, %option) = @_;

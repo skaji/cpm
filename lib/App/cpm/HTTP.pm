@@ -1,8 +1,9 @@
 package App::cpm::HTTP;
 use strict;
 use warnings;
-use HTTP::Tinyish;
+
 use App::cpm;
+use HTTP::Tinyish;
 
 sub create {
     my ($class, %args) = @_;

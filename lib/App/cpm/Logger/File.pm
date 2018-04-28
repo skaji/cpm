@@ -1,8 +1,9 @@
 package App::cpm::Logger::File;
 use strict;
 use warnings;
-use POSIX ();
+
 use File::Temp ();
+use POSIX ();
 
 use constant WIN32 => $^O eq 'MSWin32';
 

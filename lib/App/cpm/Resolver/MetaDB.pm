@@ -1,12 +1,11 @@
 package App::cpm::Resolver::MetaDB;
 use strict;
 use warnings;
-use utf8;
 
-use App::cpm::HTTP;
-use CPAN::Meta::YAML;
-use App::cpm::version;
 use App::cpm::DistNotation;
+use App::cpm::HTTP;
+use App::cpm::version;
+use CPAN::Meta::YAML;
 
 sub new {
     my ($class, %option) = @_;

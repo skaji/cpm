@@ -1,8 +1,9 @@
 package App::cpm::Distribution;
 use strict;
 use warnings;
-use App::cpm::version;
+
 use App::cpm::Logger;
+use App::cpm::version;
 use CPAN::DistnameInfo;
 
 use constant STATE_REGISTERED      => 0b000001;

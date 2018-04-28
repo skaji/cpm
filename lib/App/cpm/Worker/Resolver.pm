@@ -1,6 +1,7 @@
 package App::cpm::Worker::Resolver;
 use strict;
 use warnings;
+
 use App::cpm::Logger::File;
 
 sub new {

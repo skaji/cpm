@@ -1,7 +1,7 @@
 package App::cpm::Logger;
 use strict;
 use warnings;
-use utf8;
+
 use List::Util 'max';
 
 our $COLOR;
