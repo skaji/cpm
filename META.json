@@ -73,7 +73,7 @@
    "provides" : {
       "App::cpm" : {
          "file" : "lib/App/cpm.pm",
-         "version" : "0.972"
+         "version" : "0.973"
       },
       "App::cpm::CLI" : {
          "file" : "lib/App/cpm/CLI.pm"
@@ -86,6 +86,9 @@
       },
       "App::cpm::Distribution" : {
          "file" : "lib/App/cpm/Distribution.pm"
+      },
+      "App::cpm::HTTP" : {
+         "file" : "lib/App/cpm/HTTP.pm"
       },
       "App::cpm::Job" : {
          "file" : "lib/App/cpm/Job.pm"
@@ -154,7 +157,7 @@
          "web" : "https://github.com/skaji/cpm"
       }
    },
-   "version" : "0.972",
+   "version" : "0.973",
    "x_contributors" : [
       "Andrew Rodland <andrew@cleverdomain.org>",
       "Kenichi Ishigaki <ishigaki@cpan.org>",

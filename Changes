@@ -2,6 +2,12 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.973  2018-04-28 20:26:12 JST
+        - Internal refactor
+            - introduce App::cpm::CLI and move the guts to it
+            - introduce App::cpm::HTTP
+        - Now only App::cpm package has $VERSION
+
 0.972  2018-04-28 15:09:51 JST
         - Follow Menlo; support --no-static-install to disable static install
 
