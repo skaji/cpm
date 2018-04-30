@@ -40,16 +40,15 @@ sub run_command {
 sub run_timeout {
     my ($self, $cmd, $timeout) = @_;
 
-    $cmd = Menlo::Util::shell_quote(@$cmd) if WIN32 and ref $cmd eq 'ARRAY';
-
     my $str = ref $cmd eq 'CODE' ? '' : ref $cmd eq 'ARRAY' ? "@$cmd" : $cmd;
     $self->{logger}->log("Executing $str") if $str;
 
     my $runner = Command::Runner->new(
         command => $cmd,
+        keep => 0,
         redirect => 1,
         timeout => $timeout,
-        on => { stdout => sub { $self->log(@_) } },
+        stdout => sub { $self->log(@_) },
     );
     my $res = $runner->run;
     if ($res->{timeout}) {
