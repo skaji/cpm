@@ -160,14 +160,18 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
-  Command-Runner-0.002
-    pathname: S/SK/SKAJI/Command-Runner-0.002.tar.gz
+  Command-Runner-0.100
+    pathname: S/SK/SKAJI/Command-Runner-0.100.tar.gz
     provides:
-      Command::Runner 0.002
+      Command::Runner 0.100
+      Command::Runner::Format undef
       Command::Runner::LineBuffer undef
+      Command::Runner::Quote undef
     requirements:
       Capture::Tiny 0
       Module::Build::Tiny 0.034
+      String::ShellQuote 0
+      Win32::ShellQuote 0
       perl 5.008001
   Devel-GlobalDestruction-0.14
     pathname: H/HA/HAARG/Devel-GlobalDestruction-0.14.tar.gz
