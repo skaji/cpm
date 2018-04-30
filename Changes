@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.974  2018-05-01 01:06:59 JST
+        - Use Command::Runner 0.100
+
 0.973  2018-04-28 20:26:12 JST
         - Internal refactor
             - introduce App::cpm::CLI and move the guts to it
