@@ -4,6 +4,8 @@ use strict;
 use warnings;
 
 use App::cpm::DistNotation;
+use App::cpm::Distribution;
+use App::cpm::Logger::File;
 use App::cpm::Logger;
 use App::cpm::Master;
 use App::cpm::Requirement;

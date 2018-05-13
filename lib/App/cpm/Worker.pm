@@ -2,6 +2,7 @@ package App::cpm::Worker;
 use strict;
 use warnings;
 
+use App::cpm::Logger::File;
 use App::cpm::Worker::Installer;
 use App::cpm::Worker::Resolver;
 use Config;

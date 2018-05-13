@@ -1,6 +1,7 @@
 package App::cpm::Job;
 use strict;
 use warnings;
+use CPAN::DistnameInfo;
 
 sub new {
     my ($class, %option) = @_;
