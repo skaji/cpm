@@ -73,7 +73,7 @@
    "provides" : {
       "App::cpm" : {
          "file" : "lib/App/cpm.pm",
-         "version" : "0.974"
+         "version" : "0.975"
       },
       "App::cpm::CLI" : {
          "file" : "lib/App/cpm/CLI.pm"
@@ -157,7 +157,7 @@
          "web" : "https://github.com/skaji/cpm"
       }
    },
-   "version" : "0.974",
+   "version" : "0.975",
    "x_contributors" : [
       "Andrew Rodland <andrew@cleverdomain.org>",
       "Kenichi Ishigaki <ishigaki@cpan.org>",
@@ -166,8 +166,8 @@
       "Olaf Alders <olaf@wundersolutions.com>",
       "Shoichi Kaji <skaji@outlook.com>"
    ],
-   "x_generated_by_perl" : "v5.26.2",
-   "x_serialization_backend" : "Cpanel::JSON::XS version 4.02",
+   "x_generated_by_perl" : "v5.28.0",
+   "x_serialization_backend" : "Cpanel::JSON::XS version 4.04",
    "x_static_install" : 1
 }
 
