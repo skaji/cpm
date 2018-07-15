@@ -242,6 +242,8 @@ sub cmd_install {
     die "Need arguments or cpanfile.\n"
         if !@{$self->{argv}} && (!$self->{cpanfile} || !-f $self->{cpanfile});
 
+    local %ENV = %ENV;
+
     File::Path::mkpath($self->{home}) unless -d $self->{home};
     my $logger = App::cpm::Logger::File->new("$self->{home}/build.log.@{[time]}");
     $logger->symlink_to("$self->{home}/build.log");
