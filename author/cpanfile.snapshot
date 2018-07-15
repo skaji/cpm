@@ -160,10 +160,10 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
-  Command-Runner-0.100
-    pathname: S/SK/SKAJI/Command-Runner-0.100.tar.gz
+  Command-Runner-0.101
+    pathname: S/SK/SKAJI/Command-Runner-0.101.tar.gz
     provides:
-      Command::Runner 0.100
+      Command::Runner 0.101
       Command::Runner::Format undef
       Command::Runner::LineBuffer undef
       Command::Runner::Quote undef
@@ -185,7 +185,7 @@ DISTRIBUTIONS
     pathname: T/TO/TODDR/Exporter-5.72.tar.gz
     provides:
       Exporter 5.72
-      Exporter::Heavy 5.72
+      Exporter::Heavy 5.73
     requirements:
       Carp 1.05
       ExtUtils::MakeMaker 0
@@ -216,10 +216,10 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
-  ExtUtils-InstallPaths-0.011
-    pathname: L/LE/LEONT/ExtUtils-InstallPaths-0.011.tar.gz
+  ExtUtils-InstallPaths-0.012
+    pathname: L/LE/LEONT/ExtUtils-InstallPaths-0.012.tar.gz
     provides:
-      ExtUtils::InstallPaths 0.011
+      ExtUtils::InstallPaths 0.012
     requirements:
       Carp 0
       ExtUtils::Config 0.002
@@ -320,17 +320,16 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       File::Basename 0
       File::Spec 0
-  File-Temp-0.2304
-    pathname: D/DA/DAGOLDEN/File-Temp-0.2304.tar.gz
+  File-Temp-0.2308
+    pathname: E/ET/ETHER/File-Temp-0.2308.tar.gz
     provides:
-      File::Temp 0.2304
-      File::Temp::Dir 0.2304
+      File::Temp 0.2308
     requirements:
       Carp 0
       Carp::Heavy 0
       Cwd 0
       Exporter 5.57
-      ExtUtils::MakeMaker 6.17
+      ExtUtils::MakeMaker 0
       Fcntl 1.03
       File::Path 2.06
       File::Spec 0.8
@@ -342,8 +341,8 @@ DISTRIBUTIONS
       constant 0
       overload 0
       parent 0.221
+      perl 5.006
       strict 0
-      vars 0
   File-Which-1.22
     pathname: P/PL/PLICEASE/File-Which-1.22.tar.gz
     provides:
@@ -351,10 +350,10 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       perl 5.006
-  File-pushd-1.014
-    pathname: D/DA/DAGOLDEN/File-pushd-1.014.tar.gz
+  File-pushd-1.016
+    pathname: D/DA/DAGOLDEN/File-pushd-1.016.tar.gz
     provides:
-      File::pushd 1.014
+      File::pushd 1.016
     requirements:
       Carp 0
       Cwd 0
@@ -408,10 +407,10 @@ DISTRIBUTIONS
       IPC::Run3 0
       parent 0
       perl 5.008001
-  IPC-Cmd-1.00
-    pathname: B/BI/BINGOS/IPC-Cmd-1.00.tar.gz
+  IPC-Cmd-1.02
+    pathname: B/BI/BINGOS/IPC-Cmd-1.02.tar.gz
     provides:
-      IPC::Cmd 1.00
+      IPC::Cmd 1.02
     requirements:
       ExtUtils::MakeMaker 0
       File::Spec 0
@@ -494,15 +493,16 @@ DISTRIBUTIONS
       parent 0
       perl 5.008001
       version 0
-  Menlo-Legacy-1.9021
-    pathname: M/MI/MIYAGAWA/Menlo-Legacy-1.9021.tar.gz
+  Menlo-Legacy-1.9022
+    pathname: M/MI/MIYAGAWA/Menlo-Legacy-1.9022.tar.gz
     provides:
-      Menlo::CLI::Compat 1.9021
-      Menlo::Legacy 1.9021
+      Menlo::CLI::Compat 1.9022
+      Menlo::Legacy 1.9022
     requirements:
       ExtUtils::MakeMaker 0
       Menlo 1.9018
       perl 5.008001
+      version 0.9905
   Module-CPANfile-1.1004
     pathname: M/MI/MIYAGAWA/Module-CPANfile-1.1004.tar.gz
     provides:
@@ -516,11 +516,11 @@ DISTRIBUTIONS
       CPAN::Meta::Prereqs 2.12091
       ExtUtils::MakeMaker 0
       parent 0
-  Module-CoreList-5.20180420
-    pathname: B/BI/BINGOS/Module-CoreList-5.20180420.tar.gz
+  Module-CoreList-5.20180626
+    pathname: B/BI/BINGOS/Module-CoreList-5.20180626.tar.gz
     provides:
-      Module::CoreList 5.20180420
-      Module::CoreList::Utils 5.20180420
+      Module::CoreList 5.20180626
+      Module::CoreList::Utils 5.20180626
     requirements:
       ExtUtils::MakeMaker 0
       List::Util 0
@@ -608,75 +608,75 @@ DISTRIBUTIONS
       Sub::Exporter::Progressive 0.001013
     requirements:
       ExtUtils::MakeMaker 0
-  Test-Simple-1.302136
-    pathname: E/EX/EXODIST/Test-Simple-1.302136.tar.gz
+  Test-Simple-1.302138
+    pathname: E/EX/EXODIST/Test-Simple-1.302138.tar.gz
     provides:
-      Test2 1.302136
-      Test2::API 1.302136
-      Test2::API::Breakage 1.302136
-      Test2::API::Context 1.302136
-      Test2::API::Instance 1.302136
-      Test2::API::Stack 1.302136
-      Test2::Event 1.302136
-      Test2::Event::Bail 1.302136
-      Test2::Event::Diag 1.302136
-      Test2::Event::Encoding 1.302136
-      Test2::Event::Exception 1.302136
-      Test2::Event::Fail 1.302136
-      Test2::Event::Generic 1.302136
-      Test2::Event::Note 1.302136
-      Test2::Event::Ok 1.302136
-      Test2::Event::Pass 1.302136
-      Test2::Event::Plan 1.302136
-      Test2::Event::Skip 1.302136
-      Test2::Event::Subtest 1.302136
-      Test2::Event::TAP::Version 1.302136
-      Test2::Event::V2 1.302136
-      Test2::Event::Waiting 1.302136
-      Test2::EventFacet 1.302136
-      Test2::EventFacet::About 1.302136
-      Test2::EventFacet::Amnesty 1.302136
-      Test2::EventFacet::Assert 1.302136
-      Test2::EventFacet::Control 1.302136
-      Test2::EventFacet::Error 1.302136
-      Test2::EventFacet::Hub 1.302136
-      Test2::EventFacet::Info 1.302136
-      Test2::EventFacet::Meta 1.302136
-      Test2::EventFacet::Parent 1.302136
-      Test2::EventFacet::Plan 1.302136
-      Test2::EventFacet::Render 1.302136
-      Test2::EventFacet::Trace 1.302136
-      Test2::Formatter 1.302136
-      Test2::Formatter::TAP 1.302136
-      Test2::Hub 1.302136
-      Test2::Hub::Interceptor 1.302136
-      Test2::Hub::Interceptor::Terminator 1.302136
-      Test2::Hub::Subtest 1.302136
-      Test2::IPC 1.302136
-      Test2::IPC::Driver 1.302136
-      Test2::IPC::Driver::Files 1.302136
-      Test2::Tools::Tiny 1.302136
-      Test2::Util 1.302136
-      Test2::Util::ExternalMeta 1.302136
-      Test2::Util::Facets2Legacy 1.302136
-      Test2::Util::HashBase 1.302136
-      Test2::Util::Trace 1.302136
-      Test::Builder 1.302136
-      Test::Builder::Formatter 1.302136
+      Test2 1.302138
+      Test2::API 1.302138
+      Test2::API::Breakage 1.302138
+      Test2::API::Context 1.302138
+      Test2::API::Instance 1.302138
+      Test2::API::Stack 1.302138
+      Test2::Event 1.302138
+      Test2::Event::Bail 1.302138
+      Test2::Event::Diag 1.302138
+      Test2::Event::Encoding 1.302138
+      Test2::Event::Exception 1.302138
+      Test2::Event::Fail 1.302138
+      Test2::Event::Generic 1.302138
+      Test2::Event::Note 1.302138
+      Test2::Event::Ok 1.302138
+      Test2::Event::Pass 1.302138
+      Test2::Event::Plan 1.302138
+      Test2::Event::Skip 1.302138
+      Test2::Event::Subtest 1.302138
+      Test2::Event::TAP::Version 1.302138
+      Test2::Event::V2 1.302138
+      Test2::Event::Waiting 1.302138
+      Test2::EventFacet 1.302138
+      Test2::EventFacet::About 1.302138
+      Test2::EventFacet::Amnesty 1.302138
+      Test2::EventFacet::Assert 1.302138
+      Test2::EventFacet::Control 1.302138
+      Test2::EventFacet::Error 1.302138
+      Test2::EventFacet::Hub 1.302138
+      Test2::EventFacet::Info 1.302138
+      Test2::EventFacet::Meta 1.302138
+      Test2::EventFacet::Parent 1.302138
+      Test2::EventFacet::Plan 1.302138
+      Test2::EventFacet::Render 1.302138
+      Test2::EventFacet::Trace 1.302138
+      Test2::Formatter 1.302138
+      Test2::Formatter::TAP 1.302138
+      Test2::Hub 1.302138
+      Test2::Hub::Interceptor 1.302138
+      Test2::Hub::Interceptor::Terminator 1.302138
+      Test2::Hub::Subtest 1.302138
+      Test2::IPC 1.302138
+      Test2::IPC::Driver 1.302138
+      Test2::IPC::Driver::Files 1.302138
+      Test2::Tools::Tiny 1.302138
+      Test2::Util 1.302138
+      Test2::Util::ExternalMeta 1.302138
+      Test2::Util::Facets2Legacy 1.302138
+      Test2::Util::HashBase 1.302138
+      Test2::Util::Trace 1.302138
+      Test::Builder 1.302138
+      Test::Builder::Formatter 1.302138
       Test::Builder::IO::Scalar 2.114
-      Test::Builder::Module 1.302136
-      Test::Builder::Tester 1.302136
-      Test::Builder::Tester::Color 1.302136
-      Test::Builder::Tester::Tie 1.302136
-      Test::Builder::TodoDiag 1.302136
-      Test::More 1.302136
-      Test::Simple 1.302136
-      Test::Tester 1.302136
-      Test::Tester::Capture 1.302136
-      Test::Tester::CaptureRunner 1.302136
-      Test::Tester::Delegate 1.302136
-      Test::use::ok 1.302136
-      ok 1.302136
+      Test::Builder::Module 1.302138
+      Test::Builder::Tester 1.302138
+      Test::Builder::Tester::Color 1.302138
+      Test::Builder::Tester::Tie 1.302138
+      Test::Builder::TodoDiag 1.302138
+      Test::More 1.302138
+      Test::Simple 1.302138
+      Test::Tester 1.302138
+      Test::Tester::Capture 1.302138
+      Test::Tester::CaptureRunner 1.302138
+      Test::Tester::Delegate 1.302138
+      Test::use::ok 1.302138
+      ok 1.302138
     requirements:
       ExtUtils::MakeMaker 0
       File::Spec 0
@@ -779,13 +779,14 @@ DISTRIBUTIONS
       local::lib 2.000024
     requirements:
       perl 5.006
-  parent-0.236
-    pathname: C/CO/CORION/parent-0.236.tar.gz
+  parent-0.237
+    pathname: C/CO/CORION/parent-0.237.tar.gz
     provides:
-      parent 0.236
+      parent 0.237
     requirements:
       ExtUtils::MakeMaker 0
       Test::More 0.4
+      perl 5.006
   version-0.9924
     pathname: J/JP/JPEACOCK/version-0.9924.tar.gz
     provides:
