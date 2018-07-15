@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-use 5.26.2;
+use 5.28.0;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use App::FatPacker::Simple;
@@ -20,7 +20,11 @@ Show new dependencies
 
 =cut
 
-Getopt::Long::GetOptions "f|force" => \my $force, "t|test" => \my $test;
+Getopt::Long::GetOptions
+    "f|force" => \my $force,
+    "t|test" => \my $test,
+    "update-only" => \my $update_only,
+or exit 1;
 
 sub cpm {
     App::cpm::CLI->new->run(@_) == 0 or die
@@ -98,7 +102,7 @@ if (my $version = $ENV{CPAN_RELEASE_VERSION}) {
 } else {
     ($git_describe, $git_url) = git_info;
 }
-warn "\e[1;31m!!! GIT IS DIRTY !!!\e[m\n" if $git_describe =~ /dirty/;
+warn "\e[1;31m!!! GIT IS DIRTY !!!\e[m\n" if !$update_only && $git_describe =~ /dirty/;
 
 my @copyright = Path::Tiny->new("copyrights-and-licenses.json")->lines({chomp => 1});
 my $copyright = join "\n", map { "# $_" } @copyright;
@@ -112,13 +116,15 @@ use $target;
 $copyright
 ___
 
-my $resolver = -f "cpanfile.snapshot" && !$force && !$test ? "snapshot" : "metadb";
+my $resolver = -f "cpanfile.snapshot" && !$force && !$test && !$update_only ? "snapshot" : "metadb";
 
 warn "Resolver: $resolver\n";
 cpm "install", "--target-perl", $target, "--resolver", $resolver;
 cpm "install", "--target-perl", $target, "--resolver", $resolver, @extra;
 gen_snapshot if !$test;
 remove_version_xs;
+exit if $update_only;
+
 print STDERR "FatPacking...";
 
 my $fatpack_dir = $test ? "local" : "../lib,local";
