@@ -9,7 +9,7 @@ use CPAN::Meta::YAML;
 
 sub new {
     my ($class, %option) = @_;
-    my $uri = $option{uri} || "http://cpanmetadb.plackperl.org/v1.0/";
+    my $uri = $option{uri} || "https://cpanmetadb.plackperl.org/v1.0/";
     my $mirror = $option{mirror} || ["https://cpan.metacpan.org/"];
     s{/*$}{/} for $uri, @$mirror;
     my $http = App::cpm::HTTP->create;

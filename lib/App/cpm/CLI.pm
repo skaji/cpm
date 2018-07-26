@@ -50,7 +50,7 @@ sub new {
         snapshot => "cpanfile.snapshot",
         cpanfile => "cpanfile",
         local_lib => "local",
-        cpanmetadb => "http://cpanmetadb.plackperl.org/v1.0/",
+        cpanmetadb => "https://cpanmetadb.plackperl.org/v1.0/",
         mirror => ["https://cpan.metacpan.org/"],
         retry => 1,
         configure_timeout => 60,

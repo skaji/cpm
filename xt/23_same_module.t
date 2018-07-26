@@ -10,7 +10,7 @@ use CPAN::Meta::YAML;
 use Path::Tiny ();
 
 my $latest = do {
-    my $url = 'http://cpanmetadb.plackperl.org/v1.0/package/App::ChangeShebang';
+    my $url = 'https://cpanmetadb.plackperl.org/v1.0/package/App::ChangeShebang';
     my $res = HTTP::Tinyish->new->get($url);
     die "$res->{status} $res->{reason}, $url\n" unless $res->{success};
     my $yaml = CPAN::Meta::YAML->read_string($res->{content});
