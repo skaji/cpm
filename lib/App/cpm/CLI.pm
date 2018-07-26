@@ -12,6 +12,7 @@ use App::cpm::Requirement;
 use App::cpm::Resolver::Cascade;
 use App::cpm::Resolver::MetaCPAN;
 use App::cpm::Resolver::MetaDB;
+use App::cpm::Util qw(WIN32 determine_home maybe_abs);
 use App::cpm::Worker;
 use App::cpm::version;
 use App::cpm;
@@ -24,28 +25,12 @@ use List::Util ();
 use Parallel::Pipes;
 use Pod::Text ();
 
-use constant WIN32 => $^O eq 'MSWin32';
-
-sub determine_home { # taken from Menlo
-    my $class = shift;
-
-    my $homedir = $ENV{HOME}
-      || eval { require File::HomeDir; File::HomeDir->my_home }
-      || join('', @ENV{qw(HOMEDRIVE HOMEPATH)}); # Win32
-
-    if (WIN32) {
-        require Win32; # no fatpack
-        $homedir = Win32::GetShortPathName($homedir);
-    }
-
-    return "$homedir/.perl-cpm";
-}
-
 sub new {
     my ($class, %option) = @_;
     my $prebuilt = exists $ENV{PERL_CPM_PREBUILT} && !$ENV{PERL_CPM_PREBUILT} ? 0 : 1;
     bless {
-        home => $class->determine_home,
+        home => determine_home,
+        cwd => Cwd::cwd(),
         workers => WIN32 ? 1 : 5,
         snapshot => "cpanfile.snapshot",
         cpanfile => "cpanfile",
@@ -113,8 +98,8 @@ sub parse_options {
         "feature=s@" => \@feature,
     or exit 1;
 
-    $self->{local_lib} = $self->maybe_abs($self->{local_lib}) unless $self->{global};
-    $self->{home} = $self->maybe_abs($self->{home});
+    $self->{local_lib} = maybe_abs($self->{local_lib}, $self->{cwd}) unless $self->{global};
+    $self->{home} = maybe_abs($self->{home}, $self->{cwd});
     $self->{resolver} = \@resolver;
     $self->{feature} = \@feature if @feature;
     $self->{mirror} = \@mirror if @mirror;
@@ -188,22 +173,13 @@ sub _inc {
     }
 }
 
-sub maybe_abs {
-    my ($self, $path) = @_;
-    if (File::Spec->file_name_is_absolute($path)) {
-        return $path;
-    } else {
-        File::Spec->canonpath(File::Spec->catdir(Cwd::cwd(), $path));
-    }
-}
-
 sub normalize_mirror {
     my ($self, $mirror) = @_;
     $mirror =~ s{/*$}{/};
     return $mirror if $mirror =~ m{^https?://};
     $mirror =~ s{^file://}{};
     die "$mirror: No such directory.\n" unless -d $mirror;
-    "file://" . $self->maybe_abs($mirror);
+    "file://" . maybe_abs($mirror, $self->{cwd});
 }
 
 sub run {
@@ -391,7 +367,7 @@ sub initial_job {
         my $arg = $_; # copy
         my ($package, $dist);
         if (-d $arg || -f $arg || $arg =~ s{^file://}{}) {
-            $arg = $self->maybe_abs($arg);
+            $arg = maybe_abs($arg, $self->{cwd});
             $dist = App::cpm::Distribution->new(source => "local", uri => "file://$arg", provides => []);
         } elsif ($arg =~ /(?:^git:|\.git(?:@.+)?$)/) {
             my %ref = $arg =~ s/(?<=\.git)@(.+)$// ? (ref => $1) : ();
