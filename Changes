@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.976  2018-07-26 12:21:06 JST
+        - Query cpanmetadb over HTTPS
+
 0.975  2018-07-15 22:49:28 JST
         - Localize %ENV in cpm install
 
