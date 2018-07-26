@@ -23,6 +23,7 @@ use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use List::Util ();
 use Parallel::Pipes;
 use Pod::Text ();
+use Sys::Info;
 
 use constant WIN32 => $^O eq 'MSWin32';
 
@@ -46,7 +47,7 @@ sub new {
     my $prebuilt = exists $ENV{PERL_CPM_PREBUILT} && !$ENV{PERL_CPM_PREBUILT} ? 0 : 1;
     bless {
         home => $class->determine_home,
-        workers => WIN32 ? 1 : 5,
+        workers => __default_workers(),
         snapshot => "cpanfile.snapshot",
         cpanfile => "cpanfile",
         local_lib => "local",
@@ -71,6 +72,23 @@ sub new {
         static_install => 1,
         %option
     }, $class;
+}
+
+sub __default_workers {
+    my $cpus;
+
+    # attempt to figure out the number of CPUs available, and use that if
+    # available.
+    eval {
+        $cpus = Sys::Info->new->device(CPU => undef)->count;
+    };
+
+    if (defined $cpus and $cpus >= 1) {
+        return $cpus;
+    }
+    else {
+        return WIN32 ? 1 : 5;
+    }
 }
 
 sub parse_options {
