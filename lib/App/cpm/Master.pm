@@ -402,6 +402,7 @@ sub _register_resolve_result {
         uri      => $job->{uri},
         provides => $provides,
         distfile => $job->{distfile},
+        ref      => $job->{ref},
     );
     $self->add_distribution($distribution);
 }
