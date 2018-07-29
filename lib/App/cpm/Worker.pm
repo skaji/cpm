@@ -3,11 +3,12 @@ use strict;
 use warnings;
 
 use App::cpm::Logger::File;
+use App::cpm::Util;
 use App::cpm::Worker::Installer;
 use App::cpm::Worker::Resolver;
 use Config;
-use Digest::MD5 ();
 use File::Path ();
+use File::Spec;
 use Time::HiRes qw(gettimeofday tv_interval);
 
 sub new {
@@ -38,12 +39,8 @@ sub new {
 
 sub prebuilt_base {
     my ($class, $home) = @_;
-
-    # XXX Taking account of relocatable perls, we also use $Config{startperl}
-    my $identity = $Config{perlpath} . Config->myconfig;
-    my $digest = Digest::MD5::md5_hex($identity);
-    $digest = substr $digest, 0, 8;
-    "$home/builds/$Config{version}-$Config{archname}-$digest";
+    my $identity = App::cpm::Util::perl_identity;
+    File::Spec->catdir($home, "builds", $identity);
 }
 
 sub work {

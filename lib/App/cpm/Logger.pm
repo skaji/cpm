@@ -2,6 +2,7 @@ package App::cpm::Logger;
 use strict;
 use warnings;
 
+use App::cpm::Util 'WIN32';
 use List::Util 'max';
 
 our $COLOR;
@@ -18,7 +19,6 @@ my %color = (
     WARN => 33,
 );
 
-use constant WIN32 => $^O eq 'MSWin32';
 our $HAS_WIN32_COLOR;
 
 sub new {

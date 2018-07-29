@@ -5,11 +5,10 @@ use warnings;
 use parent 'Menlo::CLI::Compat';
 
 use App::cpm::HTTP;
+use App::cpm::Util 'WIN32';
 use App::cpm::Logger::File;
 use Command::Runner;
 use Menlo::Builder::Static;
-
-use constant WIN32 => Menlo::CLI::Compat::WIN32();
 
 sub new {
     my ($class, %option) = @_;

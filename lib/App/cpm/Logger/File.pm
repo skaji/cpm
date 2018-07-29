@@ -2,10 +2,9 @@ package App::cpm::Logger::File;
 use strict;
 use warnings;
 
+use App::cpm::Util 'WIN32';
 use File::Temp ();
 use POSIX ();
-
-use constant WIN32 => $^O eq 'MSWin32';
 
 sub new {
     my ($class, $file) = @_;
