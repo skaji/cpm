@@ -132,3 +132,4 @@ my $output = $test ? "../cpm.test" : "../cpm";
 fatpack "-q", "-o", $output, "-d", $fatpack_dir, "-e", $exclude, "--shebang", $shebang, "../script/cpm";
 print STDERR " DONE\n";
 inject_git_info($output, $git_describe, $git_url);
+chmod 0755, $output;
