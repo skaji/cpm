@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.978  2018-08-01 22:06:06 JST
+        - Fix detection of circular dependencies
+
 0.977  2018-07-29 22:14:22 JST
         - Fix bug where cpm may install modules twice
           if they are listed in cpanfile with dist/url syntax (hkoba, makamaka #129, #134)
