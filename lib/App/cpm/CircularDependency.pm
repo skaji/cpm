@@ -76,7 +76,7 @@ sub detect {
         my $seen = App::cpm::CircularDependency::OrderedSet->new;
         $seen->add($distfile);
         if (my $detected = $self->_detect($distfile, $seen)) {
-            $result{$distfile} = [$detected->values, $distfile];
+            $result{$distfile} = $detected;
         }
     }
     return \%result;
@@ -87,7 +87,7 @@ sub _detect {
 
     for my $req (@{$self->{$distfile}}) {
         if ($seen->exists($req)) {
-            return $seen;
+            return [$seen->values, $req];
         }
 
         my $clone = $seen->clone;
