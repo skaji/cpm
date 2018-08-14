@@ -45,6 +45,7 @@ subtest git_nometa => sub {
 };
 
 subtest git_libonly => sub {
+    plan skip_all => "only for perl 5.12+" if $] < 5.012;
     my $r = cpm_install 'https://github.com/my-mail-ru/perl-MR-Rest.git@2119a95';
     is $r->exit, 0;
     like $r->err, qr{DONE install MR-Rest-0.000_353848525 \(https://github.com/my-mail-ru/perl-MR-Rest.git\@2119a95aefe609113b0adcfc006569b2da109870\)};
