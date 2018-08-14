@@ -32,7 +32,7 @@ for my $attr (qw(
     uri
     provides
     requirements
-    ref
+    rev
     static_builder
     prebuilt
 )) {
@@ -51,9 +51,16 @@ sub distfile {
 
 sub distvname {
     my $self = shift;
+    $self->{distvname} = shift if @_;
     $self->{distvname} ||= do {
         CPAN::DistnameInfo->new($self->{distfile})->distvname || $self->distfile;
     };
+}
+
+sub version {
+    my $self = shift;
+    $self->{version} = shift if @_;
+    $self->{version} ||= CPAN::DistnameInfo->new($self->{distfile})->version || 0;
 }
 
 sub overwrite_provide {

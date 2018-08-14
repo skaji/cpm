@@ -109,6 +109,16 @@ And yes, this is an experimental and fun part! cpm also supports git syntax in c
   requires 'Perl::PrereqDistributionGatherer',
     git => 'https://github.com/skaji/Perl-PrereqDistributionGatherer',
     ref => '3850305'; # ref can be revision/branch/tag
+  requires 'Menlo', '>= 1.9020, < 2.0000' # version ranges are mapped to tags
+    git => 'https://github.com/miyagawa/cpanminus.git/Menlo'; # from subdirectory of git repo
+
+Nothing is required to make git repository installable: C<META.json>, C<cpanfile>,
+C<Makefile.PL> and C<Build.PL> are optional. Distribution name can be extracted from
+repository name if none of C<META.json>, C<Makefile.PL> and C<Build.PL> exist.
+Version is always calculated from the nearest git tag and forced to the installed files.
+
+Git dependencies can be saved to C<cpanfile.snapshot> (using git uri and revision as a key)
+and resolved from it.
 
 Please note that to support git syntax in cpanfile wholly,
 there are several TODOs.

@@ -10,6 +10,7 @@ use App::cpm::Logger;
 use App::cpm::Master;
 use App::cpm::Requirement;
 use App::cpm::Resolver::Cascade;
+use App::cpm::Resolver::Git;
 use App::cpm::Resolver::MetaCPAN;
 use App::cpm::Resolver::MetaDB;
 use App::cpm::Util qw(WIN32 determine_home maybe_abs);
@@ -369,9 +370,14 @@ sub initial_job {
         if (-d $arg || -f $arg || $arg =~ s{^file://}{}) {
             $arg = maybe_abs($arg, $self->{cwd});
             $dist = App::cpm::Distribution->new(source => "local", uri => "file://$arg", provides => []);
-        } elsif ($arg =~ /(?:^git:|\.git(?:@.+)?$)/) {
-            my %ref = $arg =~ s/(?<=\.git)@(.+)$// ? (ref => $1) : ();
-            $dist = App::cpm::Distribution->new(source => "git", uri => $arg, provides => [], %ref);
+        } elsif (App::cpm::Git->is_git_uri($arg)) {
+            my ($uri, $ref) = $arg =~ /^(.+\.git(?:\/.+?)?)(?:@([^@]+))?$/;
+            $package = {
+                package => $arg,
+                source => 'git',
+                uri => $uri,
+                ref => $ref,
+            };
         } elsif ($arg =~ m{^(https?|file)://}) {
             my ($source, $distfile) = ($1 eq "file" ? "local" : "http", undef);
             if (my $d = App::cpm::DistNotation->new_from_uri($arg)) {
@@ -448,9 +454,8 @@ sub load_cpanfile {
             package => $package,
             version_range => $reqs->{$package},
             dev => $option->{dev},
-            reinstall => $option->{git} ? 1 : 0,
         };
-        if ($option->{git}) {
+        if ($option->{git} && $option->{ref}) {
             push @reinstall, $req;
         } else {
             push @package, $req;
@@ -533,6 +538,8 @@ sub generate_resolver {
         );
         $cascade->add($resolver);
     }
+
+    $cascade->add(App::cpm::Resolver::Git->new());
 
     my $resolver = App::cpm::Resolver::MetaCPAN->new(
         $self->{dev} ? (dev => 1) : (only_dev => 1)

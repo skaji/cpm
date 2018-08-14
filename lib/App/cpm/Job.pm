@@ -31,11 +31,13 @@ sub distfile {
 
 sub distvname {
     my $self = shift;
-    return $self->{_distvname} if $self->{_distvname};
+    return $self->{distvname} if $self->{distvname};
     if ($self->{distfile}) {
-        $self->{_distvname} ||= CPAN::DistnameInfo->new($self->{distfile})->distvname;
-    } elsif ($self->{uri}[0]) {
+        $self->{distvname} ||= CPAN::DistnameInfo->new($self->{distfile})->distvname;
+    } elsif (ref $self->{uri} eq 'ARRAY' && $self->{uri}[0]) {
         $self->{uri}[0];
+    } elsif (!ref $self->{uri} && $self->{uri}) {
+        $self->{uri};
     } elsif ($self->{package}) {
         $self->{package};
     } else {

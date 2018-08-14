@@ -2,6 +2,7 @@ package App::cpm::Worker::Installer;
 use strict;
 use warnings;
 
+use App::cpm::Git;
 use App::cpm::Logger::File;
 use App::cpm::Requirement;
 use App::cpm::Worker::Installer::Menlo;
@@ -20,6 +21,7 @@ use File::Spec;
 use File::Temp ();
 use File::pushd 'pushd';
 use JSON::PP ();
+use Module::CPANfile;
 use Time::HiRes ();
 
 use constant NEED_INJECT_TOOLCHAIN_REQUIREMENTS => $] < 5.016;
@@ -44,6 +46,9 @@ sub work {
                 using_cache => $result->{using_cache},
                 prebuilt => $result->{prebuilt},
                 requirements => $result->{requirements},
+                rev => $result->{rev},
+                version => $result->{version},
+                distvname => $result->{distvname},
             };
         } else {
             $self->{logger}->log("Failed to fetch/configure distribution");
@@ -105,6 +110,13 @@ sub new {
 
 sub menlo { shift->{menlo} }
 
+sub _git_cache_dir {
+    my ($self, $uri, $rev) = @_;
+    my $uri_dir = $uri;
+    $uri_dir =~ s/[^a-zA-Z0-9_.-]/-/g;
+    return File::Spec->catfile($self->{cache}, 'git', $uri_dir, $rev);
+}
+
 sub _fetch_git {
     my ($self, $uri, $ref) = @_;
     my $basename = File::Basename::basename($uri);
@@ -130,13 +142,14 @@ sub _fetch_git {
         }
     }
     $self->menlo->diag_ok;
-    chomp(my $rev = `git rev-parse --short HEAD`);
+    chomp(my $rev = `git rev-parse HEAD`);
     ($dir, $rev);
 }
 
 sub enable_prebuilt {
-    my $self = shift;
-    my $uri = ref $_[0] ? $_[0][0] : $_[0];
+    my ($self, $source, $uri) = @_;
+    return 1 if $source eq 'git';
+    $uri = $uri->[0] if ref $uri;
     $self->{prebuilt} && !$self->{prebuilt}->skip($uri) && $TRUSTED_MIRROR->($uri);
 }
 
@@ -147,19 +160,61 @@ sub fetch {
     my $source   = $job->{source};
     my $distfile = $job->{distfile};
     my @uri      = ref $job->{uri} ? @{$job->{uri}} : ($job->{uri});
+    my $rev      = $job->{rev};
 
-    if ($self->enable_prebuilt($uri[0])) {
-        if (my $result = $self->find_prebuilt($uri[0])) {
+    if ($self->enable_prebuilt($source, $uri[0])) {
+        if (my $result = $self->find_prebuilt($source, $uri[0], $rev)) {
             $self->{logger}->log("Using prebuilt $result->{directory}");
             return $result;
         }
     }
 
-    my ($dir, $rev, $using_cache);
+    my ($dir, $using_cache, $name, $version);
     if ($source eq "git") {
         for my $uri (@uri) {
-            ($dir, $rev) = $self->_fetch_git($uri, $job->{ref});
-            last if $dir;
+            my $basename = basename $uri;
+            my ($uri, $subdir) = App::cpm::Git->split_uri($uri);
+
+            my $cache_dir = $self->_git_cache_dir($uri, $rev);
+            if (-d $cache_dir) {
+                $self->{logger}->log("Using cache $cache_dir");
+                $using_cache++;
+            } else {
+                my ($tmp_dir, $long_rev) = $self->_fetch_git($uri, $rev);
+                next unless $tmp_dir;
+                if ($long_rev ne $rev) {
+                    unless (index($long_rev, $rev) == 0) {
+                        die "Revision mismatch";
+                    }
+                    $rev = $long_rev;
+                    $cache_dir = $self->_git_cache_dir($uri, $rev);
+                }
+                File::Copy::Recursive::dirmove($tmp_dir, $cache_dir);
+            }
+
+            $version = App::cpm::Git->version($cache_dir);
+
+            if ($subdir) {
+                $cache_dir = File::Spec->catfile($cache_dir, $subdir);
+                unless (-d $cache_dir) {
+                    $self->{logger}->log("Directory $subdir not exists in git repository $uri");
+                    next;
+                }
+            }
+
+            $dir = File::Temp::tempdir(
+                "$basename-XXXXX",
+                CLEANUP => 0,
+                DIR => $self->menlo->{base},
+            );
+            File::Copy::Recursive::dircopy($cache_dir, $dir);
+            App::cpm::Git->rewrite_version($dir, $version, $rev) if $version;
+
+            if (my ($n) = $basename =~ /^(?:(?:perl|perl5|p5)-)?([\w-]+)(?:\.git)?$/) {
+                $name = $n if -f File::Spec->catfile($dir, 'lib', split(/-/, $n)) . '.pm';
+            }
+
+            last;
         }
     } elsif ($source eq "local") {
         for my $uri (@uri) {
@@ -226,19 +281,28 @@ sub fetch {
     chdir $dir or die;
 
     my $meta = $self->_load_metafile($distfile, 'META.json', 'META.yml');
-    if (!$meta) {
+    unless ($meta) {
         $self->{logger}->log("Distribution does not have META.json nor META.yml");
-        return;
+        if (!-f 'Build.PL' && !-f 'Makefile.PL') {
+            if ($name && $version) {
+                $meta = CPAN::Meta->new({ name => $name, version => $version, x_static_install => 1 });
+            } else {
+                $self->{logger}->log("No way to guess distribution META");
+                return;
+            }
+        }
+        # If Build.PL or Makefile.PL exist then META will be loaded from MYMETA.json on configure
     }
-    my $p = $meta->{provides} || $self->menlo->extract_packages($meta, ".");
-    my $provides = [ map +{ package => $_, version => $p->{$_}{version} }, sort keys %$p ];
 
     my $configure_requirement = App::cpm::Requirement->new;
-    if ($self->menlo->opts_in_static_install($meta)) {
+    if ($meta && $self->menlo->opts_in_static_install($meta)) {
         $self->{logger}->log("Distribution opts in x_static_install: $meta->{x_static_install}");
-    } else {
-        $configure_requirement = $self->_extract_configure_requirements($meta, $distfile);
+    } elsif (my $prereqs_source = $meta || -f 'cpanfile' && Module::CPANfile->load('cpanfile')) {
+        $configure_requirement = $self->_extract_configure_requirements($prereqs_source, $distfile);
     }
+
+    my $p = $meta && $meta->{provides} || $self->menlo->extract_packages($meta, ".");
+    my $provides = [ map +{ package => $_, version => $p->{$_}{version} }, sort keys %$p ];
 
     return +{
         directory => $dir,
@@ -246,46 +310,75 @@ sub fetch {
         configure_requirements => $configure_requirement->as_array,
         provides => $provides,
         using_cache => $using_cache,
+        rev => $rev,
+        version => $version,
     };
 }
 
 sub find_prebuilt {
-    my ($self, $uri) = @_;
-    my $info = CPAN::DistnameInfo->new($uri);
-    my $dir = File::Spec->catdir($self->{prebuilt_base}, $info->cpanid, $info->distvname);
+    my ($self, $source, $uri, $rev) = @_;
+    my ($dir, $distfile);
+    if ($source eq 'git') {
+        my $dirname = "$uri-$rev";
+        $dirname =~ s/[^a-zA-Z0-9_.-]/-/g;
+        $dir = File::Spec->catdir($self->{prebuilt_base}, 'git', $dirname);
+        unless (length $rev == 40) {
+            $dir = glob("$dir*");
+            return unless defined $dir;
+            ($rev) = $dir =~ /-(\p{IsXDigit}+)$/;
+        }
+    } else {
+        $distfile = $uri;
+        my $info = CPAN::DistnameInfo->new($distfile);
+        $dir = File::Spec->catdir($self->{prebuilt_base}, $info->cpanid, $info->distvname);
+    }
     return unless -f File::Spec->catfile($dir, ".prebuilt");
 
     my $guard = pushd $dir;
 
-    my $meta   = $self->_load_metafile($uri, 'META.json', 'META.yml');
-    my $mymeta = $self->_load_metafile($uri, 'blib/meta/MYMETA.json');
+    my $meta = $self->_load_metafile($distfile, 'blib/meta/MYMETA.json', 'META.json', 'META.yml');
+    unless ($meta && $self->menlo->no_dynamic_config($meta)) {
+        $self->{logger}->log("Prebuilt does not have MYMETA.json nor META.json nor META.yml");
+        return;
+    }
+
     my $phase  = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
     my $requirement = App::cpm::Requirement->new;
-    if (!$self->menlo->opts_in_static_install($meta)) {
+    if ($meta && !$self->menlo->opts_in_static_install($meta)) {
         # XXX Actually we don't need configure requirements for prebuilt.
         # But requires them for consistency for now.
-        $requirement = $self->_extract_configure_requirements($meta, $uri);
+        $requirement = $self->_extract_configure_requirements($meta, $distfile);
     }
-    $requirement->merge($self->_extract_requirements($mymeta, $phase));
+    $requirement->merge($self->_extract_requirements($meta, $phase));
 
-    my $provides = do {
+    my $json = do {
         open my $fh, "<", 'blib/meta/install.json' or die;
-        my $json = JSON::PP::decode_json(do { local $/; <$fh> });
-        my $provides = $json->{provides};
-        [ map +{ package => $_, version => $provides->{$_}{version} }, sort keys %$provides ];
+        JSON::PP::decode_json(do { local $/; <$fh> });
     };
+    my $distvname = $json->{dist};
+    my $provides = [ map +{ package => $_, version => $json->{provides}{$_}{version} }, sort keys %{$json->{provides}} ];
+
     return +{
         directory => $dir,
         meta => $meta->as_struct,
+        distvname => $distvname,
         provides => $provides,
         prebuilt => 1,
         requirements => $requirement->as_array,
+        rev => $rev,
     };
 }
 
 sub save_prebuilt {
     my ($self, $job) = @_;
-    my $dir = File::Spec->catdir($self->{prebuilt_base}, $job->cpanid, $job->distvname);
+    my $dir;
+    if ($job->{distdata}->{source} eq 'git') {
+        my $dirname = $job->{distdata}->{pathname};
+        $dirname =~ s/[^a-zA-Z0-9_.-]/-/g;
+        $dir = File::Spec->catdir($self->{prebuilt_base}, 'git', $dirname);
+    } else {
+        $dir = File::Spec->catdir($self->{prebuilt_base}, $job->cpanid, $job->distvname);
+    }
 
     if (-d $dir and !File::Path::rmtree($dir)) {
         return;
@@ -405,6 +498,7 @@ sub configure {
         if (-f 'Build.PL') {
             my @cmd = ($menlo->{perl}, 'Build.PL');
             push @cmd, '--pureperl-only' if $self->{pureperl_only};
+            push @cmd, "--dist_verison=$job->{version}" if $job->{source} eq 'git' && $job->{version};
             $self->_retry(sub {
                 $menlo->configure(\@cmd, $menlo_dist, 1);
                 -f 'Build';
@@ -413,6 +507,7 @@ sub configure {
         if (-f 'Makefile.PL') {
             my @cmd = ($menlo->{perl}, 'Makefile.PL');
             push @cmd, 'PUREPERL_ONLY=1' if $self->{pureperl_only};
+            push @cmd, "VERSION=$job->{version}" if $job->{source} eq 'git' && $job->{version};
             $self->_retry(sub {
                 $menlo->configure(\@cmd, $menlo_dist, 1); # XXX depth == 1?
                 -f 'Makefile';
@@ -421,9 +516,17 @@ sub configure {
     }
     return unless $configure_ok;
 
-    my $distdata = $self->_build_distdata($source, $distfile, $meta);
+    if (-f 'cpanfile' && !(-f 'META.json' || -f 'META.yml')) {
+        # Incomplete distribution (probably from git), merge cpanfile into MYMETA
+        my $cpanfile = Module::CPANfile->load('cpanfile');
+        $cpanfile->merge_meta('MYMETA.json') if -f 'MYMETA.json';
+        $cpanfile->merge_meta('MYMETA.yml') if -f 'MYMETA.yml';
+    }
+
     my $phase = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
     my $mymeta = $self->_load_metafile($distfile, 'MYMETA.json', 'MYMETA.yml');
+    my $dd_distfile = $source eq 'git' ? "$job->{uri}->[0]\@$job->{rev}" : $distfile;
+    my $distdata = $self->_build_distdata($source, $dd_distfile, $mymeta);
     my $requirement = $self->_extract_requirements($mymeta, $phase);
     return +{
         distdata => $distdata,
@@ -440,10 +543,8 @@ sub _build_distdata {
     my $module_name = $menlo->find_module_name($fake_state) || $meta->{name};
     $module_name =~ s/-/::/g;
 
-    # XXX: if $source ne "cpan", then menlo->save_meta does nothing.
-    # Moreover, if $distfile is git url, CPAN::DistnameInfo->distvname returns undef.
-    # Then menlo->save_meta does nothing.
-    my $distvname = CPAN::DistnameInfo->new($distfile)->distvname;
+    my $distvname = $source eq 'git' ? "$meta->{name}-$meta->{version}"
+        : CPAN::DistnameInfo->new($distfile)->distvname;
     my $provides = $meta->{provides} || $menlo->extract_packages($meta, ".");
     +{
         distvname => $distvname,
@@ -470,27 +571,31 @@ sub install {
     if ($static_builder) {
         $menlo->build(sub { $static_builder->build }, $distvname, $menlo_dist)
         && $menlo->test(sub { $static_builder->build("test") }, $distvname, $menlo_dist)
-        && $menlo->install(sub { $static_builder->build("install") }, [], $distvname, $menlo_dist)
+        && $menlo->install(sub { $static_builder->build("install") }, [], $menlo_dist)
         && $installed++;
     } elsif (-f 'Build') {
         $self->_retry(sub { $menlo->build([ $menlo->{perl}, "./Build" ], $distvname, $menlo_dist)  })
         && $self->_retry(sub { $menlo->test([ $menlo->{perl}, "./Build", "test" ], $distvname, $menlo_dist)  })
-        && $self->_retry(sub { $menlo->install([ $menlo->{perl}, "./Build", "install" ], [], $distvname, $menlo_dist)  })
+        && $self->_retry(sub { $menlo->install([ $menlo->{perl}, "./Build", "install" ], [], $menlo_dist)  })
         && $installed++;
     } else {
         $self->_retry(sub { $menlo->build([ $menlo->{make} ], $distvname, $menlo_dist)  })
         && $self->_retry(sub { $menlo->test([ $menlo->{make}, "test" ], $distvname, $menlo_dist)  })
-        && $self->_retry(sub { $menlo->install([ $menlo->{make}, "install" ], [], $distvname, $menlo_dist) })
+        && $self->_retry(sub { $menlo->install([ $menlo->{make}, "install" ], [], $menlo_dist) })
         && $installed++;
     }
 
     if ($installed && $distdata) {
-        $menlo->save_meta(
-            $distdata->{module_name},
-            $distdata,
-            $distdata->{module_name},
-        );
-        $self->save_prebuilt($job) if $self->enable_prebuilt($job->{uri});
+        {
+            # dirty hack: if $distdata->{source} ne "cpan", then $menlo->save_meta does nothing
+            local $distdata->{source} = 'cpan' if $distdata->{source} eq 'git';
+            $menlo->save_meta(
+                $distdata->{module_name},
+                $distdata,
+                $distdata->{module_name},
+            );
+        }
+        $self->save_prebuilt($job) if $self->enable_prebuilt($distdata->{source}, $job->{uri});
     }
     return $installed;
 }

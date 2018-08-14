@@ -44,6 +44,7 @@ sub _load {
                 uri => $uri,
                 ref => $option->{ref},
                 provides => [{package => $package}],
+                next => 1,
             };
         } elsif ($uri = $option->{dist}) {
             my $dist = App::cpm::DistNotation->new_from_dist($uri);

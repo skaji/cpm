@@ -5,6 +5,7 @@ use warnings;
 use App::cpm::CircularDependency;
 use App::cpm::Distribution;
 use App::cpm::Job;
+use App::cpm::Git;
 use App::cpm::Logger;
 use CPAN::DistnameInfo;
 use IO::Handle;
@@ -123,10 +124,11 @@ sub info {
     my ($message, $optional);
     if ($type eq "resolve") {
         $message = $job->{package};
-        $message .= " -> $name" . ($job->{ref} ? "\@$job->{ref}" : "") if $job->{ok};
+        $message .= " -> $name" . ($job->{rev} ? "\@$job->{rev}" : "") if $job->{ok};
         $optional = "from $job->{from}" if $job->{ok} and $job->{from};
     } else {
         $message = $name;
+        $message .= " ($job->{uri}->[0]" . ($job->{rev} ? "\@$job->{rev}" : "") . ")" if $job->{source} eq 'git';
         $optional = "using cache" if $type eq "fetch" and $job->{using_cache};
         $optional = "using prebuilt" if $job->{prebuilt};
     }
@@ -176,7 +178,7 @@ sub _calculate_jobs {
                 distfile => $dist->{distfile},
                 source => $dist->source,
                 uri => $dist->uri,
-                ref => $dist->ref,
+                rev => $dist->rev,
             );
         }
     }
@@ -195,6 +197,8 @@ sub _calculate_jobs {
                     distfile => $dist->{distfile},
                     source => $dist->source,
                     uri => $dist->uri,
+                    rev => $dist->rev,
+                    version => $dist->version,
                     distvname => $dist->distvname,
                 );
             } elsif (@need_resolve and !$dist->deps_registered) {
@@ -228,7 +232,10 @@ sub _calculate_jobs {
                     distdata => $dist->distdata,
                     directory => $dist->directory,
                     distfile => $dist->{distfile},
+                    distvname => $dist->distvname,
+                    source => $dist->source,
                     uri => $dist->uri,
+                    rev => $dist->rev,
                     static_builder => $dist->static_builder,
                     prebuilt => $dist->prebuilt,
                 );
@@ -277,7 +284,7 @@ sub is_satisfied_perl_version {
 }
 
 sub is_installed {
-    my ($self, $package, $version_range) = @_;
+    my ($self, $package, $version_range, $rev) = @_;
     my $wantarray = wantarray;
     if (exists $self->{_is_installed}{$package}) {
         if ($self->{_is_installed}{$package}->satisfy($version_range)) {
@@ -289,7 +296,10 @@ sub is_installed {
     my $current_version = $self->{_is_installed}{$package}
                         = App::cpm::version->parse($info->version);
     my $ok = $current_version->satisfy($version_range);
-    $wantarray ? ($ok, $current_version) : $ok;
+    return $ok if !$wantarray && (!$rev || !$ok);
+    my $current_rev = App::cpm::Git->module_rev($info->filename);
+    $ok &&= App::cpm::Git->rev_is($rev, $current_rev) if $rev;
+    $wantarray ? ($ok, $current_version, $current_rev) : $ok;
 }
 
 sub is_core {
@@ -329,7 +339,7 @@ sub is_satisfied {
             next;
         }
         next if $self->{target_perl} and $self->is_core($package, $version_range);
-        next if $self->is_installed($package, $version_range);
+        next if $self->is_installed($package, $version_range, $req->{ref});
         my ($resolved) = grep { $_->providing($package, $version_range) } @distributions;
         next if $resolved && $resolved->installed;
 
@@ -375,13 +385,13 @@ sub _register_resolve_result {
 
     if (!$job->{reinstall}) {
         my $want = $job->{version_range} || $job->{version};
-        my ($ok, $local) = $self->is_installed($job->{package}, $want);
+        my $want_rev = $job->{ref} ? $job->{rev} : undef;
+        my ($ok, $local, $local_rev) = $self->is_installed($job->{package}, $want, $want_rev);
         if ($ok) {
-            my $message = $job->{package} . (
-                App::cpm::version->parse($job->{version}) != $local
-                ? ", you already have $local"
-                : " is up to date. ($local)"
-            );
+            my $eq = $job->{rev} ? App::cpm::Git->rev_is($job->{rev}, $local_rev)
+                : $job->{version} ? App::cpm::version->parse($job->{version}) == $local
+                : undef;
+            my $message = $job->{package} . ($eq ? " is up to date. ($local)" : ", you already have $local");
             $self->{logger}->log($message);
             App::cpm::Logger->log(
                 result => "DONE",
@@ -402,7 +412,7 @@ sub _register_resolve_result {
         uri      => $job->{uri},
         provides => $provides,
         distfile => $job->{distfile},
-        ref      => $job->{ref},
+        rev      => $job->{rev},
     );
     $self->add_distribution($distribution);
 }
@@ -417,6 +427,12 @@ sub _register_fetch_result {
     $distribution->directory($job->{directory});
     $distribution->meta($job->{meta});
     $distribution->provides($job->{provides});
+
+    if ($job->{source} eq 'git') {
+        $distribution->rev($job->{rev});
+        $distribution->version($job->{version});
+        $distribution->distvname($job->{distvname}) if $job->{distvname};
+    }
 
     if ($job->{prebuilt}) {
         $distribution->configured(1);
@@ -443,6 +459,10 @@ sub _register_configure_result {
     $distribution->requirements($job->{requirements});
     $distribution->static_builder($job->{static_builder});
     $distribution->distdata($job->{distdata});
+
+    if ($distribution->source eq 'git') {
+        $distribution->distvname($job->{distdata}{distvname});
+    }
 
     # After configuring, the final "provides" is fixed.
     # So we need to re-define "provides" here

@@ -26,6 +26,8 @@ sub resolve {
         $klass = $1 if $klass =~ /^App::cpm::Resolver::(.*)$/;
         if (my $error = $result->{error}) {
             push @error, "$klass, $error";
+        } elsif ($result->{next}) {
+            $job->{$_} = $result->{$_} foreach grep { $_ ne 'next' } keys %$result;
         } else {
             $result->{from} = $klass;
             return $result;
