@@ -39,7 +39,8 @@ sub rev_is {
 sub version {
     my ($class, $dir) = @_;
     my $guard = pushd $dir;
-    chomp(my $version = `git describe --tags --match '*.*' 2>/dev/null`);
+    my $devnull = File::Spec->devnull;
+    chomp(my $version = `git describe --tags --match "*.*" 2>$devnull`);
     if ($version) {
         if ($version =~ /^(\d+\.\d+)(?:-(\d+)-g\p{IsXDigit}+)?$/) {
             $version = $1 . ($2 ? sprintf "_%02d", $2 : '');

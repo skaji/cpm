@@ -29,7 +29,7 @@ sub resolve {
     } else {
         my @tags;
         my ($uri) = App::cpm::Git->split_uri($job->{uri});
-        my $out = `git ls-remote --tags --refs $uri '*.*'`;
+        my $out = `git ls-remote --tags --refs $uri "*.*"`;
         while ($out =~ /^(\p{IsXDigit}{40})\s+refs\/tags\/(.+)$/mg) {
             my ($r, $v) = ($1, $2);
             push @tags, {
