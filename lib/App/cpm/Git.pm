@@ -4,6 +4,7 @@ use warnings;
 
 use CPAN::Meta;
 use File::Find ();
+use File::pushd 'pushd';
 use File::Spec;
 
 sub is_git_uri {
@@ -37,7 +38,8 @@ sub rev_is {
 
 sub version {
     my ($class, $dir) = @_;
-    chomp(my $version = `git -C $dir describe --tags --match '*.*' 2>/dev/null`);
+    my $guard = pushd $dir;
+    chomp(my $version = `git describe --tags --match '*.*' 2>/dev/null`);
     if ($version) {
         if ($version =~ /^(\d+\.\d+)(?:-(\d+)-g\p{IsXDigit}+)?$/) {
             $version = $1 . ($2 ? sprintf "_%02d", $2 : '');
@@ -50,7 +52,7 @@ sub version {
         }
     }
     unless ($version) {
-        chomp(my $time = `git -C $dir show -s --pretty=format:%at`);
+        chomp(my $time = `git show -s --pretty=format:%at`);
         $version = sprintf "0.000_%09d", $time / 4; # divide by 4 to fit MAX_INT32 into 3 triples
     }
     return $version;
