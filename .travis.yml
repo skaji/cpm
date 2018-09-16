@@ -3,13 +3,13 @@ perl:
   - '5.8'
   - '5.10'
   - '5.16'
-  - '5.26'
+  - '5.28'
 addons:
   apt:
     packages:
     - libdb-dev
 install:
-  - curl -sSL --compressed https://git.io/cpm | perl - install -g --with-develop --with-recommends
+  - curl -fsSL --compressed https://git.io/cpm | perl - install -g --with-develop --with-recommends
 script:
   - prove -l --timer t xt
 sudo: false
