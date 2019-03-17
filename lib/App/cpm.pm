@@ -21,7 +21,7 @@ App::cpm - a fast CPAN module installer
 =head1 DESCRIPTION
 
 =for html
-<a href="https://raw.githubusercontent.com/skaji/cpm/master/xt/demo.gif"><img src="https://raw.githubusercontent.com/skaji/cpm/master/xt/demo.gif" alt="demo" style="max-width:100%;"></a>
+<a href="https://skaji.github.io/images/cpm-Plack.svg"><img src="https://skaji.github.io/images/cpm-Plack.svg" alt="demo" style="max-width:100%;"></a>
 
 cpm is a fast CPAN module installer, which uses L<Menlo> in parallel.
 
