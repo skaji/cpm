@@ -8,6 +8,6 @@ init:
 install:
   - choco install strawberryperl
   - SET "PATH=C:\strawberry\c\bin;C:\strawberry\perl\site\bin;C:\strawberry\perl\bin;%PATH%"
-  - curl -sSL --compressed https://git.io/cpm | perl - install -g --with-develop --with-recommends
+  - curl -fsSL --compressed https://git.io/cpm | perl - install -g --with-develop --with-recommends
 test_script:
   - prove -l t xt

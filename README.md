@@ -19,7 +19,7 @@ $ cpanm -nq App::cpm
 You can also use a _self-contained_ cpm:
 
 ```sh
-$ curl -sL --compressed https://git.io/cpm > cpm
+$ curl -fsSL --compressed https://git.io/cpm > cpm
 $ chmod +x cpm
 $ ./cpm --version
 ```
