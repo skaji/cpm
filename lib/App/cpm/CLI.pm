@@ -36,7 +36,7 @@ sub new {
         cpanfile => "cpanfile",
         local_lib => "local",
         cpanmetadb => "https://cpanmetadb.plackperl.org/v1.0/",
-        mirror => ["https://cpan.metacpan.org/"],
+        _default_mirror => 'https://cpan.metacpan.org/',
         retry => 1,
         configure_timeout => 60,
         build_timeout => 3600,
@@ -102,9 +102,8 @@ sub parse_options {
     $self->{home} = maybe_abs($self->{home}, $self->{cwd});
     $self->{resolver} = \@resolver;
     $self->{feature} = \@feature if @feature;
-    $self->{mirror} = \@mirror if @mirror;
-    for my $mirror (@{$self->{mirror}}) {
-        $mirror = $self->normalize_mirror($mirror)
+    if (@mirror) {
+        $self->{mirror} = [map { $self->normalize_mirror($_) } @mirror];
     }
     $self->{color} = 1 if !defined $self->{color} && -t STDOUT;
     $self->{show_progress} = 1 if !WIN32 && !defined $self->{show_progress} && -t STDOUT;
@@ -362,7 +361,25 @@ sub cleanup {
 sub initial_job {
     my ($self, $master) = @_;
 
-    my (@package, @dist);
+    my (@package, @dist, $resolver);
+
+    if (!@{$self->{argv}}) {
+        my ($requirement, $reinstall);
+        ($requirement, $reinstall, $resolver) = $self->load_cpanfile($self->{cpanfile});
+        my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirement);
+        if (!@$reinstall and $is_satisfied) {
+            warn "All requirements are satisfied.\n";
+            return;
+        } elsif (!defined $is_satisfied) {
+            my ($req) = grep { $_->{package} eq "perl" } @$requirement;
+            die sprintf "%s requires perl %s, but you have only %s\n",
+                $self->{cpanfile}, $req->{version_range}, $self->{target_perl} || $];
+        }
+        push @package, @need_resolve, @$reinstall;
+        return (\@package, \@dist, $resolver);
+    }
+
+    $self->{mirror} ||= [$self->{_default_mirror}];
     for (@{$self->{argv}}) {
         my $arg = $_; # copy
         my ($package, $dist);
@@ -413,22 +430,6 @@ sub initial_job {
         push @dist, $dist if $dist;
     }
 
-    my $resolver;
-    if (!@{$self->{argv}}) {
-        my ($requirement, $reinstall);
-        ($requirement, $reinstall, $resolver) = $self->load_cpanfile($self->{cpanfile});
-        my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirement);
-        if (!@$reinstall and $is_satisfied) {
-            warn "All requirements are satisfied.\n";
-            return;
-        } elsif (!defined $is_satisfied) {
-            my ($req) = grep { $_->{package} eq "perl" } @$requirement;
-            die sprintf "%s requires perl %s, but you have only %s\n",
-                $self->{cpanfile}, $req->{version_range}, $self->{target_perl} || $];
-        }
-        push @package, @need_resolve, @$reinstall;
-    }
-
     return (\@package, \@dist, $resolver);
 }
 
@@ -436,6 +437,14 @@ sub load_cpanfile {
     my ($self, $file) = @_;
     require Module::CPANfile;
     my $cpanfile = Module::CPANfile->load($file);
+    if (!$self->{mirror}) {
+        my $mirrors = $cpanfile->mirrors;
+        if (@$mirrors) {
+            $self->{mirror} = [map { $self->normalize_mirror($_) } @$mirrors];
+        } else {
+            $self->{mirror} = [$self->{_default_mirror}];
+        }
+    }
     my $prereqs = $cpanfile->prereqs_with(@{ $self->{"feature"} });
     my @phase = grep $self->{"with_$_"}, qw(configure build test runtime develop);
     my @type  = grep $self->{"with_$_"}, qw(requires recommends suggests);
