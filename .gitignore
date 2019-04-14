@@ -15,4 +15,5 @@ MYMETA.*
 /local/
 /pm_to_blib
 /author/local/
+/author/.cache/
 /cpm.test
