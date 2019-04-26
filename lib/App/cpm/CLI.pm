@@ -151,7 +151,15 @@ sub read_argv_from_stdin {
     return \@argv;
 }
 
-sub _inc {
+sub _core_inc {
+    my $self = shift;
+    [
+        (!$self->{exclude_vendor} ? grep {$_} @Config{qw(vendorarch vendorlibexp)} : ()),
+        @Config{qw(archlibexp privlibexp)},
+    ];
+}
+
+sub _search_inc {
     my $self = shift;
     return \@INC if $self->{global};
 
@@ -161,14 +169,10 @@ sub _inc {
         local::lib->resolve_path(local::lib->install_base_arch_path($base)),
         local::lib->resolve_path(local::lib->install_base_perl_path($base)),
     );
-    my @core = (
-        (!$self->{exclude_vendor} ? grep {$_} @Config{qw(vendorarch vendorlibexp)} : ()),
-        @Config{qw(archlibexp privlibexp)},
-    );
     if ($self->{target_perl}) {
         return [@local_lib];
     } else {
-        return [@local_lib, @core];
+        return [@local_lib, @{$self->_core_inc}];
     }
 }
 
@@ -228,7 +232,9 @@ sub cmd_install {
 
     my $master = App::cpm::Master->new(
         logger => $logger,
-        inc    => $self->_inc,
+        core_inc => $self->_core_inc,
+        search_inc => $self->_search_inc,
+        global => $self->{global},
         show_progress => $self->{show_progress},
         (exists $self->{target_perl} ? (target_perl => $self->{target_perl}) : ()),
     );

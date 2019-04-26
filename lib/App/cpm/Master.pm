@@ -30,6 +30,18 @@ sub new {
             die "Module::CoreList does not have our perl $] entry, abort.\n";
         }
     }
+    if (!$self->{global}) {
+        if (eval { require Module::CoreList }) {
+            if (!exists $Module::CoreList::version{$]}) {
+                die "Module::CoreList does not have our perl $] entry, abort.\n";
+            }
+            $self->{_has_corelist} = 1;
+        } else {
+            my $msg = "You don't have Module::CoreList. "
+                    . "The local-lib may result in incomplete self-contained directory.";
+            App::cpm::Logger->log(result => "WARN", message => $msg);
+        }
+    }
     $self;
 }
 
@@ -284,12 +296,25 @@ sub is_installed {
             return $wantarray ? (1, $self->{_is_installed}{$package}) : 1;
         }
     }
-    my $info = Module::Metadata->new_from_module($package, inc => $self->{inc});
+    my $info = Module::Metadata->new_from_module($package, inc => $self->{search_inc});
     return unless $info;
+
+    if (!$self->{global} and $self->{_has_corelist} and $self->_in_core_inc($info->filename)) {
+        # https://github.com/miyagawa/cpanminus/blob/7b574ede70cebce3709743ec1727f90d745e8580/Menlo-Legacy/lib/Menlo/CLI/Compat.pm#L1783-L1786
+        # if found package in core inc,
+        # but it does not list in CoreList,
+        # we should treat it as not being installed
+        return if !exists $Module::CoreList::version{$]}{$info->name};
+    }
     my $current_version = $self->{_is_installed}{$package}
                         = App::cpm::version->parse($info->version);
     my $ok = $current_version->satisfy($version_range);
     $wantarray ? ($ok, $current_version) : $ok;
+}
+
+sub _in_core_inc {
+    my ($self, $file) = @_;
+    !!grep { $file =~ /^\Q$_/ } @{$self->{core_inc}};
 }
 
 sub is_core {

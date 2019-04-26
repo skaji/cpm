@@ -52,7 +52,7 @@ sub cpm_install {
     my ($out, $err, $exit) = capture {
         local %ENV = %ENV;
         delete $ENV{$_} for grep /^PERL_CPM_/, keys %ENV;
-        system $^X, "-I$base/lib", "$base/script/cpm", "install", "-L", $local, "--home", $home, "--exclude-vendor", @argv;
+        system $^X, "-I$base/lib", "$base/script/cpm", "install", "-L", $local, "--home", $home, @argv;
     };
     my $logfile = "$home/build.log";
     Result->new(home => $home, local => $local, out => $out, err => $err, exit => $exit, logfile => $logfile);
