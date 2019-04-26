@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.980  2019-04-26 09:28:47 BST
+        - Improve compatibility between `cpm install -L` and `cpanm -L`;
+          check if dependencies in core INC are actually core (reported by jberger #143, #147)
+
 0.979  2019-03-17 21:04:54 JST
         - Respect mirror in cpanfile (#145)
         - Update image in pod
