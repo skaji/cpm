@@ -516,11 +516,11 @@ DISTRIBUTIONS
       CPAN::Meta::Prereqs 2.12091
       ExtUtils::MakeMaker 0
       parent 0
-  Module-CoreList-5.20190220
-    pathname: B/BI/BINGOS/Module-CoreList-5.20190220.tar.gz
+  Module-CoreList-5.20190420
+    pathname: B/BI/BINGOS/Module-CoreList-5.20190420.tar.gz
     provides:
-      Module::CoreList 5.20190220
-      Module::CoreList::Utils 5.20190220
+      Module::CoreList 5.20190420
+      Module::CoreList::Utils 5.20190420
     requirements:
       ExtUtils::MakeMaker 0
       List::Util 0
@@ -546,10 +546,10 @@ DISTRIBUTIONS
       Params::Check 0
       Test::More 0
       version 0.69
-  Module-Metadata-1.000033
-    pathname: E/ET/ETHER/Module-Metadata-1.000033.tar.gz
+  Module-Metadata-1.000036
+    pathname: E/ET/ETHER/Module-Metadata-1.000036.tar.gz
     provides:
-      Module::Metadata 1.000033
+      Module::Metadata 1.000036
     requirements:
       Carp 0
       ExtUtils::MakeMaker 0
@@ -582,7 +582,7 @@ DISTRIBUTIONS
     requirements:
       Dumpvalue 0
       ExtUtils::MakeMaker 0
-      ExtUtils::MakeMaker::CPANfile 0.08
+      ExtUtils::MakeMaker::CPANfile 0.09
       File::Spec 0
       JSON::PP 2.00
       Safe 0
