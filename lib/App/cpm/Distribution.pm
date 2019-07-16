@@ -16,7 +16,6 @@ use constant STATE_INSTALLED       => 0b100000;
 sub new {
     my ($class, %option) = @_;
     my $uri = delete $option{uri};
-    $uri = [$uri] unless ref $uri;
     my $distfile = delete $option{distfile};
     my $source = delete $option{source} || "cpan";
     my $provides = delete $option{provides} || [];
@@ -46,7 +45,7 @@ for my $attr (qw(
 sub distfile {
     my $self = shift;
     $self->{distfile} = shift if @_;
-    $self->{distfile} || $self->{uri}[0];
+    $self->{distfile} || $self->{uri};
 }
 
 sub distvname {

@@ -10,8 +10,8 @@ sub new {
     my ($class, %option) = @_;
     my $snapshot = Carton::Snapshot->new(path => $option{path} || "cpanfile.snapshot");
     $snapshot->load;
-    my $mirror = $option{mirror} || ["https://cpan.metacpan.org/"];
-    s{/*$}{/} for @$mirror;
+    my $mirror = $option{mirror} || "https://cpan.metacpan.org/";
+    $mirror =~ s{/*$}{/};
     bless {
         %option,
         mirror => $mirror,
@@ -46,7 +46,7 @@ sub resolve {
     return {
         source => "cpan",
         distfile => $dist->distfile,
-        uri => [map { $dist->cpan_uri($_) } @{$self->{mirror}}],
+        uri => $dist->cpan_uri($self->{mirror}),
         version  => $version || 0,
         provides => \@provides,
     };

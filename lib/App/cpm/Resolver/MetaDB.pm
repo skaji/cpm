@@ -10,8 +10,8 @@ use CPAN::Meta::YAML;
 sub new {
     my ($class, %option) = @_;
     my $uri = $option{uri} || "https://cpanmetadb.plackperl.org/v1.0/";
-    my $mirror = $option{mirror} || ["https://cpan.metacpan.org/"];
-    s{/*$}{/} for $uri, @$mirror;
+    my $mirror = $option{mirror} || "https://cpan.metacpan.org/";
+    s{/*$}{/} for $uri, $mirror;
     my $http = App::cpm::HTTP->create;
     bless {
         %option,
@@ -73,7 +73,7 @@ sub resolve {
                 source => "cpan",
                 package => $job->{package},
                 version => $match->{version},
-                uri => [ map { $dist->cpan_uri($_) } @{$self->{mirror}} ],
+                uri => $dist->cpan_uri($self->{mirror}),
                 distfile => $dist->distfile,
             };
         } else {
@@ -104,7 +104,7 @@ sub resolve {
         return {
             source => "cpan",
             distfile => $dist->distfile,
-            uri => [ map { $dist->cpan_uri($_) } @{$self->{mirror}} ],
+            uri => $dist->cpan_uri($self->{mirror}),
             version  => $meta->{version},
             provides => \@provides,
         };

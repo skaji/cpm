@@ -17,9 +17,8 @@ sub work {
     my $result = $self->{impl}->resolve($job);
     if ($result and !$result->{error}) {
         $result->{ok} = 1;
-        $result->{uri} = [$result->{uri}] unless ref $result->{uri};
         my $msg = sprintf "Resolved %s (%s) -> %s", $job->{package}, $job->{version_range} || 0,
-            $result->{uri}[0] . ($result->{from} ? " from $result->{from}" : "");
+            $result->{uri} . ($result->{from} ? " from $result->{from}" : "");
         $self->{logger}->log($msg);
         return $result;
     } else {

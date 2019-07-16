@@ -9,8 +9,8 @@ sub new {
     my ($class, %args) = @_;
 
     my $cpanfile = $args{cpanfile} || Module::CPANfile->load($args{path});
-    my $mirror = $args{mirror} || ['https://cpan.metacpan.org'];
-    s{/*$}{/} for @$mirror;
+    my $mirror = $args{mirror} || 'https://cpan.metacpan.org/';
+    $mirror =~ s{/*$}{/};
     my $self = bless {
         %args,
         cpanfile => $cpanfile,
@@ -48,7 +48,7 @@ sub _load {
         } elsif ($uri = $option->{dist}) {
             my $dist = App::cpm::DistNotation->new_from_dist($uri);
             die "Unsupported dist '$uri' found in cpanfile\n" if !$dist;
-            my $cpan_uri = $dist->cpan_uri($option->{mirror} || $self->{mirror}[0]);
+            my $cpan_uri = $dist->cpan_uri($option->{mirror} || $self->{mirror});
             $resolve{$package} = {
                 source => 'cpan',
                 uri => $cpan_uri,

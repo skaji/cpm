@@ -26,7 +26,7 @@ sub _uid {
 
 sub distfile {
     my $self = shift;
-    $self->{distfile} || $self->{uri}[0];
+    $self->{distfile} || $self->{uri};
 }
 
 sub distvname {
@@ -34,8 +34,8 @@ sub distvname {
     return $self->{_distvname} if $self->{_distvname};
     if ($self->{distfile}) {
         $self->{_distvname} ||= CPAN::DistnameInfo->new($self->{distfile})->distvname;
-    } elsif ($self->{uri}[0]) {
-        $self->{uri}[0];
+    } elsif ($self->{uri}) {
+        $self->{uri};
     } elsif ($self->{package}) {
         $self->{package};
     } else {

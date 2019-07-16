@@ -135,8 +135,7 @@ sub _fetch_git {
 }
 
 sub enable_prebuilt {
-    my $self = shift;
-    my $uri = ref $_[0] ? $_[0][0] : $_[0];
+    my ($self, $uri) = @_;
     $self->{prebuilt} && !$self->{prebuilt}->skip($uri) && $TRUSTED_MIRROR->($uri);
 }
 
@@ -146,10 +145,10 @@ sub fetch {
 
     my $source   = $job->{source};
     my $distfile = $job->{distfile};
-    my @uri      = ref $job->{uri} ? @{$job->{uri}} : ($job->{uri});
+    my $uri      = $job->{uri};
 
-    if ($self->enable_prebuilt($uri[0])) {
-        if (my $result = $self->find_prebuilt($uri[0])) {
+    if ($self->enable_prebuilt($uri)) {
+        if (my $result = $self->find_prebuilt($uri)) {
             $self->{logger}->log("Using prebuilt $result->{directory}");
             return $result;
         }
@@ -157,45 +156,37 @@ sub fetch {
 
     my ($dir, $rev, $using_cache);
     if ($source eq "git") {
-        for my $uri (@uri) {
-            ($dir, $rev) = $self->_fetch_git($uri, $job->{ref});
-            last if $dir;
-        }
+        ($dir, $rev) = $self->_fetch_git($uri, $job->{ref});
     } elsif ($source eq "local") {
-        for my $uri (@uri) {
-            $self->{logger}->log("Copying $uri");
-            $uri =~ s{^file://}{};
-            $uri = $self->menlo->maybe_abs($uri);
-            my $basename = basename $uri;
-            my $g = pushd $self->menlo->{base};
-            if (-d $uri) {
-                my $dest = File::Temp::tempdir(
-                    "$basename-XXXXX",
-                    CLEANUP => 0,
-                    DIR => $self->menlo->{base},
-                );
-                File::Copy::Recursive::dircopy($uri, $dest);
-                $dir = $dest;
-                last;
-            } elsif (-f $uri) {
-                my $dest = $basename;
-                File::Copy::copy($uri, $dest);
-                $dir = $self->menlo->unpack($basename);
-                $dir = File::Spec->catdir($self->menlo->{base}, $dir);
-                last;
-            }
+        $self->{logger}->log("Copying $uri");
+        $uri =~ s{^file://}{};
+        $uri = $self->menlo->maybe_abs($uri);
+        my $basename = basename $uri;
+        my $g = pushd $self->menlo->{base};
+        if (-d $uri) {
+            my $dest = File::Temp::tempdir(
+                "$basename-XXXXX",
+                CLEANUP => 0,
+                DIR => $self->menlo->{base},
+            );
+            File::Copy::Recursive::dircopy($uri, $dest);
+            $dir = $dest;
+        } elsif (-f $uri) {
+            my $dest = $basename;
+            File::Copy::copy($uri, $dest);
+            $dir = $self->menlo->unpack($basename);
+            $dir = File::Spec->catdir($self->menlo->{base}, $dir) if $dir;
         }
     } elsif ($source =~ /^(?:cpan|https?)$/) {
         my $g = pushd $self->menlo->{base};
-        FETCH: for my $uri (@uri) {
+
+        FETCH: {
             my $basename = basename $uri;
             if ($uri =~ s{^file://}{}) {
                 $self->{logger}->log("Copying $uri");
                 File::Copy::copy($uri, $basename)
-                    or next FETCH;
-                $dir = $self->menlo->unpack($basename)
-                    or next FETCH;
-                last FETCH;
+                    or last FETCH;
+                $dir = $self->menlo->unpack($basename);
             } else {
                 local $self->menlo->{save_dists};
                 if ($distfile and $TRUSTED_MIRROR->($uri)) {
@@ -204,19 +195,15 @@ sub fetch {
                         $self->{logger}->log("Using cache $cache");
                         File::Copy::copy($cache, $basename);
                         $dir = $self->menlo->unpack($basename);
-                        unless ($dir) {
-                            unlink $cache;
-                            next FETCH;
+                        if ($dir) {
+                            $using_cache++;
+                            last FETCH;
                         }
-                        $using_cache++;
-                        last FETCH;
-                    } else {
-                        $self->menlo->{save_dists} = $self->{cache};
+                        unlink $cache;
                     }
+                    $self->menlo->{save_dists} = $self->{cache};
                 }
                 $dir = $self->menlo->fetch_module({uris => [$uri], pathname => $distfile})
-                    or next FETCH;
-                last FETCH;
             }
         }
         $dir = File::Spec->catdir($self->menlo->{base}, $dir) if $dir;

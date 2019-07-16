@@ -6,6 +6,7 @@ use App::cpm::CircularDependency;
 use App::cpm::Distribution;
 use App::cpm::Job;
 use App::cpm::Logger;
+use App::cpm::version;
 use CPAN::DistnameInfo;
 use IO::Handle;
 use Module::Metadata;

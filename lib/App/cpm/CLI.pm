@@ -61,7 +61,7 @@ sub new {
 sub parse_options {
     my $self = shift;
     local @ARGV = @_;
-    my (@mirror, @resolver, @feature);
+    my ($mirror, @resolver, @feature);
     my $with_option = sub {
         my $n = shift;
         ("with-$n", \$self->{"with_$n"}, "without-$n", sub { $self->{"with_$n"} = 0 });
@@ -70,7 +70,7 @@ sub parse_options {
         "L|local-lib-contained=s" => \($self->{local_lib}),
         "color!" => \($self->{color}),
         "g|global" => \($self->{global}),
-        "mirror=s@" => \@mirror,
+        "mirror=s" => \$mirror,
         "v|verbose" => \($self->{verbose}),
         "w|workers=i" => \($self->{workers}),
         "target-perl=s" => \my $target_perl,
@@ -102,9 +102,7 @@ sub parse_options {
     $self->{home} = maybe_abs($self->{home}, $self->{cwd});
     $self->{resolver} = \@resolver;
     $self->{feature} = \@feature if @feature;
-    if (@mirror) {
-        $self->{mirror} = [map { $self->normalize_mirror($_) } @mirror];
-    }
+    $self->{mirror} = $self->normalize_mirror($mirror) if $mirror;
     $self->{color} = 1 if !defined $self->{color} && -t STDOUT;
     $self->{show_progress} = 1 if !WIN32 && !defined $self->{show_progress} && -t STDOUT;
     if ($target_perl) {
@@ -385,7 +383,7 @@ sub initial_job {
         return (\@package, \@dist, $resolver);
     }
 
-    $self->{mirror} ||= [$self->{_default_mirror}];
+    $self->{mirror} ||= $self->{_default_mirror};
     for (@{$self->{argv}}) {
         my $arg = $_; # copy
         my ($package, $dist);
@@ -409,7 +407,7 @@ sub initial_job {
         } elsif (my $d = App::cpm::DistNotation->new_from_dist($arg)) {
             $dist = App::cpm::Distribution->new(
                 source => "cpan",
-                uri => [map { $d->cpan_uri($_) } @{$self->{mirror}}],
+                uri => $d->cpan_uri($self->{mirror}),
                 distfile => $d->distfile,
                 provides => [],
             );
@@ -446,9 +444,9 @@ sub load_cpanfile {
     if (!$self->{mirror}) {
         my $mirrors = $cpanfile->mirrors;
         if (@$mirrors) {
-            $self->{mirror} = [map { $self->normalize_mirror($_) } @$mirrors];
+            $self->{mirror} = $self->normalize_mirror($mirrors->[0]);
         } else {
-            $self->{mirror} = [$self->{_default_mirror}];
+            $self->{mirror} = $self->{_default_mirror};
         }
     }
     my $prereqs = $cpanfile->prereqs_with(@{ $self->{"feature"} });
@@ -492,7 +490,7 @@ sub generate_resolver {
             my $resolver;
             if ($klass =~ /^metadb$/i) {
                 $resolver = App::cpm::Resolver::MetaDB->new(
-                    mirror => @arg ? [map $self->normalize_mirror($_), @arg] : $self->{mirror}
+                    mirror => @arg ? $self->normalize_mirror($arg[0]) : $self->{mirror}
                 );
             } elsif ($klass =~ /^metacpan$/i) {
                 $resolver = App::cpm::Resolver::MetaCPAN->new(dev => $self->{dev});
@@ -504,7 +502,7 @@ sub generate_resolver {
                 } elsif (@arg == 1) {
                     $mirror = $arg[0];
                 } else {
-                    $mirror = $self->{mirror}[0];
+                    $mirror = $self->{mirror};
                 }
                 $resolver = App::cpm::Resolver::02Packages->new(
                     $path ? (path => $path) : (),
@@ -515,7 +513,7 @@ sub generate_resolver {
                 require App::cpm::Resolver::Snapshot;
                 $resolver = App::cpm::Resolver::Snapshot->new(
                     path => $self->{snapshot},
-                    mirror => @arg ? [map $self->normalize_mirror($_), @arg] : $self->{mirror},
+                    mirror => @arg ? $self->normalize_mirror($arg[0]) : $self->{mirror},
                 );
             } else {
                 die "Unknown resolver: $klass\n";
@@ -527,13 +525,11 @@ sub generate_resolver {
 
     if ($self->{mirror_only}) {
         require App::cpm::Resolver::02Packages;
-        for my $mirror (@{$self->{mirror}}) {
-            my $resolver = App::cpm::Resolver::02Packages->new(
-                mirror => $mirror,
-                cache => "$self->{home}/sources",
-            );
-            $cascade->add($resolver);
-        }
+        my $resolver = App::cpm::Resolver::02Packages->new(
+            mirror => $self->{mirror},
+            cache => "$self->{home}/sources",
+        );
+        $cascade->add($resolver);
         return $cascade;
     }
 
