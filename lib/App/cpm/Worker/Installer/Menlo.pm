@@ -5,24 +5,44 @@ use warnings;
 use parent 'Menlo::CLI::Compat';
 
 use App::cpm::HTTP;
-use App::cpm::Util 'WIN32';
+use App::cpm::Installer::Unpacker;
 use App::cpm::Logger::File;
+use App::cpm::Util 'WIN32';
 use Command::Runner;
+use Config;
+use File::Which ();
 use Menlo::Builder::Static;
 
 sub new {
     my ($class, %option) = @_;
     $option{log} ||= $option{logger}->file;
     my $self = $class->SUPER::new(%option);
-    $self->init_tools;
+
+    if ($self->{make} = File::Which::which($Config{make})) {
+        $self->{logger}->log("You have make $self->{make}");
+    }
+    {
+        my ($http, $desc) = App::cpm::HTTP->create;
+        $self->{http} = $http;
+        $self->{logger}->log("You have $desc");
+    }
+    {
+        $self->{unpacker} = App::cpm::Installer::Unpacker->new;
+        my $desc = $self->{unpacker}->describe;
+        for my $key (sort keys %$desc) {
+            $self->{logger}->log("You have $key $desc->{$key}");
+        }
+    }
+
+    $self->{initialized} = 1; # XXX
+
     $self;
 }
 
-sub configure_http {
-    my $self = shift;
-    my ($http, $desc) = App::cpm::HTTP->create;
-    $self->{logger}->log("You have $desc");
-    $http;
+sub unpack {
+    my ($self, $file) = @_;
+    $self->{logger}->log("Unpacking $file");
+    $self->{unpacker}->unpack($file);
 }
 
 sub log {

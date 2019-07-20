@@ -32,7 +32,7 @@ sub create {
         $http->{ua}->conn_cache({ total_capacity => 1 });
     }
 
-    $wantarray ? ($http, "$tool: $desc") : $http;
+    $wantarray ? ($http, "$tool $desc") : $http;
 }
 
 1;
