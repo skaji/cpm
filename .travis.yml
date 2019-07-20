@@ -11,4 +11,4 @@ addons:
 install:
   - curl -fsSL --compressed https://git.io/cpm | perl - install -g --with-develop --with-recommends
 script:
-  - prove -l --timer t xt
+  - prove -lr --timer t xt

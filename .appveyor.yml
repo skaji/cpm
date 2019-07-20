@@ -10,4 +10,4 @@ install:
   - SET "PATH=C:\strawberry\c\bin;C:\strawberry\perl\site\bin;C:\strawberry\perl\bin;%PATH%"
   - curl -fsSL --compressed https://git.io/cpm | perl - install -g --with-develop --with-recommends
 test_script:
-  - prove -l t xt
+  - prove -lr t xt

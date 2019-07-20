@@ -31,6 +31,8 @@
       },
       "develop" : {
          "requires" : {
+            "Archive::Tar" : "0",
+            "Archive::Zip" : "0",
             "CPAN::Mirror::Tiny" : "0.20",
             "Capture::Tiny" : "0",
             "Dist::Milla" : "v1.0.20",
@@ -87,6 +89,9 @@
       },
       "App::cpm::HTTP" : {
          "file" : "lib/App/cpm/HTTP.pm"
+      },
+      "App::cpm::Installer::Unpacker" : {
+         "file" : "lib/App/cpm/Installer/Unpacker.pm"
       },
       "App::cpm::Job" : {
          "file" : "lib/App/cpm/Job.pm"

@@ -28,4 +28,6 @@ on develop => sub {
     requires 'Capture::Tiny';
     requires 'Path::Tiny';
     requires 'Test::More', '0.98';
+    requires 'Archive::Tar';
+    requires 'Archive::Zip';
 };
