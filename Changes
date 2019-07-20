@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.981  2019-07-20 09:24:23 JST
+    [Internal Refactor]
+        - Use plain string mirror and uri
+
 0.980  2019-04-26 09:28:47 BST
         - Improve compatibility between `cpm install -L` and `cpanm -L`;
           check if dependencies in core INC are actually core (reported by jberger #143, #147)
