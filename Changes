@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.982  2019-07-20 19:19:11 JST
+    [Internal Refactor]
+        - Use own Unpacker class (#149)
+
 0.981  2019-07-20 09:24:23 JST
     [Internal Refactor]
         - Use plain string mirror and uri
