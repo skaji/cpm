@@ -160,10 +160,10 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
-  Command-Runner-0.101
-    pathname: S/SK/SKAJI/Command-Runner-0.101.tar.gz
+  Command-Runner-0.102
+    pathname: S/SK/SKAJI/Command-Runner-0.102.tar.gz
     provides:
-      Command::Runner 0.101
+      Command::Runner 0.102
       Command::Runner::Format undef
       Command::Runner::LineBuffer undef
       Command::Runner::Quote undef
@@ -285,10 +285,10 @@ DISTRIBUTIONS
       Module::CPANfile 0
       Test::More 0.88
       version 0.76
-  File-Copy-Recursive-0.44
-    pathname: D/DM/DMUEY/File-Copy-Recursive-0.44.tar.gz
+  File-Copy-Recursive-0.45
+    pathname: D/DM/DMUEY/File-Copy-Recursive-0.45.tar.gz
     provides:
-      File::Copy::Recursive 0.44
+      File::Copy::Recursive 0.45
     requirements:
       Cwd 0
       ExtUtils::MakeMaker 0
@@ -516,11 +516,11 @@ DISTRIBUTIONS
       CPAN::Meta::Prereqs 2.12091
       ExtUtils::MakeMaker 0
       parent 0
-  Module-CoreList-5.20190620
-    pathname: B/BI/BINGOS/Module-CoreList-5.20190620.tar.gz
+  Module-CoreList-5.20190720
+    pathname: B/BI/BINGOS/Module-CoreList-5.20190720.tar.gz
     provides:
-      Module::CoreList 5.20190620
-      Module::CoreList::Utils 5.20190620
+      Module::CoreList 5.20190720
+      Module::CoreList::Utils 5.20190720
     requirements:
       ExtUtils::MakeMaker 0
       List::Util 0
