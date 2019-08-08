@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.983  2019-08-08 10:45:36 EEST
+    [Internal Refactor]
+        - Save requirements per phase (#151)
+
 0.982  2019-07-20 19:19:11 JST
     [Internal Refactor]
         - Use own Unpacker class (#149)
