@@ -39,11 +39,10 @@ sub work {
                 ok => 1,
                 directory => $result->{directory},
                 meta => $result->{meta},
-                configure_requirements => $result->{configure_requirements},
+                requirements => $result->{requirements},
                 provides => $result->{provides},
                 using_cache => $result->{using_cache},
                 prebuilt => $result->{prebuilt},
-                requirements => $result->{requirements},
             };
         } else {
             $self->{logger}->log("Failed to fetch/configure distribution");
@@ -220,17 +219,17 @@ sub fetch {
     my $p = $meta->{provides} || $self->menlo->extract_packages($meta, ".");
     my $provides = [ map +{ package => $_, version => $p->{$_}{version} }, sort keys %$p ];
 
-    my $configure_requirement = App::cpm::Requirement->new;
+    my $req = { configure => App::cpm::Requirement->new };
     if ($self->menlo->opts_in_static_install($meta)) {
         $self->{logger}->log("Distribution opts in x_static_install: $meta->{x_static_install}");
     } else {
-        $configure_requirement = $self->_extract_configure_requirements($meta, $distfile);
+        $req = { configure => $self->_extract_configure_requirements($meta, $distfile) };
     }
 
     return +{
         directory => $dir,
         meta => $meta,
-        configure_requirements => $configure_requirement->as_array,
+        requirements => $req,
         provides => $provides,
         using_cache => $using_cache,
     };
@@ -247,13 +246,14 @@ sub find_prebuilt {
     my $meta   = $self->_load_metafile($uri, 'META.json', 'META.yml');
     my $mymeta = $self->_load_metafile($uri, 'blib/meta/MYMETA.json');
     my $phase  = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
-    my $requirement = App::cpm::Requirement->new;
+
+    my %req;
     if (!$self->menlo->opts_in_static_install($meta)) {
         # XXX Actually we don't need configure requirements for prebuilt.
         # But requires them for consistency for now.
-        $requirement = $self->_extract_configure_requirements($meta, $uri);
+        %req = ( configure => $self->_extract_configure_requirements($meta, $uri) );
     }
-    $requirement->merge($self->_extract_requirements($mymeta, $phase));
+    %req = (%req, %{$self->_extract_requirements($mymeta, $phase)});
 
     my $provides = do {
         open my $fh, "<", 'blib/meta/install.json' or die;
@@ -266,7 +266,7 @@ sub find_prebuilt {
         meta => $meta->as_struct,
         provides => $provides,
         prebuilt => 1,
-        requirements => $requirement->as_array,
+        requirements => \%req,
     };
 }
 
@@ -340,7 +340,7 @@ sub _load_metafile {
 # because the test "-f Build.PL" or similar is present
 sub _extract_configure_requirements {
     my ($self, $meta, $distfile) = @_;
-    my $requirement = $self->_extract_requirements($meta, [qw(configure)]);
+    my $requirement = $self->_extract_requirements($meta, [qw(configure)])->{configure};
     if ($requirement->empty and -f "Build.PL" and ($distfile || "") !~ m{/Module-Build-[0-9v]}) {
         $requirement->add("Module::Build" => "0.38");
     }
@@ -354,14 +354,17 @@ sub _extract_requirements {
     my ($self, $meta, $phases) = @_;
     $phases = [$phases] unless ref $phases;
     my $hash = $meta->effective_prereqs->as_string_hash;
-    my $requirement = App::cpm::Requirement->new;
+
+    my %req;
     for my $phase (@$phases) {
-        my $reqs = ($hash->{$phase} || +{})->{requires} || +{};
-        for my $package (sort keys %$reqs) {
-            $requirement->add($package, $reqs->{$package});
+        my $req = App::cpm::Requirement->new;
+        my $from = ($hash->{$phase} || +{})->{requires} || +{};
+        for my $package (sort keys %$from) {
+            $req->add($package, $from->{$package});
         }
+        $req{$phase} = $req;
     }
-    $requirement;
+    \%req;
 }
 
 sub _retry {
@@ -411,10 +414,10 @@ sub configure {
     my $distdata = $self->_build_distdata($source, $distfile, $meta);
     my $phase = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
     my $mymeta = $self->_load_metafile($distfile, 'MYMETA.json', 'MYMETA.yml');
-    my $requirement = $self->_extract_requirements($mymeta, $phase);
+    my $req = $self->_extract_requirements($mymeta, $phase);
     return +{
         distdata => $distdata,
-        requirements => $requirement->as_array,
+        requirements => $req,
         static_builder => $static_builder,
     };
 }
