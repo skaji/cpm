@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use App::cpm::Logger;
+use App::cpm::Requirement;
 use App::cpm::version;
 use CPAN::DistnameInfo;
 
@@ -19,18 +20,39 @@ sub new {
     my $distfile = delete $option{distfile};
     my $source = delete $option{source} || "cpan";
     my $provides = delete $option{provides} || [];
-    bless {%option, provides => $provides, uri => $uri, distfile => $distfile, source => $source, _state => STATE_RESOLVED}, $class;
+    bless {
+        %option,
+        provides => $provides,
+        uri => $uri,
+        distfile => $distfile,
+        source => $source,
+        _state => STATE_RESOLVED,
+        requirements => {},
+    }, $class;
+}
+
+sub requirements {
+    my ($self, $phase, $req) = @_;
+    if (ref $phase) {
+        my $req = App::cpm::Requirement->new;
+        for my $p (@$phase) {
+            if (my $r = $self->{requirements}{$p}) {
+                $req->merge($r);
+            }
+        }
+        return $req;
+    }
+    $self->{requirements}{$phase} = $req if $req;
+    $self->{requirements}{$phase} || App::cpm::Requirement->new;
 }
 
 for my $attr (qw(
     source
-    configure_requirements
     directory
     distdata
     meta
     uri
     provides
-    requirements
     ref
     static_builder
     prebuilt

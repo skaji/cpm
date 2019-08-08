@@ -56,11 +56,8 @@ sub fail {
 
     my $detector = App::cpm::CircularDependency->new;
     for my $dist (@not_installed) {
-        my @requirements = (
-            @{ $dist->requirements || [] },
-            @{ $dist->configure_requirements || [] },
-        );
-        $detector->add($dist->distfile, $dist->provides, \@requirements);
+        my $req = $dist->requirements([qw(configure build test runtime)])->as_array;
+        $detector->add($dist->distfile, $dist->provides, $req);
     }
     $detector->finalize;
 
@@ -197,8 +194,8 @@ sub _calculate_jobs {
     if (my @dists = grep { $_->fetched && !$_->registered } @distributions) {
         for my $dist (@dists) {
             local $self->{logger}->{context} = $dist->distvname;
-            my ($is_satisfied, @need_resolve)
-                = $self->is_satisfied($dist->configure_requirements);
+            my $dist_requirements = $dist->requirements('configure')->as_array;
+            my ($is_satisfied, @need_resolve) = $self->is_satisfied($dist_requirements);
             if ($is_satisfied) {
                 $dist->registered(1);
                 $self->add_job(
@@ -218,7 +215,7 @@ sub _calculate_jobs {
                 my $ok = $self->_register_resolve_job(@need_resolve);
                 $self->{_fail_install}{$dist->distfile}++ unless $ok;
             } elsif (!defined $is_satisfied) {
-                my ($req) = grep { $_->{package} eq "perl" } @{$dist->configure_requirements};
+                my ($req) = grep { $_->{package} eq "perl" } @$dist_requirements;
                 my $msg = sprintf "%s requires perl %s, but you have only %s",
                     $dist->distvname, $req->{version_range}, $self->{target_perl} || $];
                 $self->{logger}->log($msg);
@@ -231,8 +228,11 @@ sub _calculate_jobs {
     if (my @dists = grep { $_->configured && !$_->registered } @distributions) {
         for my $dist (@dists) {
             local $self->{logger}->{context} = $dist->distvname;
-            my ($is_satisfied, @need_resolve)
-                = $self->is_satisfied($dist->requirements);
+
+            my @phase = qw(build test runtime);
+            push @phase, 'configure' if $dist->prebuilt;
+            my $dist_requirements = $dist->requirements(\@phase)->as_array;
+            my ($is_satisfied, @need_resolve) = $self->is_satisfied($dist_requirements);
             if ($is_satisfied) {
                 $dist->registered(1);
                 $self->add_job(
@@ -253,7 +253,7 @@ sub _calculate_jobs {
                 my $ok = $self->_register_resolve_job(@need_resolve);
                 $self->{_fail_install}{$dist->distfile}++ unless $ok;
             } elsif (!defined $is_satisfied) {
-                my ($req) = grep { $_->{package} eq "perl" } @{$dist->requirements};
+                my ($req) = grep { $_->{package} eq "perl" } @$dist_requirements;
                 my $msg = sprintf "%s requires perl %s, but you have only %s",
                     $dist->distvname, $req->{version_range}, $self->{target_perl} || $];
                 $self->{logger}->log($msg);
@@ -446,14 +446,14 @@ sub _register_fetch_result {
 
     if ($job->{prebuilt}) {
         $distribution->configured(1);
-        $distribution->requirements($job->{requirements});
+        $distribution->requirements($_ => $job->{requirements}{$_}) for keys %{$job->{requirements}};
         $distribution->prebuilt(1);
         local $self->{logger}{context} = $distribution->distvname;
         my $msg = join ", ", map { sprintf "%s (%s)", $_->{package}, $_->{version} || 0 } @{$distribution->provides};
         $self->{logger}->log("Distribution provides: $msg");
     } else {
         $distribution->fetched(1);
-        $distribution->configure_requirements($job->{configure_requirements});
+        $distribution->requirements($_ => $job->{requirements}{$_}) for keys %{$job->{requirements}};
     }
     return 1;
 }
@@ -466,7 +466,7 @@ sub _register_configure_result {
     }
     my $distribution = $self->distribution($job->distfile);
     $distribution->configured(1);
-    $distribution->requirements($job->{requirements});
+    $distribution->requirements($_ => $job->{requirements}{$_}) for keys %{$job->{requirements}};
     $distribution->static_builder($job->{static_builder});
     $distribution->distdata($job->{distdata});
 

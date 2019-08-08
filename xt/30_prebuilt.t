@@ -48,4 +48,13 @@ with_same_home {
     note $r->err;
 };
 
+with_same_home {
+    my $r = cpm_install "--prebuilt", "Parse::Distname";
+    note "first time", $r->err;
+    $r = cpm_install "--prebuilt", "Parse::Distname";
+    note "second time", $r->err;
+    # XXX install configure requires for now :/
+    like $r->err, qr/DONE install ExtUtils-MakeMaker-CPANfile/;
+};
+
 done_testing;
