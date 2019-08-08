@@ -129,7 +129,7 @@ print STDERR "FatPacking...";
 
 my $fatpack_dir = $test ? "local" : "../lib,local";
 my $output = $test ? "../cpm.test" : "../cpm";
-fatpack "-q", "-o", $output, "-d", $fatpack_dir, "-e", $exclude, "--shebang", $shebang, "../script/cpm", "--cache", ".cache";
+fatpack "-q", "-o", $output, "-d", $fatpack_dir, "-e", $exclude, "--shebang", $shebang, "../script/cpm", "--cache", "$ENV{HOME}/.perl-cpm/.fatpack-cache";
 print STDERR " DONE\n";
 inject_git_info($output, $git_describe, $git_url);
 chmod 0755, $output;
