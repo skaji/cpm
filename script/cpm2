@@ -1,0 +1,7 @@
+#!perl
+use strict;
+use warnings;
+use lib "lib";
+use App::cpm2::CLI;
+
+exit App::cpm2::CLI->new->run(@ARGV);

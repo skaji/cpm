@@ -1,9 +1,7 @@
 language: minimal
+dist: bionic
 services: docker
 env:
-  - image=perl:5.8
-  - image=perl:5.10
-  - image=perl:5.16
   - image=perl:5.30
 before_install:
   - docker pull $image
@@ -12,7 +10,6 @@ script:
   - |
     docker run --init -it -v $PWD:/$TRAVIS_REPO_SLUG -w /$TRAVIS_REPO_SLUG $image bash -c '
     set -euxo pipefail
-    apt-get -qq update && apt-get -qq install -y unzip libdb-dev
     curl -fsSL --compressed https://git.io/cpm | perl - install -g --with-develop --with-recommends
-    prove -lr --timer t xt
+    prove -lr xt
     '
