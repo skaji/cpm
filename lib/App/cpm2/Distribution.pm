@@ -2,6 +2,8 @@ package App::cpm2::Distribution;
 use strict;
 use warnings;
 
+use File::Spec;
+
 use constant STATE_REGISTERD  => 0b1;
 
 use constant STATE_FAILED     => 0b10;
@@ -60,6 +62,23 @@ sub ready_to_install {
     $self->{_state} & STATE_READY;
 }
 
+my @attr = qw(
+    dir
+    url
+    meta
+    mymeta
+    provide
+);
+
+for my $attr (@attr) {
+    no strict 'refs';
+    *$attr = sub {
+        my $self = shift;
+        $self->{$attr} = $_[0] if @_;
+        $self->{$attr};
+    };
+}
+
 sub requirement {
     my $self = shift;
 
@@ -107,9 +126,9 @@ sub dependency {
 sub providing {
     my ($self, $requirement) = @_;
 
-    for my $package (sort keys %{$self->{provides}}) {
+    for my $package (sort keys %{$self->{provide}}) {
         if ($package eq $requirement->{package}) {
-            my $have = $self->{provides}{$package};
+            my $have = $self->{provide}{$package};
             my $want = $requirement->{version_range};
             return 1; # XXX
         }
@@ -117,10 +136,29 @@ sub providing {
     return;
 }
 
+sub _nonempty {
+    my @dir = @_;
+
+    while (defined(my $dir = shift @dir)) {
+        opendir my $dh, $dir or return;
+        my @entry =
+            map File::Spec->catfile($dir, $_),
+            grep $_ ne "." && $_ ne ".." && $_ ne ".exists" && $_ ne ".keep",
+            readdir $dh;
+        return 1 if grep -f, @entry;
+        push @dir, grep -d, @entry;
+    }
+    return;
+}
+
 sub lib {
+    my $self = shift;
+    map _nonempty(File::Spec->catdir($self->{dir}, "blib", $_)), qw(arch lib);
 }
 
 sub bin {
+    my $self = shift;
+    map _nonempty(File::Spec->catdir($self->{dir}, "blib", $_)), qw(script bin);
 }
 
 1;

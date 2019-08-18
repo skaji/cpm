@@ -59,11 +59,11 @@ sub calculate_task {
         my ($ok, $dependencies, $missings) = $self->satisfied(@requirement);
         if ($ok) {
             $dist->registerd(1);
-            $dist->dependencies(configure => $dependencies);
-            $self->add_job(type => 'configure', distribution => $dist);
+            $dist->dependency(configure => $dependencies);
+            $self->add_task(type => 'configure', distribution => $dist);
         }
         for my $missing (@$missings) {
-            $self->add_job(
+            $self->add_task(
                 type => 'resolve',
                 package => $missing->{package},
                 version_range => $missing->{version_range},
@@ -76,11 +76,11 @@ sub calculate_task {
         my ($ok, $dependencies, $missings) = $self->satisfied(@requirement);
         if ($ok) {
             $dist->registerd(1);
-            $dist->dependencies(build => $dependencies);
-            $self->add_job(type => 'build', distribution => $dist);
+            $dist->dependency(build => $dependencies);
+            $self->add_task(type => 'build', distribution => $dist);
         }
         for my $missing (@$missings) {
-            $self->add_job(
+            $self->add_task(
                 type => 'resolve',
                 package => $missing->{package},
                 version_range => $missing->{version_range},
@@ -93,10 +93,10 @@ sub calculate_task {
         my ($ok, $dependencies, $missings) = $self->satisfied(@requirement);
         if ($ok) {
             $dist->ready(1);
-            $dist->dependencies(runtime => $dependencies);
+            $dist->dependency(runtime => $dependencies);
         }
         for my $missing (@$missings) {
-            $self->add_job(
+            $self->add_task(
                 type => 'resolve',
                 package => $missing->{package},
                 version_range => $missing->{version_range},
@@ -119,9 +119,13 @@ sub satisfied {
         if ($self->in_inc($requirement)) {
             next;
         }
-        if (my ($providing) = grep { $_->providing($requirement) } @dist) {
-            if ($providing->ready) {
-                push @dependency, $providing;
+        if (my ($dep) = grep { $_->providing($requirement) } @dist) {
+            if ($dep->ready) {
+                push @dependency, {
+                    url => $dep->url,
+                    lib => [ $dep->lib ],
+                    bin => [ $dep->bin ],
+                };
                 next;
             } else {
                 $ok = 0;
@@ -151,35 +155,21 @@ sub register_result {
             $self->{fail}{package}{$result->{package}} = $result->{err};
             return;
         } else {
-            my $dist = App::cpm2::Distribution->new;
-            $dist->disturl($result->{disturl});
-            $self->{distribution}{$dist->disturl} = $dist;
-            return;
+            my $dist = App::cpm2::Distribution->new(url => $result->{disturl});
+            $self->{distribution}{$dist->url} = $dist;
+            return 1;
         }
     }
 
+    my $dist = $result->{dist};
+    $self->{distribution}{$dist->url} = $dist; # overwrite
+
     if ($result->{err}) {
-        $self->{fail}{distribution}{$result->{disturl}} = $result->{err};
+        $self->{fail}{distribution}{$dist->url} = $result->{err};
         return;
     }
 
-    my $dist = $self->{distribution}{$result->{disturl}} or die;
-    if ($task->type eq 'fetch') {
-        $dist->fetched(1);
-        $dist->provides($result->{provides});
-        $dist->requires(%{$result->{requires}});
-        return;
-    }
-    if ($task->type eq 'configure') {
-        $dist->configured(1);
-        $dist->requires(%{$result->{requires}});
-        return;
-    }
-    if ($task->type eq 'build') {
-        $dist->built(1);
-        return;
-    }
-    die;
+    return 1;
 }
 
 1;

@@ -2,6 +2,9 @@ package App::cpm2::Installer;
 use strict;
 use warnings;
 
+use App::cpm2::Installer::Fetcher;
+use App::cpm2::Installer::Unpacker;
+use App::cpm2::Installer::Util qw(execute);
 use App::cpm2::Logger;
 use CPAN::Meta;
 use Cwd ();
@@ -14,22 +17,123 @@ use Parse::LocalDistribution;
 sub new {
     my $class = shift;
     my $home = File::Spec->catdir($ENV{HOME}, ".cpm2");
-    File::Path::mkpath $home if !-d $home;
-    my $file = File::Spec->catfile($home, "build.log." . time);
-    my $logger = App::cpm2::Logger->new($file);
+    my $workdir = File::Spec->catdir($home, "work", time);
+    File::Path::mkpath $workdir if !-d $workdir;
+
     my $target = Cwd::abs_path("./local");
-    bless { home => $home, logger => $logger }, $class;
+
+    my $logger = App::cpm2::Logger->new(File::Spec->catfile($workdir, "build.log"));
+    my $fetcher = App::cpm2::Installer::Fetcher->new(home => File::Spec->catdir($home, "cache"));
+    my $unpacker = App::cpm2::Installer::Unpacker->new(home => $workdir);
+    bless {
+        logger => $logger,
+        target => $target,
+        fetcher => $fetcher,
+        unpacker => $unpacker,
+    }, $class;
 }
 
 sub work {
     my ($self, $task) = @_;
 
-    if ($task->type eq 'configure') {
-
+    if (my $method = $self->can($task->type)) {
+        my $res = $self->$method($task);
+    } else {
+        die;
     }
-    if ($task->type eq 'build') {
+}
+
+sub fetch {
+    my ($self, $task) = @_;
+
+    my $dist = $task->dist;
+
+    local $self->{logger}{context} = $dist->url;
+    my ($file, $err) = $self->{fetcher}->fetch($dist->url);
+    if ($err) {
+        $dist->err($err);
+        return;
+    }
+    (my $dir, $err) = $self->{unpacker}->unpack($file);
+    if ($err) {
+        $dist->err($err);
+        return;
     }
 
+    my $meta = $self->load_metafile(map File::Spec->catfile($dir, $_), qw(META.json META.yml));
+    my $requirement = $self->extract_requiremnt($meta, ['configure']);
+    my $provide = $self->extract_provide($dir);
+
+    $dist->fetched(1);
+    $dist->dir($dir);
+    $dist->meta($meta);
+    $dist->requirement($requirement);
+    $dist->provide($provide);
+    return;
+}
+
+sub configure {
+    my ($self, $task) = @_;
+
+    my $dist = $task->dist;
+
+    local $self->{logger}{context} = $dist->url;
+
+    my $build_type = -f 'Build.PL' ? 'mb' : 'mm';
+    my @cmd = ($^X, ($build_type eq 'mb' ? 'Build.PL' : 'Makefile.PL'), $self->_configure_args($build_type));
+
+    my $ok = execute
+        bin => $dist->bin,
+        cmd => \@cmd,
+        dir => $dist->dir,
+        env => $self->_env,
+        lib => $dist->lib,
+        log => sub { $self->{logger}->log(@_) },
+    ;
+
+    if (!$ok || !-f 'MYMETA.json') {
+        $dist->err('failed to configure');
+        return;
+    }
+
+    my $mymeta = $self->load_metafile('MYMETA.json');
+    my $requirement = $self->extract_requiremnt($mymeta, ['build', 'runtime']);
+
+    $dist->configured(1);
+    $dist->build_type($build_type);
+    $dist->mymeta($mymeta);
+    $dist->requirement($requirement);
+    1;
+}
+
+sub build {
+    my ($self, $task) = @_;
+
+    my $dist = $task->dist;
+
+    local $self->{logger}{context} = $dist->url;
+
+    my @cmd = $dist->build_type eq 'mb' ? ('./Build', 'build') : ('make', 'build');
+    my $ok = execute
+        bin => $dist->bin,
+        cmd => \@cmd,
+        dir => $dist->dir,
+        env => $self->_env,
+        lib => $dist->lib,
+        log => sub { $self->{logger}->log(@_) },
+    ;
+
+    if (!$ok) {
+        $dist->err(1);
+        return;
+    }
+
+    $self->prepare_meta($dist->dir);
+    $dist->built(1);
+    return;
+}
+
+sub locate {
 }
 
 sub _configure_args {
@@ -53,31 +157,15 @@ sub _configure_args {
     }
 }
 
-sub configure {
-    my ($self, $task) = @_;
-
-    my $guard = File::pushd::pushd $task->directory;
-    my $build_type = -f 'Build.PL' ? 'mb' : 'mm';
-
-    local $self->{logger}{context} = $task->disturl;
-    my $ok = $self->_execute($^X, $build_type eq 'mb' ? 'Build.PL' : 'Makefile.PL');
-    if (!$ok || !-f 'MYMETA.json') {
-        return { err => 'failed to configure' };
+sub _env {
+    my $self = shift;
+    {
+        PERL5_CPAN_IS_RUNNING => $$,
+        PERL5_CPANPLUS_IS_RUNNING => $$,
+        PERL_MM_USE_DEFAULT => 1,
+        PERL_USE_UNSAFE_INC => 1,
+        NONINTERACTIVE_TESTING => 1,
     }
-
-    my $mymeta = CPAN::Meta->load_file('MYMETA.json');
-    my $requiremnt = $self->extract_requiremnt($mymeta, ['build', 'runtime']);
-}
-
-sub build {
-    my ($self, $task) = @_;
-    my $guard = File::pushd::pushd $task->directory;
-    local $self->{logger}{context} = $task->disturl;
-    my $ok = $self->_execute($task->build_type eq 'mb' ? ('./Build', 'build') : ('make', 'build'));
-    $ok;
-}
-
-sub install {
 }
 
 sub extract_requiremnt {
@@ -92,34 +180,32 @@ sub extract_requiremnt {
     \%requirement;
 }
 
-sub _execute {
-    my ($self, @cmd) = @_;
-    $self->{logger}->log("Executing @cmd");
-    my $out;
-    IPC::Run3::run3 \@cmd, undef, \$out, \$out;
-    my $exit = $?;
-    $self->{logger}->log($out);
-    $exit == 0;
-}
-
-sub _examine {
-    my ($self, $directory) = @_;
-
+sub load_metafile {
+    my ($self, @file) = @_;
     my $meta;
-    if (my ($file) = grep -f, map File::Spec->catfile($directory, $_), qw(META.json META.yml)) {
+    if (my ($file) = grep -f, @file) {
         $meta = eval { CPAN::Meta->load_file($file) };
     }
     die if !$meta;
-    my $requirement = $self->extract_requiremnt($meta, ['configure']);
+    delete $meta->{x_Dist_Zilla};
+    delete $meta->{x_contributors};
+    $meta;
+}
 
-    my $provides = Parse::LocalDistribution->new({ALLOW_DEV_VERSION => 1})->parse($directory);
-    for my $v (values %$provides) {
-        delete $v->{filemtime};
-        delete $v->{infile};
-        delete $v->{version} if $v->{version} eq 'undef';
+sub extract_provide {
+    my ($self, $dir) = @_;
+    my $parser = Parse::LocalDistribution->new({ALLOW_DEV_VERSION => 1});
+    my $provides = $parser->parse($dir);
+    for my $provide (values %$provides) {
+        delete $provide->{filemtime};
+        delete $provide->{infile};
+        delete $provide->{version} if $provide->{version} eq 'undef';
     }
+    $provides;
+}
 
-    ($meta, $requirement, $provides);
+sub prepare_meta {
+    my ($self, $dir) = @_;
 }
 
 1;

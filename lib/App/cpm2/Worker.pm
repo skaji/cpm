@@ -2,18 +2,14 @@ package App::cpm2::Worker;
 use strict;
 use warnings;
 
-use App::cpm2::Fetcher;
 use App::cpm2::Installer;
 use App::cpm2::Resolver;
-use App::cpm2::Unpacker;
 
 sub new {
     my $class = shift;
     bless {
-        fetcher   => App::cpm2::Fetcher->new,
         installer => App::cpm2::Installer->new,
         resolver  => App::cpm2::Resolver->new,
-        unpacker  => App::cpm2::Unpacker->new,
     }, $class;
 }
 
