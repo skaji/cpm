@@ -1,4 +1,4 @@
-# cpm ![](https://github.com/skaji/cpm/workflows/linux/badge.svg) ![](https://github.com/skaji/cpm/workflows/macos/badge.svg) ![](https://github.com/skaji/cpm/workflows/windows/badge.svg)
+# cpm [![](https://github.com/skaji/cpm/workflows/linux/badge.svg)](https://github.com/skaji/cpm/actions) [![](https://github.com/skaji/cpm/workflows/macos/badge.svg)](https://github.com/skaji/cpm/actions) [![](https://github.com/skaji/cpm/workflows/windows/badge.svg)](https://github.com/skaji/cpm/actions)
 
 a fast CPAN module installer
 
