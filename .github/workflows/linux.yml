@@ -1,0 +1,31 @@
+name: linux
+
+on:
+  - push
+
+jobs:
+  perl:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        perl-version:
+          - '5.8'
+          - '5.10'
+          - '5.16'
+          - 'latest'
+
+    container:
+      image: perl:${{ matrix.perl-version }}
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install deb packages
+        run: apt-get -qq update && apt-get -qq install -y unzip libdb-dev
+      - name: perl -V
+        run: perl -V
+      - name: Install Dependencies
+        run: curl -fsSL --compressed https://git.io/cpm | perl - install -g --with-develop --with-recommends
+      - name: Run Tests
+        run: prove -lr --timer t xt

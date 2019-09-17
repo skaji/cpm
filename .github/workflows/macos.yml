@@ -1,0 +1,20 @@
+name: macos
+
+on:
+  - push
+
+jobs:
+  perl:
+
+    runs-on: macOS-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up Perl
+        run: brew install perl
+      - name: perl -V
+        run: perl -V
+      - name: Install Dependencies
+        run: curl -fsSL --compressed https://git.io/cpm | perl - install -g --with-develop --with-recommends
+      - name: Run Tests
+        run: prove -lr t xt

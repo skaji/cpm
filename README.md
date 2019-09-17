@@ -1,4 +1,4 @@
-# cpm [![Build Status](https://travis-ci.org/skaji/cpm.svg?branch=master)](https://travis-ci.org/skaji/cpm) [![AppVeyor Status](https://ci.appveyor.com/api/projects/status/github/skaji/cpm?branch=master&svg=true&passingText=Windows%20-%20OK)](https://ci.appveyor.com/project/skaji/cpm)
+# cpm ![](https://github.com/skaji/cpm/workflows/linux/badge.svg) ![](https://github.com/skaji/cpm/workflows/macos/badge.svg) ![](https://github.com/skaji/cpm/workflows/windows/badge.svg)
 
 a fast CPAN module installer
 
