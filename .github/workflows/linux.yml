@@ -29,7 +29,7 @@ jobs:
       - name: Install Dependencies
         run: |
           curl -fsSL --compressed https://git.io/cpm | perl - install -g --with-develop --with-recommends
-          if [[ $? -ne 0 ]]; then
+          if [ $? -ne 0 ]; then
             cat ~/.perl-cpm/build.log
             exit 1
           fi
