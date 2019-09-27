@@ -95,20 +95,6 @@ Copyright 2015 Shoichi Kaji E<lt>skaji@cpan.orgE<gt>
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
-=head1 COMMUNITY
-
-=over 4
-
-=item L<https://github.com/skaji/cpm>
-
-Code repository and issue tracker
-
-=item L<https://gitter.im/skaji/cpm>
-
-Chat room. I would like to hear your thoughts about CPAN clients (not necessary about cpm)
-
-=back
-
 =head1 SEE ALSO
 
 L<Perl Advent Calendar 2015|http://www.perladvent.org/2015/2015-12-02.html>
