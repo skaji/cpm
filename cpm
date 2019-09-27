@@ -1543,7 +1543,7 @@ cpm - a fast CPAN module installer
       --target-perl=VERSION  (EXPERIMENTAL)
         install modules as if verison is your perl is VERSION
       --mirror=URL
-        base url for the CPAN mirror to use, you can use --mirror multiple times
+        base url for the CPAN mirror to use, cannot be used multiple times. Use --resolver instead.
         default: https://cpan.metacpan.org
       --pp, --pureperl-only
         prefer pureperl only build
