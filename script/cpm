@@ -25,6 +25,9 @@ cpm - a fast CPAN module installer
   # install module into current @INC instead of local/
   > cpm install -g Module
 
+  # read modules from STDIN by specifying "-" as an argument
+  > echo Module1 Module2 | cpm install -
+
   # prefer TRIAL release
   > cpm install --dev Moose
 
