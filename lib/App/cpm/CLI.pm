@@ -18,6 +18,7 @@ use App::cpm::version;
 use App::cpm;
 use Config;
 use Cwd ();
+use File::Copy ();
 use File::Path ();
 use File::Spec;
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
@@ -96,6 +97,7 @@ sub parse_options {
         (map $with_option->($_), qw(requires recommends suggests)),
         (map $with_option->($_), qw(configure build test runtime develop)),
         "feature=s@" => \@feature,
+        "show-build-log-on-failure" => \($self->{show_build_log_on_failure}),
     or exit 1;
 
     $self->{local_lib} = maybe_abs($self->{local_lib}, $self->{cwd}) unless $self->{global};
@@ -281,7 +283,11 @@ sub cmd_install {
             print STDERR "\r" if $self->{show_progress};
             warn sprintf "%d distribution%s installed.\n",
                 $master->installed_distributions, $master->installed_distributions > 1 ? "s" : "";
-            warn "See $self->{home}/build.log for details.\n";
+            if ($self->{show_build_log_on_failure}) {
+                File::Copy::copy($logger->file, \*STDERR);
+            } else {
+                warn "See $self->{home}/build.log for details.\n";
+            }
             return 1;
         }
     }
@@ -302,7 +308,11 @@ sub cmd_install {
     $self->cleanup;
 
     if ($fail) {
-        warn "See $self->{home}/build.log for details.\n";
+        if ($self->{show_build_log_on_failure}) {
+            File::Copy::copy($logger->file, \*STDERR);
+        } else {
+            warn "See $self->{home}/build.log for details.\n";
+        }
         return 1;
     } else {
         return 0;

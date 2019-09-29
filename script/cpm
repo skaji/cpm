@@ -80,6 +80,8 @@ cpm - a fast CPAN module installer
         generate man pages
       --retry, --no-retry
         retry configure/build/test/install if fails, default: retry
+      --show-build-log-on-failure
+        show build.log on failure, default: off
       --configure-timeout=sec, --build-timeout=sec, --test-timeout=sec
         specify configure/build/test timeout second, default: 60sec, 3600sec, 1800sec
       --show-progress, --no-show-progress
