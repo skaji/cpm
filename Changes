@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.985  2019-09-29 11:50:59 JST
+        - Introduce --show-build-log-on-failure option (#155)
+        - Document that cpm can read modules from STDIN
+
 0.984  2019-09-27 20:23:38 JST
         - Document that multiple --mirror options are ignored (willsheppard #150, #154)
 
