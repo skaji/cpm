@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.986  2019-10-14 01:50:48 JST
+        - Call tar with -o flag; Use the user and group of the user running the program
+          rather than those specified in the archive (autarch #156)
+
 0.985  2019-09-29 11:50:59 JST
         - Introduce --show-build-log-on-failure option (#155)
         - Document that cpm can read modules from STDIN

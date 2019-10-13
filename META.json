@@ -73,7 +73,7 @@
    "provides" : {
       "App::cpm" : {
          "file" : "lib/App/cpm.pm",
-         "version" : "0.985"
+         "version" : "0.986"
       },
       "App::cpm::CLI" : {
          "file" : "lib/App/cpm/CLI.pm"
@@ -166,9 +166,10 @@
          "web" : "https://github.com/skaji/cpm"
       }
    },
-   "version" : "0.985",
+   "version" : "0.986",
    "x_contributors" : [
       "Andrew Rodland <andrew@cleverdomain.org>",
+      "Dave Rolsky <autarch@urth.org>",
       "Kenichi Ishigaki <ishigaki@cpan.org>",
       "Mikhail Ivanov <m.ivanych@gmail.com>",
       "Nicolas R <atoomic@cpan.org>",
