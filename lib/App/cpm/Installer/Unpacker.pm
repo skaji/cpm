@@ -104,7 +104,7 @@ sub _untar {
         ($exit, $out, $err) = run3 [$self->{tar}, "${ar}tf", $file];
         last if $exit != 0;
         my $root = $self->_find_tarroot(split /\r?\n/, $out);
-        ($exit, $out, $err) = run3 [$self->{tar}, "${ar}xf", $file];
+        ($exit, $out, $err) = run3 [$self->{tar}, "${ar}xf", $file, "-o"];
         return $root if $exit == 0 and -d $root;
     }
     return if !$wantarray;
@@ -126,7 +126,7 @@ sub _untar_bad {
         ($exit, $out, $err) = run3 [$self->{tar}, @opt, "-tf", $temp->filename];
         last if $exit != 0 || !$out;
         my $root = $self->_find_tarroot(split /\r?\n/, $out);
-        ($exit, $out, $err) = run3 [$self->{tar}, @opt, "-xf", $temp->filename];
+        ($exit, $out, $err) = run3 [$self->{tar}, @opt, "-xf", $temp->filename, "-o"];
         return $root if $exit == 0 and -d $root;
     }
     return if !$wantarray;
