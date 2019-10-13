@@ -55,7 +55,7 @@ requires 'Hash::MultiValue',
 # use dist + mirror
 requires 'Cookie::Baker',
   dist => "KAZEBURO/Cookie-Baker-0.08.tar.gz",
-  mirror => "http://cpan.cpantesters.org/";
+  mirror => "http://www.cpan.org/";
 
 # use the full URL
 requires 'Try::Tiny', 0.28,
@@ -69,7 +69,7 @@ with_same_local {
     like $r->log, qr/Hash-MultiValue-0\.15\| Successfully installed distribution/;
     like $r->log, qr/Path-Class-0\.26\| Successfully installed distribution/;
     like $r->log, qr/Cookie-Baker-0\.08\| Successfully installed distribution/;
-    like $r->log, qr!Fetching \Qhttp://cpan.cpantesters.org/authors/id/K/KA/KAZEBURO/Cookie-Baker-0.08.tar.gz\E!;
+    like $r->log, qr!Fetching \Qhttp://www.cpan.org/authors/id/K/KA/KAZEBURO/Cookie-Baker-0.08.tar.gz\E!;
     like $r->log, qr/Try-Tiny-0\.28\| Successfully installed distribution/;
     like $r->log, qr!Fetching \Qhttp://backpan.perl.org/authors/id/E/ET/ETHER/Try-Tiny-0.28.tar.gz\E!;
 
