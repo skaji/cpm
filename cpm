@@ -292,7 +292,7 @@ $fatpacked{"Algorithm/C3.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'AL
 ALGORITHM_C3
 
 $fatpacked{"App/cpm.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'APP_CPM';
-  package App::cpm;use strict;use warnings;our$VERSION='0.986';our ($GIT_DESCRIBE,$GIT_URL);1;
+  package App::cpm;use strict;use warnings;our$VERSION='0.987';our ($GIT_DESCRIBE,$GIT_URL);1;
 APP_CPM
 
 $fatpacked{"App/cpm/CLI.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'APP_CPM_CLI';
@@ -384,7 +384,7 @@ $fatpacked{"App/cpm/Worker/Installer.pm"} = '#line '.(1+__LINE__).' "'.__FILE__.
 APP_CPM_WORKER_INSTALLER
 
 $fatpacked{"App/cpm/Worker/Installer/Menlo.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'APP_CPM_WORKER_INSTALLER_MENLO';
-  package App::cpm::Worker::Installer::Menlo;use strict;use warnings;use parent 'Menlo::CLI::Compat';use App::cpm::HTTP;use App::cpm::Installer::Unpacker;use App::cpm::Logger::File;use App::cpm::Util 'WIN32';use Command::Runner;use Config;use File::Which ();use Menlo::Builder::Static;sub new {my ($class,%option)=@_;$option{log}||= $option{logger}->file;my$self=$class->SUPER::new(%option);if ($self->{make}=File::Which::which($Config{make})){$self->{logger}->log("You have make $self->{make}")}{my ($http,$desc)=App::cpm::HTTP->create;$self->{http}=$http;$self->{logger}->log("You have $desc")}{$self->{unpacker}=App::cpm::Installer::Unpacker->new;my$desc=$self->{unpacker}->describe;for my$key (sort keys %$desc){$self->{logger}->log("You have $key $desc->{$key}")}}$self->{initialized}=1;$self}sub unpack {my ($self,$file)=@_;$self->{logger}->log("Unpacking $file");$self->{unpacker}->unpack($file)}sub log {my$self=shift;$self->{logger}->log(@_)}sub run_command {my ($self,$cmd)=@_;$self->run_timeout($cmd,0)}sub run_timeout {my ($self,$cmd,$timeout)=@_;my$str=ref$cmd eq 'CODE' ? '' : ref$cmd eq 'ARRAY' ? "@$cmd" : $cmd;$self->{logger}->log("Executing $str")if$str;my$runner=Command::Runner->new(command=>$cmd,keep=>0,redirect=>1,timeout=>$timeout,stdout=>sub {$self->log(@_)},);my$res=$runner->run;if ($res->{timeout}){$self->diag_fail("Timed out (> ${timeout}s).");return}my$result=$res->{result};ref$cmd eq 'CODE' ? $result : $result==0}1;
+  package App::cpm::Worker::Installer::Menlo;use strict;use warnings;use parent 'Menlo::CLI::Compat';use App::cpm::HTTP;use App::cpm::Installer::Unpacker;use App::cpm::Logger::File;use App::cpm::Util 'WIN32';use Command::Runner;use Config;use File::Which ();use Menlo::Builder::Static;sub new {my ($class,%option)=@_;$option{log}||= $option{logger}->file;my$self=$class->SUPER::new(%option);if ($self->{make}=File::Which::which($Config{make})){$self->{logger}->log("You have make $self->{make}")}{my ($http,$desc)=App::cpm::HTTP->create;$self->{http}=$http;$self->{logger}->log("You have $desc")}{$self->{unpacker}=App::cpm::Installer::Unpacker->new;my$desc=$self->{unpacker}->describe;for my$key (sort keys %$desc){$self->{logger}->log("You have $key $desc->{$key}")}}$self->{initialized}=1;$self}sub unpack {my ($self,$file)=@_;$self->{logger}->log("Unpacking $file");my ($dir,$err)=$self->{unpacker}->unpack($file);$self->{logger}->log($err)if!$dir && $err;$dir}sub log {my$self=shift;$self->{logger}->log(@_)}sub run_command {my ($self,$cmd)=@_;$self->run_timeout($cmd,0)}sub run_timeout {my ($self,$cmd,$timeout)=@_;my$str=ref$cmd eq 'CODE' ? '' : ref$cmd eq 'ARRAY' ? "@$cmd" : $cmd;$self->{logger}->log("Executing $str")if$str;my$runner=Command::Runner->new(command=>$cmd,keep=>0,redirect=>1,timeout=>$timeout,stdout=>sub {$self->log(@_)},);my$res=$runner->run;if ($res->{timeout}){$self->diag_fail("Timed out (> ${timeout}s).");return}my$result=$res->{result};ref$cmd eq 'CODE' ? $result : $result==0}1;
 APP_CPM_WORKER_INSTALLER_MENLO
 
 $fatpacked{"App/cpm/Worker/Installer/Prebuilt.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'APP_CPM_WORKER_INSTALLER_PREBUILT';
@@ -1481,8 +1481,8 @@ use strict;
 use warnings;
 
 use App::cpm;
-$App::cpm::GIT_DESCRIBE = '0.986';
-$App::cpm::GIT_URL = 'https://github.com/skaji/cpm/tree/0.986';
+$App::cpm::GIT_DESCRIBE = '0.987';
+$App::cpm::GIT_URL = 'https://github.com/skaji/cpm/tree/0.987';
 
 use App::cpm::CLI;
 exit App::cpm::CLI->new->run(@ARGV);
