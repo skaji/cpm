@@ -516,11 +516,11 @@ DISTRIBUTIONS
       CPAN::Meta::Prereqs 2.12091
       ExtUtils::MakeMaker 0
       parent 0
-  Module-CoreList-5.20190920
-    pathname: B/BI/BINGOS/Module-CoreList-5.20190920.tar.gz
+  Module-CoreList-5.20191020
+    pathname: B/BI/BINGOS/Module-CoreList-5.20191020.tar.gz
     provides:
-      Module::CoreList 5.20190920
-      Module::CoreList::Utils 5.20190920
+      Module::CoreList 5.20191020
+      Module::CoreList::Utils 5.20191020
     requirements:
       ExtUtils::MakeMaker 0
       List::Util 0
