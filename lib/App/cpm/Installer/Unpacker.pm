@@ -16,14 +16,6 @@ sub run3 {
     return ($?, $out, $err);
 }
 
-sub maybe_bad_tar {
-    my $tar = shift;
-    my $name = File::Basename::basename($tar);
-    return 1 if $name !~ /^gtar/ && ($^O eq 'MSWin32' || $^O eq 'solaris' || $^O eq 'hpux');
-    my ($exit, $out, $err) = run3 [$tar, '--version'];
-    $out =~ /GNU.*1\.13/i;
-}
-
 sub new {
     my ($class, %argv) = @_;
     my $self = bless \%argv, $class;
@@ -51,8 +43,14 @@ sub _init_untar {
     my $self = shift;
 
     my $tar = $self->{tar} = File::Which::which('gtar') || File::Which::which("tar");
+    if ($tar) {
+        my $name = File::Basename::basename($tar);
+        my ($exit, $out, $err) = run3 [$tar, '--version'];
+        $self->{tar_kind} = $out =~ /bsdtar/ ? "bsd" : "gnu";
+        $self->{tar_bad} = 1 if $out =~ /GNU.*1\.13/i || $^O eq 'MSWin32' || $^O eq 'solaris' || $^O eq 'hpux';
+    }
 
-    if ($tar and !maybe_bad_tar $tar) {
+    if ($tar and !$self->{tar_bad}) {
         $self->{method}{untar} = *_untar;
         return if !$self->{_init_all};
     }
@@ -122,7 +120,7 @@ sub _untar_bad {
         last if $exit != 0;
 
         # XXX /usr/bin/tar: Cannot connect to C: resolve failed
-        my @opt = $^O eq 'MSWin32' ? ('--force-local') : ();
+        my @opt = $^O eq 'MSWin32' && $self->{tar_kind} ne "bsd" ? ('--force-local') : ();
         ($exit, $out, $err) = run3 [$self->{tar}, @opt, "-tf", $temp->filename];
         last if $exit != 0 || !$out;
         my $root = $self->_find_tarroot(split /\r?\n/, $out);
