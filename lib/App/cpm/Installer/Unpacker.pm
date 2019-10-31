@@ -44,7 +44,6 @@ sub _init_untar {
 
     my $tar = $self->{tar} = File::Which::which('gtar') || File::Which::which("tar");
     if ($tar) {
-        my $name = File::Basename::basename($tar);
         my ($exit, $out, $err) = run3 [$tar, '--version'];
         $self->{tar_kind} = $out =~ /bsdtar/ ? "bsd" : "gnu";
         $self->{tar_bad} = 1 if $out =~ /GNU.*1\.13/i || $^O eq 'MSWin32' || $^O eq 'solaris' || $^O eq 'hpux';
