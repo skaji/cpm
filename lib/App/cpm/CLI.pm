@@ -500,7 +500,8 @@ sub generate_resolver {
             my $resolver;
             if ($klass =~ /^metadb$/i) {
                 $resolver = App::cpm::Resolver::MetaDB->new(
-                    mirror => @arg ? $self->normalize_mirror($arg[0]) : $self->{mirror}
+                    mirror => @arg      ? $self->normalize_mirror($arg[0]) : $self->{mirror},
+                    uri    => @arg >= 2 ? $arg[1]                          : $self->{cpanmetadb},
                 );
             } elsif ($klass =~ /^metacpan$/i) {
                 $resolver = App::cpm::Resolver::MetaCPAN->new(dev => $self->{dev});
