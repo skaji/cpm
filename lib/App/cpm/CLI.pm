@@ -508,7 +508,7 @@ sub generate_resolver {
                     $mirror = $self->{mirror};
                 }
                 $resolver = App::cpm::Resolver::MetaDB->new(
-                    $uri ? (uri => $self->normalize_mirror($uri)) : (),
+                    $uri ? (uri => $uri) : (),
                     mirror => $self->normalize_mirror($mirror),
                 );
             } elsif ($klass =~ /^metacpan$/i) {
