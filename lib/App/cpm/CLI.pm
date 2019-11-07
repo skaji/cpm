@@ -499,8 +499,17 @@ sub generate_resolver {
             my ($klass, @arg) = split /,/, $_;
             my $resolver;
             if ($klass =~ /^metadb$/i) {
+                my ($uri, $mirror);
+                if (@arg > 1) {
+                    ($uri, $mirror) = @arg;
+                } elsif (@arg == 1) {
+                    $mirror = $arg[0];
+                } else {
+                    $mirror = $self->{mirror};
+                }
                 $resolver = App::cpm::Resolver::MetaDB->new(
-                    mirror => @arg ? $self->normalize_mirror($arg[0]) : $self->{mirror}
+                    $uri ? (uri => $self->normalize_mirror($uri)) : (),
+                    mirror => $self->normalize_mirror($mirror),
                 );
             } elsif ($klass =~ /^metacpan$/i) {
                 $resolver = App::cpm::Resolver::MetaCPAN->new(dev => $self->{dev});

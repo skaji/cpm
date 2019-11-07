@@ -141,4 +141,13 @@ Then append C<--resolver metadb> option to fall back to normal MetaDB resolver:
      --resolver metadb \
      Module
 
+If you host your own darkmetadb for your own darkpan, you can use it too.
+Then append C<--resolver metadb> option to fall back to normal MetaDB resolver:
+
+  $ cpm install \
+     --resolver 02packages,http://example.com/darkpan \
+     --resolver metadb,http://example.com/darkmetadb,http://example.com/darkpan \
+     --resolver metadb \
+     Module
+
 =cut
