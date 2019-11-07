@@ -146,7 +146,7 @@ Then append C<--resolver metadb> option to fall back to normal MetaDB resolver:
 
   $ cpm install \
      --resolver 02packages,http://example.com/darkpan \
-     --resolver metadb,http://example.com/darkpan,http://example.com/darkmetadb \
+     --resolver metadb,http://example.com/darkmetadb,http://example.com/darkpan \
      --resolver metadb \
      Module
 
