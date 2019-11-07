@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.989  2019-11-08 07:34:11 JST
+        - Support custom metadb resolver (Sadrak #159)
+
 0.988  2019-11-01 00:24:15 JST
         - Do not use "tar --force-local" for bsdtar in Win32 (#158)
 
