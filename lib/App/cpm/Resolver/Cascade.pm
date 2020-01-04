@@ -26,6 +26,9 @@ sub resolve {
         $klass = $1 if $klass =~ /^App::cpm::Resolver::(.*)$/;
         if (my $error = $result->{error}) {
             push @error, "$klass, $error";
+            return { error => join("\n", @error) } if $result->{stop};
+
+
         } else {
             $result->{from} = $klass;
             return $result;

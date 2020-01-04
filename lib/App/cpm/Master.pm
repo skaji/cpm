@@ -67,12 +67,12 @@ sub fail {
         my @circular = @{$detected->{$distfile}};
         my $msg = join " -> ", map { $self->distribution($_)->distvname } @circular;
         local $self->{logger}{context} = $distvname;
-        $self->{logger}->log("Detected circular dependencies $msg");
-        $self->{logger}->log("Failed to install distribution");
+        $self->{logger}->log_fail("Detected circular dependencies $msg");
+        $self->{logger}->log_fail("Failed to install distribution");
     }
     for my $dist (sort { $a->distvname cmp $b->distvname } grep { !$detected->{$_->distfile} } @not_installed) {
         local $self->{logger}{context} = $dist->distvname;
-        $self->{logger}->log("Failed to install distribution, "
+        $self->{logger}->log_fail("Failed to install distribution, "
                             ."because of installing some dependencies failed");
     }
 
@@ -137,6 +137,7 @@ sub info {
         $optional = "from $job->{from}" if $job->{ok} and $job->{from};
     } else {
         $message = $name;
+        $message .= " ($job->{uri}" . ($job->{ref} ? "\@$job->{ref}" : "") . ")" if $job->{source} eq 'git';
         $optional = "using cache" if $type eq "fetch" and $job->{using_cache};
         $optional = "using prebuilt" if $job->{prebuilt};
     }
@@ -205,12 +206,14 @@ sub _calculate_jobs {
                     distfile => $dist->{distfile},
                     source => $dist->source,
                     uri => $dist->uri,
+                    ref => $dist->ref,
+                    version => $dist->version,
                     distvname => $dist->distvname,
                 );
             } elsif (@need_resolve and !$dist->deps_registered) {
                 $dist->deps_registered(1);
                 my $msg = sprintf "Found configure dependencies: %s",
-                    join(", ", map { sprintf "%s (%s)", $_->{package}, $_->{version_range} || 0 }  @need_resolve);
+                    join(", ", map { sprintf "%s (%s%s)", $_->{package}, $_->{version_range} || 0, ($_->{options} && $_->{options}->{git} ? sprintf(", %s %s", $_->{options}->{git}, $_->{options}->{ref}||'master'): '') }  @need_resolve);
                 $self->{logger}->log($msg);
                 my $ok = $self->_register_resolve_job(@need_resolve);
                 $self->{_fail_install}{$dist->distfile}++ unless $ok;
@@ -218,7 +221,7 @@ sub _calculate_jobs {
                 my ($req) = grep { $_->{package} eq "perl" } @$dist_requirements;
                 my $msg = sprintf "%s requires perl %s, but you have only %s",
                     $dist->distvname, $req->{version_range}, $self->{target_perl} || $];
-                $self->{logger}->log($msg);
+                $self->{logger}->log_fail($msg);
                 App::cpm::Logger->log(result => "FAIL", message => $msg);
                 $self->{_fail_install}{$dist->distfile}++;
             }
@@ -241,14 +244,18 @@ sub _calculate_jobs {
                     distdata => $dist->distdata,
                     directory => $dist->directory,
                     distfile => $dist->{distfile},
+                    distvname => $dist->distvname,
+                    source => $dist->source,
                     uri => $dist->uri,
+
+                    ref => $dist->ref,
                     static_builder => $dist->static_builder,
                     prebuilt => $dist->prebuilt,
                 );
             } elsif (@need_resolve and !$dist->deps_registered) {
                 $dist->deps_registered(1);
                 my $msg = sprintf "Found dependencies: %s",
-                    join(", ", map { sprintf "%s (%s)", $_->{package}, $_->{version_range} || 0 }  @need_resolve);
+                    join(", ", map { sprintf "%s (%s%s)", $_->{package}, ($_->{version_range} || 0), ($_->{options} && $_->{options}->{git} ? sprintf(", %s %s", $_->{options}->{git}, $_->{options}->{ref}||'master'): '') }  @need_resolve);
                 $self->{logger}->log($msg);
                 my $ok = $self->_register_resolve_job(@need_resolve);
                 $self->{_fail_install}{$dist->distfile}++ unless $ok;
@@ -256,7 +263,7 @@ sub _calculate_jobs {
                 my ($req) = grep { $_->{package} eq "perl" } @$dist_requirements;
                 my $msg = sprintf "%s requires perl %s, but you have only %s",
                     $dist->distvname, $req->{version_range}, $self->{target_perl} || $];
-                $self->{logger}->log($msg);
+                $self->{logger}->log_fail($msg);
                 App::cpm::Logger->log(result => "FAIL", message => $msg);
                 $self->{_fail_install}{$dist->distfile}++;
             }
@@ -277,8 +284,14 @@ sub _register_resolve_job {
 
         $self->add_job(
             type => "resolve",
+            reinstall => ($self->{reinstall}||0),
             package => $package->{package},
             version_range => $package->{version_range},
+            ($package->{options} && $package->{options}->{git} ? (
+                source => 'git',
+                uri => $package->{options}->{git},
+                ref => $package->{options}->{ref},
+            ) : ()),
         );
     }
     return $ok;
@@ -298,19 +311,40 @@ sub is_installed {
         }
     }
     my $info = Module::Metadata->new_from_module($package, inc => $self->{search_inc});
-    return unless $info;
+    unless ($info) {
+        $self->{_is_reinstalled}{$package}++ if $self->{reinstall};
+        return;
+    }
 
+    my $is_core_inc = 0;
     if (!$self->{global} and $self->{_has_corelist} and $self->_in_core_inc($info->filename)) {
         # https://github.com/miyagawa/cpanminus/blob/7b574ede70cebce3709743ec1727f90d745e8580/Menlo-Legacy/lib/Menlo/CLI/Compat.pm#L1783-L1786
         # if found package in core inc,
         # but it does not list in CoreList,
         # we should treat it as not being installed
         return if !exists $Module::CoreList::version{$]}{$info->name};
+        $is_core_inc = 1;
+    }
+    if ($self->{reinstall} && $info) {
+        my $reinstall_distrib = $package;
+        for my $distr (grep {$_->configured || $_->installed} $self->distributions) {
+            for (@{$distr->provides}) {
+                if ($_->{package} eq $package) {
+                    $reinstall_distrib = $distr->distdata ? $distr->distdata->{module_name} : $distr->meta->{name};
+                    last;
+                }
+            }
+        }
+        return($wantarray ? (0,0) : 0) if !$is_core_inc && !($self->{_is_reinstalled}{$package}++ || ($reinstall_distrib ne $package && $self->{_is_reinstalled}{$reinstall_distrib}++));
     }
     my $current_version = $self->{_is_installed}{$package}
                         = App::cpm::version->parse($info->version);
     my $ok = $current_version->satisfy($version_range);
     $wantarray ? ($ok, $current_version) : $ok;
+
+
+
+
 }
 
 sub _in_core_inc {
@@ -346,6 +380,7 @@ sub is_core {
 sub is_satisfied {
     my ($self, $requirements) = @_;
     my $is_satisfied = 1;
+
     my @need_resolve;
     my @distributions = $self->distributions;
     for my $req (@$requirements) {
@@ -354,17 +389,25 @@ sub is_satisfied {
             $is_satisfied = undef if !$self->is_satisfied_perl_version($version_range);
             next;
         }
-        next if $self->{target_perl} and $self->is_core($package, $version_range);
-        next if $self->is_installed($package, $version_range);
+        next if $self->{target_perl} && $self->is_core($package, $version_range);
         my ($resolved) = grep { $_->providing($package, $version_range) } @distributions;
-        next if $resolved && $resolved->installed;
-
-        $is_satisfied = 0 if defined $is_satisfied;
-        if (!$resolved) {
+        if ($resolved) {
+            if ($self->{reinstall}) {
+                next if $self->is_installed($package, $version_range);
+                push @need_resolve, $req;
+            }
+            elsif ($resolved->installed) {
+                next;
+            }
+        }
+        else {
+            next if $self->is_installed($package, $version_range);
             push @need_resolve, $req;
         }
+        $is_satisfied = 0 if defined $is_satisfied;
     }
     return ($is_satisfied, @need_resolve);
+
 }
 
 sub add_distribution {
@@ -389,7 +432,7 @@ sub _register_resolve_result {
     local $self->{logger}{context} = $job->{package};
     if ($job->{distfile} and $job->{distfile} =~ m{/perl-5[^/]+$}) {
         my $message = "Cannot upgrade core module $job->{package}.";
-        $self->{logger}->log($message);
+        $self->{logger}->log_fail($message);
         App::cpm::Logger->log(
             result => "FAIL",
             type => "install",
@@ -423,6 +466,7 @@ sub _register_resolve_result {
         my $version = App::cpm::version->parse($job->{version}) || 0;
         $provides = [{package => $job->{package}, version => $version}];
     }
+    $_->{ref} ||= $job->{ref} for @{$provides}; 
     my $distribution = App::cpm::Distribution->new(
         source   => $job->{source},
         uri      => $job->{uri},
@@ -443,6 +487,10 @@ sub _register_fetch_result {
     $distribution->directory($job->{directory});
     $distribution->meta($job->{meta});
     $distribution->provides($job->{provides});
+    if ($job->{source} eq 'git') {
+        $distribution->version($job->{version});
+        $distribution->distvname($job->{meta}->{name} . "-" . $job->{meta}->{version}) if $job->{meta}->{name};
+    }
 
     if ($job->{prebuilt}) {
         $distribution->configured(1);
@@ -469,11 +517,14 @@ sub _register_configure_result {
     $distribution->requirements($_ => $job->{requirements}{$_}) for keys %{$job->{requirements}};
     $distribution->static_builder($job->{static_builder});
     $distribution->distdata($job->{distdata});
+    if ($distribution->source eq 'git') {
+        $distribution->distvname($job->{distdata}->{distvname});
+    }
 
     # After configuring, the final "provides" is fixed.
     # So we need to re-define "provides" here
     my $p = $job->{distdata}{provides};
-    my @provide = map +{ package => $_, version => $p->{$_}{version} }, sort keys %$p;
+    my @provide = map +{ package => $_, version => $p->{$_}{version}, ($job->{ref} ? (ref => $job->{ref}) : ())}, sort keys %$p;
     $distribution->provides(\@provide);
     local $self->{logger}{context} = $distribution->distvname;
     my $msg = join ", ", map { sprintf "%s (%s)", $_->{package}, $_->{version} || 0 } @{$distribution->provides};
