@@ -247,7 +247,6 @@ sub _calculate_jobs {
                     distvname => $dist->distvname,
                     source => $dist->source,
                     uri => $dist->uri,
-
                     ref => $dist->ref,
                     static_builder => $dist->static_builder,
                     prebuilt => $dist->prebuilt,
@@ -341,10 +340,6 @@ sub is_installed {
                         = App::cpm::version->parse($info->version);
     my $ok = $current_version->satisfy($version_range);
     $wantarray ? ($ok, $current_version) : $ok;
-
-
-
-
 }
 
 sub _in_core_inc {
@@ -380,7 +375,6 @@ sub is_core {
 sub is_satisfied {
     my ($self, $requirements) = @_;
     my $is_satisfied = 1;
-
     my @need_resolve;
     my @distributions = $self->distributions;
     for my $req (@$requirements) {
@@ -389,8 +383,9 @@ sub is_satisfied {
             $is_satisfied = undef if !$self->is_satisfied_perl_version($version_range);
             next;
         }
-        next if $self->{target_perl} && $self->is_core($package, $version_range);
+        next if $self->{target_perl} and $self->is_core($package, $version_range);
         my ($resolved) = grep { $_->providing($package, $version_range) } @distributions;
+
         if ($resolved) {
             if ($self->{reinstall}) {
                 next if $self->is_installed($package, $version_range);
@@ -407,7 +402,6 @@ sub is_satisfied {
         $is_satisfied = 0 if defined $is_satisfied;
     }
     return ($is_satisfied, @need_resolve);
-
 }
 
 sub add_distribution {

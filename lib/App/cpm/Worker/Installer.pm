@@ -44,7 +44,6 @@ sub work {
                 provides => $result->{provides},
                 using_cache => $result->{using_cache},
                 prebuilt => $result->{prebuilt},
-
                 ($job->{ref} ? (ref => $job->{ref}) : ()),
                 version => $result->{version},
             };
@@ -138,7 +137,6 @@ sub _fetch_git {
 
 sub enable_prebuilt {
     my ($self, $uri) = @_;
-
     $self->{prebuilt} && !$self->{prebuilt}->skip($uri) && $TRUSTED_MIRROR->($uri);
 }
 
@@ -219,12 +217,8 @@ sub fetch {
     unless ($meta) {
         $self->{logger}->log_warn("Distribution does not have META.json nor META.yml");
         if (!-f 'Build.PL' && !-f 'Makefile.PL') {
-            if ($name && $version) {
-                $meta = CPAN::Meta->new({ name => $name, version => $version, x_static_install => 1 });
-            } else {
-                $self->{logger}->log_fail("No way to guess distribution META");
-                return;
-            }
+            $self->{logger}->log_fail("No way to guess distribution META");
+            return;
         }
         # If Build.PL or Makefile.PL exist then META will be loaded from MYMETA.json on configure
     }
@@ -245,16 +239,13 @@ sub fetch {
 
     my $p = $meta->{provides} || $self->menlo->extract_packages($meta, ".");
     my $provides = [ map +{ package => $_, version => $p->{$_}{version}, ($job->{ref} ? (ref => $job->{ref}):()) }, sort keys %$p ];
-
     return +{
         directory => $dir,
         meta => $meta,
         requirements => $req,
         provides => $provides,
         using_cache => $using_cache,
-
-        ($job->{ref} ? (ref => $job->{ref}) : ()), 
-        version => $version,
+        ($job->{ref} ? (ref => $job->{ref}) : ()),
     };
 }
 
@@ -262,6 +253,7 @@ sub find_prebuilt {
     my ($self, $uri) = @_;
     my $info = CPAN::DistnameInfo->new($uri);
     my $dir = File::Spec->catdir($self->{prebuilt_base}, $info->cpanid, $info->distvname);
+    my $distfile = $uri;
     return unless -f File::Spec->catfile($dir, ".prebuilt");
 
     my $guard = pushd $dir;
@@ -272,6 +264,7 @@ sub find_prebuilt {
     }
 
     my $phase  = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
+
     my %req;
     if (!$self->menlo->opts_in_static_install($meta)) {
         # XXX Actually we don't need configure requirements for prebuilt.
@@ -286,7 +279,6 @@ sub find_prebuilt {
     };
     my $distvname = $json->{dist};
     my $provides = [ map +{ package => $_, version => $json->{provides}{$_}{version} }, sort keys %{$json->{provides}} ];
-
     return +{
         directory => $dir,
         meta => $meta->as_struct,
@@ -294,13 +286,13 @@ sub find_prebuilt {
         provides => $provides,
         prebuilt => 1,
         requirements => \%req,
-
     };
 }
 
 sub save_prebuilt {
     my ($self, $job) = @_;
     my $dir = File::Spec->catdir($self->{prebuilt_base}, $job->cpanid, $job->distvname);
+
     if (-d $dir and !File::Path::rmtree($dir)) {
         return;
     }
@@ -381,6 +373,7 @@ sub _extract_requirements {
     my ($self, $meta, $phases) = @_;
     $phases = [$phases] unless ref $phases;
     die "Empty metadata" if !$meta && !-f 'cpanfile';
+
     my %req;
     require Module::CPANfile;
     for my $meta_or_cpanfile ((-f 'cpanfile' ? Module::CPANfile->load('cpanfile'): ()), ($meta ? $meta : ())) {
@@ -390,7 +383,7 @@ sub _extract_requirements {
             $req{$phase} ||= App::cpm::Requirement->new;
             my $from = ($hash->{$phase} || +{})->{requires} || +{};
             for my $package (sort keys %$from) {
-                $req{$phase}->add($package, ($can_get_options && $meta_or_cpanfile->options_for_module($package) ? ({ version_range => $from->{$package}, options => $meta_or_cpanfile->options_for_module($package)}) : ($from->{$package})));
+                $req{$phase}->add($package, $from->{$package});
             }
         }
     }
@@ -441,13 +434,11 @@ sub configure {
     }
     return unless $configure_ok;
 
-
     my $phase = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
-    my $dd_distfile = $source eq 'git' ? "$job->{uri}\@$job->{rev}" : $distfile;
+    my $dd_distfile = $source eq 'git' ? $job->{uri} : $distfile;
     my $mymeta = $self->_load_metafile($distfile, 'MYMETA.json', 'MYMETA.yml');
     my $distdata = $self->_build_distdata($source, $dd_distfile, $mymeta);
     my $req = $self->_extract_requirements($mymeta, $phase);
-
     return +{
         distdata => $distdata,
         requirements => $req,
@@ -515,7 +506,7 @@ sub install {
                 $distdata->{module_name},
             );
         }
-        $self->save_prebuilt($job) if $self->enable_prebuilt($distdata->{source}, $job->{uri});
+        $self->save_prebuilt($job) if $self->enable_prebuilt($job->{uri});
     }
     return $installed;
 }
