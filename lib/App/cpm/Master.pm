@@ -207,7 +207,6 @@ sub _calculate_jobs {
                     source => $dist->source,
                     uri => $dist->uri,
                     ref => $dist->ref,
-                    version => $dist->version,
                     distvname => $dist->distvname,
                 );
             } elsif (@need_resolve and !$dist->deps_registered) {
