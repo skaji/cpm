@@ -461,17 +461,17 @@ sub install {
     if ($static_builder) {
         $menlo->build(sub { $static_builder->build }, $distvname, $menlo_dist)
         && $menlo->test(sub { $static_builder->build("test") }, $distvname, $menlo_dist)
-        && $menlo->install(sub { $static_builder->build("install") }, [], $distvname, $menlo_dist)
+        && $menlo->install(sub { $static_builder->build("install") }, [], $menlo_dist)
         && $installed++;
     } elsif (-f 'Build') {
         $self->_retry(sub { $menlo->build([ $menlo->{perl}, "./Build" ], $distvname, $menlo_dist)  })
         && $self->_retry(sub { $menlo->test([ $menlo->{perl}, "./Build", "test" ], $distvname, $menlo_dist)  })
-        && $self->_retry(sub { $menlo->install([ $menlo->{perl}, "./Build", "install" ], [], $distvname, $menlo_dist)  })
+        && $self->_retry(sub { $menlo->install([ $menlo->{perl}, "./Build", "install" ], [], $menlo_dist)  })
         && $installed++;
     } else {
         $self->_retry(sub { $menlo->build([ $menlo->{make} ], $distvname, $menlo_dist)  })
         && $self->_retry(sub { $menlo->test([ $menlo->{make}, "test" ], $distvname, $menlo_dist)  })
-        && $self->_retry(sub { $menlo->install([ $menlo->{make}, "install" ], [], $distvname, $menlo_dist) })
+        && $self->_retry(sub { $menlo->install([ $menlo->{make}, "install" ], [],  $menlo_dist) })
         && $installed++;
     }
 
