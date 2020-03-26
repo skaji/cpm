@@ -29,7 +29,7 @@ subtest 'normal' => sub {
 };
 
 subtest 'develop' => sub {
-    my $r = cpm_install '--with-develop', '--cpanfile', $cpanfile;
+    my $r = cpm_install '--with-develop', '--test', '--cpanfile', $cpanfile;
     is $r->exit, 0;
     unlike $r->err, qr/DONE install Process-Status/;
     unlike $r->err, qr/DONE install App-ChangeShebang/;
@@ -40,7 +40,7 @@ subtest 'develop' => sub {
 };
 
 subtest 'recommends' => sub {
-    my $r = cpm_install '--with-recommends', '--cpanfile', $cpanfile;
+    my $r = cpm_install '--with-recommends', '--test', '--cpanfile', $cpanfile;
     is $r->exit, 0;
     like   $r->err, qr/DONE install Process-Status/;
     unlike $r->err, qr/DONE install App-ChangeShebang/;
@@ -50,8 +50,19 @@ subtest 'recommends' => sub {
     unlike $r->err, qr/DONE install Devel-CheckBin/;
 };
 
+subtest 'recommends --no-test' => sub {
+    my $r = cpm_install '--with-recommends', '--no-test', '--cpanfile', $cpanfile;
+    is $r->exit, 0;
+    unlike $r->err, qr/DONE install Process-Status/;
+    unlike $r->err, qr/DONE install App-ChangeShebang/;
+    unlike $r->err, qr/DONE install Parallel-Pipes/;
+    unlike $r->err, qr/DONE install File-pushd/;
+    unlike $r->err, qr/DONE install Try-Tiny/;
+    unlike $r->err, qr/DONE install Devel-CheckBin/;
+};
+
 subtest 'suggests' => sub {
-    my $r = cpm_install '--with-suggests', '--cpanfile', $cpanfile;
+    my $r = cpm_install '--with-suggests', '--test', '--cpanfile', $cpanfile;
     is $r->exit, 0;
     unlike $r->err, qr/DONE install Process-Status/;
     like   $r->err, qr/DONE install App-ChangeShebang/;
@@ -62,7 +73,7 @@ subtest 'suggests' => sub {
 };
 
 subtest 'mix1' => sub {
-    my $r = cpm_install '--with-configure', '--without-test', '--with-recommends', '--cpanfile', $cpanfile;
+    my $r = cpm_install '--with-configure', '--without-test', '--with-recommends', '--test', '--cpanfile', $cpanfile;
     is $r->exit, 0;
     unlike $r->err, qr/DONE install Process-Status/;
     unlike $r->err, qr/DONE install App-ChangeShebang/;
@@ -73,7 +84,7 @@ subtest 'mix1' => sub {
 };
 
 subtest 'mix2' => sub {
-    my $r = cpm_install '--with-develop', '--with-recommends', '--with-suggests', '--cpanfile', $cpanfile;
+    my $r = cpm_install '--with-develop', '--with-recommends', '--with-suggests', '--test', '--cpanfile', $cpanfile;
     is $r->exit, 0;
     like   $r->err, qr/DONE install Process-Status/;
     like   $r->err, qr/DONE install App-ChangeShebang/;

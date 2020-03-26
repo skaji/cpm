@@ -119,6 +119,7 @@ sub parse_options {
     if (WIN32 and $self->{workers} != 1) {
         die "The number of workers must be 1 under WIN32 environment.\n";
     }
+    $self->{'with_test'} = 0 if $self->{notest};
     if ($self->{sudo}) {
         !system "sudo", $^X, "-e1" or exit 1;
     }
