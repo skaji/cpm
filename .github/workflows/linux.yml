@@ -20,6 +20,7 @@ jobs:
           - '5.10'
           - '5.16'
           - 'latest'
+          - 'threaded'
 
     container:
       image: perl:${{ matrix.perl-version }}
