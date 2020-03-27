@@ -107,10 +107,10 @@ cpm - a fast CPAN module installer
       --with-test,       --without-test       (default: with)
       --with-runtime,    --without-runtime    (default: with)
       --with-develop,    --without-develop    (default: without)
-      --with-all         shortcut for
-                         --with-requires --with-recommends --with-suggests \
-                         --with-configure --with-build --with-test --with-runtime --with-develop
         specify types/phases of dependencies in cpanfile to be installed
+      --with-all
+        shortcut for --with-requires, --with-recommends, --with-suggests,
+        --with-configure, --with-build, --with-test, --with-runtime and --with-develop
 
 =head1 COPYRIGHT AND LICENSE
 
