@@ -181,10 +181,10 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Sub::Exporter::Progressive 0.001011
       perl 5.006
-  Exporter-5.73
-    pathname: T/TO/TODDR/Exporter-5.73.tar.gz
+  Exporter-5.74
+    pathname: T/TO/TODDR/Exporter-5.74.tar.gz
     provides:
-      Exporter 5.73
+      Exporter 5.74
       Exporter::Heavy 5.73
     requirements:
       Carp 1.05
@@ -228,44 +228,44 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
-  ExtUtils-MakeMaker-7.38
-    pathname: B/BI/BINGOS/ExtUtils-MakeMaker-7.38.tar.gz
+  ExtUtils-MakeMaker-7.44
+    pathname: B/BI/BINGOS/ExtUtils-MakeMaker-7.44.tar.gz
     provides:
-      ExtUtils::Command 7.38
-      ExtUtils::Command::MM 7.38
-      ExtUtils::Liblist 7.38
-      ExtUtils::Liblist::Kid 7.38
-      ExtUtils::MM 7.38
-      ExtUtils::MM_AIX 7.38
-      ExtUtils::MM_Any 7.38
-      ExtUtils::MM_BeOS 7.38
-      ExtUtils::MM_Cygwin 7.38
-      ExtUtils::MM_DOS 7.38
-      ExtUtils::MM_Darwin 7.38
-      ExtUtils::MM_MacOS 7.38
-      ExtUtils::MM_NW5 7.38
-      ExtUtils::MM_OS2 7.38
-      ExtUtils::MM_QNX 7.38
-      ExtUtils::MM_UWIN 7.38
-      ExtUtils::MM_Unix 7.38
-      ExtUtils::MM_VMS 7.38
-      ExtUtils::MM_VOS 7.38
-      ExtUtils::MM_Win32 7.38
-      ExtUtils::MM_Win95 7.38
-      ExtUtils::MY 7.38
-      ExtUtils::MakeMaker 7.38
-      ExtUtils::MakeMaker::Config 7.38
-      ExtUtils::MakeMaker::Locale 7.38
-      ExtUtils::MakeMaker::_version 7.38
-      ExtUtils::MakeMaker::charstar 7.38
-      ExtUtils::MakeMaker::version 7.38
-      ExtUtils::MakeMaker::version::regex 7.38
-      ExtUtils::MakeMaker::version::vpp 7.38
-      ExtUtils::Mkbootstrap 7.38
-      ExtUtils::Mksymlists 7.38
-      ExtUtils::testlib 7.38
-      MM 7.38
-      MY 7.38
+      ExtUtils::Command 7.44
+      ExtUtils::Command::MM 7.44
+      ExtUtils::Liblist 7.44
+      ExtUtils::Liblist::Kid 7.44
+      ExtUtils::MM 7.44
+      ExtUtils::MM_AIX 7.44
+      ExtUtils::MM_Any 7.44
+      ExtUtils::MM_BeOS 7.44
+      ExtUtils::MM_Cygwin 7.44
+      ExtUtils::MM_DOS 7.44
+      ExtUtils::MM_Darwin 7.44
+      ExtUtils::MM_MacOS 7.44
+      ExtUtils::MM_NW5 7.44
+      ExtUtils::MM_OS2 7.44
+      ExtUtils::MM_QNX 7.44
+      ExtUtils::MM_UWIN 7.44
+      ExtUtils::MM_Unix 7.44
+      ExtUtils::MM_VMS 7.44
+      ExtUtils::MM_VOS 7.44
+      ExtUtils::MM_Win32 7.44
+      ExtUtils::MM_Win95 7.44
+      ExtUtils::MY 7.44
+      ExtUtils::MakeMaker 7.44
+      ExtUtils::MakeMaker::Config 7.44
+      ExtUtils::MakeMaker::Locale 7.44
+      ExtUtils::MakeMaker::_version 7.44
+      ExtUtils::MakeMaker::charstar 7.44
+      ExtUtils::MakeMaker::version 7.44
+      ExtUtils::MakeMaker::version::regex 7.44
+      ExtUtils::MakeMaker::version::vpp 7.44
+      ExtUtils::Mkbootstrap 7.44
+      ExtUtils::Mksymlists 7.44
+      ExtUtils::testlib 7.44
+      MM 7.44
+      MY 7.44
     requirements:
       Data::Dumper 0
       Encode 0
@@ -516,11 +516,11 @@ DISTRIBUTIONS
       CPAN::Meta::Prereqs 2.12091
       ExtUtils::MakeMaker 0
       parent 0
-  Module-CoreList-5.20191020
-    pathname: B/BI/BINGOS/Module-CoreList-5.20191020.tar.gz
+  Module-CoreList-5.20200320
+    pathname: B/BI/BINGOS/Module-CoreList-5.20200320.tar.gz
     provides:
-      Module::CoreList 5.20191020
-      Module::CoreList::Utils 5.20191020
+      Module::CoreList 5.20200320
+      Module::CoreList::Utils 5.20200320
     requirements:
       ExtUtils::MakeMaker 0
       List::Util 0
@@ -533,10 +533,10 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       Test::More 0.94
-  Module-Load-Conditional-0.68
-    pathname: B/BI/BINGOS/Module-Load-Conditional-0.68.tar.gz
+  Module-Load-Conditional-0.70
+    pathname: B/BI/BINGOS/Module-Load-Conditional-0.70.tar.gz
     provides:
-      Module::Load::Conditional 0.68
+      Module::Load::Conditional 0.70
     requirements:
       ExtUtils::MakeMaker 0
       Locale::Maketext::Simple 0
@@ -561,10 +561,10 @@ DISTRIBUTIONS
       strict 0
       version 0.87
       warnings 0
-  Parallel-Pipes-0.004
-    pathname: S/SK/SKAJI/Parallel-Pipes-0.004.tar.gz
+  Parallel-Pipes-0.005
+    pathname: S/SK/SKAJI/Parallel-Pipes-0.005.tar.gz
     provides:
-      Parallel::Pipes 0.004
+      Parallel::Pipes 0.005
     requirements:
       Module::Build::Tiny 0.034
       perl 5.008001
@@ -576,10 +576,10 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Locale::Maketext::Simple 0
       Test::More 0
-  Parse-PMFile-0.41
-    pathname: I/IS/ISHIGAKI/Parse-PMFile-0.41.tar.gz
+  Parse-PMFile-0.42
+    pathname: I/IS/ISHIGAKI/Parse-PMFile-0.42.tar.gz
     provides:
-      Parse::PMFile 0.41
+      Parse::PMFile 0.42
     requirements:
       Dumpvalue 0
       ExtUtils::MakeMaker 0
@@ -609,76 +609,76 @@ DISTRIBUTIONS
       Sub::Exporter::Progressive 0.001013
     requirements:
       ExtUtils::MakeMaker 0
-  Test-Simple-1.302168
-    pathname: E/EX/EXODIST/Test-Simple-1.302168.tar.gz
+  Test-Simple-1.302172
+    pathname: E/EX/EXODIST/Test-Simple-1.302172.tar.gz
     provides:
-      Test2 1.302168
-      Test2::API 1.302168
-      Test2::API::Breakage 1.302168
-      Test2::API::Context 1.302168
-      Test2::API::Instance 1.302168
-      Test2::API::Stack 1.302168
-      Test2::Event 1.302168
-      Test2::Event::Bail 1.302168
-      Test2::Event::Diag 1.302168
-      Test2::Event::Encoding 1.302168
-      Test2::Event::Exception 1.302168
-      Test2::Event::Fail 1.302168
-      Test2::Event::Generic 1.302168
-      Test2::Event::Note 1.302168
-      Test2::Event::Ok 1.302168
-      Test2::Event::Pass 1.302168
-      Test2::Event::Plan 1.302168
-      Test2::Event::Skip 1.302168
-      Test2::Event::Subtest 1.302168
-      Test2::Event::TAP::Version 1.302168
-      Test2::Event::V2 1.302168
-      Test2::Event::Waiting 1.302168
-      Test2::EventFacet 1.302168
-      Test2::EventFacet::About 1.302168
-      Test2::EventFacet::Amnesty 1.302168
-      Test2::EventFacet::Assert 1.302168
-      Test2::EventFacet::Control 1.302168
-      Test2::EventFacet::Error 1.302168
-      Test2::EventFacet::Hub 1.302168
-      Test2::EventFacet::Info 1.302168
-      Test2::EventFacet::Info::Table 1.302168
-      Test2::EventFacet::Meta 1.302168
-      Test2::EventFacet::Parent 1.302168
-      Test2::EventFacet::Plan 1.302168
-      Test2::EventFacet::Render 1.302168
-      Test2::EventFacet::Trace 1.302168
-      Test2::Formatter 1.302168
-      Test2::Formatter::TAP 1.302168
-      Test2::Hub 1.302168
-      Test2::Hub::Interceptor 1.302168
-      Test2::Hub::Interceptor::Terminator 1.302168
-      Test2::Hub::Subtest 1.302168
-      Test2::IPC 1.302168
-      Test2::IPC::Driver 1.302168
-      Test2::IPC::Driver::Files 1.302168
-      Test2::Tools::Tiny 1.302168
-      Test2::Util 1.302168
-      Test2::Util::ExternalMeta 1.302168
-      Test2::Util::Facets2Legacy 1.302168
-      Test2::Util::HashBase 1.302168
-      Test2::Util::Trace 1.302168
-      Test::Builder 1.302168
-      Test::Builder::Formatter 1.302168
+      Test2 1.302172
+      Test2::API 1.302172
+      Test2::API::Breakage 1.302172
+      Test2::API::Context 1.302172
+      Test2::API::Instance 1.302172
+      Test2::API::Stack 1.302172
+      Test2::Event 1.302172
+      Test2::Event::Bail 1.302172
+      Test2::Event::Diag 1.302172
+      Test2::Event::Encoding 1.302172
+      Test2::Event::Exception 1.302172
+      Test2::Event::Fail 1.302172
+      Test2::Event::Generic 1.302172
+      Test2::Event::Note 1.302172
+      Test2::Event::Ok 1.302172
+      Test2::Event::Pass 1.302172
+      Test2::Event::Plan 1.302172
+      Test2::Event::Skip 1.302172
+      Test2::Event::Subtest 1.302172
+      Test2::Event::TAP::Version 1.302172
+      Test2::Event::V2 1.302172
+      Test2::Event::Waiting 1.302172
+      Test2::EventFacet 1.302172
+      Test2::EventFacet::About 1.302172
+      Test2::EventFacet::Amnesty 1.302172
+      Test2::EventFacet::Assert 1.302172
+      Test2::EventFacet::Control 1.302172
+      Test2::EventFacet::Error 1.302172
+      Test2::EventFacet::Hub 1.302172
+      Test2::EventFacet::Info 1.302172
+      Test2::EventFacet::Info::Table 1.302172
+      Test2::EventFacet::Meta 1.302172
+      Test2::EventFacet::Parent 1.302172
+      Test2::EventFacet::Plan 1.302172
+      Test2::EventFacet::Render 1.302172
+      Test2::EventFacet::Trace 1.302172
+      Test2::Formatter 1.302172
+      Test2::Formatter::TAP 1.302172
+      Test2::Hub 1.302172
+      Test2::Hub::Interceptor 1.302172
+      Test2::Hub::Interceptor::Terminator 1.302172
+      Test2::Hub::Subtest 1.302172
+      Test2::IPC 1.302172
+      Test2::IPC::Driver 1.302172
+      Test2::IPC::Driver::Files 1.302172
+      Test2::Tools::Tiny 1.302172
+      Test2::Util 1.302172
+      Test2::Util::ExternalMeta 1.302172
+      Test2::Util::Facets2Legacy 1.302172
+      Test2::Util::HashBase 1.302172
+      Test2::Util::Trace 1.302172
+      Test::Builder 1.302172
+      Test::Builder::Formatter 1.302172
       Test::Builder::IO::Scalar 2.114
-      Test::Builder::Module 1.302168
-      Test::Builder::Tester 1.302168
-      Test::Builder::Tester::Color 1.302168
-      Test::Builder::Tester::Tie 1.302168
-      Test::Builder::TodoDiag 1.302168
-      Test::More 1.302168
-      Test::Simple 1.302168
-      Test::Tester 1.302168
-      Test::Tester::Capture 1.302168
-      Test::Tester::CaptureRunner 1.302168
-      Test::Tester::Delegate 1.302168
-      Test::use::ok 1.302168
-      ok 1.302168
+      Test::Builder::Module 1.302172
+      Test::Builder::Tester 1.302172
+      Test::Builder::Tester::Color 1.302172
+      Test::Builder::Tester::Tie 1.302172
+      Test::Builder::TodoDiag 1.302172
+      Test::More 1.302172
+      Test::Simple 1.302172
+      Test::Tester 1.302172
+      Test::Tester::Capture 1.302172
+      Test::Tester::CaptureRunner 1.302172
+      Test::Tester::Delegate 1.302172
+      Test::use::ok 1.302172
+      ok 1.302172
     requirements:
       ExtUtils::MakeMaker 0
       File::Spec 0
@@ -781,13 +781,12 @@ DISTRIBUTIONS
       local::lib 2.000024
     requirements:
       perl 5.006
-  parent-0.237
-    pathname: C/CO/CORION/parent-0.237.tar.gz
+  parent-0.238
+    pathname: C/CO/CORION/parent-0.238.tar.gz
     provides:
-      parent 0.237
+      parent 0.238
     requirements:
       ExtUtils::MakeMaker 0
-      Test::More 0.4
       perl 5.006
   version-0.9924
     pathname: J/JP/JPEACOCK/version-0.9924.tar.gz
