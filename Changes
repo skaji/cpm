@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.990  2020-03-27 09:49:10 JST
+        - Add --with-all to install all listed deps in a cpanfile (atoomic #166)
+
 0.989  2019-11-08 07:34:11 JST
         - Support custom metadb resolver (Sadrak #159)
 
