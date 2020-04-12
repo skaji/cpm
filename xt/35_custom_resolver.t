@@ -7,6 +7,7 @@ use CLI;
 
 use File::Temp 'tempdir';
 use Path::Tiny 'path';
+use Config;
 
 plan skip_all => 'only for perl 5.16+' if $] < 5.016;
 
@@ -51,7 +52,8 @@ EOF
 
 my $r = do {
     local %ENV = %ENV;
-    $ENV{PERL5LIB} = $ENV{PERL5LIB} ? "$ENV{PERL5LIB}:$tempdir/lib" : "$tempdir/lib";
+    my $sep = $Config{path_sep};
+    $ENV{PERL5LIB} = $ENV{PERL5LIB} ? "$ENV{PERL5LIB}$sep$tempdir/lib" : "$tempdir/lib";
     cpm_install "-r", "Hoge", "App::ChangeShebang";
 };
 
@@ -60,7 +62,8 @@ like $r->log, qr/Resolved App::ChangeShebang.*from Hoge/;
 
 $r = do {
     local %ENV = %ENV;
-    $ENV{PERL5LIB} = $ENV{PERL5LIB} ? "$ENV{PERL5LIB}:$tempdir/lib" : "$tempdir/lib";
+    my $sep = $Config{path_sep};
+    $ENV{PERL5LIB} = $ENV{PERL5LIB} ? "$ENV{PERL5LIB}$sep$tempdir/lib" : "$tempdir/lib";
     cpm_install "-r", "+Foo::Bar,arg1,arg2", "App::ChangeShebang";
 };
 
