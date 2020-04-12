@@ -539,7 +539,10 @@ sub generate_resolver {
                     mirror => @arg ? $self->normalize_mirror($arg[0]) : $self->{mirror},
                 );
             } else {
-                die "Unknown resolver: $klass\n";
+                my $full_klass = $klass =~ s/^\+// ? $klass : "App::cpm::Resolver::$klass";
+                (my $file = $full_klass) =~ s{::}{/}g;
+                require "$file.pm"; # may die
+                $resolver = $full_klass->new(@arg);
             }
             $cascade->add($resolver);
         }
