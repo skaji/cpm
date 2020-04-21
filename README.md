@@ -55,6 +55,7 @@ it under the same terms as Perl itself.
 
 ## See Also
 
+* You may want to check [install-with-cpm](https://github.com/marketplace/actions/install-with-cpm) when you use cpm with [GitHub Actions](https://help.github.com/en/actions).
 * [Perl Advent Calendar 2015](http://www.perladvent.org/2015/2015-12-02.html)
 * [App::cpanminus](https://metacpan.org/pod/App::cpanminus)
 * [Menlo](https://metacpan.org/pod/Menlo)
