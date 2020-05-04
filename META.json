@@ -32,7 +32,7 @@
       "develop" : {
          "requires" : {
             "Archive::Tar" : "0",
-            "Archive::Zip" : "!= 1.66",
+            "Archive::Zip" : "1.68",
             "CPAN::Mirror::Tiny" : "0.20",
             "Capture::Tiny" : "0",
             "Dist::Milla" : "v1.0.20",

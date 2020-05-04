@@ -29,5 +29,5 @@ on develop => sub {
     requires 'Path::Tiny';
     requires 'Test::More', '0.98';
     requires 'Archive::Tar';
-    requires 'Archive::Zip', '!= 1.66';
+    requires 'Archive::Zip', '1.68';
 };
