@@ -26,7 +26,7 @@ jobs:
       image: perl:${{ matrix.perl-version }}
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Install deb packages
         run: apt-get -qq update && apt-get -qq install -y unzip libdb-dev
       - name: perl -V
