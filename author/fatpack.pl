@@ -90,6 +90,7 @@ my $exclude = join ",", qw(
 my @extra = qw(
     Class::C3
     Devel::GlobalDestruction
+    ExtUtils::PL2Bat
     MRO::Compat
 );
 

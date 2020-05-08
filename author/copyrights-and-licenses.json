@@ -96,6 +96,12 @@
       "url" : "https://metacpan.org/release/ExtUtils-InstallPaths"
    },
    {
+      "copyright" : "Leon Timmermans.",
+      "license" : "the same as Perl 5",
+      "name" : "ExtUtils-PL2Bat",
+      "url" : "https://metacpan.org/release/ExtUtils-PL2Bat"
+   },
+   {
       "copyright" : "Daniel Muey",
       "license" : "the same as Perl 5",
       "name" : "File-Copy-Recursive",

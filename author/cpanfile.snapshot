@@ -285,6 +285,16 @@ DISTRIBUTIONS
       Module::CPANfile 0
       Test::More 0.88
       version 0.76
+  ExtUtils-PL2Bat-0.002
+    pathname: L/LE/LEONT/ExtUtils-PL2Bat-0.002.tar.gz
+    provides:
+      ExtUtils::PL2Bat 0.002
+    requirements:
+      Carp 0
+      ExtUtils::MakeMaker 0
+      perl 5.006
+      strict 0
+      warnings 0
   File-Copy-Recursive-0.45
     pathname: D/DM/DMUEY/File-Copy-Recursive-0.45.tar.gz
     provides:
