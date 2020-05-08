@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.992  2020-05-09 01:28:57 JST
+        - Fatpack ExtUtils-PL2Bat (atoomic #173)
+
 0.991  2020-04-12 12:59:53 JST
         - [EXPERIMANTAL] Allow users to specify arbitrary resolvers (#168)
 
