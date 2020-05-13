@@ -102,7 +102,7 @@ sub parse_options {
         (map $with_option->($_), @phase),
         "feature=s@" => \@feature,
         "show-build-log-on-failure" => \($self->{show_build_log_on_failure}),
-    or exit 1;
+    or return 0;
 
     $self->{local_lib} = maybe_abs($self->{local_lib}, $self->{cwd}) unless $self->{global};
     $self->{home} = maybe_abs($self->{home}, $self->{cwd});
@@ -135,11 +135,14 @@ sub parse_options {
     $App::cpm::Logger::SHOW_PROGRESS = 1 if $self->{show_progress};
 
     if (@ARGV && $ARGV[0] eq "-") {
-        $self->{argv} = $self->read_argv_from_stdin;
+        my $argv = $self->read_argv_from_stdin;
+        return -1 if @$argv == 0;
+        $self->{argv} = $argv;
         $self->{cpanfile} = undef;
     } else {
         $self->{argv} = \@ARGV;
     }
+    return 1;
 }
 
 sub read_argv_from_stdin {
@@ -196,7 +199,9 @@ sub run {
     $cmd = "version" if $cmd =~ /^(-V|--version)$/;
     if (my $sub = $self->can("cmd_$cmd")) {
         return $self->$sub(@argv) if $cmd eq "exec";
-        $self->parse_options(@argv);
+        my $ok = $self->parse_options(@argv);
+        return 1 if !$ok;
+        return 0 if $ok == -1;
         return $self->$sub;
     } else {
         my $message = $cmd =~ /^-/ ? "Missing subcommand" : "Unknown subcommand '$cmd'";
