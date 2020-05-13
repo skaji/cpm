@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.993  2020-05-13 19:35:28 JST
+        - Now cpm exits successfully for empty list via pipe (abraxxa #165)
+
 0.992  2020-05-09 01:28:57 JST
         - Fatpack ExtUtils-PL2Bat (atoomic #173)
 
