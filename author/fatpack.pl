@@ -87,12 +87,6 @@ my $exclude = join ",", qw(
     Test2
     Test::Harness
 );
-my @extra = qw(
-    Class::C3
-    Devel::GlobalDestruction
-    ExtUtils::PL2Bat
-    MRO::Compat
-);
 
 my $target = '5.8.1';
 
@@ -121,7 +115,6 @@ my $resolver = -f "cpanfile.snapshot" && !$force && !$test && !$update_only ? "s
 
 warn "Resolver: $resolver\n";
 cpm "install", "--target-perl", $target, "--resolver", $resolver;
-cpm "install", "--target-perl", $target, "--resolver", $resolver, @extra;
 gen_snapshot if !$test;
 remove_version_xs;
 exit if $update_only;

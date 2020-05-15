@@ -401,10 +401,10 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
-  HTTP-Tinyish-0.15
-    pathname: M/MI/MIYAGAWA/HTTP-Tinyish-0.15.tar.gz
+  HTTP-Tinyish-0.16
+    pathname: M/MI/MIYAGAWA/HTTP-Tinyish-0.16.tar.gz
     provides:
-      HTTP::Tinyish 0.15
+      HTTP::Tinyish 0.16
       HTTP::Tinyish::Base undef
       HTTP::Tinyish::Curl undef
       HTTP::Tinyish::HTTPTiny undef
