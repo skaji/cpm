@@ -53,6 +53,52 @@ DISTRIBUTIONS
       IPC::Cmd 0
       Perl::OSType 1
       Text::ParseWords 0
+  ExtUtils-MakeMaker-7.52
+    pathname: B/BI/BINGOS/ExtUtils-MakeMaker-7.52.tar.gz
+    provides:
+      ExtUtils::Command 7.52
+      ExtUtils::Command::MM 7.52
+      ExtUtils::Liblist 7.52
+      ExtUtils::Liblist::Kid 7.52
+      ExtUtils::MM 7.52
+      ExtUtils::MM_AIX 7.52
+      ExtUtils::MM_Any 7.52
+      ExtUtils::MM_BeOS 7.52
+      ExtUtils::MM_Cygwin 7.52
+      ExtUtils::MM_DOS 7.52
+      ExtUtils::MM_Darwin 7.52
+      ExtUtils::MM_MacOS 7.52
+      ExtUtils::MM_NW5 7.52
+      ExtUtils::MM_OS2 7.52
+      ExtUtils::MM_OS390 7.52
+      ExtUtils::MM_QNX 7.52
+      ExtUtils::MM_UWIN 7.52
+      ExtUtils::MM_Unix 7.52
+      ExtUtils::MM_VMS 7.52
+      ExtUtils::MM_VOS 7.52
+      ExtUtils::MM_Win32 7.52
+      ExtUtils::MM_Win95 7.52
+      ExtUtils::MY 7.52
+      ExtUtils::MakeMaker 7.52
+      ExtUtils::MakeMaker::Config 7.52
+      ExtUtils::MakeMaker::Locale 7.52
+      ExtUtils::MakeMaker::_version 7.52
+      ExtUtils::MakeMaker::charstar 7.52
+      ExtUtils::MakeMaker::version 7.52
+      ExtUtils::MakeMaker::version::regex 7.52
+      ExtUtils::MakeMaker::version::vpp 7.52
+      ExtUtils::Mkbootstrap 7.52
+      ExtUtils::Mksymlists 7.52
+      ExtUtils::testlib 7.52
+      MM 7.52
+      MY 7.52
+    requirements:
+      Data::Dumper 0
+      Encode 0
+      File::Basename 0
+      File::Spec 0.8
+      Pod::Man 0
+      perl 5.006
   ExtUtils-ParseXS-3.35
     pathname: S/SM/SMUELLER/ExtUtils-ParseXS-3.35.tar.gz
     provides:
@@ -190,7 +236,7 @@ subtest '02packages_file' => sub {
         my $base = tempdir(CLEANUP => 1);
         my $cpan = CPAN::Mirror::Tiny->new(base => $base);
         $cpan->inject('cpan:App::ChangeShebang@0.06');
-        if ($] < 5.016) {
+        if ($] < 5.018) {
             $cpan->inject('cpan:ExtUtils::MakeMaker@7.24');
             $cpan->inject('cpan:ExtUtils::ParseXS@3.30');
         }
@@ -230,7 +276,7 @@ subtest '02packages_file_no_prefix' => sub {
     my $base = tempdir(CLEANUP => 1);
     my $cpan = CPAN::Mirror::Tiny->new(base => $base);
     $cpan->inject('cpan:App::ChangeShebang@0.06');
-    if ($] < 5.016) {
+    if ($] < 5.018) {
         $cpan->inject('cpan:ExtUtils::MakeMaker@7.24');
         $cpan->inject('cpan:ExtUtils::ParseXS@3.30');
     }

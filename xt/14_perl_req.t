@@ -17,7 +17,7 @@ ___
 };
 
 subtest ng => sub {
-    plan skip_all => 'only for perl 5.16+' if $] < 5.016;
+    plan skip_all => 'only for perl 5.18+' if $] < 5.018;
     my $r = cpm_install "--target-perl", "5.8.0", "HTTP::Tinyish";
     isnt $r->exit, 0;
     like $r->err, qr/DONE install HTTP-Tiny-/; # install HTTP::Tiny anyway

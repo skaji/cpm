@@ -113,7 +113,7 @@ sub parse_options {
     $self->{show_progress} = 1 if !WIN32 && !defined $self->{show_progress} && -t STDOUT;
     if ($target_perl) {
         die "--target-perl option conflicts with --global option\n" if $self->{global};
-        die "--target-perl option can be used only if perl version >= 5.16.0\n" if $] < 5.016;
+        die "--target-perl option can be used only if perl version >= 5.18.0\n" if $] < 5.018;
         # 5.8 is interpreted as 5.800, fix it
         $target_perl = "v$target_perl" if $target_perl =~ /^5\.[1-9]\d*$/;
         $target_perl = sprintf '%0.6f', App::cpm::version->parse($target_perl)->numify;
@@ -270,8 +270,8 @@ sub cmd_install {
     );
 
     {
-        last if $] >= 5.016;
-        my $requirement = App::cpm::Requirement->new('ExtUtils::MakeMaker' => '6.58', 'ExtUtils::ParseXS' => '3.16');
+        last if $] >= 5.018;
+        my $requirement = App::cpm::Requirement->new('ExtUtils::MakeMaker' => '6.64', 'ExtUtils::ParseXS' => '3.16');
         for my $name ('ExtUtils::MakeMaker', 'ExtUtils::ParseXS') {
             if (my ($i) = grep { $packages->[$_]{package} eq $name } 0..$#{$packages}) {
                 $requirement->add($name, $packages->[$i]{version_range})
