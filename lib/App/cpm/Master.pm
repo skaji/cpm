@@ -76,11 +76,18 @@ sub fail {
                             ."because of installing some dependencies failed");
     }
 
-    my @name = (
-        (map { CPAN::DistnameInfo->new($_)->distvname || $_ } @fail_install),
-        (map { $_->distvname } @not_installed),
-    );
-    { resolve => \@fail_resolve, install => [sort @name] };
+    my @fail_install_name = map { CPAN::DistnameInfo->new($_)->distvname || $_ } @fail_install;
+    my @not_installed_name = map { $_->distvname } @not_installed;
+    if (@fail_resolve || @fail_install_name) {
+        $self->{logger}->log("--");
+        $self->{logger}->log(
+            "Installation failed. "
+            . "The direct cause of the failure comes from the following packages/distributions; "
+            . "you may want to grep this log file by them:"
+        );
+        $self->{logger}->log(" * $_") for @fail_resolve, sort @fail_install_name;
+    }
+    { resolve => \@fail_resolve, install => [sort @fail_install_name, @not_installed_name] };
 }
 
 sub jobs { values %{shift->{jobs}} }
