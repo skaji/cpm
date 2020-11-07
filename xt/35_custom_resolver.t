@@ -9,7 +9,7 @@ use File::Temp 'tempdir';
 use Path::Tiny 'path';
 use Config;
 
-plan skip_all => 'only for perl 5.16+' if $] < 5.016;
+plan skip_all => 'only for perl 5.18+' if $] < 5.018;
 
 my $tempdir = tempdir CLEANUP => 1;
 path($tempdir, qw(lib App cpm Resolver))->mkpath;

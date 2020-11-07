@@ -8,7 +8,7 @@ use File::pushd 'tempd';
 use Path::Tiny;
 use version;
 
-plan skip_all => 'only for perl 5.16+' if $] < 5.016;
+plan skip_all => 'only for perl 5.18+' if $] < 5.018;
 
 subtest test1 => sub {
     plan skip_all => 'only for perl 5.22+' if $] < 5.022;

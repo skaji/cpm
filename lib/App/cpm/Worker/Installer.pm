@@ -22,7 +22,7 @@ use File::pushd 'pushd';
 use JSON::PP ();
 use Time::HiRes ();
 
-use constant NEED_INJECT_TOOLCHAIN_REQUIREMENTS => $] < 5.016;
+use constant NEED_INJECT_TOOLCHAIN_REQUIREMENTS => $] < 5.018;
 
 my $TRUSTED_MIRROR = sub {
     my $uri = shift;
@@ -310,7 +310,7 @@ sub _inject_toolchain_requirements {
 
     my %inject = (
         'Module::Build' => '0.38',
-        'ExtUtils::MakeMaker' => '6.58',
+        'ExtUtils::MakeMaker' => '6.64',
         'ExtUtils::Install' => '1.46',
     );
 
