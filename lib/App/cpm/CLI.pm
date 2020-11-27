@@ -222,6 +222,25 @@ sub cmd_version {
     if ($App::cpm::GIT_DESCRIBE) {
         print "This is a self-contained version, $App::cpm::GIT_DESCRIBE ($App::cpm::GIT_URL)\n";
     }
+
+    print "perl version $^V ($^X)\n\n";
+
+    print "  \%Config:\n";
+    for my $key (qw( archname installsitelib installsitebin installman1dir installman3dir
+                     sitearchexp sitelibexp vendorarch vendorlibexp archlibexp privlibexp )) {
+        print "    $key=$Config{$key}\n" if $Config{$key};
+    }
+
+    print "  \%ENV:\n";
+    for my $key (grep /^PERL/, sort keys %ENV) {
+        print "    $key=$ENV{$key}\n";
+    }
+
+    print "  \@INC:\n";
+    for my $inc (@INC) {
+        print "    $inc\n" unless ref($inc) eq 'CODE';
+    }
+
     return 0;
 }
 
