@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.995  2020-11-28 20:37:01 JST
+        - Show more info in cpm --version (gfx #187, #188)
+
 0.994  2020-11-07 09:36:37 JST
         - Dump direct cause of the failure to build log in the end (CyberShadow #184, #186)
         - Add workaround for #178; Now cpm install --target-perl requires perl 5.18+ (#178, #185)
