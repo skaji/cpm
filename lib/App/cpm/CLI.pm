@@ -223,7 +223,7 @@ sub cmd_version {
         print "This is a self-contained version, $App::cpm::GIT_DESCRIBE ($App::cpm::GIT_URL)\n";
     }
 
-    print "perl version $^V ($^X)\n\n";
+    printf "perl version v%vd ($^X)\n\n", $^V;
 
     print "  \%Config:\n";
     for my $key (qw( archname installsitelib installsitebin installman1dir installman3dir
