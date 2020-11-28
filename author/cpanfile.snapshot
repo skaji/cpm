@@ -1,13 +1,12 @@
 # carton snapshot format: version 1.0
 DISTRIBUTIONS
-  Algorithm-C3-0.10
-    pathname: H/HA/HAARG/Algorithm-C3-0.10.tar.gz
+  Algorithm-C3-0.11
+    pathname: H/HA/HAARG/Algorithm-C3-0.11.tar.gz
     provides:
-      Algorithm::C3 0.10
+      Algorithm::C3 0.11
     requirements:
       Carp 0.01
       ExtUtils::MakeMaker 0
-      Test::More 0.47
       perl 5.006
   CPAN-Common-Index-0.010
     pathname: D/DA/DAGOLDEN/CPAN-Common-Index-0.010.tar.gz
@@ -140,10 +139,10 @@ DISTRIBUTIONS
       overload 0
       strict 0
       warnings 0
-  Class-C3-0.34
-    pathname: H/HA/HAARG/Class-C3-0.34.tar.gz
+  Class-C3-0.35
+    pathname: H/HA/HAARG/Class-C3-0.35.tar.gz
     provides:
-      Class::C3 0.34
+      Class::C3 0.35
     requirements:
       Algorithm::C3 0.07
       ExtUtils::MakeMaker 0
@@ -229,45 +228,45 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
-  ExtUtils-MakeMaker-7.52
-    pathname: B/BI/BINGOS/ExtUtils-MakeMaker-7.52.tar.gz
+  ExtUtils-MakeMaker-7.56
+    pathname: B/BI/BINGOS/ExtUtils-MakeMaker-7.56.tar.gz
     provides:
-      ExtUtils::Command 7.52
-      ExtUtils::Command::MM 7.52
-      ExtUtils::Liblist 7.52
-      ExtUtils::Liblist::Kid 7.52
-      ExtUtils::MM 7.52
-      ExtUtils::MM_AIX 7.52
-      ExtUtils::MM_Any 7.52
-      ExtUtils::MM_BeOS 7.52
-      ExtUtils::MM_Cygwin 7.52
-      ExtUtils::MM_DOS 7.52
-      ExtUtils::MM_Darwin 7.52
-      ExtUtils::MM_MacOS 7.52
-      ExtUtils::MM_NW5 7.52
-      ExtUtils::MM_OS2 7.52
-      ExtUtils::MM_OS390 7.52
-      ExtUtils::MM_QNX 7.52
-      ExtUtils::MM_UWIN 7.52
-      ExtUtils::MM_Unix 7.52
-      ExtUtils::MM_VMS 7.52
-      ExtUtils::MM_VOS 7.52
-      ExtUtils::MM_Win32 7.52
-      ExtUtils::MM_Win95 7.52
-      ExtUtils::MY 7.52
-      ExtUtils::MakeMaker 7.52
-      ExtUtils::MakeMaker::Config 7.52
-      ExtUtils::MakeMaker::Locale 7.52
-      ExtUtils::MakeMaker::_version 7.52
-      ExtUtils::MakeMaker::charstar 7.52
-      ExtUtils::MakeMaker::version 7.52
-      ExtUtils::MakeMaker::version::regex 7.52
-      ExtUtils::MakeMaker::version::vpp 7.52
-      ExtUtils::Mkbootstrap 7.52
-      ExtUtils::Mksymlists 7.52
-      ExtUtils::testlib 7.52
-      MM 7.52
-      MY 7.52
+      ExtUtils::Command 7.56
+      ExtUtils::Command::MM 7.56
+      ExtUtils::Liblist 7.56
+      ExtUtils::Liblist::Kid 7.56
+      ExtUtils::MM 7.56
+      ExtUtils::MM_AIX 7.56
+      ExtUtils::MM_Any 7.56
+      ExtUtils::MM_BeOS 7.56
+      ExtUtils::MM_Cygwin 7.56
+      ExtUtils::MM_DOS 7.56
+      ExtUtils::MM_Darwin 7.56
+      ExtUtils::MM_MacOS 7.56
+      ExtUtils::MM_NW5 7.56
+      ExtUtils::MM_OS2 7.56
+      ExtUtils::MM_OS390 7.56
+      ExtUtils::MM_QNX 7.56
+      ExtUtils::MM_UWIN 7.56
+      ExtUtils::MM_Unix 7.56
+      ExtUtils::MM_VMS 7.56
+      ExtUtils::MM_VOS 7.56
+      ExtUtils::MM_Win32 7.56
+      ExtUtils::MM_Win95 7.56
+      ExtUtils::MY 7.56
+      ExtUtils::MakeMaker 7.56
+      ExtUtils::MakeMaker::Config 7.56
+      ExtUtils::MakeMaker::Locale 7.56
+      ExtUtils::MakeMaker::_version 7.56
+      ExtUtils::MakeMaker::charstar 7.56
+      ExtUtils::MakeMaker::version 7.56
+      ExtUtils::MakeMaker::version::regex 7.56
+      ExtUtils::MakeMaker::version::vpp 7.56
+      ExtUtils::Mkbootstrap 7.56
+      ExtUtils::Mksymlists 7.56
+      ExtUtils::testlib 7.56
+      MM 7.56
+      MY 7.56
     requirements:
       Data::Dumper 0
       Encode 0
@@ -308,10 +307,10 @@ DISTRIBUTIONS
       File::Copy 0
       File::Glob 0
       File::Spec 0
-  File-Fetch-0.56
-    pathname: B/BI/BINGOS/File-Fetch-0.56.tar.gz
+  File-Fetch-1.00
+    pathname: B/BI/BINGOS/File-Fetch-1.00.tar.gz
     provides:
-      File::Fetch 0.56
+      File::Fetch 1.00
     requirements:
       ExtUtils::MakeMaker 0
       File::Basename 0
@@ -529,11 +528,11 @@ DISTRIBUTIONS
       CPAN::Meta::Prereqs 2.12091
       ExtUtils::MakeMaker 0
       parent 0
-  Module-CoreList-5.20201020
-    pathname: B/BI/BINGOS/Module-CoreList-5.20201020.tar.gz
+  Module-CoreList-5.20201120
+    pathname: B/BI/BINGOS/Module-CoreList-5.20201120.tar.gz
     provides:
-      Module::CoreList 5.20201020
-      Module::CoreList::Utils 5.20201020
+      Module::CoreList 5.20201120
+      Module::CoreList::Utils 5.20201120
     requirements:
       ExtUtils::MakeMaker 0
       List::Util 0
