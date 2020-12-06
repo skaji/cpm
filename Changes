@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.996  2020-12-06 19:36:28 JST
+        - Suggest using --show-build-log-on-failure option on failure (suggested by gfx)
+
 0.995  2020-11-28 20:37:01 JST
         - Show more info in cpm --version (gfx #187, #188)
 
