@@ -315,6 +315,8 @@ sub cmd_install {
                 File::Copy::copy($logger->file, \*STDERR);
             } else {
                 warn "See $self->{home}/build.log for details.\n";
+                warn "You may want to execute cpm with --show-build-log-on-failure,\n";
+                warn "so that the build.log is automatically dumped on failure.\n";
             }
             return 1;
         }
@@ -340,6 +342,8 @@ sub cmd_install {
             File::Copy::copy($logger->file, \*STDERR);
         } else {
             warn "See $self->{home}/build.log for details.\n";
+            warn "You may want to execute cpm with --show-build-log-on-failure,\n";
+            warn "so that the build.log is automatically dumped on failure.\n";
         }
         return 1;
     } else {
