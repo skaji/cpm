@@ -7,6 +7,7 @@ requires 'CPAN::Meta::Requirements', '2.130'; # for v-strings
 requires 'CPAN::Meta::YAML';
 requires 'Class::Tiny';
 requires 'Command::Runner', '0.100';
+requires 'ExtUtils::Install', '2.20';
 requires 'ExtUtils::InstallPaths', '0.002';
 requires 'File::Copy::Recursive';
 requires 'File::pushd';

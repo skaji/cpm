@@ -90,6 +90,12 @@
       "url" : "https://metacpan.org/release/ExtUtils-Helpers"
    },
    {
+      "copyright" : "Yves Orton, Michael Schwern, Alan Burlison, Randy W. Sims and others",
+      "license" : "the same as Perl 5",
+      "name" : "ExtUtils-Install",
+      "url" : "https://metacpan.org/release/ExtUtils-Install"
+   },
+   {
       "copyright" : "Ken Williams, Leon Timmermans.",
       "license" : "the same as Perl 5",
       "name" : "ExtUtils-InstallPaths",
