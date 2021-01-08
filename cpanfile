@@ -17,6 +17,7 @@ requires 'Menlo::CLI::Compat', '1.9021';
 requires 'Module::CPANfile';
 requires 'Module::Metadata';
 requires 'Parallel::Pipes', '0.004';
+requires 'Parse::PMFile', '0.43';
 requires 'local::lib', '2.000018';
 requires 'parent';
 requires 'version', '0.77';
