@@ -14,6 +14,7 @@ use App::cpm::Resolver::MetaCPAN;
 use App::cpm::Resolver::MetaDB;
 use App::cpm::Util qw(WIN32 determine_home maybe_abs);
 use App::cpm::Worker;
+use App::cpm::file;
 use App::cpm::version;
 use App::cpm;
 use Config;
@@ -30,11 +31,12 @@ sub new {
     my ($class, %option) = @_;
     my $prebuilt = exists $ENV{PERL_CPM_PREBUILT} && !$ENV{PERL_CPM_PREBUILT} ? 0 : 1;
     bless {
+        argv => undef,
         home => determine_home,
         cwd => Cwd::cwd(),
         workers => WIN32 ? 1 : 5,
         snapshot => "cpanfile.snapshot",
-        cpanfile => "cpanfile",
+        dependency_file => undef,
         local_lib => "local",
         cpanmetadb => "https://cpanmetadb.plackperl.org/v1.0/",
         _default_mirror => 'https://cpan.metacpan.org/',
@@ -79,7 +81,8 @@ sub parse_options {
         "w|workers=i" => \($self->{workers}),
         "target-perl=s" => \my $target_perl,
         "test!" => sub { $self->{notest} = $_[1] ? 0 : 1 },
-        "cpanfile=s" => \($self->{cpanfile}),
+        "cpanfile=s" => sub { $self->{dependency_file} = { type => "cpanfile", path => $_[1] } },
+        "cpmfile=s" => sub { $self->{dependency_file} = { type => "cpmfile", path => $_[1] } },
         "snapshot=s" => \($self->{snapshot}),
         "sudo" => \($self->{sudo}),
         "r|resolver=s@" => \@resolver,
@@ -134,13 +137,22 @@ sub parse_options {
     $App::cpm::Logger::VERBOSE = 1 if $self->{verbose};
     $App::cpm::Logger::SHOW_PROGRESS = 1 if $self->{show_progress};
 
-    if (@ARGV && $ARGV[0] eq "-") {
-        my $argv = $self->read_argv_from_stdin;
-        return -1 if @$argv == 0;
-        $self->{argv} = $argv;
-        $self->{cpanfile} = undef;
-    } else {
-        $self->{argv} = \@ARGV;
+    if (@ARGV) {
+        if ($ARGV[0] eq "-") {
+            my $argv = $self->read_argv_from_stdin;
+            return -1 if @$argv == 0;
+            $self->{argv} = $argv;
+        } else {
+            $self->{argv} = \@ARGV;
+        }
+    } elsif (!$self->{dependency_file}) {
+        if (-f "cpm.yml") {
+            $self->{dependency_file} = { type => "cpmfile", path => "cpm.yml" };
+        } elsif (-f "cpanfile") {
+            $self->{dependency_file} = { type => "cpanfile", path => "cpanfile" };
+        } else {
+            die "Need arguments or cpm.yml/cpanfile\n";
+        }
     }
     return 1;
 }
@@ -246,8 +258,6 @@ sub cmd_version {
 
 sub cmd_install {
     my $self = shift;
-    die "Need arguments or cpanfile.\n"
-        if !@{$self->{argv}} && (!$self->{cpanfile} || !-f $self->{cpanfile});
 
     local %ENV = %ENV;
 
@@ -407,11 +417,8 @@ sub cleanup {
 sub initial_job {
     my ($self, $master) = @_;
 
-    my (@package, @dist, $resolver);
-
-    if (!@{$self->{argv}}) {
-        my ($requirement, $reinstall);
-        ($requirement, $reinstall, $resolver) = $self->load_cpanfile($self->{cpanfile});
+    if (!$self->{argv}) {
+        my ($requirement, $reinstall, $resolver) = $self->load_dependency_file;
         my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirement);
         if (!@$reinstall and $is_satisfied) {
             warn "All requirements are satisfied.\n";
@@ -419,13 +426,15 @@ sub initial_job {
         } elsif (!defined $is_satisfied) {
             my ($req) = grep { $_->{package} eq "perl" } @$requirement;
             die sprintf "%s requires perl %s, but you have only %s\n",
-                $self->{cpanfile}, $req->{version_range}, $self->{target_perl} || $];
+                $self->{dependency_file}{path}, $req->{version_range}, $self->{target_perl} || $];
         }
-        push @package, @need_resolve, @$reinstall;
-        return (\@package, \@dist, $resolver);
+        my @package = (@need_resolve, @$reinstall);
+        return (\@package, [], $resolver);
     }
 
     $self->{mirror} ||= $self->{_default_mirror};
+
+    my (@package, @dist);
     for (@{$self->{argv}}) {
         my $arg = $_; # copy
         my ($package, $dist);
@@ -476,13 +485,30 @@ sub initial_job {
         push @dist, $dist if $dist;
     }
 
-    return (\@package, \@dist, $resolver);
+    return (\@package, \@dist, undef);
+}
+
+sub load_dependency_file {
+    my $self = shift;
+    my $method = "load_" . $self->{dependency_file}{type};
+    $self->$method($self->{dependency_file}{path});
+}
+
+sub load_cpmfile {
+    my ($self, $path) = @_;
+    my $file = App::cpm::file->new($path);
+    $self->{mirror} ||= $self->{_default_mirror};
+    my @phase = grep $self->{"with_$_"}, qw(configure build test runtime develop);
+    my @type  = grep $self->{"with_$_"}, qw(requires recommends suggests);
+    my $reqs = $file->cpanmeta_prereqs->merged_requirements(\@phase, \@type)->as_string_hash;
+    my @package = map +{ package => $_, version_range => $reqs->{$_} }, sort keys %$reqs;
+    return (\@package, [], undef);
 }
 
 sub load_cpanfile {
-    my ($self, $file) = @_;
+    my ($self, $path) = @_;
     require Module::CPANfile;
-    my $cpanfile = Module::CPANfile->load($file);
+    my $cpanfile = Module::CPANfile->load($path);
     if (!$self->{mirror}) {
         my $mirrors = $cpanfile->mirrors;
         if (@$mirrors) {
@@ -587,7 +613,7 @@ sub generate_resolver {
         return $cascade;
     }
 
-    if (!@{$self->{argv}} and -f $self->{snapshot}) {
+    if (!$self->{argv} and -f $self->{snapshot}) {
         if (!eval { require App::cpm::Resolver::Snapshot }) {
             die "To load $self->{snapshot}, you need to install Carton::Snapshot.\n";
         }

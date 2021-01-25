@@ -18,6 +18,7 @@ requires 'Module::CPANfile';
 requires 'Module::Metadata';
 requires 'Parallel::Pipes', '0.004';
 requires 'Parse::PMFile', '0.43';
+requires 'YAML::PP', '0.026';
 requires 'local::lib', '2.000018';
 requires 'parent';
 requires 'version', '0.77';
