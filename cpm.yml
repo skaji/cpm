@@ -1,0 +1,37 @@
+prereqs:
+  develop:
+    requires:
+      Archive::Tar:
+      Archive::Zip: { version: '1.68' }
+      CPAN::Mirror::Tiny: { version: '0.20' }
+      Capture::Tiny:
+      Path::Tiny:
+      Test::More: { version: '0.98' }
+  runtime:
+    recommends:
+      Carton:
+      IO::Uncompress::Gunzip:
+    requires:
+      CPAN::Common::Index:
+      CPAN::DistnameInfo:
+      CPAN::Meta:
+      CPAN::Meta::Requirements: { version: '2.130' }
+      CPAN::Meta::YAML:
+      Class::Tiny:
+      Command::Runner: { version: '0.100' }
+      ExtUtils::Install: { version: '2.20' }
+      ExtUtils::InstallPaths: { version: '0.002' }
+      File::Copy::Recursive:
+      File::pushd:
+      HTTP::Tinyish: { version: '0.12' }
+      JSON::PP: { version: '2.27300' }
+      Menlo::CLI::Compat: { version: '1.9021' }
+      Module::CPANfile:
+      Module::Metadata:
+      Parallel::Pipes: { version: '0.004' }
+      Parse::PMFile: { version: '0.43' }
+      YAML::PP: { version: '0.026' }
+      local::lib: { version: '2.000018' }
+      parent:
+      perl: { version: '5.008001' }
+      version: { version: '0.77' }

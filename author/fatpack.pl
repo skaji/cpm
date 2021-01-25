@@ -70,6 +70,12 @@ sub inject_git_info {
     Path::Tiny->new($file)->spew_raw($content);
 }
 
+my @extra = qw(
+    Class::C3
+    Devel::GlobalDestruction
+    ExtUtils::PL2Bat
+    MRO::Compat
+);
 
 my $exclude = join ",", qw(
     Carp
@@ -114,7 +120,8 @@ ___
 my $resolver = -f "cpanfile.snapshot" && !$force && !$test && !$update_only ? "snapshot" : "metadb";
 
 warn "Resolver: $resolver\n";
-cpm "install", "--target-perl", $target, "--resolver", $resolver;
+cpm "install", "--target-perl", $target, "--resolver", $resolver, "--cpmfile", "../cpm.yml";
+cpm "install", "--target-perl", $target, "--resolver", $resolver, @extra;
 gen_snapshot if !$test;
 remove_version_xs;
 exit if $update_only;
