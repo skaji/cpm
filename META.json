@@ -65,6 +65,7 @@
             "Module::Metadata" : "0",
             "Parallel::Pipes" : "0.004",
             "Parse::PMFile" : "0.43",
+            "YAML::PP" : "0.026",
             "local::lib" : "2.000018",
             "parent" : "0",
             "perl" : "5.008001",
@@ -152,6 +153,9 @@
       "App::cpm::Worker::Resolver" : {
          "file" : "lib/App/cpm/Worker/Resolver.pm"
       },
+      "App::cpm::file" : {
+         "file" : "lib/App/cpm/file.pm"
+      },
       "App::cpm::version" : {
          "file" : "lib/App/cpm/version.pm"
       }
@@ -182,7 +186,7 @@
       "Shoichi Kaji <skaji@outlook.com>",
       "Will Sheppard <will.sheppard.uk@gmail.com>"
    ],
-   "x_generated_by_perl" : "v5.32.0",
+   "x_generated_by_perl" : "v5.32.1",
    "x_serialization_backend" : "Cpanel::JSON::XS version 4.25",
    "x_spdx_expression" : "Artistic-1.0-Perl OR GPL-1.0-or-later",
    "x_static_install" : 1
