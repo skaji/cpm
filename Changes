@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.997001  2021-01-26 00:54:21 JST
+        [Toward cpm version 1.0 (#181)]
+        - Introduce cpmfile (#193)
+
 0.997000  2021-01-08 21:02:23 JST
         - Require the latest ExtUtils::Install and Parse::PMFile
 
