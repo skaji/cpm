@@ -459,12 +459,12 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Test::More 0.31
       Time::HiRes 0
-  JSON-PP-4.05
-    pathname: I/IS/ISHIGAKI/JSON-PP-4.05.tar.gz
+  JSON-PP-4.06
+    pathname: I/IS/ISHIGAKI/JSON-PP-4.06.tar.gz
     provides:
-      JSON::PP 4.05
-      JSON::PP::Boolean 4.05
-      JSON::PP::IncrParser 4.05
+      JSON::PP 4.06
+      JSON::PP::Boolean 4.06
+      JSON::PP::IncrParser 4.06
     requirements:
       ExtUtils::MakeMaker 0
       Scalar::Util 1.08
@@ -548,11 +548,11 @@ DISTRIBUTIONS
       CPAN::Meta::Prereqs 2.12091
       ExtUtils::MakeMaker 0
       parent 0
-  Module-CoreList-5.20201220
-    pathname: B/BI/BINGOS/Module-CoreList-5.20201220.tar.gz
+  Module-CoreList-5.20210123
+    pathname: B/BI/BINGOS/Module-CoreList-5.20210123.tar.gz
     provides:
-      Module::CoreList 5.20201220
-      Module::CoreList::Utils 5.20201220
+      Module::CoreList 5.20210123
+      Module::CoreList::Utils 5.20210123
     requirements:
       ExtUtils::MakeMaker 0
       List::Util 0
@@ -741,52 +741,52 @@ DISTRIBUTIONS
       Tie::Handle 0
       perl 5.006
       strict 0
-  URI-5.05
-    pathname: O/OA/OALDERS/URI-5.05.tar.gz
+  URI-5.06
+    pathname: O/OA/OALDERS/URI-5.06.tar.gz
     provides:
-      URI 5.05
-      URI::Escape 5.05
-      URI::Heuristic 5.05
-      URI::IRI 5.05
-      URI::QueryParam 5.05
-      URI::Split 5.05
-      URI::URL 5.05
-      URI::WithBase 5.05
-      URI::data 5.05
-      URI::file 5.05
-      URI::file::Base 5.05
-      URI::file::FAT 5.05
-      URI::file::Mac 5.05
-      URI::file::OS2 5.05
-      URI::file::QNX 5.05
-      URI::file::Unix 5.05
-      URI::file::Win32 5.05
-      URI::ftp 5.05
-      URI::gopher 5.05
-      URI::http 5.05
-      URI::https 5.05
-      URI::ldap 5.05
-      URI::ldapi 5.05
-      URI::ldaps 5.05
-      URI::mailto 5.05
-      URI::mms 5.05
-      URI::news 5.05
-      URI::nntp 5.05
-      URI::pop 5.05
-      URI::rlogin 5.05
-      URI::rsync 5.05
-      URI::rtsp 5.05
-      URI::rtspu 5.05
-      URI::sftp 5.05
-      URI::sip 5.05
-      URI::sips 5.05
-      URI::snews 5.05
-      URI::ssh 5.05
-      URI::telnet 5.05
-      URI::tn3270 5.05
-      URI::urn 5.05
-      URI::urn::isbn 5.05
-      URI::urn::oid 5.05
+      URI 5.06
+      URI::Escape 5.06
+      URI::Heuristic 5.06
+      URI::IRI 5.06
+      URI::QueryParam 5.06
+      URI::Split 5.06
+      URI::URL 5.06
+      URI::WithBase 5.06
+      URI::data 5.06
+      URI::file 5.06
+      URI::file::Base 5.06
+      URI::file::FAT 5.06
+      URI::file::Mac 5.06
+      URI::file::OS2 5.06
+      URI::file::QNX 5.06
+      URI::file::Unix 5.06
+      URI::file::Win32 5.06
+      URI::ftp 5.06
+      URI::gopher 5.06
+      URI::http 5.06
+      URI::https 5.06
+      URI::ldap 5.06
+      URI::ldapi 5.06
+      URI::ldaps 5.06
+      URI::mailto 5.06
+      URI::mms 5.06
+      URI::news 5.06
+      URI::nntp 5.06
+      URI::pop 5.06
+      URI::rlogin 5.06
+      URI::rsync 5.06
+      URI::rtsp 5.06
+      URI::rtspu 5.06
+      URI::sftp 5.06
+      URI::sip 5.06
+      URI::sips 5.06
+      URI::snews 5.06
+      URI::ssh 5.06
+      URI::telnet 5.06
+      URI::tn3270 5.06
+      URI::urn 5.06
+      URI::urn::isbn 5.06
+      URI::urn::oid 5.06
     requirements:
       Carp 0
       Cwd 0
@@ -811,6 +811,62 @@ DISTRIBUTIONS
       Win32::ShellQuote 0.003001
     requirements:
       perl 5.006
+  YAML-PP-0.026
+    pathname: T/TI/TINITA/YAML-PP-0.026.tar.gz
+    provides:
+      YAML::PP 0.026
+      YAML::PP::Common 0.026
+      YAML::PP::Constructor 0.026
+      YAML::PP::Dumper 0.026
+      YAML::PP::Emitter 0.026
+      YAML::PP::Exception 0.026
+      YAML::PP::Grammar 0.026
+      YAML::PP::Highlight 0.026
+      YAML::PP::Lexer 0.026
+      YAML::PP::Loader 0.026
+      YAML::PP::Parser 0.026
+      YAML::PP::Perl 0.026
+      YAML::PP::Preserve::Array 0.026
+      YAML::PP::Preserve::Hash 0.026
+      YAML::PP::Preserve::Scalar 0.026
+      YAML::PP::Reader 0.026
+      YAML::PP::Reader::File 0.026
+      YAML::PP::Render 0.026
+      YAML::PP::Representer 0.026
+      YAML::PP::Schema 0.026
+      YAML::PP::Schema::Binary 0.026
+      YAML::PP::Schema::Core 0.026
+      YAML::PP::Schema::Failsafe 0.026
+      YAML::PP::Schema::Include 0.026
+      YAML::PP::Schema::JSON 0.026
+      YAML::PP::Schema::Merge 0.026
+      YAML::PP::Schema::Perl 0.026
+      YAML::PP::Schema::Tie::IxHash 0.026
+      YAML::PP::Schema::YAML1_1 0.026
+      YAML::PP::Type::MergeKey 0.026
+      YAML::PP::Writer 0.026
+      YAML::PP::Writer::File 0.026
+    requirements:
+      B 0
+      B::Deparse 0
+      Carp 0
+      Data::Dumper 0
+      Encode 0
+      Exporter 0
+      ExtUtils::MakeMaker 0
+      File::Basename 0
+      Getopt::Long 0
+      MIME::Base64 0
+      Module::Load 0
+      Scalar::Util 1.07
+      Tie::Array 0
+      Tie::Hash 0
+      base 0
+      constant 0
+      overload 0
+      perl 5.008000
+      strict 0
+      warnings 0
   local-lib-2.000024
     pathname: H/HA/HAARG/local-lib-2.000024.tar.gz
     provides:
