@@ -270,6 +270,12 @@
       "url" : "https://metacpan.org/release/URI"
    },
    {
+      "copyright" : "Tina Müller",
+      "license" : "the same as Perl 5",
+      "name" : "YAML-PP",
+      "url" : "https://metacpan.org/release/YAML-PP"
+   },
+   {
       "copyright" : "Graham Knop, CONTRIBUTORS",
       "license" : "the same as Perl 5",
       "name" : "Win32-ShellQuote",
