@@ -150,8 +150,6 @@ sub parse_options {
             $self->{dependency_file} = { type => "cpmfile", path => "cpm.yml" };
         } elsif (-f "cpanfile") {
             $self->{dependency_file} = { type => "cpanfile", path => "cpanfile" };
-        } else {
-            die "Need arguments or cpm.yml/cpanfile\n";
         }
     }
     return 1;
@@ -258,6 +256,7 @@ sub cmd_version {
 
 sub cmd_install {
     my $self = shift;
+    die "Need arguments or cpm.yml/cpanfile\n" if !$self->{argv} && !$self->{dependency_file};
 
     local %ENV = %ENV;
 
