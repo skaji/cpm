@@ -6,10 +6,10 @@
       "url" : "https://metacpan.org/release/Algorithm-C3"
    },
    {
-      "copyright" : "David Golden",
-      "license" : "Apache 2.0",
-      "name" : "CPAN-Common-Index",
-      "url" : "https://metacpan.org/release/CPAN-Common-Index"
+      "copyright" : "Shoichi Kaji",
+      "license" : "the same as Perl 5",
+      "name" : "CPAN-02Packages-Search",
+      "url" : "https://metacpan.org/release/CPAN-02Packages-Search"
    },
    {
       "copyright" : "Graham Barr",
@@ -112,12 +112,6 @@
       "license" : "the same as Perl 5",
       "name" : "File-Copy-Recursive",
       "url" : "https://metacpan.org/release/File-Copy-Recursive"
-   },
-   {
-      "copyright" : "Jos Boumans",
-      "license" : "the same as Perl 5",
-      "name" : "File-Fetch",
-      "url" : "https://metacpan.org/release/File-Fetch"
    },
    {
       "copyright" : "Charles Bailey, Tim Bunce, David Landgren, James Keenan, and Richard Elberger",
@@ -262,12 +256,6 @@
       "license" : "Apache 2.0",
       "name" : "Tie-Handle-Offset",
       "url" : "https://metacpan.org/release/Tie-Handle-Offset"
-   },
-   {
-      "copyright" : "Gisle Aas, Martijn Koster",
-      "license" : "the same as Perl 5",
-      "name" : "URI",
-      "url" : "https://metacpan.org/release/URI"
    },
    {
       "copyright" : "Tina Müller",
