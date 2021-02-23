@@ -51,7 +51,6 @@
             "CPAN::Meta" : "0",
             "CPAN::Meta::Requirements" : "2.130",
             "CPAN::Meta::YAML" : "0",
-            "Class::Tiny" : "0",
             "Command::Runner" : "0.100",
             "ExtUtils::Install" : "2.20",
             "ExtUtils::InstallPaths" : "0.002",

@@ -16,7 +16,6 @@ prereqs:
       CPAN::Meta:
       CPAN::Meta::Requirements: { version: '2.130' }
       CPAN::Meta::YAML:
-      Class::Tiny:
       Command::Runner: { version: '0.100' }
       ExtUtils::Install: { version: '2.20' }
       ExtUtils::InstallPaths: { version: '0.002' }
