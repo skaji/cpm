@@ -3,87 +3,33 @@ use strict;
 use warnings;
 
 use App::cpm::DistNotation;
+use App::cpm::HTTP;
 use App::cpm::version;
+use CPAN::02Packages::Search;
 use Cwd ();
+use File::Basename ();
+use File::Copy ();
 use File::Path ();
-
-{
-    package
-        App::cpm::Resolver::02Packages::Impl;
-    use parent 'CPAN::Common::Index::Mirror';
-    use App::cpm::HTTP;
-    use Class::Tiny qw(path);
-    use File::Basename ();
-    use File::Copy ();
-    use File::Spec;
-
-    our $HAS_IO_UNCOMPRESS_GUNZIP = eval { require IO::Uncompress::Gunzip };
-
-    sub BUILD {
-        my $self = shift;
-        if ($self->path =~ /\.gz$/ and !$HAS_IO_UNCOMPRESS_GUNZIP) {
-            die "Can't load gz index file without IO::Uncompress::Gunzip";
-        }
-        return;
-    }
-
-    sub cached_package { shift->{cached_package} }
-
-    sub refresh_index {
-        my $self = shift;
-        my $path = $self->path;
-        my $dest = File::Spec->catfile($self->cache, File::Basename::basename($path));
-        if ($path =~ m{^https?://}) {
-            my $res = App::cpm::HTTP->create->mirror($path => $dest);
-            die "$res->{status} $res->{reason}, $path\n" unless $res->{success};
-        } else {
-            $path =~ s{^file://}{};
-            die "$path: No such file.\n" unless -f $path;
-            if (!-f $dest or (stat $dest)[9] <= (stat $path)[9]) {
-                File::Copy::copy($path, $dest) or die "Copy $path $dest: $!\n";
-                my $mtime = (stat $path)[9];
-                utime $mtime, $mtime, $dest;
-            }
-        }
-
-        if ($dest =~ /\.gz$/) {
-            ( my $uncompressed = File::Basename::basename($dest) ) =~ s/\.gz$//;
-            $uncompressed = File::Spec->catfile( $self->cache, $uncompressed );
-            if ( !-f $uncompressed or (stat $uncompressed)[9] <= (stat $dest)[9] ) {
-                no warnings 'once';
-                IO::Uncompress::Gunzip::gunzip($dest, $uncompressed)
-                    or die "Gunzip $dest: $IO::Uncompress::Gunzip::GunzipError";
-            }
-            $self->{cached_package} = $uncompressed;
-        } else {
-            $self->{cached_package} = $dest;
-        }
-    }
-}
+use File::Spec;
+use File::Which ();
+use IPC::Run3 ();
 
 sub new {
     my ($class, %option) = @_;
-    my $cache_base = $option{cache} or die "cache option is required\n";
+    my $cache_dir_base = $option{cache} or die "cache option is required\n";
     my $mirror = $option{mirror} or die "mirror option is required\n";
     $mirror =~ s{/*$}{/};
 
-    my ($path, $cache);
-    if ($option{path}) {
-        $path = $option{path};
-    } else {
-        $path = "${mirror}modules/02packages.details.txt.gz";
-        $cache = $class->cache_for($mirror, $cache_base);
-    }
+    my $path = $option{path} || "${mirror}modules/02packages.details.txt.gz";
+    my $cache_dir = $class->_cache_dir($mirror, $cache_dir_base);
+    my $local_path = $class->_fetch($path => $cache_dir);
 
-    my $impl = App::cpm::Resolver::02Packages::Impl->new(
-        path => $path, $cache ? (cache => $cache) : (),
-    );
-    $impl->refresh_index; # refresh_index first
-    bless { mirror => $mirror, impl => $impl }, $class;
+    my $index = CPAN::02Packages::Search->new(file => $local_path);
+    bless { mirror => $mirror, local_path => $local_path, index => $index }, $class;
 }
 
-sub cache_for {
-    my ($class, $mirror, $cache) = @_;
+sub _cache_dir {
+    my ($class, $mirror, $base) = @_;
     if ($mirror !~ m{^https?://}) {
         $mirror =~ s{^file://}{};
         $mirror = Cwd::abs_path($mirror);
@@ -91,35 +37,64 @@ sub cache_for {
     }
     $mirror =~ s{/$}{};
     $mirror =~ s/[^\w\.\-]+/%/g;
-    my $dir = "$cache/$mirror";
-    File::Path::mkpath([ $dir ], 0, 0777);
+    my $dir = "$base/$mirror";
+    File::Path::mkpath([$dir], 0, 0777);
     return $dir;
 }
 
-sub cached_package { shift->{impl}->cached_package }
+sub _fetch {
+    my ($class, $path, $cache_dir) = @_;
+    my $dest = File::Spec->catfile($cache_dir, File::Basename::basename($path));
+    if ($path =~ m{^https?://}) {
+        my $res = App::cpm::HTTP->create->mirror($path => $dest);
+        die "$res->{status} $res->{reason}, $path\n" if !$res->{success};
+    } else {
+        $path =~ s{^file://}{};
+        die "$path: No such file.\n" if !-f $path;
+        if (!-f $dest or (stat $dest)[9] <= (stat $path)[9]) {
+            File::Copy::copy($path, $dest) or die "Copy $path $dest: $!\n";
+            my $mtime = (stat $path)[9];
+            utime $mtime, $mtime, $dest;
+        }
+    }
+    return $dest if $dest !~ /\.gz$/;
+
+    my $plain = $dest;
+    $plain =~ s/\.gz$//;
+    if (!-f $plain or (stat $plain)[9] <= (stat $dest)[9]) {
+        my $gzip = File::Which::which('gzip');
+        die "Need gzip command to decompress $dest\n" if !$gzip;
+        my @cmd = ($gzip, "-dc", $dest);
+        IPC::Run3::run3 \@cmd, undef, $plain, \my $err;
+        if ($? != 0) {
+            chomp $err;
+            $err ||= "exit status $?";
+            die "@cmd: $err\n";
+        }
+    }
+    return $plain
+}
 
 sub resolve {
     my ($self, $job) = @_;
-    my $result = $self->{impl}->search_packages({package => $job->{package}});
-    if (!$result) {
-        return { error => "not found, @{[$self->cached_package]}" };
+    my $res = $self->{index}->search($job->{package});
+    if (!$res) {
+        return { error => "not found, @{[$self->{local_path}]}" };
     }
 
     if (my $version_range = $job->{version_range}) {
-        my $version = $result->{version};
+        my $version = $res->{version} || 0;
         if (!App::cpm::version->parse($version)->satisfy($version_range)) {
-            return { error => "found version $version, but it does not satisfy $version_range, @{[$self->cached_package]}" };
+            return { error => "found version $version, but it does not satisfy $version_range, @{[$self->{local_path}]}" };
         }
     }
-    my $uri = $result->{uri};
-    $uri =~ s{^cpan:///distfile/}{};
-    my $dist = App::cpm::DistNotation->new_from_dist($uri);
+    my $dist = App::cpm::DistNotation->new_from_dist($res->{path});
     return +{
         source => "cpan", # XXX
         distfile => $dist->distfile,
         uri => $dist->cpan_uri($self->{mirror}),
-        version => $result->{version} || 0,
-        package => $result->{package},
+        version => $res->{version} || 0,
+        package => $job->{package},
     };
 }
 

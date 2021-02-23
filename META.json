@@ -47,6 +47,7 @@
             "IO::Uncompress::Gunzip" : "0"
          },
          "requires" : {
+            "CPAN::02Packages::Search" : "0",
             "CPAN::Common::Index" : "0",
             "CPAN::DistnameInfo" : "0",
             "CPAN::Meta" : "0",

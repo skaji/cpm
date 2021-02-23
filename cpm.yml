@@ -12,7 +12,7 @@ prereqs:
       Carton:
       IO::Uncompress::Gunzip:
     requires:
-      CPAN::Common::Index:
+      CPAN::02Packages::Search:
       CPAN::DistnameInfo:
       CPAN::Meta:
       CPAN::Meta::Requirements: { version: '2.130' }
