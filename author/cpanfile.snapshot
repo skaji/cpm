@@ -8,6 +8,15 @@ DISTRIBUTIONS
       Carp 0.01
       ExtUtils::MakeMaker 0
       perl 5.006
+  CPAN-02Packages-Search-0.001
+    pathname: S/SK/SKAJI/CPAN-02Packages-Search-0.001.tar.gz
+    provides:
+      CPAN::02Packages::Search 0.001
+    requirements:
+      Module::Build::Tiny 0.034
+      Search::Dict 1.07
+      Tie::Handle::SkipHeader 0.004
+      perl 5.008001
   CPAN-Common-Index-0.010
     pathname: D/DA/DAGOLDEN/CPAN-Common-Index-0.010.tar.gz
     provides:
@@ -306,10 +315,10 @@ DISTRIBUTIONS
       Module::CPANfile 0
       Test::More 0.88
       version 0.76
-  ExtUtils-PL2Bat-0.003
-    pathname: L/LE/LEONT/ExtUtils-PL2Bat-0.003.tar.gz
+  ExtUtils-PL2Bat-0.004
+    pathname: L/LE/LEONT/ExtUtils-PL2Bat-0.004.tar.gz
     provides:
-      ExtUtils::PL2Bat 0.003
+      ExtUtils::PL2Bat 0.004
     requirements:
       Carp 0
       ExtUtils::MakeMaker 0

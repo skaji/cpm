@@ -78,12 +78,14 @@ my @extra = qw(
 );
 
 my $exclude = join ",", qw(
+    CPAN::Common::Index
     Carp
     Digest::SHA
     ExtUtils::CBuilder
     ExtUtils::MakeMaker
     ExtUtils::MakeMaker::CPANfile
     ExtUtils::ParseXS
+    File::Fetch
     File::Spec
     Module::Build::Tiny
     Module::CoreList
@@ -92,6 +94,7 @@ my $exclude = join ",", qw(
     Test
     Test2
     Test::Harness
+    URI
 );
 
 my $target = '5.8.1';
