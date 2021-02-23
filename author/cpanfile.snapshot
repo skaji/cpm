@@ -257,45 +257,45 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
-  ExtUtils-MakeMaker-7.58
-    pathname: B/BI/BINGOS/ExtUtils-MakeMaker-7.58.tar.gz
+  ExtUtils-MakeMaker-7.60
+    pathname: B/BI/BINGOS/ExtUtils-MakeMaker-7.60.tar.gz
     provides:
-      ExtUtils::Command 7.58
-      ExtUtils::Command::MM 7.58
-      ExtUtils::Liblist 7.58
-      ExtUtils::Liblist::Kid 7.58
-      ExtUtils::MM 7.58
-      ExtUtils::MM_AIX 7.58
-      ExtUtils::MM_Any 7.58
-      ExtUtils::MM_BeOS 7.58
-      ExtUtils::MM_Cygwin 7.58
-      ExtUtils::MM_DOS 7.58
-      ExtUtils::MM_Darwin 7.58
-      ExtUtils::MM_MacOS 7.58
-      ExtUtils::MM_NW5 7.58
-      ExtUtils::MM_OS2 7.58
-      ExtUtils::MM_OS390 7.58
-      ExtUtils::MM_QNX 7.58
-      ExtUtils::MM_UWIN 7.58
-      ExtUtils::MM_Unix 7.58
-      ExtUtils::MM_VMS 7.58
-      ExtUtils::MM_VOS 7.58
-      ExtUtils::MM_Win32 7.58
-      ExtUtils::MM_Win95 7.58
-      ExtUtils::MY 7.58
-      ExtUtils::MakeMaker 7.58
-      ExtUtils::MakeMaker::Config 7.58
-      ExtUtils::MakeMaker::Locale 7.58
-      ExtUtils::MakeMaker::_version 7.58
-      ExtUtils::MakeMaker::charstar 7.58
-      ExtUtils::MakeMaker::version 7.58
-      ExtUtils::MakeMaker::version::regex 7.58
-      ExtUtils::MakeMaker::version::vpp 7.58
-      ExtUtils::Mkbootstrap 7.58
-      ExtUtils::Mksymlists 7.58
-      ExtUtils::testlib 7.58
-      MM 7.58
-      MY 7.58
+      ExtUtils::Command 7.60
+      ExtUtils::Command::MM 7.60
+      ExtUtils::Liblist 7.60
+      ExtUtils::Liblist::Kid 7.60
+      ExtUtils::MM 7.60
+      ExtUtils::MM_AIX 7.60
+      ExtUtils::MM_Any 7.60
+      ExtUtils::MM_BeOS 7.60
+      ExtUtils::MM_Cygwin 7.60
+      ExtUtils::MM_DOS 7.60
+      ExtUtils::MM_Darwin 7.60
+      ExtUtils::MM_MacOS 7.60
+      ExtUtils::MM_NW5 7.60
+      ExtUtils::MM_OS2 7.60
+      ExtUtils::MM_OS390 7.60
+      ExtUtils::MM_QNX 7.60
+      ExtUtils::MM_UWIN 7.60
+      ExtUtils::MM_Unix 7.60
+      ExtUtils::MM_VMS 7.60
+      ExtUtils::MM_VOS 7.60
+      ExtUtils::MM_Win32 7.60
+      ExtUtils::MM_Win95 7.60
+      ExtUtils::MY 7.60
+      ExtUtils::MakeMaker 7.60
+      ExtUtils::MakeMaker::Config 7.60
+      ExtUtils::MakeMaker::Locale 7.60
+      ExtUtils::MakeMaker::_version 7.60
+      ExtUtils::MakeMaker::charstar 7.60
+      ExtUtils::MakeMaker::version 7.60
+      ExtUtils::MakeMaker::version::regex 7.60
+      ExtUtils::MakeMaker::version::vpp 7.60
+      ExtUtils::Mkbootstrap 7.60
+      ExtUtils::Mksymlists 7.60
+      ExtUtils::testlib 7.60
+      MM 7.60
+      MY 7.60
     requirements:
       Data::Dumper 0
       Encode 0
@@ -557,11 +557,11 @@ DISTRIBUTIONS
       CPAN::Meta::Prereqs 2.12091
       ExtUtils::MakeMaker 0
       parent 0
-  Module-CoreList-5.20210123
-    pathname: B/BI/BINGOS/Module-CoreList-5.20210123.tar.gz
+  Module-CoreList-5.20210220
+    pathname: B/BI/BINGOS/Module-CoreList-5.20210220.tar.gz
     provides:
-      Module::CoreList 5.20210123
-      Module::CoreList::Utils 5.20210123
+      Module::CoreList 5.20210220
+      Module::CoreList::Utils 5.20210220
     requirements:
       ExtUtils::MakeMaker 0
       List::Util 0
@@ -750,52 +750,52 @@ DISTRIBUTIONS
       Tie::Handle 0
       perl 5.006
       strict 0
-  URI-5.06
-    pathname: O/OA/OALDERS/URI-5.06.tar.gz
+  URI-5.07
+    pathname: O/OA/OALDERS/URI-5.07.tar.gz
     provides:
-      URI 5.06
-      URI::Escape 5.06
-      URI::Heuristic 5.06
-      URI::IRI 5.06
-      URI::QueryParam 5.06
-      URI::Split 5.06
-      URI::URL 5.06
-      URI::WithBase 5.06
-      URI::data 5.06
-      URI::file 5.06
-      URI::file::Base 5.06
-      URI::file::FAT 5.06
-      URI::file::Mac 5.06
-      URI::file::OS2 5.06
-      URI::file::QNX 5.06
-      URI::file::Unix 5.06
-      URI::file::Win32 5.06
-      URI::ftp 5.06
-      URI::gopher 5.06
-      URI::http 5.06
-      URI::https 5.06
-      URI::ldap 5.06
-      URI::ldapi 5.06
-      URI::ldaps 5.06
-      URI::mailto 5.06
-      URI::mms 5.06
-      URI::news 5.06
-      URI::nntp 5.06
-      URI::pop 5.06
-      URI::rlogin 5.06
-      URI::rsync 5.06
-      URI::rtsp 5.06
-      URI::rtspu 5.06
-      URI::sftp 5.06
-      URI::sip 5.06
-      URI::sips 5.06
-      URI::snews 5.06
-      URI::ssh 5.06
-      URI::telnet 5.06
-      URI::tn3270 5.06
-      URI::urn 5.06
-      URI::urn::isbn 5.06
-      URI::urn::oid 5.06
+      URI 5.07
+      URI::Escape 5.07
+      URI::Heuristic 5.07
+      URI::IRI 5.07
+      URI::QueryParam 5.07
+      URI::Split 5.07
+      URI::URL 5.07
+      URI::WithBase 5.07
+      URI::data 5.07
+      URI::file 5.07
+      URI::file::Base 5.07
+      URI::file::FAT 5.07
+      URI::file::Mac 5.07
+      URI::file::OS2 5.07
+      URI::file::QNX 5.07
+      URI::file::Unix 5.07
+      URI::file::Win32 5.07
+      URI::ftp 5.07
+      URI::gopher 5.07
+      URI::http 5.07
+      URI::https 5.07
+      URI::ldap 5.07
+      URI::ldapi 5.07
+      URI::ldaps 5.07
+      URI::mailto 5.07
+      URI::mms 5.07
+      URI::news 5.07
+      URI::nntp 5.07
+      URI::pop 5.07
+      URI::rlogin 5.07
+      URI::rsync 5.07
+      URI::rtsp 5.07
+      URI::rtspu 5.07
+      URI::sftp 5.07
+      URI::sip 5.07
+      URI::sips 5.07
+      URI::snews 5.07
+      URI::ssh 5.07
+      URI::telnet 5.07
+      URI::tn3270 5.07
+      URI::urn 5.07
+      URI::urn::isbn 5.07
+      URI::urn::oid 5.07
     requirements:
       Carp 0
       Cwd 0
