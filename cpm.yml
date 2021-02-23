@@ -10,7 +10,6 @@ prereqs:
   runtime:
     recommends:
       Carton:
-      IO::Uncompress::Gunzip:
     requires:
       CPAN::02Packages::Search:
       CPAN::DistnameInfo:
