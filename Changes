@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.997003  2021-02-24 01:30:51 JST
+        - Use CPAN::02Packages::Search (#195)
+
 0.997002  2021-01-26 12:13:33 JST
         - Fix parse_options
 
