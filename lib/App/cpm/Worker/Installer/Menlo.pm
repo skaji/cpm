@@ -43,7 +43,7 @@ sub unpack {
     my ($self, $file) = @_;
     $self->{logger}->log("Unpacking $file");
     my ($dir, $err) = $self->{unpacker}->unpack($file);
-    $self->{logger}->log($err) if !$dir && $err;
+    $self->{logger}->log_fail($err) if !$dir && $err;
     $dir;
 }
 

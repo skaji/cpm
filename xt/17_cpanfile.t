@@ -66,11 +66,11 @@ with_same_local {
     my $r = cpm_install "--cpanfile", "$cpanfile";
     is $r->exit, 0;
 
-    like $r->log, qr/Hash-MultiValue-0\.15\| Successfully installed distribution/;
-    like $r->log, qr/Path-Class-0\.26\| Successfully installed distribution/;
-    like $r->log, qr/Cookie-Baker-0\.08\| Successfully installed distribution/;
+    like $r->log, qr/Hash-MultiValue-0\.15 \[INFO\]\| Successfully installed distribution/;
+    like $r->log, qr/Path-Class-0\.26 \[INFO\]\| Successfully installed distribution/;
+    like $r->log, qr/Cookie-Baker-0\.08 \[INFO\]\| Successfully installed distribution/;
     like $r->log, qr!Fetching \Qhttp://www.cpan.org/authors/id/K/KA/KAZEBURO/Cookie-Baker-0.08.tar.gz\E!;
-    like $r->log, qr/Try-Tiny-0\.28\| Successfully installed distribution/;
+    like $r->log, qr/Try-Tiny-0\.28 \[INFO\]\| Successfully installed distribution/;
     like $r->log, qr!Fetching \Qhttp://backpan.perl.org/authors/id/E/ET/ETHER/Try-Tiny-0.28.tar.gz\E!;
 
     $r = cpm_install "--cpanfile", "$cpanfile";

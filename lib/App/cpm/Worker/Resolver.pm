@@ -22,8 +22,8 @@ sub work {
         $self->{logger}->log($msg);
         return $result;
     } else {
-        $self->{logger}->log($result->{error}) if $result and $result->{error};
-        $self->{logger}->log(sprintf "Failed to resolve %s", $job->{package});
+        $self->{logger}->log_fail($result->{error}) if $result and $result->{error};
+        $self->{logger}->log_fail(sprintf "Failed to resolve %s", $job->{package});
         return { ok => 0 };
     }
 }

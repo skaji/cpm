@@ -22,6 +22,7 @@ sub new {
         fh => $fh,
         file => $file,
         pid => '',
+        type => 'INFO',
     }, $class;
 }
 
@@ -40,7 +41,17 @@ sub file {
 sub prefix {
     my $self = shift;
     my $pid = $self->{pid} || $$;
-    $self->{context} ? "$pid,$self->{context}" : $pid;
+    $self->{context} ? "$pid,$self->{context} [$self->{type}]" : $pid;
+}
+
+for my $m (qw/fail warn/) {
+    my $method = "log_$m";
+    no strict 'refs';
+    *$method = sub {
+        my $self = shift;
+        local $self->{type} = uc($m);
+        $self->log(@_);
+    };
 }
 
 sub log {

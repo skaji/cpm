@@ -43,9 +43,11 @@ sub work {
                 provides => $result->{provides},
                 using_cache => $result->{using_cache},
                 prebuilt => $result->{prebuilt},
+                ($job->{ref} ? (ref => $job->{ref}) : ()),
+                version => $result->{version},
             };
         } else {
-            $self->{logger}->log("Failed to fetch/configure distribution");
+            $self->{logger}->log_fail("Failed to fetch/configure distribution");
         }
     } elsif ($type eq "configure") {
         # $job->{directory}, $job->{distfile}, $job->{meta});
@@ -57,12 +59,11 @@ sub work {
                 static_builder => $result->{static_builder},
             };
         } else {
-            $self->{logger}->log("Failed to configure distribution");
+            $self->{logger}->log_fail("Failed to configure distribution");
         }
     } elsif ($type eq "install") {
         my $ok = $self->install($job);
-        my $message = $ok ? "Successfully installed distribution" : "Failed to install distribution";
-        $self->{logger}->log($message);
+        my $message = $ok ? $self->{logger}->log("Successfully installed distribution") : $self->{logger}->log_fail("Failed to install distribution");
         return { ok => $ok, directory => $job->{directory} };
     } else {
         die "Unknown type: $type\n";
@@ -213,7 +214,7 @@ sub fetch {
 
     my $meta = $self->_load_metafile($distfile, 'META.json', 'META.yml');
     if (!$meta) {
-        $self->{logger}->log("Distribution does not have META.json nor META.yml");
+        $self->{logger}->log_warn("Distribution does not have META.json nor META.yml");
         return;
     }
     my $p = $meta->{provides} || $self->menlo->extract_packages($meta, ".");
@@ -326,7 +327,7 @@ sub _load_metafile {
     my $meta;
     if (my ($file) = grep -f, @file) {
         $meta = eval { CPAN::Meta->load_file($file) };
-        $self->{logger}->log("Invalid $file: $@") if $@;
+        $self->{logger}->log_fail("Invalid $file: $@") if $@;
     }
 
     if (!$meta and $distfile) {
@@ -372,7 +373,7 @@ sub _retry {
     return 1 if $sub->();
     return unless $self->{retry};
     Time::HiRes::sleep(0.1);
-    $self->{logger}->log("! Retrying (you can turn off this behavior by --no-retry)");
+    $self->{logger}->log_warn("! Retrying (you can turn off this behavior by --no-retry)");
     return $sub->();
 }
 
@@ -460,17 +461,17 @@ sub install {
     if ($static_builder) {
         $menlo->build(sub { $static_builder->build }, $distvname, $menlo_dist)
         && $menlo->test(sub { $static_builder->build("test") }, $distvname, $menlo_dist)
-        && $menlo->install(sub { $static_builder->build("install") }, [], $distvname, $menlo_dist)
+        && $menlo->install(sub { $static_builder->build("install") }, [], $menlo_dist)
         && $installed++;
     } elsif (-f 'Build') {
         $self->_retry(sub { $menlo->build([ $menlo->{perl}, "./Build" ], $distvname, $menlo_dist)  })
         && $self->_retry(sub { $menlo->test([ $menlo->{perl}, "./Build", "test" ], $distvname, $menlo_dist)  })
-        && $self->_retry(sub { $menlo->install([ $menlo->{perl}, "./Build", "install" ], [], $distvname, $menlo_dist)  })
+        && $self->_retry(sub { $menlo->install([ $menlo->{perl}, "./Build", "install" ], [], $menlo_dist)  })
         && $installed++;
     } else {
         $self->_retry(sub { $menlo->build([ $menlo->{make} ], $distvname, $menlo_dist)  })
         && $self->_retry(sub { $menlo->test([ $menlo->{make}, "test" ], $distvname, $menlo_dist)  })
-        && $self->_retry(sub { $menlo->install([ $menlo->{make}, "install" ], [], $distvname, $menlo_dist) })
+        && $self->_retry(sub { $menlo->install([ $menlo->{make}, "install" ], [],  $menlo_dist) })
         && $installed++;
     }
 
