@@ -4,8 +4,8 @@ use warnings;
 
 use App::cpm::CircularDependency;
 use App::cpm::Distribution;
-use App::cpm::Job;
 use App::cpm::Logger;
+use App::cpm::Task;
 use App::cpm::version;
 use CPAN::DistnameInfo;
 use IO::Handle;
@@ -94,7 +94,7 @@ sub tasks { values %{shift->{tasks}} }
 
 sub add_task {
     my ($self, %task) = @_;
-    my $new = App::cpm::Job->new(%task);
+    my $new = App::cpm::Task->new(%task);
     if (grep { $_->equals($new) } $self->tasks) {
         return 0;
     } else {
