@@ -22,15 +22,15 @@ sub new {
 sub snapshot { shift->{snapshot} }
 
 sub resolve {
-    my ($self, $job) = @_;
-    my $package = $job->{package};
+    my ($self, $task) = @_;
+    my $package = $task->{package};
     my $found = $self->snapshot->find($package);
     if (!$found) {
         return { error => "not found, @{[$self->snapshot->path]}" };
     }
 
     my $version = $found->version_for($package);
-    if (my $version_range = $job->{version_range}) {
+    if (my $version_range = $task->{version_range}) {
         if (!App::cpm::version->parse($version)->satisfy($version_range)) {
             return { error => "found version $version, but it does not satisfy $version_range, @{[$self->snapshot->path]}" };
         }

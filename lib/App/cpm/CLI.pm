@@ -276,7 +276,7 @@ sub cmd_install {
         (exists $self->{target_perl} ? (target_perl => $self->{target_perl}) : ()),
     );
 
-    my ($packages, $dists, $resolver) = $self->initial_job($master);
+    my ($packages, $dists, $resolver) = $self->initial_task($master);
     return 0 unless $packages;
 
     my $worker = App::cpm::Worker->new(
@@ -309,7 +309,7 @@ sub cmd_install {
         }
         my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirement->as_array);
         last if $is_satisfied;
-        $master->add_job(type => "resolve", %$_) for @need_resolve;
+        $master->add_task(type => "resolve", %$_) for @need_resolve;
 
         $self->install($master, $worker, 1);
         if (my $fail = $master->fail) {
@@ -331,7 +331,7 @@ sub cmd_install {
         }
     }
 
-    $master->add_job(type => "resolve", %$_) for @$packages;
+    $master->add_task(type => "resolve", %$_) for @$packages;
     $master->add_distribution($_) for @$dists;
     $self->install($master, $worker, $self->{workers});
     my $fail = $master->fail;
@@ -364,28 +364,28 @@ sub install {
     my ($self, $master, $worker, $num) = @_;
 
     my $pipes = Parallel::Pipes->new($num, sub {
-        my $job = shift;
-        return $worker->work($job);
+        my $task = shift;
+        return $worker->work($task);
     });
-    my $get_job; $get_job = sub {
+    my $get_task; $get_task = sub {
         my $master = shift;
-        if (my @job = $master->get_job) {
-            return @job;
+        if (my @task = $master->get_task) {
+            return @task;
         }
         if (my @written = $pipes->is_written) {
             my @ready = $pipes->is_ready(@written);
             $master->register_result($_->read) for @ready;
-            return $master->$get_job;
+            return $master->$get_task;
         } else {
             return;
         }
     };
-    while (my @job = $master->$get_job) {
+    while (my @task = $master->$get_task) {
         my @ready = $pipes->is_ready;
         $master->register_result($_->read) for grep $_->is_written, @ready;
-        for my $i (0 .. List::Util::min($#job, $#ready)) {
-            $job[$i]->in_charge(1);
-            $ready[$i]->write($job[$i]);
+        for my $i (0 .. List::Util::min($#task, $#ready)) {
+            $task[$i]->in_charge(1);
+            $ready[$i]->write($task[$i]);
         }
     }
     $pipes->close;
@@ -413,7 +413,7 @@ sub cleanup {
     }
 }
 
-sub initial_job {
+sub initial_task {
     my ($self, $master) = @_;
 
     if (!$self->{argv}) {

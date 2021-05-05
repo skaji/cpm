@@ -11,19 +11,19 @@ sub new {
 }
 
 sub work {
-    my ($self, $job) = @_;
+    my ($self, $task) = @_;
 
-    local $self->{logger}->{context} = $job->{package};
-    my $result = $self->{impl}->resolve($job);
+    local $self->{logger}->{context} = $task->{package};
+    my $result = $self->{impl}->resolve($task);
     if ($result and !$result->{error}) {
         $result->{ok} = 1;
-        my $msg = sprintf "Resolved %s (%s) -> %s", $job->{package}, $job->{version_range} || 0,
+        my $msg = sprintf "Resolved %s (%s) -> %s", $task->{package}, $task->{version_range} || 0,
             $result->{uri} . ($result->{from} ? " from $result->{from}" : "");
         $self->{logger}->log($msg);
         return $result;
     } else {
         $self->{logger}->log($result->{error}) if $result and $result->{error};
-        $self->{logger}->log(sprintf "Failed to resolve %s", $job->{package});
+        $self->{logger}->log(sprintf "Failed to resolve %s", $task->{package});
         return { ok => 0 };
     }
 }

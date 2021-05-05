@@ -76,13 +76,13 @@ sub _fetch {
 }
 
 sub resolve {
-    my ($self, $job) = @_;
-    my $res = $self->{index}->search($job->{package});
+    my ($self, $task) = @_;
+    my $res = $self->{index}->search($task->{package});
     if (!$res) {
         return { error => "not found, @{[$self->{local_path}]}" };
     }
 
-    if (my $version_range = $job->{version_range}) {
+    if (my $version_range = $task->{version_range}) {
         my $version = $res->{version} || 0;
         if (!App::cpm::version->parse($version)->satisfy($version_range)) {
             return { error => "found version $version, but it does not satisfy $version_range, @{[$self->{local_path}]}" };
@@ -94,7 +94,7 @@ sub resolve {
         distfile => $dist->distfile,
         uri => $dist->cpan_uri($self->{mirror}),
         version => $res->{version} || 0,
-        package => $job->{package},
+        package => $task->{package},
     };
 }
 

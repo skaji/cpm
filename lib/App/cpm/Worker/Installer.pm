@@ -30,11 +30,11 @@ my $TRUSTED_MIRROR = sub {
 };
 
 sub work {
-    my ($self, $job) = @_;
-    my $type = $job->{type} || "(undef)";
-    local $self->{logger}{context} = $job->distvname;
+    my ($self, $task) = @_;
+    my $type = $task->{type} || "(undef)";
+    local $self->{logger}{context} = $task->distvname;
     if ($type eq "fetch") {
-        if (my $result = $self->fetch($job)) {
+        if (my $result = $self->fetch($task)) {
             return +{
                 ok => 1,
                 directory => $result->{directory},
@@ -48,8 +48,8 @@ sub work {
             $self->{logger}->log("Failed to fetch/configure distribution");
         }
     } elsif ($type eq "configure") {
-        # $job->{directory}, $job->{distfile}, $job->{meta});
-        if (my $result = $self->configure($job)) {
+        # $task->{directory}, $task->{distfile}, $task->{meta});
+        if (my $result = $self->configure($task)) {
             return +{
                 ok => 1,
                 distdata => $result->{distdata},
@@ -60,10 +60,10 @@ sub work {
             $self->{logger}->log("Failed to configure distribution");
         }
     } elsif ($type eq "install") {
-        my $ok = $self->install($job);
+        my $ok = $self->install($task);
         my $message = $ok ? "Successfully installed distribution" : "Failed to install distribution";
         $self->{logger}->log($message);
-        return { ok => $ok, directory => $job->{directory} };
+        return { ok => $ok, directory => $task->{directory} };
     } else {
         die "Unknown type: $type\n";
     }
@@ -139,12 +139,12 @@ sub enable_prebuilt {
 }
 
 sub fetch {
-    my ($self, $job) = @_;
+    my ($self, $task) = @_;
     my $guard = pushd;
 
-    my $source   = $job->{source};
-    my $distfile = $job->{distfile};
-    my $uri      = $job->{uri};
+    my $source   = $task->{source};
+    my $distfile = $task->{distfile};
+    my $uri      = $task->{uri};
 
     if ($self->enable_prebuilt($uri)) {
         if (my $result = $self->find_prebuilt($uri)) {
@@ -155,7 +155,7 @@ sub fetch {
 
     my ($dir, $rev, $using_cache);
     if ($source eq "git") {
-        ($dir, $rev) = $self->_fetch_git($uri, $job->{ref});
+        ($dir, $rev) = $self->_fetch_git($uri, $task->{ref});
     } elsif ($source eq "local") {
         $self->{logger}->log("Copying $uri");
         $uri =~ s{^file://}{};
@@ -271,8 +271,8 @@ sub find_prebuilt {
 }
 
 sub save_prebuilt {
-    my ($self, $job) = @_;
-    my $dir = File::Spec->catdir($self->{prebuilt_base}, $job->cpanid, $job->distvname);
+    my ($self, $task) = @_;
+    my $dir = File::Spec->catdir($self->{prebuilt_base}, $task->cpanid, $task->distvname);
 
     if (-d $dir and !File::Path::rmtree($dir)) {
         return;
@@ -285,11 +285,11 @@ sub save_prebuilt {
     }
     return unless -d $parent;
 
-    $self->{logger}->log("Saving the build $job->{directory} in $dir");
-    if (File::Copy::Recursive::dircopy($job->{directory}, $dir)) {
+    $self->{logger}->log("Saving the build $task->{directory} in $dir");
+    if (File::Copy::Recursive::dircopy($task->{directory}, $dir)) {
         open my $fh, ">", File::Spec->catfile($dir, ".prebuilt") or die $!;
     } else {
-        warn "dircopy $job->{directory} $dir: $!";
+        warn "dircopy $task->{directory} $dir: $!";
     }
 }
 
@@ -377,8 +377,8 @@ sub _retry {
 }
 
 sub configure {
-    my ($self, $job) = @_;
-    my ($dir, $distfile, $meta, $source) = @{$job}{qw(directory distfile meta source)};
+    my ($self, $task) = @_;
+    my ($dir, $distfile, $meta, $source) = @{$task}{qw(directory distfile meta source)};
     my $guard = pushd $dir;
     my $menlo = $self->menlo;
     my $menlo_dist = { meta => $meta, cpanmeta => $meta }; # XXX
@@ -446,11 +446,11 @@ sub _build_distdata {
 }
 
 sub install {
-    my ($self, $job) = @_;
-    return $self->install_prebuilt($job) if $job->{prebuilt};
+    my ($self, $task) = @_;
+    return $self->install_prebuilt($task) if $task->{prebuilt};
 
     my ($dir, $distdata, $static_builder, $distvname, $meta)
-        = @{$job}{qw(directory distdata static_builder distvname meta)};
+        = @{$task}{qw(directory distdata static_builder distvname meta)};
     my $guard = pushd $dir;
     my $menlo = $self->menlo;
     my $menlo_dist = { meta => $meta }; # XXX
@@ -480,27 +480,27 @@ sub install {
             $distdata,
             $distdata->{module_name},
         );
-        $self->save_prebuilt($job) if $self->enable_prebuilt($job->{uri});
+        $self->save_prebuilt($task) if $self->enable_prebuilt($task->{uri});
     }
     return $installed;
 }
 
 sub install_prebuilt {
-    my ($self, $job) = @_;
+    my ($self, $task) = @_;
 
     my $install_base = $self->{local_lib};
     if (!$install_base && ($ENV{PERL_MM_OPT} || '') =~ /INSTALL_BASE=(\S+)/) {
         $install_base = $1;
     }
 
-    $self->{logger}->log("Copying prebuilt $job->{directory}/blib");
-    my $guard = pushd $job->{directory};
+    $self->{logger}->log("Copying prebuilt $task->{directory}/blib");
+    my $guard = pushd $task->{directory};
     my $paths = ExtUtils::InstallPaths->new(
-        dist_name => $job->distname, # this enables the installation of packlist
+        dist_name => $task->distname, # this enables the installation of packlist
         $install_base ? (install_base => $install_base) : (),
     );
     my $install_base_meta = $install_base ? "$install_base/lib/perl5" : $Config{sitelibexp};
-    my $distvname = $job->distvname;
+    my $distvname = $task->distvname;
     open my $fh, ">", \my $stdout;
     {
         local *STDOUT = $fh;

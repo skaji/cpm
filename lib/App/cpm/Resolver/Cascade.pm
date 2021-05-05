@@ -14,12 +14,12 @@ sub add {
 }
 
 sub resolve {
-    my ($self, $job) = @_;
-    # here job = { package => "Plack", version_range => ">= 1.000, < 1.0030" }
+    my ($self, $task) = @_;
+    # here task = { package => "Plack", version_range => ">= 1.000, < 1.0030" }
 
     my @error;
     for my $backend (@{ $self->{backends} }) {
-        my $result = $backend->resolve($job);
+        my $result = $backend->resolve($task);
         next unless $result;
 
         my $klass = ref $backend;

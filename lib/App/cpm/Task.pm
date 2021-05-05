@@ -1,4 +1,4 @@
-package App::cpm::Job;
+package App::cpm::Task;
 use strict;
 use warnings;
 use CPAN::DistnameInfo;

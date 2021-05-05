@@ -94,9 +94,6 @@
       "App::cpm::Installer::Unpacker" : {
          "file" : "lib/App/cpm/Installer/Unpacker.pm"
       },
-      "App::cpm::Job" : {
-         "file" : "lib/App/cpm/Job.pm"
-      },
       "App::cpm::Logger" : {
          "file" : "lib/App/cpm/Logger.pm"
       },
@@ -129,6 +126,9 @@
       },
       "App::cpm::Resolver::Snapshot" : {
          "file" : "lib/App/cpm/Resolver/Snapshot.pm"
+      },
+      "App::cpm::Task" : {
+         "file" : "lib/App/cpm/Task.pm"
       },
       "App::cpm::Tutorial" : {
          "file" : "lib/App/cpm/Tutorial.pm"
@@ -185,7 +185,7 @@
       "Will Sheppard <will.sheppard.uk@gmail.com>"
    ],
    "x_generated_by_perl" : "v5.32.1",
-   "x_serialization_backend" : "Cpanel::JSON::XS version 4.25",
+   "x_serialization_backend" : "Cpanel::JSON::XS version 4.26",
    "x_spdx_expression" : "Artistic-1.0-Perl OR GPL-1.0-or-later",
    "x_static_install" : 1
 }

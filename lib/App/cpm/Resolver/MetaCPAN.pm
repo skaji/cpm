@@ -21,17 +21,17 @@ sub _encode {
 }
 
 sub resolve {
-    my ($self, $job) = @_;
-    if ($self->{only_dev} and !$job->{dev}) {
+    my ($self, $task) = @_;
+    if ($self->{only_dev} and !$task->{dev}) {
         return { error => "skip, because MetaCPAN is configured to resolve dev releases only" };
     }
 
     my %query = (
-        ( ($self->{dev} || $job->{dev}) ? (dev => 1) : () ),
-        ( $job->{version_range} ? (version => $job->{version_range}) : () ),
+        ( ($self->{dev} || $task->{dev}) ? (dev => 1) : () ),
+        ( $task->{version_range} ? (version => $task->{version_range}) : () ),
     );
     my $query = join "&", map { "$_=" . _encode($query{$_}) } sort keys %query;
-    my $uri = "$self->{uri}$job->{package}" . ($query ? "?$query" : "");
+    my $uri = "$self->{uri}$task->{package}" . ($query ? "?$query" : "");
     my $res;
     for (1..2) {
         $res = $self->{http}->get($uri);
@@ -48,7 +48,7 @@ sub resolve {
     return {
         source => "cpan", # XXX
         distfile => $dist->distfile,
-        package => $job->{package},
+        package => $task->{package},
         version => $hash->{version} || 0,
         uri => $hash->{download_url},
     };

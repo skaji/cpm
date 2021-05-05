@@ -16,7 +16,7 @@ sub new {
     my $self = bless {
         %option,
         installed_distributions => 0,
-        jobs => +{},
+        tasks => +{},
         distributions => +{},
         _fail_resolve => +{},
         _fail_install => +{},
@@ -90,69 +90,69 @@ sub fail {
     { resolve => \@fail_resolve, install => [sort @fail_install_name, @not_installed_name] };
 }
 
-sub jobs { values %{shift->{jobs}} }
+sub tasks { values %{shift->{tasks}} }
 
-sub add_job {
-    my ($self, %job) = @_;
-    my $new = App::cpm::Job->new(%job);
-    if (grep { $_->equals($new) } $self->jobs) {
+sub add_task {
+    my ($self, %task) = @_;
+    my $new = App::cpm::Job->new(%task);
+    if (grep { $_->equals($new) } $self->tasks) {
         return 0;
     } else {
-        $self->{jobs}{$new->uid} = $new;
+        $self->{tasks}{$new->uid} = $new;
         return 1;
     }
 }
 
-sub get_job {
+sub get_task {
     my $self = shift;
-    if (my @job = grep { !$_->in_charge } $self->jobs) {
-        return @job;
+    if (my @task = grep { !$_->in_charge } $self->tasks) {
+        return @task;
     }
-    $self->_calculate_jobs;
-    return unless $self->jobs;
-    if (my @job = grep { !$_->in_charge } $self->jobs) {
-        return @job;
+    $self->_calculate_tasks;
+    return unless $self->tasks;
+    if (my @task = grep { !$_->in_charge } $self->tasks) {
+        return @task;
     }
     return;
 }
 
 sub register_result {
     my ($self, $result) = @_;
-    my ($job) = grep { $_->uid eq $result->{uid} } $self->jobs;
-    die "Missing job that has uid=$result->{uid}" unless $job;
+    my ($task) = grep { $_->uid eq $result->{uid} } $self->tasks;
+    die "Missing task that has uid=$result->{uid}" unless $task;
 
-    %{$job} = %{$result}; # XXX
+    %{$task} = %{$result}; # XXX
 
-    my $logged = $self->info($job);
-    my $method = "_register_@{[$job->{type}]}_result";
-    $self->$method($job);
-    $self->remove_job($job);
+    my $logged = $self->info($task);
+    my $method = "_register_@{[$task->{type}]}_result";
+    $self->$method($task);
+    $self->remove_task($task);
     $self->_show_progress if $logged && $self->{show_progress};
 
     return 1;
 }
 
 sub info {
-    my ($self, $job) = @_;
-    my $type = $job->type;
+    my ($self, $task) = @_;
+    my $type = $task->type;
     return if !$App::cpm::Logger::VERBOSE && $type ne "install";
-    my $name = $job->distvname;
+    my $name = $task->distvname;
     my ($message, $optional);
     if ($type eq "resolve") {
-        $message = $job->{package};
-        $message .= " -> $name" . ($job->{ref} ? "\@$job->{ref}" : "") if $job->{ok};
-        $optional = "from $job->{from}" if $job->{ok} and $job->{from};
+        $message = $task->{package};
+        $message .= " -> $name" . ($task->{ref} ? "\@$task->{ref}" : "") if $task->{ok};
+        $optional = "from $task->{from}" if $task->{ok} and $task->{from};
     } else {
         $message = $name;
-        $optional = "using cache" if $type eq "fetch" and $job->{using_cache};
-        $optional = "using prebuilt" if $job->{prebuilt};
+        $optional = "using cache" if $type eq "fetch" and $task->{using_cache};
+        $optional = "using prebuilt" if $task->{prebuilt};
     }
-    my $elapsed = defined $job->{elapsed} ? sprintf "(%.3fsec) ", $job->{elapsed} : "";
+    my $elapsed = defined $task->{elapsed} ? sprintf "(%.3fsec) ", $task->{elapsed} : "";
 
     App::cpm::Logger->log(
-        pid => $job->{pid},
+        pid => $task->{pid},
         type => $type,
-        result => $job->{ok} ? "DONE" : "FAIL",
+        result => $task->{ok} ? "DONE" : "FAIL",
         message => "$elapsed$message",
         optional => $optional,
     );
@@ -167,9 +167,9 @@ sub _show_progress {
     STDERR->flush; # this is needed at least with perl <= 5.24
 }
 
-sub remove_job {
-    my ($self, $job) = @_;
-    delete $self->{jobs}{$job->uid};
+sub remove_task {
+    my ($self, $task) = @_;
+    delete $self->{tasks}{$task->uid};
 }
 
 sub distributions { values %{shift->{distributions}} }
@@ -179,7 +179,7 @@ sub distribution {
     $self->{distributions}{$distfile};
 }
 
-sub _calculate_jobs {
+sub _calculate_tasks {
     my $self = shift;
 
     my @distributions
@@ -188,7 +188,7 @@ sub _calculate_jobs {
     if (my @dists = grep { $_->resolved && !$_->registered } @distributions) {
         for my $dist (@dists) {
             $dist->registered(1);
-            $self->add_job(
+            $self->add_task(
                 type => "fetch",
                 distfile => $dist->{distfile},
                 source => $dist->source,
@@ -205,7 +205,7 @@ sub _calculate_jobs {
             my ($is_satisfied, @need_resolve) = $self->is_satisfied($dist_requirements);
             if ($is_satisfied) {
                 $dist->registered(1);
-                $self->add_job(
+                $self->add_task(
                     type => "configure",
                     meta => $dist->meta,
                     directory => $dist->directory,
@@ -219,7 +219,7 @@ sub _calculate_jobs {
                 my $msg = sprintf "Found configure dependencies: %s",
                     join(", ", map { sprintf "%s (%s)", $_->{package}, $_->{version_range} || 0 }  @need_resolve);
                 $self->{logger}->log($msg);
-                my $ok = $self->_register_resolve_job(@need_resolve);
+                my $ok = $self->_register_resolve_task(@need_resolve);
                 $self->{_fail_install}{$dist->distfile}++ unless $ok;
             } elsif (!defined $is_satisfied) {
                 my ($req) = grep { $_->{package} eq "perl" } @$dist_requirements;
@@ -242,7 +242,7 @@ sub _calculate_jobs {
             my ($is_satisfied, @need_resolve) = $self->is_satisfied($dist_requirements);
             if ($is_satisfied) {
                 $dist->registered(1);
-                $self->add_job(
+                $self->add_task(
                     type => "install",
                     meta => $dist->meta,
                     distdata => $dist->distdata,
@@ -257,7 +257,7 @@ sub _calculate_jobs {
                 my $msg = sprintf "Found dependencies: %s",
                     join(", ", map { sprintf "%s (%s)", $_->{package}, $_->{version_range} || 0 }  @need_resolve);
                 $self->{logger}->log($msg);
-                my $ok = $self->_register_resolve_job(@need_resolve);
+                my $ok = $self->_register_resolve_task(@need_resolve);
                 $self->{_fail_install}{$dist->distfile}++ unless $ok;
             } elsif (!defined $is_satisfied) {
                 my ($req) = grep { $_->{package} eq "perl" } @$dist_requirements;
@@ -271,7 +271,7 @@ sub _calculate_jobs {
     }
 }
 
-sub _register_resolve_job {
+sub _register_resolve_task {
     my ($self, @package) = @_;
     my $ok = 1;
     for my $package (@package) {
@@ -282,7 +282,7 @@ sub _register_resolve_job {
             next;
         }
 
-        $self->add_job(
+        $self->add_task(
             type => "resolve",
             package => $package->{package},
             version_range => $package->{version_range},
@@ -387,31 +387,31 @@ sub add_distribution {
 }
 
 sub _register_resolve_result {
-    my ($self, $job) = @_;
-    if (!$job->is_success) {
-        $self->{_fail_resolve}{$job->{package}}++;
+    my ($self, $task) = @_;
+    if (!$task->is_success) {
+        $self->{_fail_resolve}{$task->{package}}++;
         return;
     }
 
-    local $self->{logger}{context} = $job->{package};
-    if ($job->{distfile} and $job->{distfile} =~ m{/perl-5[^/]+$}) {
-        my $message = "Cannot upgrade core module $job->{package}.";
+    local $self->{logger}{context} = $task->{package};
+    if ($task->{distfile} and $task->{distfile} =~ m{/perl-5[^/]+$}) {
+        my $message = "Cannot upgrade core module $task->{package}.";
         $self->{logger}->log($message);
         App::cpm::Logger->log(
             result => "FAIL",
             type => "install",
             message => $message,
         );
-        $self->{_fail_install}{$job->{package}}++; # XXX
+        $self->{_fail_install}{$task->{package}}++; # XXX
         return;
     }
 
-    if (!$job->{reinstall}) {
-        my $want = $job->{version_range} || $job->{version};
-        my ($ok, $local) = $self->is_installed($job->{package}, $want);
+    if (!$task->{reinstall}) {
+        my $want = $task->{version_range} || $task->{version};
+        my ($ok, $local) = $self->is_installed($task->{package}, $want);
         if ($ok) {
-            my $message = $job->{package} . (
-                App::cpm::version->parse($job->{version}) != $local
+            my $message = $task->{package} . (
+                App::cpm::version->parse($task->{version}) != $local
                 ? ", you already have $local"
                 : " is up to date. ($local)"
             );
@@ -425,61 +425,61 @@ sub _register_resolve_result {
         }
     }
 
-    my $provides = $job->{provides};
+    my $provides = $task->{provides};
     if (!$provides or @$provides == 0) {
-        my $version = App::cpm::version->parse($job->{version}) || 0;
-        $provides = [{package => $job->{package}, version => $version}];
+        my $version = App::cpm::version->parse($task->{version}) || 0;
+        $provides = [{package => $task->{package}, version => $version}];
     }
     my $distribution = App::cpm::Distribution->new(
-        source   => $job->{source},
-        uri      => $job->{uri},
+        source   => $task->{source},
+        uri      => $task->{uri},
         provides => $provides,
-        distfile => $job->{distfile},
-        ref      => $job->{ref},
+        distfile => $task->{distfile},
+        ref      => $task->{ref},
     );
     $self->add_distribution($distribution);
 }
 
 sub _register_fetch_result {
-    my ($self, $job) = @_;
-    if (!$job->is_success) {
-        $self->{_fail_install}{$job->distfile}++;
+    my ($self, $task) = @_;
+    if (!$task->is_success) {
+        $self->{_fail_install}{$task->distfile}++;
         return;
     }
-    my $distribution = $self->distribution($job->distfile);
-    $distribution->directory($job->{directory});
-    $distribution->meta($job->{meta});
-    $distribution->provides($job->{provides});
+    my $distribution = $self->distribution($task->distfile);
+    $distribution->directory($task->{directory});
+    $distribution->meta($task->{meta});
+    $distribution->provides($task->{provides});
 
-    if ($job->{prebuilt}) {
+    if ($task->{prebuilt}) {
         $distribution->configured(1);
-        $distribution->requirements($_ => $job->{requirements}{$_}) for keys %{$job->{requirements}};
+        $distribution->requirements($_ => $task->{requirements}{$_}) for keys %{$task->{requirements}};
         $distribution->prebuilt(1);
         local $self->{logger}{context} = $distribution->distvname;
         my $msg = join ", ", map { sprintf "%s (%s)", $_->{package}, $_->{version} || 0 } @{$distribution->provides};
         $self->{logger}->log("Distribution provides: $msg");
     } else {
         $distribution->fetched(1);
-        $distribution->requirements($_ => $job->{requirements}{$_}) for keys %{$job->{requirements}};
+        $distribution->requirements($_ => $task->{requirements}{$_}) for keys %{$task->{requirements}};
     }
     return 1;
 }
 
 sub _register_configure_result {
-    my ($self, $job) = @_;
-    if (!$job->is_success) {
-        $self->{_fail_install}{$job->distfile}++;
+    my ($self, $task) = @_;
+    if (!$task->is_success) {
+        $self->{_fail_install}{$task->distfile}++;
         return;
     }
-    my $distribution = $self->distribution($job->distfile);
+    my $distribution = $self->distribution($task->distfile);
     $distribution->configured(1);
-    $distribution->requirements($_ => $job->{requirements}{$_}) for keys %{$job->{requirements}};
-    $distribution->static_builder($job->{static_builder});
-    $distribution->distdata($job->{distdata});
+    $distribution->requirements($_ => $task->{requirements}{$_}) for keys %{$task->{requirements}};
+    $distribution->static_builder($task->{static_builder});
+    $distribution->distdata($task->{distdata});
 
     # After configuring, the final "provides" is fixed.
     # So we need to re-define "provides" here
-    my $p = $job->{distdata}{provides};
+    my $p = $task->{distdata}{provides};
     my @provide = map +{ package => $_, version => $p->{$_}{version} }, sort keys %$p;
     $distribution->provides(\@provide);
     local $self->{logger}{context} = $distribution->distvname;
@@ -490,12 +490,12 @@ sub _register_configure_result {
 }
 
 sub _register_install_result {
-    my ($self, $job) = @_;
-    if (!$job->is_success) {
-        $self->{_fail_install}{$job->distfile}++;
+    my ($self, $task) = @_;
+    if (!$task->is_success) {
+        $self->{_fail_install}{$task->distfile}++;
         return;
     }
-    my $distribution = $self->distribution($job->distfile);
+    my $distribution = $self->distribution($task->distfile);
     $distribution->installed(1);
     $self->{installed_distributions}++;
     return 1;

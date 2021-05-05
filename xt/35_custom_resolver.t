@@ -19,8 +19,8 @@ sub new {
     bless {}, shift;
 }
 sub resolve {
-    my ($self, $job) = @_;
-    if ($job->{package} ne 'App::ChangeShebang') {
+    my ($self, $task) = @_;
+    if ($task->{package} ne 'App::ChangeShebang') {
         die;
     }
     return +{
@@ -39,8 +39,8 @@ sub new {
     bless {}, shift;
 }
 sub resolve {
-    my ($self, $job) = @_;
-    if ($job->{package} ne 'App::ChangeShebang') {
+    my ($self, $task) = @_;
+    if ($task->{package} ne 'App::ChangeShebang') {
         die;
     }
     return +{

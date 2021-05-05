@@ -36,10 +36,10 @@ sub _uniq {
 }
 
 sub resolve {
-    my ($self, $job) = @_;
+    my ($self, $task) = @_;
 
-    if (defined $job->{version_range} and $job->{version_range} =~ /(?:<|!=|==)/) {
-        my $uri = "$self->{uri}history/$job->{package}";
+    if (defined $task->{version_range} and $task->{version_range} =~ /(?:<|!=|==)/) {
+        my $uri = "$self->{uri}history/$task->{package}";
         my $res = $self->_get($uri);
         if (!$res->{success}) {
             my $error = "$res->{status} $res->{reason}, $uri";
@@ -49,7 +49,7 @@ sub resolve {
 
         my @found;
         for my $line ( split /\r?\n/, $res->{content} ) {
-            if ($line =~ /^$job->{package}\s+(\S+)\s+(\S+)$/) {
+            if ($line =~ /^$task->{package}\s+(\S+)\s+(\S+)$/) {
                 push @found, {
                     version => $1,
                     version_o => App::cpm::version->parse($1),
@@ -62,7 +62,7 @@ sub resolve {
 
         my $match;
         for my $try (sort { $b->{version_o} <=> $a->{version_o} } @found) {
-            if ($try->{version_o}->satisfy($job->{version_range})) {
+            if ($try->{version_o}->satisfy($task->{version_range})) {
                 $match = $try, last;
             }
         }
@@ -71,16 +71,16 @@ sub resolve {
             my $dist = App::cpm::DistNotation->new_from_dist($match->{distfile});
             return {
                 source => "cpan",
-                package => $job->{package},
+                package => $task->{package},
                 version => $match->{version},
                 uri => $dist->cpan_uri($self->{mirror}),
                 distfile => $dist->distfile,
             };
         } else {
-            return { error => "found versions @{[join ',', _uniq map $_->{version}, @found]}, but they do not satisfy $job->{version_range}, $uri" };
+            return { error => "found versions @{[join ',', _uniq map $_->{version}, @found]}, but they do not satisfy $task->{version_range}, $uri" };
         }
     } else {
-        my $uri = "$self->{uri}package/$job->{package}";
+        my $uri = "$self->{uri}package/$task->{package}";
         my $res = $self->_get($uri);
         if (!$res->{success}) {
             my $error = "$res->{status} $res->{reason}, $uri";
@@ -90,8 +90,8 @@ sub resolve {
 
         my $yaml = CPAN::Meta::YAML->read_string($res->{content});
         my $meta = $yaml->[0];
-        if (!App::cpm::version->parse($meta->{version})->satisfy($job->{version_range})) {
-            return { error => "found version $meta->{version}, but it does not satisfy $job->{version_range}, $uri" };
+        if (!App::cpm::version->parse($meta->{version})->satisfy($task->{version_range})) {
+            return { error => "found version $meta->{version}, but it does not satisfy $task->{version_range}, $uri" };
         }
         my @provides = map {
             my $package = $_;

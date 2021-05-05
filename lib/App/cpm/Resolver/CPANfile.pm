@@ -72,8 +72,8 @@ sub _load {
 }
 
 sub resolve {
-    my ($self, $job) = @_;
-    my $found = $self->{_resolve}{$job->{package}};
+    my ($self, $task) = @_;
+    my $found = $self->{_resolve}{$task->{package}};
     if (!$found) {
         return { error => "not found" };
     }

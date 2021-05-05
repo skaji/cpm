@@ -44,23 +44,23 @@ sub prebuilt_base {
 }
 
 sub work {
-    my ($self, $job) = @_;
-    my $type = $job->{type} || "(undef)";
+    my ($self, $task) = @_;
+    my $type = $task->{type} || "(undef)";
     my $result;
     my $start = $self->{verbose} ? [gettimeofday] : undef;
     if (grep {$type eq $_} qw(fetch configure install)) {
-        $result = eval { $self->{installer}->work($job) };
+        $result = eval { $self->{installer}->work($task) };
         warn $@ if $@;
     } elsif ($type eq "resolve") {
-        $result = eval { $self->{resolver}->work($job) };
+        $result = eval { $self->{resolver}->work($task) };
         warn $@ if $@;
     } else {
         die "Unknown type: $type\n";
     }
     my $elapsed = $start ? tv_interval($start) : undef;
     $result ||= { ok => 0 };
-    $job->merge({%$result, pid => $$, elapsed => $elapsed});
-    return $job;
+    $task->merge({%$result, pid => $$, elapsed => $elapsed});
+    return $task;
 }
 
 1;
