@@ -1,6 +1,0 @@
-require "../cpanfile";
-
-requires "Class::C3";
-requires "Devel::GlobalDestruction";
-requires "ExtUtils::PL2Bat";
-requires "MRO::Compat";
