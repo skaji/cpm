@@ -45,7 +45,13 @@ sub _init_untar {
     my $tar = $self->{tar} = File::Which::which('gtar') || File::Which::which("tar");
     if ($tar) {
         my ($exit, $out, $err) = run3 [$tar, '--version'];
-        $self->{tar_kind} = $out =~ /bsdtar/ ? "bsd" : "gnu";
+        if ($out =~ /bsdtar/) {
+            $self->{tar_kind} = 'bsd';
+        } elsif ($out =~ /GNU/) {
+            $self->{tar_kind} = 'gnu';
+        } elsif ($^O eq 'openbsd') {
+            $self->{tar_kind} = 'openbsd';
+        }
         $self->{tar_bad} = 1 if $out =~ /GNU.*1\.13/i || $^O eq 'MSWin32' || $^O eq 'solaris' || $^O eq 'hpux';
     }
 
@@ -101,7 +107,8 @@ sub _untar {
         ($exit, $out, $err) = run3 [$self->{tar}, "${ar}tf", $file];
         last if $exit != 0;
         my $root = $self->_find_tarroot(split /\r?\n/, $out);
-        ($exit, $out, $err) = run3 [$self->{tar}, "${ar}xf", $file, "-o"];
+        my @no_same_owner = $self->{tar_kind} eq 'openbsd' ? () : ('-o');
+        ($exit, $out, $err) = run3 [$self->{tar}, "${ar}xf", $file, @no_same_owner];
         return $root if $exit == 0 and -d $root;
     }
     return if !$wantarray;
