@@ -32,11 +32,19 @@ sub unpack {
 
 sub describe {
     my $self = shift;
-    +{
+    my %describe = (
         map { ($_, $self->{$_}) }
         grep $self->{$_},
-        qw(tar gzip bzip2 Archive::Tar unzip Archive::Zip),
-    };
+        qw(gzip bzip2 Archive::Tar unzip Archive::Zip),
+    );
+    if ($self->{tar}) {
+        $describe{tar} = sprintf "%s (%s%s)",
+            $self->{tar},
+            $self->{tar_kind},
+            $self->{tar_bad} ? ", will be used together with gzip/bzip2" : "",
+        ;
+    }
+    \%describe;
 }
 
 sub _init_untar {
