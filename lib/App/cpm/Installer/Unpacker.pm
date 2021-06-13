@@ -51,6 +51,8 @@ sub _init_untar {
             $self->{tar_kind} = 'gnu';
         } elsif ($^O eq 'openbsd') {
             $self->{tar_kind} = 'openbsd';
+        } else {
+            $self->{tar_kind} = 'unknown';
         }
         $self->{tar_bad} = 1 if $out =~ /GNU.*1\.13/i || $^O eq 'MSWin32' || $^O eq 'solaris' || $^O eq 'hpux';
     }
