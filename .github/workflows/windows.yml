@@ -13,6 +13,13 @@ jobs:
 
     runs-on: windows-latest
 
+    strategy:
+      matrix:
+        tester-id:
+          - '0'
+          - '1'
+          - '2'
+
     steps:
       - uses: actions/checkout@v2
       - name: perl -V
@@ -20,4 +27,4 @@ jobs:
       - name: Install Dependencies
         run: curl -fsSL https://git.io/cpm | perl - install -g --with-develop --with-recommends --show-build-log-on-failure
       - name: Run Tests
-        run: prove -lr t xt
+        run: perl author\split-run "t\*.t xt\*.t xt\*\*.t" ${{ matrix.tester-id }}/3 prove -l

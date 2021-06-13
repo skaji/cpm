@@ -18,11 +18,8 @@ jobs:
         perl-version:
           - '5.8-buster'
           - '5.10-buster'
-          - '5.12-buster'
-          - '5.14-buster'
           - '5.16-buster'
           - '5.18-buster'
-          - '5.20-buster'
           - 'latest'
           - 'threaded'
 
