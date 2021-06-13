@@ -74,7 +74,7 @@
    "provides" : {
       "App::cpm" : {
          "file" : "lib/App/cpm.pm",
-         "version" : "0.997003"
+         "version" : "0.997004"
       },
       "App::cpm::CLI" : {
          "file" : "lib/App/cpm/CLI.pm"
@@ -170,13 +170,14 @@
          "web" : "https://github.com/skaji/cpm"
       }
    },
-   "version" : "0.997003",
+   "version" : "0.997004",
    "x_contributors" : [
       "Andrew Rodland <andrew@cleverdomain.org>",
       "Dave Rolsky <autarch@urth.org>",
       "Felix Ostmann <felix.ostmann@gmail.com>",
       "FUJI Goro <goro@fastly.com>",
       "Kenichi Ishigaki <ishigaki@cpan.org>",
+      "Maxim Tarasov <mu@magi.net.ru>",
       "Mikhail Ivanov <m.ivanych@gmail.com>",
       "Nicolas R <atoomic@cpan.org>",
       "Nicolas R <cpan@atoomic.org>",
@@ -184,7 +185,7 @@
       "Shoichi Kaji <skaji@outlook.com>",
       "Will Sheppard <will.sheppard.uk@gmail.com>"
    ],
-   "x_generated_by_perl" : "v5.32.1",
+   "x_generated_by_perl" : "v5.34.0",
    "x_serialization_backend" : "Cpanel::JSON::XS version 4.26",
    "x_spdx_expression" : "Artistic-1.0-Perl OR GPL-1.0-or-later",
    "x_static_install" : 1
