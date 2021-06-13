@@ -1,0 +1,24 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+use Digest::MD5 ();
+
+my ($glob, $take, @cmd) = @ARGV;
+my ($id, $all) = split /\//, $take;
+
+my @taken;
+for my $file (sort glob $glob) {
+    my $digest = hex unpack "H8", Digest::MD5->new->add($file)->digest;
+    if ($digest % $all == $id) {
+        push @taken, $file;
+    }
+}
+if (!@taken) {
+    warn "There is no files for $take, exit\n";
+    exit;
+}
+
+warn "@cmd @taken\n";
+system @cmd, @taken;
+exit $?;
