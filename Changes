@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.997005  2021-07-21 13:28:46 JST
+        - Use Module::cpmfile (#203)
+
 0.997004  2021-06-13 13:15:58 JST
         - Fix unpacking when using OpenBSD tar (desmana #202)
 
