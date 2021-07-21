@@ -61,6 +61,7 @@
             "Menlo::CLI::Compat" : "1.9021",
             "Module::CPANfile" : "0",
             "Module::Metadata" : "0",
+            "Module::cpmfile" : "0.001",
             "Parallel::Pipes" : "0.004",
             "Parse::PMFile" : "0.43",
             "YAML::PP" : "0.026",
@@ -150,9 +151,6 @@
       },
       "App::cpm::Worker::Resolver" : {
          "file" : "lib/App/cpm/Worker/Resolver.pm"
-      },
-      "App::cpm::file" : {
-         "file" : "lib/App/cpm/file.pm"
       },
       "App::cpm::version" : {
          "file" : "lib/App/cpm/version.pm"
