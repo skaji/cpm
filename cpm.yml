@@ -26,6 +26,7 @@ prereqs:
       Menlo::CLI::Compat: { version: '1.9021' }
       Module::CPANfile:
       Module::Metadata:
+      Module::cpmfile: { version: '0.001' }
       Parallel::Pipes: { version: '0.004' }
       Parse::PMFile: { version: '0.43' }
       YAML::PP: { version: '0.026' }

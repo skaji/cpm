@@ -14,7 +14,6 @@ use App::cpm::Resolver::MetaCPAN;
 use App::cpm::Resolver::MetaDB;
 use App::cpm::Util qw(WIN32 determine_home maybe_abs);
 use App::cpm::Worker;
-use App::cpm::file;
 use App::cpm::version;
 use App::cpm;
 use Config;
@@ -24,6 +23,7 @@ use File::Path ();
 use File::Spec;
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use List::Util ();
+use Module::cpmfile;
 use Parallel::Pipes;
 use Pod::Text ();
 
@@ -495,12 +495,12 @@ sub load_dependency_file {
 
 sub load_cpmfile {
     my ($self, $path) = @_;
-    my $file = App::cpm::file->new($path);
+    my $file = Module::cpmfile->load($path);
     $self->{mirror} ||= $self->{_default_mirror};
     my @phase = grep $self->{"with_$_"}, qw(configure build test runtime develop);
     my @type  = grep $self->{"with_$_"}, qw(requires recommends suggests);
-    my $reqs = $file->cpanmeta_prereqs->merged_requirements(\@phase, \@type)->as_string_hash;
-    my @package = map +{ package => $_, version_range => $reqs->{$_} }, sort keys %$reqs;
+    my $reqs = $file->effective_requirements($self->{feature}, \@phase, \@type);
+    my @package = map +{ package => $_, version_range => $reqs->{$_}{version} }, sort keys %$reqs;
     return (\@package, [], undef);
 }
 
