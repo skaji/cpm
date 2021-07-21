@@ -558,11 +558,11 @@ DISTRIBUTIONS
       CPAN::Meta::Prereqs 2.12091
       ExtUtils::MakeMaker 0
       parent 0
-  Module-CoreList-5.20210521
-    pathname: B/BI/BINGOS/Module-CoreList-5.20210521.tar.gz
+  Module-CoreList-5.20210620
+    pathname: B/BI/BINGOS/Module-CoreList-5.20210620.tar.gz
     provides:
-      Module::CoreList 5.20210521
-      Module::CoreList::Utils 5.20210521
+      Module::CoreList 5.20210620
+      Module::CoreList::Utils 5.20210620
     requirements:
       ExtUtils::MakeMaker 0
       List::Util 0
@@ -603,6 +603,19 @@ DISTRIBUTIONS
       strict 0
       version 0.87
       warnings 0
+  Module-cpmfile-0.001
+    pathname: S/SK/SKAJI/Module-cpmfile-0.001.tar.gz
+    provides:
+      Module::cpmfile 0.001
+      Module::cpmfile::Prereqs undef
+      Module::cpmfile::Util undef
+    requirements:
+      CPAN::Meta::Prereqs 0
+      CPAN::Meta::Requirements 2.130
+      Exporter 5.57
+      Module::Build::Tiny 0.034
+      YAML::PP 0.027
+      perl 5.008001
   Parallel-Pipes-0.005
     pathname: S/SK/SKAJI/Parallel-Pipes-0.005.tar.gz
     provides:

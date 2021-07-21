@@ -218,6 +218,12 @@
    {
       "copyright" : "Shoichi Kaji",
       "license" : "the same as Perl 5",
+      "name" : "Module-cpmfile",
+      "url" : "https://metacpan.org/release/Module-cpmfile"
+   },
+   {
+      "copyright" : "Shoichi Kaji",
+      "license" : "the same as Perl 5",
       "name" : "Parallel-Pipes",
       "url" : "https://metacpan.org/release/Parallel-Pipes"
    },
