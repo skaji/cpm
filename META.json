@@ -75,7 +75,7 @@
    "provides" : {
       "App::cpm" : {
          "file" : "lib/App/cpm.pm",
-         "version" : "0.997005"
+         "version" : "0.997006"
       },
       "App::cpm::CLI" : {
          "file" : "lib/App/cpm/CLI.pm"
@@ -113,11 +113,11 @@
       "App::cpm::Resolver::02Packages" : {
          "file" : "lib/App/cpm/Resolver/02Packages.pm"
       },
-      "App::cpm::Resolver::CPANfile" : {
-         "file" : "lib/App/cpm/Resolver/CPANfile.pm"
-      },
       "App::cpm::Resolver::Cascade" : {
          "file" : "lib/App/cpm/Resolver/Cascade.pm"
+      },
+      "App::cpm::Resolver::Custom" : {
+         "file" : "lib/App/cpm/Resolver/Custom.pm"
       },
       "App::cpm::Resolver::MetaCPAN" : {
          "file" : "lib/App/cpm/Resolver/MetaCPAN.pm"
@@ -168,7 +168,7 @@
          "web" : "https://github.com/skaji/cpm"
       }
    },
-   "version" : "0.997005",
+   "version" : "0.997006",
    "x_contributors" : [
       "Andrew Rodland <andrew@cleverdomain.org>",
       "Dave Rolsky <autarch@urth.org>",

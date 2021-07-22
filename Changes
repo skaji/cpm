@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.997006  2021-07-22 12:53:43 JST
+        - Support dist/url/git syntax in cpmfile (#204)
+
 0.997005  2021-07-21 13:28:46 JST
         - Use Module::cpmfile (#203)
 
