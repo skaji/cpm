@@ -25,8 +25,8 @@ with_same_local {
     like $r->err, qr/DONE install Try-Tiny-0.30/;
     like $r->log, qr/Resolved CPAN::Mirror::Tiny.*from MetaDB/;
     like $r->log, qr/Resolved HTTP::Tinyish.*from MetaDB/;
-    like $r->log, qr/Resolved App::ChangeShebang.*from CPANfile/;
-    like $r->log, qr/Resolved Try::Tiny.*from CPANfile/;
+    like $r->log, qr/Resolved App::ChangeShebang.*from Custom/;
+    like $r->log, qr/Resolved Try::Tiny.*from Custom/;
     note $r->err;
     my $file = path($r->local, "lib/perl5/App/ChangeShebang.pm");
     my $content = $file->slurp_raw;
@@ -41,8 +41,6 @@ with_same_local {
     unlike $r->err, qr/HTTP-Tinyish/;
     unlike $r->err, qr/Try-Tiny/;
 };
-
-
 
 $cpanfile->spew(<<'___');
 requires 'Path::Class', 0.26,
