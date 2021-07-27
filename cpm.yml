@@ -29,7 +29,6 @@ prereqs:
       Module::cpmfile: { version: '0.001' }
       Parallel::Pipes: { version: '0.004' }
       Parse::PMFile: { version: '0.43' }
-      YAML::PP: { version: '0.026' }
       local::lib: { version: '2.000018' }
       parent:
       perl: { version: '5.008001' }
