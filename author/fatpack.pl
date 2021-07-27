@@ -23,7 +23,7 @@ Show new dependencies
 Getopt::Long::GetOptions
     "f|force" => \my $force,
     "t|test" => \my $test,
-    "update-only" => \my $update_only,
+    "u|update-only" => \my $update_only,
 or exit 1;
 
 sub cpm {
