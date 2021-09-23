@@ -47,6 +47,20 @@ sub unpack {
     $dir;
 }
 
+sub mirror {
+    my ($self, $uri, $local) = @_;
+    if ($uri =~ /^file:/) {
+        return $self->file_mirror($uri, $local);
+    }
+
+    my $res = $self->{http}->mirror($uri, $local);
+    $self->{logger}->log($res->{status} . ($res->{reason} ? " $res->{reason}" : ""));
+    return 1 if $res->{success};
+    unlink $local;
+    $self->{logger}->log($res->{content}) if $res->{status} == 599;
+    return;
+}
+
 sub log {
     my $self = shift;
     $self->{logger}->log(@_);
