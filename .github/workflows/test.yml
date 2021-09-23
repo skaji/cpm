@@ -1,0 +1,74 @@
+name: test
+
+on:
+  push:
+    branches:
+      - '*'
+    tags-ignore:
+      - '*'
+  pull_request:
+
+jobs:
+  ubuntu:
+    name: ubuntu perl ${{ matrix.perl-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        perl-version:
+          - '5.8-buster'
+          - '5.10-buster'
+          - '5.16-buster'
+          - '5.18-buster'
+          - 'latest'
+          - 'threaded'
+    container:
+      image: perl:${{ matrix.perl-version }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install deb packages
+        run: apt-get -qq update && apt-get -qq install -y unzip libdb-dev
+      - name: perl -V
+        run: perl -V
+      - name: Install Dependencies
+        run: curl -fsSL --compressed https://git.io/cpm | perl - install -g --with-develop --with-recommends --show-build-log-on-failure
+      - name: Run Tests
+        run: prove -lr --timer t xt
+
+  macos:
+    name: macos ${{ matrix.perl }}
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        include:
+          - perl: /usr/bin/perl
+            prove: /usr/bin/prove
+            cpm-option: --sudo
+          - perl: /usr/local/bin/perl
+            prove: /usr/local/bin/prove
+            cpm-option: ''
+    steps:
+      - uses: actions/checkout@v2
+      - name: perl -V
+        run: ${{ matrix.perl }} -V
+      - name: Install Dependencies
+        run: curl -fsSL --compressed https://git.io/cpm | ${{ matrix.perl }} - install -g ${{ matrix.cpm-option }} --with-develop --with-recommends --show-build-log-on-failure
+      - name: Run Tests
+        run: ${{ matrix.prove }} -lr t xt
+
+  windows:
+    name: windows perl ${{ matrix.tester-id }}
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        tester-id:
+          - '0'
+          - '1'
+          - '2'
+    steps:
+      - uses: actions/checkout@v2
+      - name: perl -V
+        run: perl -V
+      - name: Install Dependencies
+        run: curl -fsSL https://git.io/cpm | perl - install -g --with-develop --with-recommends --show-build-log-on-failure
+      - name: Run Tests
+        run: perl author\split-run "t\*.t xt\*.t xt\*\*.t" ${{ matrix.tester-id }}/3 prove -l
