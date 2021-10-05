@@ -22,16 +22,13 @@ which is fast!
 
 From CPAN:
 
-  $ cpanm -nq App::cpm
+  $ curl -fsSL https://git.io/cpm | perl - install -g App::cpm
 
 Or, download a I<self-contained> cpm:
 
-  $ curl -fsSL --compressed https://git.io/cpm > cpm
+  $ curl -fsSL https://git.io/cpm > cpm
   $ chmod +x cpm
   $ ./cpm --version
-
-  # you can even install modules without installing cpm
-  $ curl -fsSL --compressed https://git.io/cpm | perl - install Plack
 
 =head2 First step
 
@@ -102,7 +99,7 @@ cpm supports dist/url/mirror syntax in cpanfile just like cpanminus:
   requires 'Try::Tiny', 0.28,
     url => "http://backpan.perl.org/authors/id/E/ET/ETHER/Try-Tiny-0.28.tar.gz";
 
-And yes, this is an experimental and fun part! cpm also supports git syntax in cpanfile.
+cpm also supports git syntax in cpanfile:
 
   requires 'Carl', git => 'git://github.com/skaji/Carl.git';
   requires 'App::cpm', git => 'https://login:password@github.com/skaji/cpm.git';

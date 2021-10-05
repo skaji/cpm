@@ -8,20 +8,19 @@ a fast CPAN module installer
 
 There are 2 ways.
 
-### 1) From CPAN
+### 1) self-contained version
 
 ```sh
-$ cpanm -nq App::cpm
-```
-
-### 2) self-contained version
-
-You can also use a _self-contained_ cpm:
-
-```sh
-$ curl -fsSL --compressed https://git.io/cpm > cpm
+$ curl -fsSL https://git.io/cpm > cpm
 $ chmod +x cpm
 $ ./cpm --version
+```
+
+### 2) From CPAN
+
+```sh
+$ curl -fsSL https://git.io/cpm | perl - install -g App::cpm
+$ cpm --version
 ```
 
 ## Description
@@ -36,15 +35,7 @@ This is (of course!) inspired by [Carmel](https://github.com/miyagawa/Carmel).
 
 ## Roadmap
 
-If you all find cpm useful,
-then cpm should be merged into cpanm 2.0. How exciting!
-
-To merge cpm into cpanm, there are several TODOs:
-
-* DONE ~~Win32? - support platforms that do not have fork(2) system call~~
-* DONE ~~Logging? - the parallel feature makes log really messy~~
-
-Your feedback is highly appreciated.
+See https://github.com/skaji/cpm/issues/181
 
 ## License
 
