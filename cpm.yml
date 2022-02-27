@@ -27,7 +27,7 @@ prereqs:
       Module::CPANfile:
       Module::Metadata:
       Module::cpmfile: { version: '0.001' }
-      Parallel::Pipes: { version: '0.004' }
+      Parallel::Pipes::App: { version: '0.100' }
       Parse::PMFile: { version: '0.43' }
       local::lib: { version: '2.000018' }
       parent:
