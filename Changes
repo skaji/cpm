@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.997008  2022-02-27 17:10:28 JST
+        - Use Parallel::Pipes::App (#212)
+
 0.997007  2021-09-23 21:22:47 JST
         - Check HTTP status code when fetching tarballs (#207)
 
