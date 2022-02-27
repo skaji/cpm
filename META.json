@@ -4,7 +4,7 @@
       "Shoichi Kaji <skaji@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Milla version v1.0.20, Dist::Zilla version 6.024, CPAN::Meta::Converter version 2.150010",
+   "generated_by" : "Dist::Milla version v1.0.21, Dist::Zilla version 6.024, CPAN::Meta::Converter version 2.150010",
    "license" : [
       "perl_5"
    ],
@@ -35,7 +35,7 @@
             "Archive::Zip" : "1.68",
             "CPAN::Mirror::Tiny" : "0.20",
             "Capture::Tiny" : "0",
-            "Dist::Milla" : "v1.0.20",
+            "Dist::Milla" : "v1.0.21",
             "Path::Tiny" : "0",
             "Test::More" : "0.98",
             "Test::Pod" : "1.41"
@@ -62,7 +62,7 @@
             "Module::CPANfile" : "0",
             "Module::Metadata" : "0",
             "Module::cpmfile" : "0.001",
-            "Parallel::Pipes" : "0.004",
+            "Parallel::Pipes::App" : "0.100",
             "Parse::PMFile" : "0.43",
             "local::lib" : "2.000018",
             "parent" : "0",
@@ -183,7 +183,7 @@
       "Will Sheppard <will.sheppard.uk@gmail.com>"
    ],
    "x_generated_by_perl" : "v5.34.0",
-   "x_serialization_backend" : "Cpanel::JSON::XS version 4.26",
+   "x_serialization_backend" : "Cpanel::JSON::XS version 4.27",
    "x_spdx_expression" : "Artistic-1.0-Perl OR GPL-1.0-or-later",
    "x_static_install" : 1
 }

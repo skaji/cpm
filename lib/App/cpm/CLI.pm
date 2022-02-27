@@ -25,7 +25,7 @@ use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
 use List::Util ();
 use Module::CPANfile;
 use Module::cpmfile;
-use Parallel::Pipes;
+use Parallel::Pipes::App;
 use Pod::Text ();
 
 sub new {
@@ -364,32 +364,24 @@ sub cmd_install {
 sub install {
     my ($self, $master, $worker, $num) = @_;
 
-    my $pipes = Parallel::Pipes->new($num, sub {
-        my $task = shift;
-        return $worker->work($task);
-    });
-    my $get_task; $get_task = sub {
-        my $master = shift;
-        if (my @task = $master->get_task) {
-            return @task;
-        }
-        if (my @written = $pipes->is_written) {
-            my @ready = $pipes->is_ready(@written);
-            $master->register_result($_->read) for @ready;
-            return $master->$get_task;
-        } else {
-            return;
-        }
-    };
-    while (my @task = $master->$get_task) {
-        my @ready = $pipes->is_ready;
-        $master->register_result($_->read) for grep $_->is_written, @ready;
-        for my $i (0 .. List::Util::min($#task, $#ready)) {
-            $task[$i]->in_charge(1);
-            $ready[$i]->write($task[$i]);
-        }
-    }
-    $pipes->close;
+    my @task = $master->get_task;
+    Parallel::Pipes::App->run(
+        num => $num,
+        before_work => sub {
+            my $task = shift;
+            $task->in_charge(1);
+        },
+        work => sub {
+            my $task = shift;
+            return $worker->work($task);
+        },
+        after_work => sub {
+            my $result = shift;
+            $master->register_result($result);
+            @task = $master->get_task;
+        },
+        tasks => \@task,
+    );
 }
 
 sub cleanup {
