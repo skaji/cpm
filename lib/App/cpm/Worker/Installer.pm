@@ -401,6 +401,10 @@ sub configure {
             }) and ++$configure_ok and last;
         }
         if (-f 'Makefile.PL') {
+            if (!$menlo->{make}) {
+                $self->{logger}->log("There is Makefile.PL, but you don't have 'make' command; you should install 'make' command first");
+                last;
+            }
             my @cmd = ($menlo->{perl}, 'Makefile.PL');
             push @cmd, 'PUREPERL_ONLY=1' if $self->{pureperl_only};
             $self->_retry(sub {
