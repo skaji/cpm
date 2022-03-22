@@ -17,10 +17,11 @@ subtest git2 => sub {
 };
 
 subtest fail => sub {
-    my $r = cpm_install "-v", "git://github.com/skaji/xxxxx.git";
+    local $ENV{GIT_TERMINAL_PROMPT} = 0;
+    my $r = cpm_install "-v", "https://github.com/skaji/xxxxx.git";
     isnt $r->exit, 0;
     note $r->err;
-    $r = cpm_install "-v", 'git://github.com/skaji/change-shebang.git@xxxxxx';
+    $r = cpm_install "-v", 'https://github.com/skaji/change-shebang.git@xxxxxx';
     isnt $r->exit, 0;
     note $r->err;
 };
