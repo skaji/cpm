@@ -66,7 +66,7 @@ cpm can install dev releases (TRIAL releases).
 
 And cpm can install modules from git repositories directly.
 
-  $ cpm install git://github.com/skaji/Carl.git
+  $ cpm install https://github.com/skaji/Carl.git
 
 =head2 cpanfile and dist/url/mirror/git syntax
 
@@ -101,7 +101,7 @@ cpm supports dist/url/mirror syntax in cpanfile just like cpanminus:
 
 cpm also supports git syntax in cpanfile:
 
-  requires 'Carl', git => 'git://github.com/skaji/Carl.git';
+  requires 'Carl', git => 'https://github.com/skaji/Carl.git';
   requires 'App::cpm', git => 'https://login:password@github.com/skaji/cpm.git';
   requires 'Perl::PrereqDistributionGatherer',
     git => 'https://github.com/skaji/Perl-PrereqDistributionGatherer',
