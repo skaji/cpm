@@ -51,4 +51,10 @@ subtest configure => sub {
     note $r->log;
 };
 
+subtest core => sub {
+    my $r = cpm_install "strict";
+    is $r->exit, 0;
+    like $r->err, qr/DONE install strict is a core module/;
+};
+
 done_testing;

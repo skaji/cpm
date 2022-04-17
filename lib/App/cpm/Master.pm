@@ -395,14 +395,13 @@ sub _register_resolve_result {
 
     local $self->{logger}{context} = $task->{package};
     if ($task->{distfile} and $task->{distfile} =~ m{/perl-5[^/]+$}) {
-        my $message = "Cannot upgrade core module $task->{package}.";
+        my $message = "$task->{package} is a core module.";
         $self->{logger}->log($message);
         App::cpm::Logger->log(
-            result => "FAIL",
+            result => "DONE",
             type => "install",
             message => $message,
         );
-        $self->{_fail_install}{$task->{package}}++; # XXX
         return;
     }
 
