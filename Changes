@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.997010  2022-04-17 14:33:54 JST
+        - Treat "cpm install core-modules" as success (atoomic #161, #216)
+
 0.997009  2022-03-02 08:11:47 JST
         - Make sure make command exists before executing Makefile.PL (#213)
 
