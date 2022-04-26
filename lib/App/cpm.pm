@@ -2,7 +2,7 @@ package App::cpm;
 use strict;
 use warnings;
 
-our $VERSION = '0.997010';
+our $VERSION = '0.997011';
 our ($GIT_DESCRIBE, $GIT_URL);
 
 1;

@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.997011  2022-04-27 07:28:03 JST
+        - Replace git.io shortener links to full address (mbeijen #219)
+        - **PLEASE** use https://raw.githubusercontent.com/skaji/cpm/main/cpm to get cpm
+
 0.997010  2022-04-17 14:33:54 JST
         - Treat "cpm install core-modules" as success (atoomic #161, #216)
 
