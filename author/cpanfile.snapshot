@@ -559,11 +559,11 @@ DISTRIBUTIONS
       CPAN::Meta::Prereqs 2.12091
       ExtUtils::MakeMaker 0
       parent 0
-  Module-CoreList-5.20220320
-    pathname: B/BI/BINGOS/Module-CoreList-5.20220320.tar.gz
+  Module-CoreList-5.20220420
+    pathname: B/BI/BINGOS/Module-CoreList-5.20220420.tar.gz
     provides:
-      Module::CoreList 5.20220320
-      Module::CoreList::Utils 5.20220320
+      Module::CoreList 5.20220420
+      Module::CoreList::Utils 5.20220420
     requirements:
       ExtUtils::MakeMaker 0
       List::Util 0
@@ -894,11 +894,11 @@ DISTRIBUTIONS
       perl 5.008000
       strict 0
       warnings 0
-  local-lib-2.000028
-    pathname: H/HA/HAARG/local-lib-2.000028.tar.gz
+  local-lib-2.000029
+    pathname: H/HA/HAARG/local-lib-2.000029.tar.gz
     provides:
       lib::core::only undef
-      local::lib 2.000028
+      local::lib 2.000029
     requirements:
       perl 5.006
   parent-0.238
