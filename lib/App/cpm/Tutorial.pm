@@ -22,11 +22,11 @@ which is fast!
 
 From CPAN:
 
-  $ curl -fsSL https://git.io/cpm | perl - install -g App::cpm
+  $ curl -fsSL https://raw.githubusercontent.com/skaji/cpm/master/cpm | perl - install -g App::cpm
 
 Or, download a I<self-contained> cpm:
 
-  $ curl -fsSL https://git.io/cpm > cpm
+  $ curl -fsSL https://raw.githubusercontent.com/skaji/cpm/master/cpm > cpm
   $ chmod +x cpm
   $ ./cpm --version
 

@@ -11,7 +11,7 @@ There are 2 ways.
 ### 1) self-contained version
 
 ```sh
-$ curl -fsSL https://git.io/cpm > cpm
+$ curl -fsSL https://raw.githubusercontent.com/skaji/cpm/master/cpm > cpm
 $ chmod +x cpm
 $ ./cpm --version
 ```
@@ -19,7 +19,7 @@ $ ./cpm --version
 ### 2) From CPAN
 
 ```sh
-$ curl -fsSL https://git.io/cpm | perl - install -g App::cpm
+$ curl -fsSL https://raw.githubusercontent.com/skaji/cpm/master/cpm | perl - install -g App::cpm
 $ cpm --version
 ```
 
