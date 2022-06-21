@@ -94,4 +94,9 @@ sub run_timeout {
     ref $cmd eq 'CODE' ? $result : $result == 0;
 }
 
+sub opts_in_static_install {
+    my ($self, $meta) = @_;
+    return $self->{static_install} && $meta->{x_static_install} && $meta->{x_static_install} == 1;
+}
+
 1;
