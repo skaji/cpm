@@ -133,6 +133,9 @@ sub parse_options {
     if ($self->{pureperl_only} or $self->{sudo} or !$self->{notest} or $self->{man_pages} or $] < 5.012) {
         $self->{prebuilt} = 0;
     }
+    if ($self->{sudo}) {
+        $self->{static_install} = 0;
+    }
 
     $App::cpm::Logger::COLOR = 1 if $self->{color};
     $App::cpm::Logger::VERBOSE = 1 if $self->{verbose};
