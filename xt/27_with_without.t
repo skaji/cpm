@@ -7,7 +7,7 @@ use Path::Tiny ();
 
 my $cpanfile = Path::Tiny->tempfile; $cpanfile->spew(<<'___');
 on test => sub {
-    recommends 'Process::Status';
+    recommends 'CPAN::Test::Dummy::Perl5::ModuleBuild';
     suggests 'App::ChangeShebang';
 };
 
@@ -31,7 +31,7 @@ subtest 'normal' => sub {
 subtest 'develop' => sub {
     my $r = cpm_install '--with-develop', '--cpanfile', $cpanfile;
     is $r->exit, 0;
-    unlike $r->err, qr/DONE install Process-Status/;
+    unlike $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-ModuleBuild/;
     unlike $r->err, qr/DONE install App-ChangeShebang/;
     like   $r->err, qr/DONE install Parallel-Pipes/;
     unlike $r->err, qr/DONE install File-pushd/;
@@ -42,7 +42,7 @@ subtest 'develop' => sub {
 subtest 'recommends' => sub {
     my $r = cpm_install '--with-recommends', '--cpanfile', $cpanfile;
     is $r->exit, 0;
-    like   $r->err, qr/DONE install Process-Status/;
+    like   $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-ModuleBuild/;
     unlike $r->err, qr/DONE install App-ChangeShebang/;
     unlike $r->err, qr/DONE install Parallel-Pipes/;
     unlike $r->err, qr/DONE install File-pushd/;
@@ -53,7 +53,7 @@ subtest 'recommends' => sub {
 subtest 'suggests' => sub {
     my $r = cpm_install '--with-suggests', '--cpanfile', $cpanfile;
     is $r->exit, 0;
-    unlike $r->err, qr/DONE install Process-Status/;
+    unlike $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-ModuleBuild/;
     like   $r->err, qr/DONE install App-ChangeShebang/;
     unlike $r->err, qr/DONE install Parallel-Pipes/;
     unlike $r->err, qr/DONE install File-pushd/;
@@ -64,7 +64,7 @@ subtest 'suggests' => sub {
 subtest 'mix1' => sub {
     my $r = cpm_install '--with-configure', '--without-test', '--with-recommends', '--cpanfile', $cpanfile;
     is $r->exit, 0;
-    unlike $r->err, qr/DONE install Process-Status/;
+    unlike $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-ModuleBuild/;
     unlike $r->err, qr/DONE install App-ChangeShebang/;
     unlike $r->err, qr/DONE install Parallel-Pipes/;
     unlike $r->err, qr/DONE install File-pushd/;
@@ -75,7 +75,7 @@ subtest 'mix1' => sub {
 subtest 'mix2' => sub {
     my $r = cpm_install '--with-develop', '--with-recommends', '--with-suggests', '--cpanfile', $cpanfile;
     is $r->exit, 0;
-    like   $r->err, qr/DONE install Process-Status/;
+    like   $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-ModuleBuild/;
     like   $r->err, qr/DONE install App-ChangeShebang/;
     like   $r->err, qr/DONE install Parallel-Pipes/;
     like   $r->err, qr/DONE install File-pushd/;
