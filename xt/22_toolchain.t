@@ -6,7 +6,7 @@ use lib "xt/lib";
 use CLI;
 
 subtest module_build => sub {
-    my $r = cpm_install 'Module::Build@0.4203';
+    my $r = cpm_install 'Module::Build@0.4232';
     is $r->exit, 0;
     like $r->err, qr/DONE install Module(?:-|::)Build/;
     note $r->err;
