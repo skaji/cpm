@@ -24,12 +24,6 @@
       "url" : "https://metacpan.org/release/CPAN-Meta"
    },
    {
-      "copyright" : "Leon Timmermans",
-      "license" : "the same as Perl 5",
-      "name" : "CPAN-Meta-Check",
-      "url" : "https://metacpan.org/release/CPAN-Meta-Check"
-   },
-   {
       "copyright" : "David Golden and Ricardo Signes",
       "license" : "the same as Perl 5",
       "name" : "CPAN-Meta-Requirements",
@@ -156,12 +150,6 @@
       "url" : "https://metacpan.org/release/HTTP-Tinyish"
    },
    {
-      "copyright" : "Jos Boumans",
-      "license" : "the same as Perl 5",
-      "name" : "IPC-Cmd",
-      "url" : "https://metacpan.org/release/IPC-Cmd"
-   },
-   {
       "copyright" : "R. Barrie Slaymaker, Jr.",
       "license" : "the BSD, Artistic, or GPL licenses, any version",
       "name" : "IPC-Run3",
@@ -172,12 +160,6 @@
       "license" : "the same as Perl 5",
       "name" : "JSON-PP",
       "url" : "https://metacpan.org/release/JSON-PP"
-   },
-   {
-      "copyright" : "Audrey Tang",
-      "license" : "MIT",
-      "name" : "Locale-Maketext-Simple",
-      "url" : "https://metacpan.org/release/Locale-Maketext-Simple"
    },
    {
       "copyright" : "Brandon L. Black",

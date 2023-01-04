@@ -79,6 +79,7 @@ my @extra = qw(
 
 my $exclude = join ",", qw(
     CPAN::Common::Index
+    CPAN::Meta::Check
     Carp
     Digest::SHA
     ExtUtils::CBuilder
@@ -87,8 +88,11 @@ my $exclude = join ",", qw(
     ExtUtils::ParseXS
     File::Fetch
     File::Spec
+    IPC::Cmd
+    Locale::Maketext::Simple
     Module::Build::Tiny
     Module::CoreList
+    Module::Load::Conditional
     Params::Check
     Perl::OSType
     Test
