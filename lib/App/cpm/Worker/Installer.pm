@@ -415,10 +415,15 @@ sub configure {
     }
     return unless $configure_ok;
 
-    my $distdata = $self->_build_distdata($source, $distfile, $meta);
-    my $phase = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
     my $mymeta = $self->_load_metafile($distfile, 'MYMETA.json', 'MYMETA.yml');
+    if (!$mymeta) {
+        $self->{logger}->log("Failed to find MYMETA.json (this may happen if Makefile.PL has NO_MYMETA attribute)");
+        return;
+    }
+    my $phase = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
     my $req = $self->_extract_requirements($mymeta, $phase);
+
+    my $distdata = $self->_build_distdata($source, $distfile, $meta);
     return +{
         distdata => $distdata,
         requirements => $req,
