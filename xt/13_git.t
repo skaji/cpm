@@ -5,13 +5,13 @@ use lib "xt/lib";
 use CLI;
 
 subtest git1 => sub {
-    my $r = cpm_install "-v", "https://github.com/skaji/change-shebang.git";
+    my $r = cpm_install "-v", "https://github.com/skaji/CPAN-Test-Dummy-Perl5-ModuleBuild.git";
     is $r->exit, 0;
     note $r->err;
 };
 
 subtest git2 => sub {
-    my $r = cpm_install "-v", 'https://github.com/skaji/change-shebang.git@0.05', "App::FatPacker";
+    my $r = cpm_install "-v", 'https://github.com/skaji/CPAN-Test-Dummy-Perl5-ModuleBuild.git@60fa42d', "App::FatPacker";
     is $r->exit, 0;
     note $r->err;
 };
