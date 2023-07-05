@@ -7,7 +7,7 @@ use Path::Tiny;
 
 subtest ok => sub {
     my $cpanfile = Path::Tiny->tempfile;
-    $cpanfile->spew(qq(requires "Distribution::Metadata", ">= 0.01, < 3.00";\n));
+    $cpanfile->spew(qq(requires "Distribution::Metadata", ">= 0.01, < 0.10";\n));
     my $r = cpm_install "--cpanfile", $cpanfile->stringify;
     is $r->exit, 0;
 };
