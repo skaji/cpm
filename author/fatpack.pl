@@ -124,11 +124,16 @@ use $target;
 $copyright
 ___
 
-my $resolver = -f "cpanfile.snapshot" && !$force && !$test && !$update_only ? "snapshot" : "metadb";
+my @resolver;
+if (-f "cpanfile.snapshot" && !$force && !$test && !$update_only) {
+    @resolver = ("-r", "snapshot")
+} else {
+    @resolver = ("-r", 'Fixed,CPAN::Meta::Requirements@2.140', "-r", "metadb");
+}
 
-warn "Resolver: $resolver\n";
-cpm "install", "--target-perl", $target, "--resolver", $resolver, "--cpmfile", "../cpm.yml";
-cpm "install", "--target-perl", $target, "--resolver", $resolver, @extra;
+warn "Resolver: @resolver\n";
+cpm "install", "--target-perl", $target, @resolver, "--cpmfile", "../cpm.yml";
+cpm "install", "--target-perl", $target, @resolver, @extra;
 gen_snapshot if !$test;
 remove_version_xs;
 exit if $update_only;
