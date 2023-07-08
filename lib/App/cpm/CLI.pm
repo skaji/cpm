@@ -58,6 +58,7 @@ sub new {
         prebuilt => $] >= 5.012 && $prebuilt,
         pureperl_only => 0,
         static_install => 1,
+        default_resolvers => 1,
         %option
     }, $class;
 }
@@ -87,6 +88,7 @@ sub parse_options {
         "snapshot=s" => \($self->{snapshot}),
         "sudo" => \($self->{sudo}),
         "r|resolver=s@" => \@resolver,
+        "default-resolvers!" => \($self->{default_resolvers}),
         "mirror-only" => \($self->{mirror_only}),
         "dev" => \($self->{dev}),
         "man-pages" => \($self->{man_pages}),
@@ -533,55 +535,13 @@ sub generate_resolver {
     my $cascade = App::cpm::Resolver::Cascade->new;
     $cascade->add($initial) if $initial;
     if (@{$self->{resolver}}) {
-        for (@{$self->{resolver}}) {
-            my ($klass, @arg) = split /,/, $_;
-            my $resolver;
-            if ($klass =~ /^metadb$/i) {
-                my ($uri, $mirror);
-                if (@arg > 1) {
-                    ($uri, $mirror) = @arg;
-                } elsif (@arg == 1) {
-                    $mirror = $arg[0];
-                } else {
-                    $mirror = $self->{mirror};
-                }
-                $resolver = App::cpm::Resolver::MetaDB->new(
-                    $uri ? (uri => $uri) : (),
-                    mirror => $self->normalize_mirror($mirror),
-                );
-            } elsif ($klass =~ /^metacpan$/i) {
-                $resolver = App::cpm::Resolver::MetaCPAN->new(dev => $self->{dev});
-            } elsif ($klass =~ /^02packages?$/i) {
-                require App::cpm::Resolver::02Packages;
-                my ($path, $mirror);
-                if (@arg > 1) {
-                    ($path, $mirror) = @arg;
-                } elsif (@arg == 1) {
-                    $mirror = $arg[0];
-                } else {
-                    $mirror = $self->{mirror};
-                }
-                $resolver = App::cpm::Resolver::02Packages->new(
-                    $path ? (path => $path) : (),
-                    cache => "$self->{home}/sources",
-                    mirror => $self->normalize_mirror($mirror),
-                );
-            } elsif ($klass =~ /^snapshot$/i) {
-                require App::cpm::Resolver::Snapshot;
-                $resolver = App::cpm::Resolver::Snapshot->new(
-                    path => $self->{snapshot},
-                    mirror => @arg ? $self->normalize_mirror($arg[0]) : $self->{mirror},
-                );
-            } else {
-                my $full_klass = $klass =~ s/^\+// ? $klass : "App::cpm::Resolver::$klass";
-                (my $file = $full_klass) =~ s{::}{/}g;
-                require "$file.pm"; # may die
-                $resolver = $full_klass->new(@arg);
-            }
+        for my $r (@{$self->{resolver}}) {
+            my ($klass, @argv) = split /,/, $r;
+            my $resolver = $self->_generate_resolver($klass, @argv);
             $cascade->add($resolver);
         }
-        return $cascade;
     }
+    return $cascade if !$self->{default_resolvers};
 
     if ($self->{mirror_only}) {
         require App::cpm::Resolver::02Packages;
@@ -620,6 +580,51 @@ sub generate_resolver {
     }
 
     $cascade;
+}
+
+sub _generate_resolver {
+    my ($self, $klass, @argv) = @_;
+    if ($klass =~ /^metadb$/i) {
+        my ($uri, $mirror);
+        if (@argv > 1) {
+            ($uri, $mirror) = @argv;
+        } elsif (@argv == 1) {
+            $mirror = $argv[0];
+        } else {
+            $mirror = $self->{mirror};
+        }
+        return App::cpm::Resolver::MetaDB->new(
+            $uri ? (uri => $uri) : (),
+            mirror => $self->normalize_mirror($mirror),
+        );
+    } elsif ($klass =~ /^metacpan$/i) {
+        return App::cpm::Resolver::MetaCPAN->new(dev => $self->{dev});
+    } elsif ($klass =~ /^02packages?$/i) {
+        require App::cpm::Resolver::02Packages;
+        my ($path, $mirror);
+        if (@argv > 1) {
+            ($path, $mirror) = @argv;
+        } elsif (@argv == 1) {
+            $mirror = $argv[0];
+        } else {
+            $mirror = $self->{mirror};
+        }
+        return App::cpm::Resolver::02Packages->new(
+            $path ? (path => $path) : (),
+            cache => "$self->{home}/sources",
+            mirror => $self->normalize_mirror($mirror),
+        );
+    } elsif ($klass =~ /^snapshot$/i) {
+        require App::cpm::Resolver::Snapshot;
+        return App::cpm::Resolver::Snapshot->new(
+            path => $self->{snapshot},
+            mirror => @argv ? $self->normalize_mirror($argv[0]) : $self->{mirror},
+        );
+    }
+    my $full_klass = $klass =~ s/^\+// ? $klass : "App::cpm::Resolver::$klass";
+    (my $file = $full_klass) =~ s{::}{/}g;
+    require "$file.pm"; # may die
+    return $full_klass->new(@argv);
 }
 
 1;

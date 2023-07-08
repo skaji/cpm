@@ -31,6 +31,7 @@ sub resolve {
             return $result;
         }
     }
+    push @error, "no resolver backends" if !@error;
     return { error => join("\n", @error) };
 }
 
