@@ -58,6 +58,7 @@ sub new {
         prebuilt => $] >= 5.012 && $prebuilt,
         pureperl_only => 0,
         static_install => 1,
+        default_resolvers => 1,
         %option
     }, $class;
 }
@@ -87,6 +88,7 @@ sub parse_options {
         "snapshot=s" => \($self->{snapshot}),
         "sudo" => \($self->{sudo}),
         "r|resolver=s@" => \@resolver,
+        "default-resolvers!" => \($self->{default_resolvers}),
         "mirror-only" => \($self->{mirror_only}),
         "dev" => \($self->{dev}),
         "man-pages" => \($self->{man_pages}),
@@ -539,6 +541,7 @@ sub generate_resolver {
             $cascade->add($resolver);
         }
     }
+    return $cascade if !$self->{default_resolvers};
 
     if ($self->{mirror_only}) {
         require App::cpm::Resolver::02Packages;
