@@ -40,9 +40,6 @@ cpm - a fast CPAN module installer
   > cpm install --resolver 02packages,http://example.com/darkpan Your::Module
   > cpm install --resolver 02packages,file:///path/to/darkpan    Your::Module
 
-  # use darkpan first, and if it fails, use metadb and normal CPAN
-  > cpm install --resolver 02packages,http://example.com/darkpan --resolver metadb Your::Module
-
   # specify types/phases in cpanfile by "--with-*" and "--without-*" options
   > cpm install --with-recommends --without-test
 
