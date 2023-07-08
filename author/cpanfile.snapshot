@@ -195,7 +195,7 @@ DISTRIBUTIONS
     pathname: T/TO/TODDR/Exporter-5.74.tar.gz
     provides:
       Exporter 5.74
-      Exporter::Heavy 5.76
+      Exporter::Heavy 5.77
     requirements:
       Carp 1.05
       ExtUtils::MakeMaker 0
@@ -316,10 +316,10 @@ DISTRIBUTIONS
       Module::CPANfile 0
       Test::More 0.88
       version 0.76
-  ExtUtils-PL2Bat-0.004
-    pathname: L/LE/LEONT/ExtUtils-PL2Bat-0.004.tar.gz
+  ExtUtils-PL2Bat-0.005
+    pathname: L/LE/LEONT/ExtUtils-PL2Bat-0.005.tar.gz
     provides:
-      ExtUtils::PL2Bat 0.004
+      ExtUtils::PL2Bat 0.005
     requirements:
       Carp 0
       ExtUtils::MakeMaker 0
