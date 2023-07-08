@@ -129,21 +129,10 @@ change the cpm resolver by C<--resolver/-r> option:
   $ cpm install --resolver 02packages,http://example.com/darkpan Module
   $ cpm install --resolver 02packages,file::///path/to/darkpan   Module
 
-Sometimes, your darkpan is not whole CPAN mirror, but partial,
-so some modules are missing in it.
-Then append C<--resolver metadb> option to fall back to normal MetaDB resolver:
-
-  $ cpm install \
-     --resolver 02packages,http://example.com/darkpan \
-     --resolver metadb \
-     Module
-
-If you host your own darkmetadb for your own darkpan, you can use it too.
-Then append C<--resolver metadb> option to fall back to normal MetaDB resolver:
+If you host your own metadb for your own darkpan, you can use it too:
 
   $ cpm install \
      --resolver metadb,http://example.com/darkmetadb,http://example.com/darkpan \
-     --resolver metadb \
      Module
 
 =cut
