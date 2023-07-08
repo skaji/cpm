@@ -4,7 +4,7 @@
       "Shoichi Kaji <skaji@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 6.024, CPAN::Meta::Converter version 2.150010",
+   "generated_by" : "Dist::Zilla version 6.030, CPAN::Meta::Converter version 2.150010",
    "license" : [
       "perl_5"
    ],
@@ -106,6 +106,9 @@
       "App::cpm::Resolver::Custom" : {
          "file" : "lib/App/cpm/Resolver/Custom.pm"
       },
+      "App::cpm::Resolver::Fixed" : {
+         "file" : "lib/App/cpm/Resolver/Fixed.pm"
+      },
       "App::cpm::Resolver::MetaCPAN" : {
          "file" : "lib/App/cpm/Resolver/MetaCPAN.pm"
       },
@@ -171,8 +174,8 @@
       "Shoichi Kaji <skaji@outlook.com>",
       "Will Sheppard <will.sheppard.uk@gmail.com>"
    ],
-   "x_generated_by_perl" : "v5.34.1",
-   "x_serialization_backend" : "Cpanel::JSON::XS version 4.27",
+   "x_generated_by_perl" : "v5.38.0",
+   "x_serialization_backend" : "Cpanel::JSON::XS version 4.37",
    "x_spdx_expression" : "Artistic-1.0-Perl OR GPL-1.0-or-later",
    "x_static_install" : 1
 }
