@@ -115,16 +115,18 @@ sub _fetch_git {
         DIR => $self->menlo->{base},
     );
     $self->menlo->mask_output( diag_progress => "Cloning $uri" );
+
+    local $ENV{GIT_TERMINAL_PROMPT} = 0 if !exists $ENV{GIT_TERMINAL_PROMPT};
     $self->menlo->run_command([ 'git', 'clone', $uri, $dir ]);
 
     unless (-e "$dir/.git") {
-        $self->menlo->diag_fail("Failed cloning git repository $uri", 1);
+        $self->menlo->diag_fail("Failed cloning git repository $uri", 0);
         return;
     }
     my $guard = pushd $dir;
     if ($ref) {
         unless ($self->menlo->run_command([ 'git', 'checkout', $ref ])) {
-            $self->menlo->diag_fail("Failed to checkout '$ref' in git repository $uri\n");
+            $self->menlo->diag_fail("Failed to checkout '$ref' in git repository $uri\n", 0);
             return;
         }
     }
