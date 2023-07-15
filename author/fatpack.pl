@@ -128,7 +128,7 @@ my @resolver;
 if (-f "cpanfile.snapshot" && !$force && !$test && !$update_only) {
     @resolver = ("-r", "snapshot", "--no-default-resolvers");
 } else {
-    @resolver = ("-r", 'Fixed,CPAN::Meta::Requirements@2.140');
+    @resolver = ("-r", 'Fixed,CPAN::Meta::Requirements@2.140', "-r", "metadb");
 }
 
 warn "Resolver: @resolver\n";
