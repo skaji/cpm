@@ -19,16 +19,6 @@
             "Module::Build::Tiny" : "0.034"
          }
       },
-      "develop" : {
-         "requires" : {
-            "Archive::Tar" : "0",
-            "Archive::Zip" : "1.68",
-            "CPAN::Mirror::Tiny" : "0.20",
-            "Capture::Tiny" : "0",
-            "Path::Tiny" : "0",
-            "Test::More" : "0.98"
-         }
-      },
       "runtime" : {
          "recommends" : {
             "Carton" : "0"
