@@ -11,7 +11,7 @@ prereqs:
     recommends:
       Carton:
     requires:
-      CPAN::02Packages::Search:
+      CPAN::02Packages::Search: { version: '0.100' }
       CPAN::DistnameInfo:
       CPAN::Meta:
       CPAN::Meta::Requirements: { version: '2.130' }
@@ -29,6 +29,7 @@ prereqs:
       Module::cpmfile: { version: '0.001' }
       Parallel::Pipes::App: { version: '0.100' }
       Parse::PMFile: { version: '0.43' }
+      Proc::ForkSafe: { version: '0.001' }
       local::lib: { version: '2.000018' }
       parent:
       perl: { version: '5.008001' }

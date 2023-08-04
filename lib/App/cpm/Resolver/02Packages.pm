@@ -13,6 +13,7 @@ use File::Path ();
 use File::Spec;
 use File::Which ();
 use IPC::Run3 ();
+use Proc::ForkSafe;
 
 sub new {
     my ($class, %option) = @_;
@@ -24,7 +25,9 @@ sub new {
     my $cache_dir = $class->_cache_dir($mirror, $cache_dir_base);
     my $local_path = $class->_fetch($path => $cache_dir);
 
-    my $index = CPAN::02Packages::Search->new(file => $local_path);
+    my $index = Proc::ForkSafe->wrap(sub {
+        CPAN::02Packages::Search->new(file => $local_path);
+    });
     bless { mirror => $mirror, local_path => $local_path, index => $index }, $class;
 }
 
@@ -77,7 +80,7 @@ sub _fetch {
 
 sub resolve {
     my ($self, $task) = @_;
-    my $res = $self->{index}->search($task->{package});
+    my $res = $self->{index}->call(search => $task->{package});
     if (!$res) {
         return { error => "not found, @{[$self->{local_path}]}" };
     }

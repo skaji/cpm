@@ -24,7 +24,7 @@
             "Carton" : "0"
          },
          "requires" : {
-            "CPAN::02Packages::Search" : "0",
+            "CPAN::02Packages::Search" : "0.100",
             "CPAN::DistnameInfo" : "0",
             "CPAN::Meta" : "0",
             "CPAN::Meta::Requirements" : "2.130",
@@ -42,6 +42,7 @@
             "Module::cpmfile" : "0.001",
             "Parallel::Pipes::App" : "0.100",
             "Parse::PMFile" : "0.43",
+            "Proc::ForkSafe" : "0.001",
             "local::lib" : "2.000018",
             "parent" : "0",
             "perl" : "5.008001",
