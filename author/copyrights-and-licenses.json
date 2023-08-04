@@ -216,6 +216,12 @@
       "url" : "https://metacpan.org/release/Parse-PMFile"
    },
    {
+      "copyright" : "Shoichi Kaji",
+      "license" : "the same as Perl 5",
+      "name" : "Proc-ForkSafe",
+      "url" : "https://metacpan.org/release/Proc-ForkSafe"
+   },
+   {
       "copyright" : "The Perl 5 Porters",
       "license" : "the same as Perl 5",
       "name" : "Search-Dict",
