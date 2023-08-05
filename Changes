@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.997013  2023-08-05 09:06:41 JST
+        - Set GIT_TERMINAL_PROMPT=0 when git cloning
+
 0.997012  2023-07-08 12:51:22 JST
         - Now cpm continues using the default resolvers even if you specify --resolver option (#238)
         - Introduce --no-default-resolvers option (#238)
