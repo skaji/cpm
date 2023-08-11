@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.997014  2023-08-12 00:07:25 JST
+        - Now cpm can load initial requirements from META.json/MYMETA.json (#239)
+
 0.997013  2023-08-05 09:06:41 JST
         - Set GIT_TERMINAL_PROMPT=0 when git cloning
 
