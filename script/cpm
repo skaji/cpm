@@ -19,8 +19,11 @@ cpm - a fast CPAN module installer
   # install modules with verbose messages
   > cpm install -v Module
 
-  # from cpanfile (with cpanfile.snapshot if any)
+  # from cpmfile/cpanfile (with cpanfile.snapshot if any)
   > cpm install
+
+  # from metafile (META.json or MYMETA.json)
+  > perl Makefile.PL && cpm install --metafile MYMETA.json
 
   # install module into current @INC instead of local/
   > cpm install -g Module
@@ -40,7 +43,7 @@ cpm - a fast CPAN module installer
   > cpm install --resolver 02packages,http://example.com/darkpan Your::Module
   > cpm install --resolver 02packages,file:///path/to/darkpan    Your::Module
 
-  # specify types/phases in cpanfile by "--with-*" and "--without-*" options
+  # specify types/phases in cpmfile/cpanfile/metafile by "--with-*" and "--without-*" options
   > cpm install --with-recommends --without-test
 
 =head1 OPTIONS
@@ -90,8 +93,12 @@ cpm - a fast CPAN module installer
         specify configure/build/test timeout second, default: 60sec, 3600sec, 1800sec
       --show-progress, --no-show-progress
         show progress, default: on
+      --cpmfile=path
+        specify cpmfile path, default: ./cpm.yml
       --cpanfile=path
         specify cpanfile path, default: ./cpanfile
+      --metafile=path
+        specify META file path, default: N/A
       --snapshot=path
         specify cpanfile.snapshot path, default: ./cpanfile.snapshot
   -V, --version
@@ -99,7 +106,7 @@ cpm - a fast CPAN module installer
   -h, --help
         show this help
       --feature=identifier
-        specify the feature to enable in cpanfile; you can use --feature multiple times
+        specify the feature to enable in cpmfile/cpanfile/metafile; you can use --feature multiple times
       --with-requires,   --without-requires   (default: with)
       --with-recommends, --without-recommends (default: without)
       --with-suggests,   --without-suggests   (default: without)
@@ -108,7 +115,7 @@ cpm - a fast CPAN module installer
       --with-test,       --without-test       (default: with)
       --with-runtime,    --without-runtime    (default: with)
       --with-develop,    --without-develop    (default: without)
-        specify types/phases of dependencies in cpanfile to be installed
+        specify types/phases of dependencies in cpmfile/cpanfile/metafile to be installed
       --with-all
         shortcut for --with-requires, --with-recommends, --with-suggests,
         --with-configure, --with-build, --with-test, --with-runtime and --with-develop
