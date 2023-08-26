@@ -27,7 +27,7 @@ prereqs:
       Module::CPANfile:
       Module::Metadata:
       Module::cpmfile: { version: '0.001' }
-      Parallel::Pipes::App: { version: '0.100' }
+      Parallel::Pipes::App: { version: '0.200' }
       Parse::PMFile: { version: '0.43' }
       Proc::ForkSafe: { version: '0.001' }
       local::lib: { version: '2.000018' }

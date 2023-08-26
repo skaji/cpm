@@ -40,7 +40,7 @@
             "Module::CPANfile" : "0",
             "Module::Metadata" : "0",
             "Module::cpmfile" : "0.001",
-            "Parallel::Pipes::App" : "0.100",
+            "Parallel::Pipes::App" : "0.200",
             "Parse::PMFile" : "0.43",
             "Proc::ForkSafe" : "0.001",
             "local::lib" : "2.000018",
@@ -78,6 +78,12 @@
       },
       "App::cpm::Logger::File" : {
          "file" : "lib/App/cpm/Logger/File.pm"
+      },
+      "App::cpm::Logger::Terminal" : {
+         "file" : "lib/App/cpm/Logger/Terminal.pm"
+      },
+      "App::cpm::Logger::Terminal::Lines" : {
+         "file" : "lib/App/cpm/Logger/Terminal.pm"
       },
       "App::cpm::Master" : {
          "file" : "lib/App/cpm/Master.pm"
