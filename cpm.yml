@@ -14,7 +14,7 @@ prereqs:
       CPAN::02Packages::Search: { version: '0.100' }
       CPAN::DistnameInfo:
       CPAN::Meta:
-      CPAN::Meta::Requirements: { version: '2.130' }
+      CPAN::Meta::Requirements: { version: '2.143' }
       CPAN::Meta::YAML:
       Command::Runner: { version: '0.100' }
       ExtUtils::Install: { version: '2.20' }
@@ -32,5 +32,5 @@ prereqs:
       Proc::ForkSafe: { version: '0.001' }
       local::lib: { version: '2.000018' }
       parent:
-      perl: { version: '5.008001' }
+      perl: { version: 'v5.16' }
       version: { version: '0.77' }

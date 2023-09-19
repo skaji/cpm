@@ -1,8 +1,7 @@
-package App::cpm;
-use strict;
+package App::cpm 0.997014;
+use v5.16;
 use warnings;
 
-our $VERSION = '0.997014';
 our ($GIT_DESCRIBE, $GIT_URL);
 
 1;

@@ -1,5 +1,5 @@
 package App::cpm::Util;
-use strict;
+use v5.16;
 use warnings;
 
 use Config;
@@ -29,9 +29,7 @@ sub maybe_abs {
 }
 
 sub determine_home { # taken from Menlo
-    my $homedir = $ENV{HOME}
-      || eval { require File::HomeDir; File::HomeDir->my_home }
-      || join('', @ENV{qw(HOMEDRIVE HOMEPATH)}); # Win32
+    my $homedir = (<~>)[0];
 
     if (WIN32) {
         require Win32; # no fatpack

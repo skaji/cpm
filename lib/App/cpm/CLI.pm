@@ -1,6 +1,5 @@
 package App::cpm::CLI;
-use 5.008001;
-use strict;
+use v5.16;
 use warnings;
 
 use App::cpm::DistNotation;
@@ -31,7 +30,6 @@ use Pod::Text ();
 
 sub new {
     my ($class, %option) = @_;
-    my $prebuilt = exists $ENV{PERL_CPM_PREBUILT} && !$ENV{PERL_CPM_PREBUILT} ? 0 : 1;
     bless {
         argv => undef,
         home => determine_home,
@@ -56,7 +54,7 @@ sub new {
         with_develop => 0,
         feature => [],
         notest => 1,
-        prebuilt => $] >= 5.012 && $prebuilt,
+        prebuilt => exists $ENV{PERL_CPM_PREBUILT} && !$ENV{PERL_CPM_PREBUILT} ? 0 : 1,
         pureperl_only => 0,
         static_install => 1,
         default_resolvers => 1,
@@ -134,7 +132,7 @@ sub parse_options {
     if ($self->{sudo}) {
         !system "sudo", $^X, "-e1" or exit 1;
     }
-    if ($self->{pureperl_only} or $self->{sudo} or !$self->{notest} or $self->{man_pages} or $] < 5.012) {
+    if ($self->{pureperl_only} or $self->{sudo} or !$self->{notest} or $self->{man_pages}) {
         $self->{prebuilt} = 0;
     }
 

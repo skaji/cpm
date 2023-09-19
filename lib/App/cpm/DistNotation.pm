@@ -1,13 +1,13 @@
 package App::cpm::DistNotation;
-use strict;
+use v5.16;
 use warnings;
 
 my $A1 = q{[A-Z]};
 my $A2 = q{[A-Z]{2}};
 my $AUTHOR = qr{[A-Z]{2}[\-A-Z0-9]*};
 
-our $CPAN_URI = qr{^(.*)/authors/id/($A1/$A2/$AUTHOR/.*)$}o;
-our $DISTFILE = qr{^(?:$A1/$A2/)?($AUTHOR)/(.*)$}o;
+my $CPAN_URI = qr{^(.*)/authors/id/($A1/$A2/$AUTHOR/.*)$}o;
+my $DISTFILE = qr{^(?:$A1/$A2/)?($AUTHOR)/(.*)$}o;
 
 sub new {
     my $class = shift;

@@ -1,7 +1,7 @@
 package App::cpm::Installer::Unpacker;
 
 # Based on https://github.com/miyagawa/cpanminus/blob/7b574ede70cebce3709743ec1727f90d745e8580/Menlo-Legacy/lib/Menlo/CLI/Compat.pm#L2756-L2891
-use strict;
+use v5.16;
 use warnings;
 
 use File::Basename ();

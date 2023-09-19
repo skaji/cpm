@@ -1,4 +1,4 @@
-use strict;
+use v5.16;
 use warnings;
 use Test::More;
 use Config;
@@ -6,8 +6,6 @@ use File::Spec;
 use Path::Tiny 'path';
 use lib "xt/lib";
 use CLI;
-
-plan skip_all => 'only for perl 5.12+' if $] < 5.012;
 
 with_same_home {
     my $r = cpm_install "--prebuilt", "App::ChangeShebang", "File::pushd";

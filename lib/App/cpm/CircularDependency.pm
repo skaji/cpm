@@ -1,10 +1,8 @@
 package App::cpm::CircularDependency;
-use strict;
+use v5.16;
 use warnings;
 
-{
-    package
-        App::cpm::CircularDependency::OrderedSet;
+package App::cpm::CircularDependency::_OrderedSet {
     sub new {
         my $class = shift;
         bless { index => 0, hash => +{} }, $class;
@@ -73,7 +71,7 @@ sub detect {
 
     my %result;
     for my $distfile (sort keys %$self) {
-        my $seen = App::cpm::CircularDependency::OrderedSet->new;
+        my $seen = App::cpm::CircularDependency::_OrderedSet->new;
         $seen->add($distfile);
         if (my $detected = $self->_detect($distfile, $seen)) {
             $result{$distfile} = $detected;

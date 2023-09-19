@@ -1,5 +1,5 @@
 package App::cpm::Resolver::02Packages;
-use strict;
+use v5.16;
 use warnings;
 
 use App::cpm::DistNotation;

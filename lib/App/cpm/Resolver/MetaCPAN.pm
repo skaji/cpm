@@ -1,5 +1,5 @@
 package App::cpm::Resolver::MetaCPAN;
-use strict;
+use v5.16;
 use warnings;
 
 use App::cpm::DistNotation;

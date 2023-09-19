@@ -1,7 +1,7 @@
 package CLI;
-use strict;
+use v5.16;
 use warnings;
-use utf8;
+
 use Capture::Tiny 'capture';
 use File::Temp 'tempdir';
 use Exporter 'import';
@@ -14,8 +14,7 @@ my $base = abs_path( File::Spec->catdir(File::Basename::dirname(__FILE__), "..",
 
 my $TEMPDIR = tempdir CLEANUP => 1;
 
-{
-    package Result;
+package Result {
     no strict 'refs';
     sub new {
         my $class = shift;
@@ -39,6 +38,7 @@ sub with_same_local (&) {
     local $_LOCAL = tempdir DIR => $TEMPDIR;
     $sub->();
 }
+
 sub with_same_home (&) {
     my $sub = shift;
     local $_HOME = tempdir DIR => $TEMPDIR;
@@ -49,9 +49,6 @@ sub cpm_install {
     my @argv = @_;
     my $local = $_LOCAL || tempdir DIR => $TEMPDIR;
     my $home  = $_HOME  || tempdir DIR => $TEMPDIR;
-    if ($] < 5.010) {
-        unshift @argv, "--resolver", 'Fixed,CPAN::Meta::Requirements@2.140';
-    }
     my ($out, $err, $exit) = capture {
         local %ENV = %ENV;
         delete $ENV{$_} for grep /^PERL_CPM_/, keys %ENV;
@@ -60,6 +57,5 @@ sub cpm_install {
     my $logfile = "$home/build.log";
     Result->new(home => $home, local => $local, out => $out, err => $err, exit => $exit, logfile => $logfile);
 }
-
 
 1;

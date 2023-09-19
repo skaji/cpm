@@ -1,5 +1,5 @@
 package App::cpm::Worker::Installer;
-use strict;
+use v5.16;
 use warnings;
 
 use App::cpm::Logger::File;

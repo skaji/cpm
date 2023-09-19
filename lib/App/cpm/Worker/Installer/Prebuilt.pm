@@ -1,5 +1,5 @@
 package App::cpm::Worker::Installer::Prebuilt;
-use strict;
+use v5.16;
 use warnings;
 
 my @SKIP = (

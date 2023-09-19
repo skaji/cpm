@@ -15,8 +15,6 @@ jobs:
     strategy:
       matrix:
         perl-version:
-          - '5.8-buster'
-          - '5.10-buster'
           - '5.16-buster'
           - '5.18-buster'
           - 'latest'
@@ -24,7 +22,7 @@ jobs:
     container:
       image: perl:${{ matrix.perl-version }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install deb packages
         run: apt-get -qq update && apt-get -qq install -y unzip libdb-dev
       - name: perl -V
@@ -47,7 +45,7 @@ jobs:
             prove: /usr/local/bin/prove
             cpm-option: ''
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: perl -V
         run: ${{ matrix.perl }} -V
       - name: Install Dependencies
@@ -65,7 +63,7 @@ jobs:
           - '1'
           - '2'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: perl -V
         run: perl -V
       - name: Install Dependencies

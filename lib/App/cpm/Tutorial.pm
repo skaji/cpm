@@ -1,5 +1,5 @@
 package App::cpm::Tutorial;
-use strict;
+use v5.16;
 use warnings;
 
 1;

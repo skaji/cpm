@@ -1,5 +1,5 @@
 package App::cpm::Master;
-use strict;
+use v5.16;
 use warnings;
 
 use App::cpm::CircularDependency;
@@ -8,7 +8,6 @@ use App::cpm::Logger;
 use App::cpm::Task;
 use App::cpm::version;
 use CPAN::DistnameInfo;
-use IO::Handle;
 use Module::Metadata;
 
 sub new {

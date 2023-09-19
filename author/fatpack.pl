@@ -71,10 +71,7 @@ sub inject_git_info {
 }
 
 my @extra = qw(
-    Class::C3
-    Devel::GlobalDestruction
     ExtUtils::PL2Bat
-    MRO::Compat
 );
 
 my $exclude = join ",", qw(
@@ -101,7 +98,7 @@ my $exclude = join ",", qw(
     URI
 );
 
-my $target = '5.8.1';
+my $target = 'v5.16';
 
 my ($git_describe, $git_url);
 if (my $version = $ENV{CPAN_RELEASE_VERSION}) {
@@ -117,7 +114,6 @@ my $copyright = join "\n", map { "# $_" } @copyright;
 
 my $shebang = <<"___";
 #!/usr/bin/env perl
-use $target;
 
 # The following distributions are embedded into this script:
 #
@@ -128,7 +124,7 @@ my @resolver;
 if (-f "cpanfile.snapshot" && !$force && !$test && !$update_only) {
     @resolver = ("-r", "snapshot", "--no-default-resolvers");
 } else {
-    @resolver = ("-r", 'Fixed,CPAN::Meta::Requirements@2.140', "-r", "metadb");
+    @resolver = ("-r", "metadb");
 }
 
 warn "Resolver: @resolver\n";

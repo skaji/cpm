@@ -1,5 +1,5 @@
 package App::cpm::Resolver::Fixed;
-use strict;
+use v5.16;
 use warnings;
 
 use parent 'App::cpm::Resolver::MetaDB';

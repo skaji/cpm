@@ -1,5 +1,5 @@
 package App::cpm::Worker::Installer::Menlo;
-use strict;
+use v5.16;
 use warnings;
 
 use parent 'Menlo::CLI::Compat';

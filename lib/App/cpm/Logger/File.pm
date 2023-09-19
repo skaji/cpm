@@ -1,16 +1,16 @@
 package App::cpm::Logger::File;
-use strict;
+use v5.16;
 use warnings;
 
 use App::cpm::Util 'WIN32';
 use File::Temp ();
+use IO::File;
 use POSIX ();
 
 sub new {
     my ($class, $file) = @_;
     my $fh;
     if (WIN32) {
-        require IO::File;
         $file ||= File::Temp::tmpnam();
     } elsif ($file) {
         open $fh, ">>:unix", $file or die "$file: $!";
