@@ -68,7 +68,7 @@ Revision history for App-cpm
         - Fatpack ExtUtils-PL2Bat (atoomic #173)
 
 0.991  2020-04-12 12:59:53 JST
-        - [EXPERIMANTAL] Allow users to specify arbitrary resolvers (#168)
+        - [EXPERIMENTAL] Allow users to specify arbitrary resolvers (#168)
 
 0.990  2020-03-27 09:49:10 JST
         - Add --with-all to install all listed deps in a cpanfile (atoomic #166)
@@ -289,7 +289,7 @@ Revision history for App-cpm
         - Now minimal perl requirement 5.8.5 -> 5.8.1
 
 0.299  2017-01-29 14:27:56 JST
-        - Add experimantal ability to save artifacts, especially for Carmel
+        - Add experimental ability to save artifacts, especially for Carmel
         - Support --with-develop option; Note this loads develop deps only from cpanfile
 
 0.298  2017-01-16 01:50:54 JST
@@ -306,7 +306,7 @@ Revision history for App-cpm
 
 0.295  2016-12-25 11:07:33 JST
         - Improve old perl (5.8, 5.10, 5.12, 5.14) support;
-          Inject ExtUtils::MakeMaker, ExtUtils::ParseXS, ExtUtils::Install, Module::Build into configure deps for every ditributions
+          Inject ExtUtils::MakeMaker, ExtUtils::ParseXS, ExtUtils::Install, Module::Build into configure deps for every distributions
         - Now fatpacked cpm can be used with perl 5.10.1+ (previously with perl 5.16+)
 
 0.294  2016-12-14 03:37:30 JST
