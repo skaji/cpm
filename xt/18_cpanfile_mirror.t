@@ -19,8 +19,8 @@ $r = cpm_install "--mirror", "https://cpan.metacpan.org", "--cpanfile", "$cpanfi
 is $r->exit, 0 or diag $r->err;
 like $r->log, qr{Resolved File::pushd.*https://cpan.metacpan.org/.*from MetaDB};
 
-my $snpashot = Path::Tiny->tempfile;
-$snpashot->spew(<<'___');
+my $snapshot = Path::Tiny->tempfile;
+$snapshot->spew(<<'___');
 # carton snapshot format: version 1.0
 DISTRIBUTIONS
   File-pushd-1.016
@@ -30,7 +30,7 @@ DISTRIBUTIONS
     requirements:
 ___
 
-$r = cpm_install "--cpanfile", "$cpanfile", "--snapshot", $snpashot;
+$r = cpm_install "--cpanfile", "$cpanfile", "--snapshot", $snapshot;
 is $r->exit, 0 or diag $r->err;
 like $r->log, qr{Resolved File::pushd.*https://www.cpan.org/.*from Snapshot};
 

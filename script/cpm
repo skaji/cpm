@@ -39,7 +39,7 @@ cpm - a fast CPAN module installer
   > cpm install --target-perl 5.8.5
 
   # resolve distribution names from DARKPAN/modules/02packages.details.txt.gz
-  # and fetch distibutions from DARKPAN/authors/id/...
+  # and fetch distributions from DARKPAN/authors/id/...
   > cpm install --resolver 02packages,http://example.com/darkpan Your::Module
   > cpm install --resolver 02packages,file:///path/to/darkpan    Your::Module
 
@@ -60,7 +60,7 @@ cpm - a fast CPAN module installer
         save builds for CPAN distributions; and later, install the prebuilts if available
         default: on; you can also set $ENV{PERL_CPM_PREBUILT} false to disable this option
       --target-perl=VERSION  (EXPERIMENTAL)
-        install modules as if verison is your perl is VERSION
+        install modules as if version is your perl is VERSION
       --mirror=URL
         base url for the CPAN mirror to use, cannot be used multiple times. Use --resolver instead.
         default: https://cpan.metacpan.org
@@ -73,7 +73,7 @@ cpm - a fast CPAN module installer
         available classes: metadb/metacpan/02packages/snapshot
       --no-default-resolvers
         even if you specify --resolver, cpm continues using the default resolvers.
-        if you just want to use your resolvers specifed by --resolver,
+        if you just want to use your resolvers specified by --resolver,
         you should specify --no-default-resolvers too
       --reinstall
         reinstall the distribution even if you already have the latest version installed
