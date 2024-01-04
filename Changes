@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.997015  2024-01-05 00:21:17 JST
+        - Now cpm tries to load initial requirements from Build.PL/Makefile.PL (#243)
+        - Fix typos (yoshikazusawa #242)
+
 0.997014  2023-08-12 00:07:25 JST
         - Now cpm can load initial requirements from META.json/MYMETA.json (#239)
 
