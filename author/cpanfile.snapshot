@@ -191,11 +191,11 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Sub::Exporter::Progressive 0.001011
       perl 5.006
-  Exporter-5.77
-    pathname: T/TO/TODDR/Exporter-5.77.tar.gz
+  Exporter-5.78
+    pathname: T/TO/TODDR/Exporter-5.78.tar.gz
     provides:
-      Exporter 5.77
-      Exporter::Heavy 5.77
+      Exporter 5.78
+      Exporter::Heavy 5.78
     requirements:
       Carp 1.05
       ExtUtils::MakeMaker 0
@@ -409,12 +409,11 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
-  Getopt-Long-2.54
-    pathname: J/JV/JV/Getopt-Long-2.54.tar.gz
+  Getopt-Long-2.57
+    pathname: J/JV/JV/Getopt-Long-2.57.tar.gz
     provides:
-      Getopt::Long 2.54
-      Getopt::Long::CallBack 2.54
-      Getopt::Long::Parser 2.54
+      Getopt::Long 2.57
+      Getopt::Long::Parser 2.57
     requirements:
       ExtUtils::MakeMaker 0
       Pod::Usage 1.14
@@ -559,11 +558,11 @@ DISTRIBUTIONS
       CPAN::Meta::Prereqs 2.12091
       ExtUtils::MakeMaker 0
       parent 0
-  Module-CoreList-5.20230720
-    pathname: B/BI/BINGOS/Module-CoreList-5.20230720.tar.gz
+  Module-CoreList-5.20231230
+    pathname: B/BI/BINGOS/Module-CoreList-5.20231230.tar.gz
     provides:
-      Module::CoreList 5.20230720
-      Module::CoreList::Utils 5.20230720
+      Module::CoreList 5.20231230
+      Module::CoreList::Utils 5.20231230
     requirements:
       ExtUtils::MakeMaker 0
       List::Util 0
@@ -674,81 +673,81 @@ DISTRIBUTIONS
       Sub::Exporter::Progressive 0.001013
     requirements:
       ExtUtils::MakeMaker 0
-  Test-Simple-1.302195
-    pathname: E/EX/EXODIST/Test-Simple-1.302195.tar.gz
+  Test-Simple-1.302198
+    pathname: E/EX/EXODIST/Test-Simple-1.302198.tar.gz
     provides:
-      Test2 1.302195
-      Test2::API 1.302195
-      Test2::API::Breakage 1.302195
-      Test2::API::Context 1.302195
-      Test2::API::Instance 1.302195
-      Test2::API::InterceptResult 1.302195
-      Test2::API::InterceptResult::Event 1.302195
-      Test2::API::InterceptResult::Facet 1.302195
-      Test2::API::InterceptResult::Hub 1.302195
-      Test2::API::InterceptResult::Squasher 1.302195
-      Test2::API::Stack 1.302195
-      Test2::Event 1.302195
-      Test2::Event::Bail 1.302195
-      Test2::Event::Diag 1.302195
-      Test2::Event::Encoding 1.302195
-      Test2::Event::Exception 1.302195
-      Test2::Event::Fail 1.302195
-      Test2::Event::Generic 1.302195
-      Test2::Event::Note 1.302195
-      Test2::Event::Ok 1.302195
-      Test2::Event::Pass 1.302195
-      Test2::Event::Plan 1.302195
-      Test2::Event::Skip 1.302195
-      Test2::Event::Subtest 1.302195
-      Test2::Event::TAP::Version 1.302195
-      Test2::Event::V2 1.302195
-      Test2::Event::Waiting 1.302195
-      Test2::EventFacet 1.302195
-      Test2::EventFacet::About 1.302195
-      Test2::EventFacet::Amnesty 1.302195
-      Test2::EventFacet::Assert 1.302195
-      Test2::EventFacet::Control 1.302195
-      Test2::EventFacet::Error 1.302195
-      Test2::EventFacet::Hub 1.302195
-      Test2::EventFacet::Info 1.302195
-      Test2::EventFacet::Info::Table 1.302195
-      Test2::EventFacet::Meta 1.302195
-      Test2::EventFacet::Parent 1.302195
-      Test2::EventFacet::Plan 1.302195
-      Test2::EventFacet::Render 1.302195
-      Test2::EventFacet::Trace 1.302195
-      Test2::Formatter 1.302195
-      Test2::Formatter::TAP 1.302195
-      Test2::Hub 1.302195
-      Test2::Hub::Interceptor 1.302195
-      Test2::Hub::Interceptor::Terminator 1.302195
-      Test2::Hub::Subtest 1.302195
-      Test2::IPC 1.302195
-      Test2::IPC::Driver 1.302195
-      Test2::IPC::Driver::Files 1.302195
-      Test2::Tools::Tiny 1.302195
-      Test2::Util 1.302195
-      Test2::Util::ExternalMeta 1.302195
-      Test2::Util::Facets2Legacy 1.302195
-      Test2::Util::HashBase 1.302195
-      Test2::Util::Trace 1.302195
-      Test::Builder 1.302195
-      Test::Builder::Formatter 1.302195
+      Test2 1.302198
+      Test2::API 1.302198
+      Test2::API::Breakage 1.302198
+      Test2::API::Context 1.302198
+      Test2::API::Instance 1.302198
+      Test2::API::InterceptResult 1.302198
+      Test2::API::InterceptResult::Event 1.302198
+      Test2::API::InterceptResult::Facet 1.302198
+      Test2::API::InterceptResult::Hub 1.302198
+      Test2::API::InterceptResult::Squasher 1.302198
+      Test2::API::Stack 1.302198
+      Test2::Event 1.302198
+      Test2::Event::Bail 1.302198
+      Test2::Event::Diag 1.302198
+      Test2::Event::Encoding 1.302198
+      Test2::Event::Exception 1.302198
+      Test2::Event::Fail 1.302198
+      Test2::Event::Generic 1.302198
+      Test2::Event::Note 1.302198
+      Test2::Event::Ok 1.302198
+      Test2::Event::Pass 1.302198
+      Test2::Event::Plan 1.302198
+      Test2::Event::Skip 1.302198
+      Test2::Event::Subtest 1.302198
+      Test2::Event::TAP::Version 1.302198
+      Test2::Event::V2 1.302198
+      Test2::Event::Waiting 1.302198
+      Test2::EventFacet 1.302198
+      Test2::EventFacet::About 1.302198
+      Test2::EventFacet::Amnesty 1.302198
+      Test2::EventFacet::Assert 1.302198
+      Test2::EventFacet::Control 1.302198
+      Test2::EventFacet::Error 1.302198
+      Test2::EventFacet::Hub 1.302198
+      Test2::EventFacet::Info 1.302198
+      Test2::EventFacet::Info::Table 1.302198
+      Test2::EventFacet::Meta 1.302198
+      Test2::EventFacet::Parent 1.302198
+      Test2::EventFacet::Plan 1.302198
+      Test2::EventFacet::Render 1.302198
+      Test2::EventFacet::Trace 1.302198
+      Test2::Formatter 1.302198
+      Test2::Formatter::TAP 1.302198
+      Test2::Hub 1.302198
+      Test2::Hub::Interceptor 1.302198
+      Test2::Hub::Interceptor::Terminator 1.302198
+      Test2::Hub::Subtest 1.302198
+      Test2::IPC 1.302198
+      Test2::IPC::Driver 1.302198
+      Test2::IPC::Driver::Files 1.302198
+      Test2::Tools::Tiny 1.302198
+      Test2::Util 1.302198
+      Test2::Util::ExternalMeta 1.302198
+      Test2::Util::Facets2Legacy 1.302198
+      Test2::Util::HashBase 1.302198
+      Test2::Util::Trace 1.302198
+      Test::Builder 1.302198
+      Test::Builder::Formatter 1.302198
       Test::Builder::IO::Scalar 2.114
-      Test::Builder::Module 1.302195
-      Test::Builder::Tester 1.302195
-      Test::Builder::Tester::Color 1.302195
-      Test::Builder::Tester::Tie 1.302195
-      Test::Builder::TodoDiag 1.302195
-      Test::More 1.302195
-      Test::Simple 1.302195
-      Test::Tester 1.302195
-      Test::Tester::Capture 1.302195
-      Test::Tester::CaptureRunner 1.302195
-      Test::Tester::Delegate 1.302195
-      Test::use::ok 1.302195
-      ok 1.302195
+      Test::Builder::Module 1.302198
+      Test::Builder::Tester 1.302198
+      Test::Builder::Tester::Color 1.302198
+      Test::Builder::Tester::Tie 1.302198
+      Test::Builder::TodoDiag 1.302198
+      Test::More 1.302198
+      Test::Simple 1.302198
+      Test::Tester 1.302198
+      Test::Tester::Capture 1.302198
+      Test::Tester::CaptureRunner 1.302198
+      Test::Tester::Delegate 1.302198
+      Test::use::ok 1.302198
+      ok 1.302198
     requirements:
       ExtUtils::MakeMaker 0
       File::Spec 0
@@ -774,53 +773,55 @@ DISTRIBUTIONS
       Tie::Handle 0
       perl 5.006
       strict 0
-  URI-5.19
-    pathname: S/SI/SIMBABQUE/URI-5.19.tar.gz
+  URI-5.21
+    pathname: O/OA/OALDERS/URI-5.21.tar.gz
     provides:
-      URI 5.19
-      URI::Escape 5.19
-      URI::Heuristic 5.19
-      URI::IRI 5.19
-      URI::QueryParam 5.19
-      URI::Split 5.19
-      URI::URL 5.19
-      URI::WithBase 5.19
-      URI::data 5.19
-      URI::file 5.19
-      URI::file::Base 5.19
-      URI::file::FAT 5.19
-      URI::file::Mac 5.19
-      URI::file::OS2 5.19
-      URI::file::QNX 5.19
-      URI::file::Unix 5.19
-      URI::file::Win32 5.19
-      URI::ftp 5.19
-      URI::gopher 5.19
-      URI::http 5.19
-      URI::https 5.19
-      URI::ldap 5.19
-      URI::ldapi 5.19
-      URI::ldaps 5.19
-      URI::mailto 5.19
-      URI::mms 5.19
-      URI::news 5.19
-      URI::nntp 5.19
-      URI::nntps 5.19
-      URI::pop 5.19
-      URI::rlogin 5.19
-      URI::rsync 5.19
-      URI::rtsp 5.19
-      URI::rtspu 5.19
-      URI::sftp 5.19
-      URI::sip 5.19
-      URI::sips 5.19
-      URI::snews 5.19
-      URI::ssh 5.19
-      URI::telnet 5.19
-      URI::tn3270 5.19
-      URI::urn 5.19
-      URI::urn::isbn 5.19
-      URI::urn::oid 5.19
+      URI 5.21
+      URI::Escape 5.21
+      URI::Heuristic 5.21
+      URI::IRI 5.21
+      URI::QueryParam 5.21
+      URI::Split 5.21
+      URI::URL 5.21
+      URI::WithBase 5.21
+      URI::data 5.21
+      URI::file 5.21
+      URI::file::Base 5.21
+      URI::file::FAT 5.21
+      URI::file::Mac 5.21
+      URI::file::OS2 5.21
+      URI::file::QNX 5.21
+      URI::file::Unix 5.21
+      URI::file::Win32 5.21
+      URI::ftp 5.21
+      URI::gopher 5.21
+      URI::http 5.21
+      URI::https 5.21
+      URI::icap 5.21
+      URI::icaps 5.21
+      URI::ldap 5.21
+      URI::ldapi 5.21
+      URI::ldaps 5.21
+      URI::mailto 5.21
+      URI::mms 5.21
+      URI::news 5.21
+      URI::nntp 5.21
+      URI::nntps 5.21
+      URI::pop 5.21
+      URI::rlogin 5.21
+      URI::rsync 5.21
+      URI::rtsp 5.21
+      URI::rtspu 5.21
+      URI::sftp 5.21
+      URI::sip 5.21
+      URI::sips 5.21
+      URI::snews 5.21
+      URI::ssh 5.21
+      URI::telnet 5.21
+      URI::tn3270 5.21
+      URI::urn 5.21
+      URI::urn::isbn 5.21
+      URI::urn::oid 5.21
     requirements:
       Carp 0
       Cwd 0
@@ -845,41 +846,41 @@ DISTRIBUTIONS
       Win32::ShellQuote 0.003001
     requirements:
       perl 5.006
-  YAML-PP-0.036
-    pathname: T/TI/TINITA/YAML-PP-0.036.tar.gz
+  YAML-PP-v0.37.0
+    pathname: T/TI/TINITA/YAML-PP-v0.37.0.tar.gz
     provides:
-      YAML::PP 0.036
-      YAML::PP::Common 0.036
-      YAML::PP::Constructor 0.036
-      YAML::PP::Dumper 0.036
-      YAML::PP::Emitter 0.036
-      YAML::PP::Exception 0.036
-      YAML::PP::Grammar 0.036
-      YAML::PP::Highlight 0.036
-      YAML::PP::Lexer 0.036
-      YAML::PP::Loader 0.036
-      YAML::PP::Parser 0.036
-      YAML::PP::Perl 0.036
-      YAML::PP::Preserve::Array 0.036
-      YAML::PP::Preserve::Hash 0.036
-      YAML::PP::Preserve::Scalar 0.036
-      YAML::PP::Reader 0.036
-      YAML::PP::Reader::File 0.036
-      YAML::PP::Render 0.036
-      YAML::PP::Representer 0.036
-      YAML::PP::Schema 0.036
-      YAML::PP::Schema::Binary 0.036
-      YAML::PP::Schema::Core 0.036
-      YAML::PP::Schema::Failsafe 0.036
-      YAML::PP::Schema::Include 0.036
-      YAML::PP::Schema::JSON 0.036
-      YAML::PP::Schema::Merge 0.036
-      YAML::PP::Schema::Perl 0.036
-      YAML::PP::Schema::Tie::IxHash 0.036
-      YAML::PP::Schema::YAML1_1 0.036
-      YAML::PP::Type::MergeKey 0.036
-      YAML::PP::Writer 0.036
-      YAML::PP::Writer::File 0.036
+      YAML::PP v0.37.0
+      YAML::PP::Common v0.37.0
+      YAML::PP::Constructor v0.37.0
+      YAML::PP::Dumper v0.37.0
+      YAML::PP::Emitter v0.37.0
+      YAML::PP::Exception v0.37.0
+      YAML::PP::Grammar v0.37.0
+      YAML::PP::Highlight v0.37.0
+      YAML::PP::Lexer v0.37.0
+      YAML::PP::Loader v0.37.0
+      YAML::PP::Parser v0.37.0
+      YAML::PP::Perl v0.37.0
+      YAML::PP::Preserve::Array v0.37.0
+      YAML::PP::Preserve::Hash v0.37.0
+      YAML::PP::Preserve::Scalar v0.37.0
+      YAML::PP::Reader v0.37.0
+      YAML::PP::Reader::File v0.37.0
+      YAML::PP::Render v0.37.0
+      YAML::PP::Representer v0.37.0
+      YAML::PP::Schema v0.37.0
+      YAML::PP::Schema::Binary v0.37.0
+      YAML::PP::Schema::Core v0.37.0
+      YAML::PP::Schema::Failsafe v0.37.0
+      YAML::PP::Schema::Include v0.37.0
+      YAML::PP::Schema::JSON v0.37.0
+      YAML::PP::Schema::Merge v0.37.0
+      YAML::PP::Schema::Perl v0.37.0
+      YAML::PP::Schema::Tie::IxHash v0.37.0
+      YAML::PP::Schema::YAML1_1 v0.37.0
+      YAML::PP::Type::MergeKey v0.37.0
+      YAML::PP::Writer v0.37.0
+      YAML::PP::Writer::File v0.37.0
     requirements:
       B 0
       B::Deparse 0
@@ -915,13 +916,13 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       perl 5.006
-  version-0.9929
-    pathname: L/LE/LEONT/version-0.9929.tar.gz
+  version-0.9930
+    pathname: L/LE/LEONT/version-0.9930.tar.gz
     provides:
-      version 0.9929
-      version::regex 0.9929
-      version::vpp 0.9929
-      version::vxs 0.9929
+      version 0.9930
+      version::regex 0.9930
+      version::vpp 0.9930
+      version::vxs 0.9930
     requirements:
       ExtUtils::MakeMaker 0
       perl 5.006002
