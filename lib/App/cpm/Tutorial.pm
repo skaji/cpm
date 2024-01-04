@@ -70,8 +70,23 @@ And cpm can install modules from git repositories directly.
 
 =head2 cpanfile and dist/url/mirror/git syntax
 
-If you omit arguments, and there exists C<cpanfile> in the current directory,
-then cpm loads modules from cpanfile, and install them
+If you omit arguments, and there exists one of
+
+=over 4
+
+=item L<cpm.yml|https://metacpan.org/pod/Module::cpmfile>
+
+=item L<cpanfile|https://metacpan.org/dist/Module-CPANfile/view/lib/cpanfile.pod>
+
+=item L<META.json|https://metacpan.org/pod/CPAN::Meta::Spec> (with dynamic_config false)
+
+=item C<Build.PL>
+
+=item C<Makefile.PL>
+
+=back
+
+in the current directory, then cpm loads modules from the file, and install them
 
   $ cat cpanfile
   requires 'Moose', '2.000';
