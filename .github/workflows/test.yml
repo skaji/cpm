@@ -53,7 +53,7 @@ jobs:
       - name: Install Dependencies
         run: curl -fsSL --compressed https://raw.githubusercontent.com/skaji/cpm/main/cpm | ${{ matrix.perl }} - install -g ${{ matrix.cpm-option }} --with-develop --with-recommends --show-build-log-on-failure
       - name: Run Tests
-        run: ${{ matrix.prove }} -lr t xt
+        run: ${{ matrix.prove }} -lr --timer t xt
 
   windows:
     name: windows perl ${{ matrix.tester-id }}
@@ -71,4 +71,4 @@ jobs:
       - name: Install Dependencies
         run: curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g --with-develop --with-recommends --show-build-log-on-failure
       - name: Run Tests
-        run: perl author\split-run "t\*.t xt\*.t xt\*\*.t" ${{ matrix.tester-id }}/3 prove -l
+        run: perl author\split-run "t\*.t xt\*.t xt\*\*.t" ${{ matrix.tester-id }}/3 prove -l --timer
