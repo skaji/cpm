@@ -17,6 +17,7 @@ use App::cpm::Worker;
 use App::cpm::version;
 use App::cpm;
 use CPAN::Meta;
+use Command::Runner;
 use Config;
 use Cwd ();
 use File::Copy ();
@@ -28,6 +29,7 @@ use Module::CPANfile;
 use Module::cpmfile;
 use Parallel::Pipes::App;
 use Pod::Text ();
+use local::lib ();
 
 sub new {
     my ($class, %option) = @_;
@@ -151,11 +153,7 @@ sub parse_options {
             $self->{argv} = \@ARGV;
         }
     } elsif (!$self->{dependency_file}) {
-        if (-f "cpm.yml") {
-            $self->{dependency_file} = { type => "cpmfile", path => "cpm.yml" };
-        } elsif (-f "cpanfile") {
-            $self->{dependency_file} = { type => "cpanfile", path => "cpanfile" };
-        }
+        $self->{dependency_file} = $self->locate_dependency_file;
     }
     return 1;
 }
@@ -186,7 +184,6 @@ sub _search_inc {
     return \@INC if $self->{global};
 
     my $base = $self->{local_lib};
-    require local::lib;
     my @local_lib = (
         local::lib->resolve_path(local::lib->install_base_arch_path($base)),
         local::lib->resolve_path(local::lib->install_base_perl_path($base)),
@@ -261,7 +258,7 @@ sub cmd_version {
 
 sub cmd_install {
     my $self = shift;
-    die "Need arguments or cpmfile/cpanfile/metafile\n" if !$self->{argv} && !$self->{dependency_file};
+    die "Need arguments or cpm.yml/cpanfile/Build.PL/Makefile.PL\n" if !$self->{argv} && !$self->{dependency_file};
 
     local %ENV = %ENV;
 
@@ -482,6 +479,54 @@ sub initial_task {
     }
 
     return (\@package, \@dist, undef);
+}
+
+sub locate_dependency_file {
+    my $self = shift;
+    if (-f "cpm.yml") {
+        return { type => "cpmfile", path => "cpm.yml" };
+    }
+    if (-f "cpanfile") {
+        return { type => "cpanfile", path => "cpanfile" };
+    }
+    if (-f 'META.json') {
+        my $meta = CPAN::Meta->load_file('META.json');
+        if (!$meta->dynamic_config) {
+            return { type => 'metafile', path => 'META.json' };
+        }
+    }
+    if (-f 'Build.PL' || -f 'Makefile.PL') {
+        my $build_file = -f 'Build.PL' ? 'Build.PL' : 'Makefile.PL';
+        warn "Executing $build_file to generate MYMETA.json and to determine requirements...\n";
+        local %ENV = (
+            PERL5_CPAN_IS_RUNNING => 1,
+            PERL5_CPANPLUS_IS_RUNNING => 1,
+            PERL5_CPANM_IS_RUNNING => 1,
+            PERL_MM_USE_DEFAULT => 1,
+            %ENV,
+        );
+        if (!$self->{global}) {
+            local $SIG{__WARN__} = sub { }; # catch 'Attempting to write ...'
+            local::lib->setup_env_hash_for($self->{local_lib}, 0);
+        }
+        my $runner = Command::Runner->new(
+            command => [ $^X, $build_file ],
+            timeout => 60,
+            redirect => 1,
+        );
+        my $res = $runner->run;
+        if ($res->{timeout}) {
+            die "Error: timed out (>60s).\n$res->{stdout}";
+        }
+        if ($res->{result} != 0) {
+            die "Error: failed to execute $build_file.\n$res->{stdout}";
+        }
+        if (!-f 'MYMETA.json') {
+            die "Error: No MYMETA.json after executing $build_file\n";
+        }
+        return { type => 'metafile', path => 'MYMETA.json' };
+    }
+    return;
 }
 
 sub load_dependency_file {
