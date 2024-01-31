@@ -57,7 +57,8 @@ cpm - a fast CPAN module installer
         verbose mode; you can see what is going on
       --prebuilt, --no-prebuilt
         save builds for CPAN distributions; and later, install the prebuilts if available
-        default: on; you can also set $ENV{PERL_CPM_PREBUILT} false to disable this option
+        default: on; you can also set $ENV{PERL_CPM_PREBUILT} false to disable this option.
+        usage of --test and/or --man-pages disables this option.
       --target-perl=VERSION  (EXPERIMENTAL)
         install modules as if version is your perl is VERSION
       --mirror=URL
