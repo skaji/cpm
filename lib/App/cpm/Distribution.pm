@@ -2,7 +2,6 @@ package App::cpm::Distribution;
 use strict;
 use warnings;
 
-use App::cpm::Logger;
 use App::cpm::Requirement;
 use App::cpm::version;
 use CPAN::DistnameInfo;
@@ -145,16 +144,15 @@ sub providing {
     for my $provide (@{$self->provides}) {
         if ($provide->{package} eq $package) {
             if (!$version_range or App::cpm::version->parse($provide->{version})->satisfy($version_range)) {
-                return 1;
+                return (1, undef);
             } else {
-                my $message = sprintf "%s provides %s (%s), but needs %s\n",
+                my $err = sprintf "%s provides %s (%s), but needs %s\n",
                     $self->distfile, $package, $provide->{version} || 0, $version_range;
-                App::cpm::Logger->log(result => "WARN", message => $message);
-                last;
+                return (undef, $err);
             }
         }
     }
-    return;
+    return (undef, undef);
 }
 
 sub equals {
