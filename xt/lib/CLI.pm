@@ -50,7 +50,8 @@ sub cpm_install {
     my $local = $_LOCAL || tempdir DIR => $TEMPDIR;
     my $home  = $_HOME  || tempdir DIR => $TEMPDIR;
     if ($] < 5.010) {
-        unshift @argv, "--resolver", 'Fixed,CPAN::Meta::Requirements@2.140';
+        unshift @argv, "--resolver",
+            'Fixed,CPAN::Meta::Requirements@2.140,Module::Build::Tiny@0.047';
     }
     my ($out, $err, $exit) = capture {
         local %ENV = %ENV;

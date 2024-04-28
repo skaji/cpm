@@ -31,20 +31,26 @@ jobs:
         run: perl -V
       - name: Install Dependencies
         run: curl -fsSL --compressed https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g --with-develop --with-recommends --show-build-log-on-failure
+        if: matrix.perl-version != '5.8-buster'
+      - name: Install Dependencies
+        run: curl -fsSL --compressed https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g --with-develop --with-recommends --show-build-log-on-failure --resolver Fixed,CPAN::Meta::Requirements@2.140,Module::Build::Tiny@0.047
+        if: matrix.perl-version == '5.8-buster'
       - name: Run Tests
         run: prove -lr --timer t xt
 
   macos:
     name: macos ${{ matrix.perl }}
     runs-on: macos-latest
+    env:
+      OBJC_DISABLE_INITIALIZE_FORK_SAFETY: 'YES'
     strategy:
       matrix:
         include:
           - perl: /usr/bin/perl
             prove: /usr/bin/prove
             cpm-option: --sudo
-          - perl: /usr/local/bin/perl
-            prove: /usr/local/bin/prove
+          - perl: /opt/homebrew/bin/perl
+            prove: /opt/homebrew/bin/prove
             cpm-option: ''
     steps:
       - uses: actions/checkout@v4
