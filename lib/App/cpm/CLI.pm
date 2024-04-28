@@ -365,6 +365,18 @@ sub cmd_install {
 sub install {
     my ($self, $master, $worker, $num) = @_;
 
+    if ($num > 1
+        && $^O eq "darwin"
+        && !exists $ENV{OBJC_DISABLE_INITIALIZE_FORK_SAFETY}
+        && !$self->{_darwin_fixed}
+    ) {
+        my $lib = "/System/Library/Frameworks/Foundation.framework/Foundation";
+        $master->{logger}->log("dlopen $lib to initialize Objective-C APIs before fork(2)");
+        require DynaLoader;
+        DynaLoader::dl_load_file $lib;
+        $self->{_darwin_fixed} = 1;
+    }
+
     my @task = $master->get_task;
     Parallel::Pipes::App->run(
         num => $num,
