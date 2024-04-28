@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.997017  2024-04-29 06:15:24 JST
+        - Add workaround for fork(2) on macOS again (#246, #248)
+
 0.997016  2024-04-29 04:19:28 JST
         - Add workaround for fork(2) on macOS (#246, #247)
         - Add document abount --prebuilt behaviour (telenieko #244)
