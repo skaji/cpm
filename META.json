@@ -53,7 +53,7 @@
    "provides" : {
       "App::cpm" : {
          "file" : "lib/App/cpm.pm",
-         "version" : "0.997015"
+         "version" : "0.997016"
       },
       "App::cpm::CLI" : {
          "file" : "lib/App/cpm/CLI.pm"
@@ -149,13 +149,14 @@
          "web" : "https://github.com/skaji/cpm"
       }
    },
-   "version" : "0.997015",
+   "version" : "0.997016",
    "x_contributors" : [
       "Andrew Rodland <andrew@cleverdomain.org>",
       "Dave Rolsky <autarch@urth.org>",
       "Felix Ostmann <felix.ostmann@gmail.com>",
       "FUJI Goro <goro@fastly.com>",
       "Kenichi Ishigaki <ishigaki@cpan.org>",
+      "Marc Fargas <telenieko@telenieko.com>",
       "Maxim Tarasov <mu@magi.net.ru>",
       "Michiel Beijen <mb@x14.nl>",
       "Mikhail Ivanov <m.ivanych@gmail.com>",

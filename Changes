@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.997016  2024-04-29 04:19:28 JST
+        - Add workaround for fork(2) on macOS (#246, #247)
+        - Add document abount --prebuilt behaviour (telenieko #244)
+
 0.997015  2024-01-05 00:21:17 JST
         - Now cpm tries to load initial requirements from Build.PL/Makefile.PL (#243)
         - Fix typos (yoshikazusawa #242)
