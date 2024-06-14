@@ -5,7 +5,7 @@ use CPAN::DistnameInfo;
 
 sub new {
     my ($class, %option) = @_;
-    my $self = bless {%option}, $class;
+    my $self = bless {in_charge => 0, %option}, $class;
     $self->{uid} = $self->_uid;
     $self;
 }
