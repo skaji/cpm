@@ -214,13 +214,6 @@ sub _calculate_tasks {
                     uri => $dist->uri,
                     distvname => $dist->distvname,
                 );
-            } elsif (@need_resolve and !$dist->deps_registered) {
-                $dist->deps_registered(1);
-                my $msg = sprintf "Found configure dependencies: %s",
-                    join(", ", map { sprintf "%s (%s)", $_->{package}, $_->{version_range} || 0 }  @need_resolve);
-                $self->{logger}->log($msg);
-                my $ok = $self->_register_resolve_task(@need_resolve);
-                $self->{_fail_install}{$dist->distfile}++ unless $ok;
             } elsif (!defined $is_satisfied) {
                 my ($req) = grep { $_->{package} eq "perl" } @$dist_requirements;
                 my $msg = sprintf "%s requires perl %s, but you have only %s",
@@ -228,6 +221,13 @@ sub _calculate_tasks {
                 $self->{logger}->log($msg);
                 App::cpm::Logger->log(result => "FAIL", message => $msg);
                 $self->{_fail_install}{$dist->distfile}++;
+            } elsif (@need_resolve and !$dist->deps_registered) {
+                $dist->deps_registered(1);
+                my $msg = sprintf "Found configure dependencies: %s",
+                    join(", ", map { sprintf "%s (%s)", $_->{package}, $_->{version_range} || 0 }  @need_resolve);
+                $self->{logger}->log($msg);
+                my $ok = $self->_register_resolve_task(@need_resolve);
+                $self->{_fail_install}{$dist->distfile}++ unless $ok;
             }
         }
     }
@@ -252,13 +252,6 @@ sub _calculate_tasks {
                     static_builder => $dist->static_builder,
                     prebuilt => $dist->prebuilt,
                 );
-            } elsif (@need_resolve and !$dist->deps_registered) {
-                $dist->deps_registered(1);
-                my $msg = sprintf "Found dependencies: %s",
-                    join(", ", map { sprintf "%s (%s)", $_->{package}, $_->{version_range} || 0 }  @need_resolve);
-                $self->{logger}->log($msg);
-                my $ok = $self->_register_resolve_task(@need_resolve);
-                $self->{_fail_install}{$dist->distfile}++ unless $ok;
             } elsif (!defined $is_satisfied) {
                 my ($req) = grep { $_->{package} eq "perl" } @$dist_requirements;
                 my $msg = sprintf "%s requires perl %s, but you have only %s",
@@ -266,6 +259,13 @@ sub _calculate_tasks {
                 $self->{logger}->log($msg);
                 App::cpm::Logger->log(result => "FAIL", message => $msg);
                 $self->{_fail_install}{$dist->distfile}++;
+            } elsif (@need_resolve and !$dist->deps_registered) {
+                $dist->deps_registered(1);
+                my $msg = sprintf "Found dependencies: %s",
+                    join(", ", map { sprintf "%s (%s)", $_->{package}, $_->{version_range} || 0 }  @need_resolve);
+                $self->{logger}->log($msg);
+                my $ok = $self->_register_resolve_task(@need_resolve);
+                $self->{_fail_install}{$dist->distfile}++ unless $ok;
             }
         }
     }
