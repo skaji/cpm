@@ -1,4 +1,8 @@
 prereqs:
+  configure:
+    requires:
+      Module::Build::Tiny: { version: '0.051' }
+      perl: { version: '5.008001' }
   develop:
     requires:
       Archive::Tar:
