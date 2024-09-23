@@ -22,7 +22,7 @@ subtest ng => sub {
     plan skip_all => 'XXX: failed to install Win32 module' if WIN32;
     my $r = cpm_install "--target-perl", "5.8.0", "HTTP::Tinyish";
     isnt $r->exit, 0;
-    like $r->err, qr/DONE install HTTP-Tiny-/; # install HTTP::Tiny anyway
+    unlike $r->err, qr/DONE install HTTP-Tiny-/;
     unlike $r->err, qr/DONE install HTTP-Tinyish-/;
     note $r->err;
 };
