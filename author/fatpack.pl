@@ -108,11 +108,13 @@ my $exclude = join ",", qw(
     File::Spec
     IPC::Cmd
     Locale::Maketext::Simple
+    MIME::Base32
     Module::Build::Tiny
     Module::CoreList
     Module::Load::Conditional
     Params::Check
     Perl::OSType
+    Term::Table
     Test
     Test2
     Test::Harness
