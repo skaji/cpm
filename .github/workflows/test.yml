@@ -33,7 +33,7 @@ jobs:
         run: curl -fsSL --compressed https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g --with-develop --with-recommends --show-build-log-on-failure
         if: matrix.perl-version != '5.8-buster'
       - name: Install Dependencies
-        run: curl -fsSL --compressed https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g --with-develop --with-recommends --show-build-log-on-failure --resolver Fixed,CPAN::Meta::Requirements@2.140,Module::Build::Tiny@0.047
+        run: curl -fsSL --compressed https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g --with-develop --with-recommends --show-build-log-on-failure --resolver Fixed,CPAN::Meta::Requirements@2.140
         if: matrix.perl-version == '5.8-buster'
       - name: Run Tests
         run: prove -lr --timer t xt
