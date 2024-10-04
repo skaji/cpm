@@ -378,13 +378,18 @@ sub install {
     my @task = $master->get_task;
     Parallel::Pipes::App->run(
         num => $num,
+        init_work => sub {
+            my $pipes = shift;
+            my @pid = sort { $a <=> $b } keys %{$pipes->{pipes}};
+            $master->{_pids} = \@pid;
+        },
         before_work => sub {
-            my $task = shift;
-            $task->in_charge(1);
+            my ($task, $worker) = @_;
+            $task->in_charge($worker->{pid});
         },
         work => sub {
             my $task = shift;
-            return $worker->work($task);
+            $worker->work($task);
         },
         after_work => sub {
             my $result = shift;
@@ -392,7 +397,12 @@ sub install {
             @task = $master->get_task;
         },
         tasks => \@task,
+        idle_tick => 0.5,
+        idle_work => sub {
+            $master->log_task;
+        },
     );
+    $master->log_task_finalize;
 }
 
 sub cleanup {
