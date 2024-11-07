@@ -4,6 +4,7 @@ use warnings;
 
 use App::cpm::CircularDependency;
 use App::cpm::Distribution;
+use App::cpm::Logger::Terminal;
 use App::cpm::Logger;
 use App::cpm::Task;
 use App::cpm::version;
@@ -40,7 +41,7 @@ sub new {
         } else {
             my $msg = "You don't have Module::CoreList. "
                     . "The local-lib may result in incomplete self-contained directory.";
-            App::cpm::Logger->log(result => "WARN", message => $msg);
+            warn "$msg\n";
         }
     }
     $self;
@@ -123,13 +124,31 @@ sub register_result {
 
     %{$task} = %{$result}; # XXX
 
-    my $logged = $self->info($task);
+    #my $logged = $self->info($task);
     my $method = "_register_@{[$task->{type}]}_result";
     $self->$method($task);
     $self->remove_task($task);
-    $self->_show_progress if $logged && $self->{show_progress};
+    #$self->_show_progress if $logged && $self->{show_progress};
+    $self->log_task($task);
 
     return 1;
+}
+
+sub log_task {
+    my ($self, @done) = @_;
+    my $terminal = $self->{terminal} ||= App::cpm::Logger::Terminal->new(@{$self->{_pids}});
+    my $lines = $terminal->new_lines;
+    for my $pid (@{$self->{_pids}}) {
+        my ($task) = grep { $_->in_charge == $pid } @done, $self->tasks; # maybe task is undef
+        $lines->set_worker($pid, $task);
+    }
+    $lines->set_summary((0+keys %{$self->{distributions}}), $self->installed_distributions);
+    $terminal->write($lines);
+}
+
+sub log_task_finalize {
+    my $self = shift;
+    $self->{terminal}->clear;
 }
 
 sub info {
@@ -219,7 +238,6 @@ sub _calculate_tasks {
                 my $msg = sprintf "%s requires perl %s, but you have only %s",
                     $dist->distvname, $req->{version_range}, $self->{target_perl} || $];
                 $self->{logger}->log($msg);
-                App::cpm::Logger->log(result => "FAIL", message => $msg);
                 $self->{_fail_install}{$dist->distfile}++;
             } elsif (@need_resolve and !$dist->deps_registered) {
                 $dist->deps_registered(1);
@@ -257,7 +275,6 @@ sub _calculate_tasks {
                 my $msg = sprintf "%s requires perl %s, but you have only %s",
                     $dist->distvname, $req->{version_range}, $self->{target_perl} || $];
                 $self->{logger}->log($msg);
-                App::cpm::Logger->log(result => "FAIL", message => $msg);
                 $self->{_fail_install}{$dist->distfile}++;
             } elsif (@need_resolve and !$dist->deps_registered) {
                 $dist->deps_registered(1);
@@ -330,14 +347,7 @@ sub is_core {
     my $target_perl = $self->{target_perl};
     if (exists $Module::CoreList::version{$target_perl}{$package}) {
         if (!exists $Module::CoreList::version{$]}{$package}) {
-            if (!$self->{_removed_core}{$package}++) {
-                my $t = App::cpm::version->parse($target_perl)->normal;
-                my $v = App::cpm::version->parse($])->normal;
-                App::cpm::Logger->log(
-                    result => "WARN",
-                    message => "$package used to be core in $t, but not in $v, so will be installed",
-                );
-            }
+            # $package used to be core in $target_perl, but not in $], so will be installed
             return;
         }
         return 1 unless $version_range;
@@ -363,7 +373,19 @@ sub is_satisfied {
         }
         next if $self->{target_perl} and $self->is_core($package, $version_range);
         next if $self->is_installed($package, $version_range);
-        my ($resolved) = grep { $_->providing($package, $version_range) } @distributions;
+
+        my $resolved;
+        for my $dist (@distributions) {
+            my ($ok, $err) = $dist->providing($package, $version_range);
+            if ($ok) {
+                $resolved = $dist;
+                last;
+            }
+            if ($err) {
+                $self->{logger}->log($err);
+                last;
+            }
+        }
         next if $resolved && $resolved->installed;
 
         $is_satisfied = 0 if defined $is_satisfied;
@@ -397,11 +419,6 @@ sub _register_resolve_result {
     if ($task->{distfile} and $task->{distfile} =~ m{/perl-5[^/]+$}) {
         my $message = "$task->{package} is a core module.";
         $self->{logger}->log($message);
-        App::cpm::Logger->log(
-            result => "DONE",
-            type => "install",
-            message => $message,
-        );
         return;
     }
 
@@ -415,11 +432,6 @@ sub _register_resolve_result {
                 : " is up to date. ($local)"
             );
             $self->{logger}->log($message);
-            App::cpm::Logger->log(
-                result => "DONE",
-                type => "install",
-                message => $message,
-            );
             return;
         }
     }
