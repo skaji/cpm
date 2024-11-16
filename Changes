@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.997019  2024-11-16 16:04:34 JST
+        - Add workaround for fork(2) on macOS again, again (#253)
+
 0.997018  2024-09-23 18:43:58 JST
         - Fail fast if perl requirements are not satisfied (#251)
 
