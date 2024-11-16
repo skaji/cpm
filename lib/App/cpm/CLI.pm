@@ -367,11 +367,14 @@ sub install {
 
     if ($num > 1
         && $^O eq "darwin"
+        && $^X eq "/usr/bin/perl"
         && !exists $ENV{OBJC_DISABLE_INITIALIZE_FORK_SAFETY}
         && !$self->{_darwin_fixed}
     ) {
-        require Socket;
-        Socket::inet_aton("call-inet_aton-before_fork");
+        my $lib = "/System/Library/Frameworks/Foundation.framework/Foundation";
+        $master->{logger}->log("dlopen $lib to initialize Objective-C APIs before fork(2)");
+        require DynaLoader;
+        DynaLoader::dl_load_file $lib;
         $self->{_darwin_fixed} = 1;
     }
 
