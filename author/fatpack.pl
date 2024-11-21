@@ -44,8 +44,8 @@ sub remove_version_xs () {
     Path::Tiny->new($dir)->remove_tree({ safe => 0 }) if -d $dir;
 }
 
-sub generate_index ($from, $file) {
-    my $exit = system "perl-cpan-index-generate", "--output", $file, $from;
+sub generate_index (@argv) {
+    my $exit = system "perl-cpan-index-generate", @argv;
     $exit == 0 or die;
 }
 
@@ -127,7 +127,7 @@ ___
 
 my @resolver;
 if (-f "index.txt" && !$force && !$test && !$update_only) {
-    @resolver = ("-r", "02packages,index.txt,https://cpan.metacpan.org/", "--no-default-resolvers");
+    @resolver = ("-r", "02packages,index.txt,https://cpan.metacpan.org/");
 } else {
     @resolver = ("-r", 'Fixed,CPAN::Meta::Requirements@2.140');
 }
@@ -135,7 +135,7 @@ if (-f "index.txt" && !$force && !$test && !$update_only) {
 warn "Resolver: @resolver\n";
 cpm "install", "--target-perl", $target, @resolver, "--cpmfile", "../cpm.yml";
 cpm "install", "--target-perl", $target, @resolver, @extra;
-generate_index "local/lib/perl5", "index.txt" if !$test;
+generate_index "local/lib/perl5", "--exclude", $exclude, "--output", "index.txt" if !$test;
 remove_version_xs;
 exit if $update_only;
 
