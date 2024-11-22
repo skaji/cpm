@@ -133,7 +133,7 @@ if (-f "index.txt" && !$force && !$test && !$update_only) {
 }
 
 warn "Resolver: @resolver\n";
-cpm "install", "--target-perl", $target, @resolver, "--cpmfile", "../cpm.yml";
+cpm "install", "--target-perl", $target, @resolver, "--metafile", "../META.json";
 cpm "install", "--target-perl", $target, @resolver, @extra;
 generate_index "local/lib/perl5", "--exclude", $exclude, "--output", "index.txt" if !$test;
 remove_version_xs;
