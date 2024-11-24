@@ -367,7 +367,7 @@ sub install {
 
     if ($num > 1
         && $^O eq "darwin"
-        && $^X eq "/usr/bin/perl"
+        && ($^X eq "/usr/bin/perl" || $^X eq "perl")
         && !exists $ENV{OBJC_DISABLE_INITIALIZE_FORK_SAFETY}
         && !$self->{_darwin_fixed}
     ) {
