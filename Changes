@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.997021  2024-12-11 21:46:25 JST
+        - When pinning and using MetaDB, install freshest (thibaultduponchelle #255)
+
 0.997020  2024-11-24 20:25:10 JST
         - Treat "perl" as system perl in darwin (nathanweeks #254)
 

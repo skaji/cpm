@@ -64,7 +64,7 @@
    "provides" : {
       "App::cpm" : {
          "file" : "lib/App/cpm.pm",
-         "version" : "0.997020"
+         "version" : "0.997021"
       },
       "App::cpm::CLI" : {
          "file" : "lib/App/cpm/CLI.pm"
@@ -160,7 +160,7 @@
          "web" : "https://github.com/skaji/cpm"
       }
    },
-   "version" : "0.997020",
+   "version" : "0.997021",
    "x_contributors" : [
       "Andrew Rodland <andrew@cleverdomain.org>",
       "Dave Rolsky <autarch@urth.org>",
@@ -175,6 +175,7 @@
       "Nicolas R <cpan@atoomic.org>",
       "Olaf Alders <olaf@wundersolutions.com>",
       "Shoichi Kaji <skaji@outlook.com>",
+      "Thibault Duponchelle <thibault.duponchelle@gmail.com>",
       "Will Sheppard <will.sheppard.uk@gmail.com>",
       "yoshikazusawa <883514+yoshikazusawa@users.noreply.github.com>"
    ],
