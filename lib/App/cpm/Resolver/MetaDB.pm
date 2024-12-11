@@ -59,6 +59,7 @@ sub resolve {
         }
 
         $found[-1]->{latest} = 1;
+        @found = reverse @found;
 
         my $match;
         for my $try (sort { $b->{version_o} <=> $a->{version_o} } @found) {
