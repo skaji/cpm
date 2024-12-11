@@ -58,7 +58,6 @@ sub resolve {
             }
         }
 
-        $found[-1]->{latest} = 1;
         @found = reverse @found;
 
         my $match;
