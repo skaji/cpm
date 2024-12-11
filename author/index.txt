@@ -79,7 +79,7 @@ Module::Metadata 1.000038 E/ET/ETHER/Module-Metadata-1.000038.tar.gz
 MRO::Compat 0.15 H/HA/HAARG/MRO-Compat-0.15.tar.gz
 Parallel::Pipes 0.200 S/SK/SKAJI/Parallel-Pipes-0.200.tar.gz
 Parallel::Pipes::App 0.200 S/SK/SKAJI/Parallel-Pipes-0.200.tar.gz
-parent 0.242 C/CO/CORION/parent-0.242.tar.gz
+parent 0.243 C/CO/CORION/parent-0.243.tar.gz
 Parse::CPAN::Meta 2.150010 D/DA/DAGOLDEN/CPAN-Meta-2.150010.tar.gz
 Parse::PMFile 0.47 I/IS/ISHIGAKI/Parse-PMFile-0.47.tar.gz
 Proc::ForkSafe 0.001 S/SK/SKAJI/Proc-ForkSafe-0.001.tar.gz
