@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.997022  2025-04-05 21:04:21 JST
+        - Use Darwin::InitObjC
+
 0.997021  2024-12-11 21:46:25 JST
         - When pinning and using MetaDB, install freshest (thibaultduponchelle #255)
 
