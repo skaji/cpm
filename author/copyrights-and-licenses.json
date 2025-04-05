@@ -60,6 +60,12 @@
       "url" : "https://metacpan.org/dist/Command-Runner"
    },
    {
+      "copyright" : "Shoichi Kaji",
+      "license" : "the same as Perl 5",
+      "name" : "Darwin-InitObjC",
+      "url" : "https://metacpan.org/dist/Darwin-InitObjC"
+   },
+   {
       "copyright" : "Yuval Kogman",
       "license" : "the same as Perl 5",
       "name" : "Devel-GlobalDestruction",

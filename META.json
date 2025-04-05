@@ -41,6 +41,7 @@
             "CPAN::Meta::Requirements" : "2.130",
             "CPAN::Meta::YAML" : "0",
             "Command::Runner" : "0.100",
+            "Darwin::InitObjC" : "0",
             "ExtUtils::Install" : "2.20",
             "ExtUtils::InstallPaths" : "0.002",
             "File::Copy::Recursive" : "0",
@@ -179,8 +180,8 @@
       "Will Sheppard <will.sheppard.uk@gmail.com>",
       "yoshikazusawa <883514+yoshikazusawa@users.noreply.github.com>"
    ],
-   "x_generated_by_perl" : "v5.40.0",
-   "x_serialization_backend" : "Cpanel::JSON::XS version 4.38",
+   "x_generated_by_perl" : "v5.40.1",
+   "x_serialization_backend" : "Cpanel::JSON::XS version 4.39",
    "x_spdx_expression" : "Artistic-1.0-Perl OR GPL-1.0-or-later",
    "x_static_install" : 1
 }

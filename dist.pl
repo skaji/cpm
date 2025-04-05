@@ -21,6 +21,7 @@ my @prereq = (
         'CPAN::Meta::Requirements' => '2.130',
         'CPAN::Meta::YAML' => '0',
         'Command::Runner' => '0.100',
+        'Darwin::InitObjC' => '0',
         'ExtUtils::Install' => '2.20',
         'ExtUtils::InstallPaths' => '0.002',
         'File::Copy::Recursive' => '0',
