@@ -4,6 +4,7 @@ use warnings;
 
 use App::cpm::DistNotation;
 use App::cpm::HTTP;
+use App::cpm::Util;
 use App::cpm::version;
 use CPAN::02Packages::Search;
 use Cwd ();
@@ -11,8 +12,7 @@ use File::Basename ();
 use File::Copy ();
 use File::Path ();
 use File::Spec;
-use File::Which ();
-use IPC::Run3 ();
+use File::Temp ();
 use Proc::ForkSafe;
 
 sub new {
@@ -22,13 +22,19 @@ sub new {
     $mirror =~ s{/*$}{/};
 
     my $path = $option{path} || "${mirror}modules/02packages.details.txt.gz";
-    my $cache_dir = $class->_cache_dir($mirror, $cache_dir_base);
-    my $local_path = $class->_fetch($path => $cache_dir);
+    if ($path =~ m{^https?://}) {
+        my $cache_dir = $class->_cache_dir($mirror, $cache_dir_base);
+        $path = $class->_fetch($path => $cache_dir);
+    } else {
+        $path =~ s{^file://}{};
+        -f $path or die "$path: No such file or directory\n";
+    }
 
+    my $text_file = $path =~ /\.gz$/ ? $class->_gunzip($path) : App::cpm::Util::maybe_abs($path);
     my $index = Proc::ForkSafe->wrap(sub {
-        CPAN::02Packages::Search->new(file => $local_path);
+        CPAN::02Packages::Search->new(file => $text_file);
     });
-    bless { mirror => $mirror, local_path => $local_path, index => $index }, $class;
+    bless { mirror => $mirror, path => $path, index => $index }, $class;
 }
 
 sub _cache_dir {
@@ -48,47 +54,31 @@ sub _cache_dir {
 sub _fetch {
     my ($class, $path, $cache_dir) = @_;
     my $dest = File::Spec->catfile($cache_dir, File::Basename::basename($path));
-    if ($path =~ m{^https?://}) {
-        my $res = App::cpm::HTTP->create->mirror($path => $dest);
-        die "$res->{status} $res->{reason}, $path\n" if !$res->{success};
-    } else {
-        $path =~ s{^file://}{};
-        die "$path: No such file.\n" if !-f $path;
-        if (!-f $dest or (stat $dest)[9] <= (stat $path)[9]) {
-            File::Copy::copy($path, $dest) or die "Copy $path $dest: $!\n";
-            my $mtime = (stat $path)[9];
-            utime $mtime, $mtime, $dest;
-        }
-    }
-    return $dest if $dest !~ /\.gz$/;
+    my $res = App::cpm::HTTP->create->mirror($path => $dest);
+    die "$res->{status} $res->{reason}, $path\n" if !$res->{success};
+    return $dest;
+}
 
-    my $plain = $dest;
-    $plain =~ s/\.gz$//;
-    if (!-f $plain or (stat $plain)[9] <= (stat $dest)[9]) {
-        my $gzip = File::Which::which('gzip');
-        die "Need gzip command to decompress $dest\n" if !$gzip;
-        my @cmd = ($gzip, "-dc", $dest);
-        IPC::Run3::run3 \@cmd, undef, $plain, \my $err;
-        if ($? != 0) {
-            chomp $err;
-            $err ||= "exit status $?";
-            die "@cmd: $err\n";
-        }
-    }
-    return $plain
+sub _gunzip {
+    my ($class, $path) = @_;
+    my ($fh, $dest) = File::Temp::tempfile("perl-cpm-XXXXX",
+        UNLINK => 1, SUFFIX => ".txt", EXLOCK => 0, TMPDIR => 1);
+    App::cpm::Util::gunzip $path, $fh;
+    close $fh;
+    $dest;
 }
 
 sub resolve {
     my ($self, $task) = @_;
     my $res = $self->{index}->call(search => $task->{package});
     if (!$res) {
-        return { error => "not found, @{[$self->{local_path}]}" };
+        return { error => "not found, @{[$self->{path}]}" };
     }
 
     if (my $version_range = $task->{version_range}) {
         my $version = $res->{version} || 0;
         if (!App::cpm::version->parse($version)->satisfy($version_range)) {
-            return { error => "found version $version, but it does not satisfy $version_range, @{[$self->{local_path}]}" };
+            return { error => "found version $version, but it does not satisfy $version_range, @{[$self->{path}]}" };
         }
     }
     my $dist = App::cpm::DistNotation->new_from_dist($res->{path});
