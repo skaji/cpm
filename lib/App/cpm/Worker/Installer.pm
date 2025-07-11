@@ -115,7 +115,7 @@ sub _fetch_git {
         DIR => $self->menlo->{base},
     );
     $self->menlo->mask_output( diag_progress => "Cloning $uri" );
-    
+
     my @depth = $ref ? () : ('--depth=1');
 
     local $ENV{GIT_TERMINAL_PROMPT} = 0 if !exists $ENV{GIT_TERMINAL_PROMPT};
