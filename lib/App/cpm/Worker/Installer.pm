@@ -115,9 +115,11 @@ sub _fetch_git {
         DIR => $self->menlo->{base},
     );
     $self->menlo->mask_output( diag_progress => "Cloning $uri" );
+    
+    my @depth = $ref ? () : ('--depth=1');
 
     local $ENV{GIT_TERMINAL_PROMPT} = 0 if !exists $ENV{GIT_TERMINAL_PROMPT};
-    $self->menlo->run_command([ 'git', 'clone', $uri, $dir ]);
+    $self->menlo->run_command([ 'git', 'clone', @depth, $uri, $dir ]);
 
     unless (-e "$dir/.git") {
         $self->menlo->diag_fail("Failed cloning git repository $uri", 0);
