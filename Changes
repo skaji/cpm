@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.997024  2025-07-11 21:55:17 JST
+        - Use --depth=1 option by default for git clone (shawnlaffan #259)
+
 0.997023  2025-04-10 23:12:14 JST
         - Simplify 02package resolver (#257)
 
