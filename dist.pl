@@ -48,10 +48,9 @@ my @config = (
     [
         @prereq,
         'ExecDir' => [ dir => 'script' ],
-        'Git::GatherDir' => [ exclude_filename => 'META.json', exclude_filename => 'LICENSE' ],
-        'CopyFilesFromBuild' => [ copy => 'META.json', copy => 'LICENSE' ],
+        'Git::GatherDir' => [ exclude_filename => 'META.json' ],
+        'CopyFilesFromBuild' => [ copy => 'META.json' ],
         'VersionFromMainModule' => [],
-        'LicenseFromModule' => [ override_author => 1 ],
         'ReversionOnRelease' => [ prompt => 1 ],
         'NextRelease' => [ format => '%v  %{yyyy-MM-dd HH:mm:ss VVV}d%{ (TRIAL RELEASE)}T' ],
         'Git::Check' => [ allow_dirty => 'Changes', allow_dirty => 'META.json' ],
@@ -62,7 +61,6 @@ my @config = (
         'MetaJSON' => [],
         'Metadata' => [ x_static_install => 1 ],
         'Git::Contributors' => [],
-        'License' => [],
 
         'CheckChangesHasContent' => [],
         'ConfirmRelease' => [],
