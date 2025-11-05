@@ -27,7 +27,8 @@
             "CPAN::Mirror::Tiny" : "0.20",
             "Capture::Tiny" : "0",
             "Path::Tiny" : "0",
-            "Test::More" : "0.98"
+            "Test::More" : "0.98",
+            "local::lib" : "0"
          }
       },
       "runtime" : {
@@ -42,20 +43,24 @@
             "CPAN::Meta::YAML" : "0",
             "Command::Runner" : "0.100",
             "Darwin::InitObjC" : "0",
+            "ExtUtils::Config" : "0",
+            "ExtUtils::Helpers" : "0",
             "ExtUtils::Install" : "2.20",
             "ExtUtils::InstallPaths" : "0.002",
             "File::Copy::Recursive" : "0",
+            "File::Temp" : "0.2304",
+            "File::Which" : "0",
             "File::pushd" : "0",
+            "Getopt::Long" : "2.36",
             "HTTP::Tinyish" : "0.12",
             "JSON::PP" : "2.27300",
-            "Menlo::CLI::Compat" : "1.9021",
             "Module::CPANfile" : "0",
             "Module::Metadata" : "0",
             "Module::cpmfile" : "0.001",
             "Parallel::Pipes::App" : "0.100",
+            "Parse::LocalDistribution" : "0.20",
             "Parse::PMFile" : "0.43",
             "Proc::ForkSafe" : "0.001",
-            "local::lib" : "2.000018",
             "parent" : "0",
             "perl" : "5.008001",
             "version" : "0.77"
@@ -66,6 +71,9 @@
       "App::cpm" : {
          "file" : "lib/App/cpm.pm",
          "version" : "0.997024"
+      },
+      "App::cpm::Builder::Static" : {
+         "file" : "lib/App/cpm/Builder/Static.pm"
       },
       "App::cpm::CLI" : {
          "file" : "lib/App/cpm/CLI.pm"
@@ -136,9 +144,6 @@
       "App::cpm::Worker::Installer" : {
          "file" : "lib/App/cpm/Worker/Installer.pm"
       },
-      "App::cpm::Worker::Installer::Menlo" : {
-         "file" : "lib/App/cpm/Worker/Installer/Menlo.pm"
-      },
       "App::cpm::Worker::Installer::Prebuilt" : {
          "file" : "lib/App/cpm/Worker/Installer/Prebuilt.pm"
       },
@@ -182,7 +187,7 @@
       "yoshikazusawa <883514+yoshikazusawa@users.noreply.github.com>"
    ],
    "x_generated_by_perl" : "v5.42.0",
-   "x_serialization_backend" : "Cpanel::JSON::XS version 4.39",
+   "x_serialization_backend" : "Cpanel::JSON::XS version 4.40",
    "x_spdx_expression" : "Artistic-1.0-Perl OR GPL-1.0-or-later",
    "x_static_install" : 1
 }

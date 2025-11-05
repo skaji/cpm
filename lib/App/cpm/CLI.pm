@@ -30,7 +30,6 @@ use Module::CPANfile;
 use Module::cpmfile;
 use Parallel::Pipes::App;
 use Pod::Text ();
-use local::lib ();
 
 sub new {
     my ($class, %option) = @_;
@@ -186,8 +185,8 @@ sub _search_inc {
 
     my $base = $self->{local_lib};
     my @local_lib = (
-        local::lib->resolve_path(local::lib->install_base_arch_path($base)),
-        local::lib->resolve_path(local::lib->install_base_perl_path($base)),
+        App::cpm::Util::maybe_abs(File::Spec->catdir($base, "lib", "perl5", $Config{archname})),
+        App::cpm::Util::maybe_abs(File::Spec->catdir($base, "lib", "perl5")),
     );
     if ($self->{target_perl}) {
         return [@local_lib];
@@ -500,6 +499,7 @@ sub locate_dependency_file {
     }
     if (-f 'Build.PL' || -f 'Makefile.PL') {
         my $build_file = -f 'Build.PL' ? 'Build.PL' : 'Makefile.PL';
+        my @cmd = ($^X, $build_file);
         warn "Executing $build_file to generate MYMETA.json and to determine requirements...\n";
         local %ENV = (
             PERL5_CPAN_IS_RUNNING => 1,
@@ -509,11 +509,17 @@ sub locate_dependency_file {
             %ENV,
         );
         if (!$self->{global}) {
-            local $SIG{__WARN__} = sub { }; # catch 'Attempting to write ...'
-            local::lib->setup_env_hash_for($self->{local_lib}, 0);
+            my $base = App::cpm::Util::maybe_abs($self->{local_lib});
+            $ENV{PATH} = join $Config{path_sep}, File::Spec->catdir($base, "bin"), ( $ENV{PATH} ? $ENV{PATH} : () );
+            $ENV{PERL5LIB} = join $Config{path_sep}, File::Spec->catdir($base, "lib", "perl5"), ( $ENV{PERL5LIB} ? $ENV{PERL5LIB} : ());
+            if ($build_file eq "Makefile.PL") {
+                push @cmd, "INSTALL_BASE=$base";
+            } else {
+                push @cmd, "--install_base", $base;
+            }
         }
         my $runner = Command::Runner->new(
-            command => [ $^X, $build_file ],
+            command => \@cmd,
             timeout => 60,
             redirect => 1,
         );

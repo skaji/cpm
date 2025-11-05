@@ -245,12 +245,12 @@ sub _calculate_tasks {
                 $self->add_task(
                     type => "install",
                     meta => $dist->meta,
-                    distdata => $dist->distdata,
                     directory => $dist->directory,
                     distfile => $dist->{distfile},
                     uri => $dist->uri,
                     static_builder => $dist->static_builder,
                     prebuilt => $dist->prebuilt,
+                    provides => $dist->provides,
                 );
             } elsif (!defined $is_satisfied) {
                 my ($req) = grep { $_->{package} eq "perl" } @$dist_requirements;
@@ -378,7 +378,9 @@ sub add_distribution {
     my ($self, $distribution) = @_;
     my $distfile = $distribution->distfile;
     if (my $already = $self->{distributions}{$distfile}) {
-        $already->overwrite_provide($_) for @{ $distribution->provides };
+        if ($already->resolved) {
+            $already->overwrite_provide($_) for @{ $distribution->provides };
+        }
         return 0;
     } else {
         $self->{distributions}{$distfile} = $distribution;
@@ -454,13 +456,13 @@ sub _register_fetch_result {
         $distribution->configured(1);
         $distribution->requirements($_ => $task->{requirements}{$_}) for keys %{$task->{requirements}};
         $distribution->prebuilt(1);
-        local $self->{logger}{context} = $distribution->distvname;
-        my $msg = join ", ", map { sprintf "%s (%s)", $_->{package}, $_->{version} || 0 } @{$distribution->provides};
-        $self->{logger}->log("Distribution provides: $msg");
     } else {
         $distribution->fetched(1);
         $distribution->requirements($_ => $task->{requirements}{$_}) for keys %{$task->{requirements}};
     }
+    local $self->{logger}{context} = $distribution->distvname;
+    my $msg = join ", ", map { sprintf "%s (%s)", $_->{package}, $_->{version} || 0 } @{$distribution->provides};
+    $self->{logger}->log("Distribution provides: $msg");
     return 1;
 }
 
@@ -474,17 +476,6 @@ sub _register_configure_result {
     $distribution->configured(1);
     $distribution->requirements($_ => $task->{requirements}{$_}) for keys %{$task->{requirements}};
     $distribution->static_builder($task->{static_builder});
-    $distribution->distdata($task->{distdata});
-
-    # After configuring, the final "provides" is fixed.
-    # So we need to re-define "provides" here
-    my $p = $task->{distdata}{provides};
-    my @provide = map +{ package => $_, version => $p->{$_}{version} }, sort keys %$p;
-    $distribution->provides(\@provide);
-    local $self->{logger}{context} = $distribution->distvname;
-    my $msg = join ", ", map { sprintf "%s (%s)", $_->{package}, $_->{version} || 0 } @{$distribution->provides};
-    $self->{logger}->log("Distribution provides: $msg");
-
     return 1;
 }
 

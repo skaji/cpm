@@ -2,14 +2,19 @@ package App::cpm::Worker::Installer;
 use strict;
 use warnings;
 
+use App::cpm::Builder::Static;
+use App::cpm::HTTP;
+use App::cpm::Installer::Unpacker;
 use App::cpm::Logger::File;
 use App::cpm::Requirement;
-use App::cpm::Worker::Installer::Menlo;
+use App::cpm::Util;
 use App::cpm::Worker::Installer::Prebuilt;
 use App::cpm::version;
 use CPAN::DistnameInfo;
 use CPAN::Meta;
+use Command::Runner;
 use Config;
+use ExtUtils::Helpers ();
 use ExtUtils::Install ();
 use ExtUtils::InstallPaths ();
 use File::Basename 'basename';
@@ -20,6 +25,7 @@ use File::Spec;
 use File::Temp ();
 use File::pushd 'pushd';
 use JSON::PP ();
+use Parse::LocalDistribution;
 use Time::HiRes ();
 
 use constant NEED_INJECT_TOOLCHAIN_REQUIREMENTS => $] < 5.018;
@@ -52,7 +58,6 @@ sub work {
         if (my $result = $self->configure($task)) {
             return +{
                 ok => 1,
-                distdata => $result->{distdata},
                 requirements => $result->{requirements},
                 static_builder => $result->{static_builder},
             };
@@ -77,32 +82,76 @@ sub new {
     $option{cache} or die "cache option is required\n";
     mkpath $_ for grep !-d, $option{base}, $option{cache};
     $option{logger}->log("Work directory is $option{base}");
-
-    my $menlo = App::cpm::Worker::Installer::Menlo->new(
-        static_install => $option{static_install},
-        base => $option{base},
-        logger => $option{logger},
-        quiet => 1,
-        pod2man => $option{man_pages},
-        notest => $option{notest},
-        sudo => $option{sudo},
-        mirrors => ["https://cpan.metacpan.org/"], # this is dummy
-        configure_timeout => $option{configure_timeout},
-        build_timeout => $option{build_timeout},
-        test_timeout => $option{test_timeout},
-    );
-    if ($option{local_lib}) {
-        my $local_lib = $option{local_lib} = $menlo->maybe_abs($option{local_lib});
-        $menlo->{self_contained} = 1;
-        $menlo->log("Setup local::lib $local_lib");
-        $menlo->setup_local_lib($local_lib);
+    my $make = File::Which::which($Config{make});
+    $option{logger}->log("You have make $make") if $make;
+    my ($http, $http_desc) = App::cpm::HTTP->create;
+    $option{logger}->log("You have $http_desc");
+    my $unpacker = App::cpm::Installer::Unpacker->new;
+    my $unpacker_desc = $unpacker->describe;
+    for my $key (sort keys %$unpacker_desc) {
+        $option{logger}->log("You have $key $unpacker_desc->{$key}");
     }
-    $menlo->log("--", `$^X -V`, "--");
+    if ($option{local_lib}) {
+        $option{local_lib} = App::cpm::Util::maybe_abs($option{local_lib});
+    }
+
+    my ($implicit_install_base, $eumm_argv, $mb_argv) = $class->_parse_builder_env;
+    if ($implicit_install_base or @$eumm_argv or @$mb_argv) {
+        $option{logger}->log("Loading configuration from PERL_MM_OPT and PERL_MB_OPT:");
+        $option{logger}->log("  install_base: $implicit_install_base") if $implicit_install_base;
+        $option{logger}->log("  ExtUtils::MakeMaker options: @$eumm_argv") if @$eumm_argv;
+        $option{logger}->log("  Module::Build options: @$mb_argv") if @$mb_argv;
+    }
+    my $need_noman_argv = !$option{man_pages} &&
+        ($Config{installman1dir} || $Config{installsiteman1dir} || $Config{installman3dir} || $Config{installsiteman3dir});
+
+    my $perl = $^X;
+    $option{logger}->log("--", `$perl -V`, "--");
     $option{prebuilt} = App::cpm::Worker::Installer::Prebuilt->new if $option{prebuilt};
-    bless { %option, menlo => $menlo }, $class;
+    bless {
+        %option,
+        need_noman_argv => $need_noman_argv,
+        implicit_install_base => $implicit_install_base,
+        eumm_argv => $eumm_argv,
+        mb_argv => $mb_argv,
+        perl => $perl,
+        make => $make,
+        unpacker => $unpacker,
+        http => $http,
+    }, $class;
 }
 
-sub menlo { shift->{menlo} }
+sub _parse_builder_env {
+    my $class = shift;
+    my ($install_base, @eumm_argv, @mb_argv);
+    if ($ENV{PERL_MM_OPT}) {
+        my @argv = ExtUtils::Helpers::split_like_shell($ENV{PERL_MM_OPT});
+        while (@argv) {
+            my $arg = shift @argv;
+            if ($arg =~ /^INSTALL_BASE=(.+)/) {
+                $install_base = $1;
+            } else {
+                push @eumm_argv, $arg;
+            }
+        }
+        delete $ENV{PERL_MM_OPT};
+    }
+    if ($ENV{PERL_MB_OPT}) {
+        my @argv = ExtUtils::Helpers::split_like_shell($ENV{PERL_MB_OPT});
+        while (@argv) {
+            my $arg = shift @argv;
+            if ($arg eq "--install_base") {
+                $install_base = shift @argv;
+            } elsif ($arg =~ /^--install_base=(.+)/) {
+                $install_base = $1;
+            } else {
+                push @eumm_argv, $arg;
+            }
+        }
+        delete $ENV{PERL_MB_OPT};
+    }
+    ($install_base, \@eumm_argv, \@mb_argv);
+}
 
 sub _fetch_git {
     my ($self, $uri, $ref) = @_;
@@ -112,27 +161,26 @@ sub _fetch_git {
     my $dir = File::Temp::tempdir(
         "$basename-XXXXX",
         CLEANUP => 0,
-        DIR => $self->menlo->{base},
+        DIR => $self->{base},
     );
-    $self->menlo->mask_output( diag_progress => "Cloning $uri" );
+    $self->log("Cloning $uri");
 
     my @depth = $ref ? () : ('--depth=1');
 
     local $ENV{GIT_TERMINAL_PROMPT} = 0 if !exists $ENV{GIT_TERMINAL_PROMPT};
-    $self->menlo->run_command([ 'git', 'clone', @depth, $uri, $dir ]);
+    $self->run_command([ 'git', 'clone', @depth, $uri, $dir ]);
 
-    unless (-e "$dir/.git") {
-        $self->menlo->diag_fail("Failed cloning git repository $uri", 0);
+    if (!-e "$dir/.git") {
+        $self->log("Failed cloning git repository $uri");
         return;
     }
     my $guard = pushd $dir;
     if ($ref) {
-        unless ($self->menlo->run_command([ 'git', 'checkout', $ref ])) {
-            $self->menlo->diag_fail("Failed to checkout '$ref' in git repository $uri\n", 0);
+        if (!$self->run_command([ 'git', 'checkout', $ref ])) {
+            $self->log("Failed to checkout '$ref' in git repository $uri");
             return;
         }
     }
-    $self->menlo->diag_ok;
     chomp(my $rev = `git rev-parse --short HEAD`);
     ($dir, $rev);
 }
@@ -163,25 +211,25 @@ sub fetch {
     } elsif ($source eq "local") {
         $self->{logger}->log("Copying $uri");
         $uri =~ s{^file://}{};
-        $uri = $self->menlo->maybe_abs($uri);
+        $uri = App::cpm::Util::maybe_abs($uri);
         my $basename = basename $uri;
-        my $g = pushd $self->menlo->{base};
+        my $g = pushd $self->{base};
         if (-d $uri) {
             my $dest = File::Temp::tempdir(
                 "$basename-XXXXX",
                 CLEANUP => 0,
-                DIR => $self->menlo->{base},
+                DIR => $self->{base},
             );
             File::Copy::Recursive::dircopy($uri, $dest);
             $dir = $dest;
         } elsif (-f $uri) {
             my $dest = $basename;
             File::Copy::copy($uri, $dest);
-            $dir = $self->menlo->unpack($basename);
-            $dir = File::Spec->catdir($self->menlo->{base}, $dir) if $dir;
+            $dir = $self->unpack($basename);
+            $dir = File::Spec->catdir($self->{base}, $dir) if $dir;
         }
     } elsif ($source =~ /^(?:cpan|https?)$/) {
-        my $g = pushd $self->menlo->{base};
+        my $g = pushd $self->{base};
 
         FETCH: {
             my $basename = basename $uri;
@@ -189,27 +237,25 @@ sub fetch {
                 $self->{logger}->log("Copying $uri");
                 File::Copy::copy($uri, $basename)
                     or last FETCH;
-                $dir = $self->menlo->unpack($basename);
+                $dir = $self->unpack($basename);
             } else {
-                local $self->menlo->{save_dists};
                 if ($distfile and $TRUSTED_MIRROR->($uri)) {
                     my $cache = File::Spec->catfile($self->{cache}, "authors/id/$distfile");
                     if (-f $cache) {
                         $self->{logger}->log("Using cache $cache");
                         File::Copy::copy($cache, $basename);
-                        $dir = $self->menlo->unpack($basename);
+                        $dir = $self->unpack($basename);
                         if ($dir) {
                             $using_cache++;
                             last FETCH;
                         }
                         unlink $cache;
                     }
-                    $self->menlo->{save_dists} = $self->{cache};
                 }
-                $dir = $self->menlo->fetch_module({uris => [$uri], pathname => $distfile})
+                $dir = $self->fetch_distribution($uri, $distfile);
             }
         }
-        $dir = File::Spec->catdir($self->menlo->{base}, $dir) if $dir;
+        $dir = File::Spec->catdir($self->{base}, $dir) if $dir;
     }
     return unless $dir;
 
@@ -220,11 +266,10 @@ sub fetch {
         $self->{logger}->log("Distribution does not have META.json nor META.yml");
         return;
     }
-    my $p = $meta->{provides} || $self->menlo->extract_packages($meta, ".");
-    my $provides = [ map +{ package => $_, version => $p->{$_}{version} }, sort keys %$p ];
+    my $provides = $self->extract_packages($meta);
 
     my $req = { configure => App::cpm::Requirement->new };
-    if ($self->menlo->opts_in_static_install($meta)) {
+    if ($self->opts_in_static_install($meta)) {
         $self->{logger}->log("Distribution opts in x_static_install: $meta->{x_static_install}");
     } else {
         $req = { configure => $self->_extract_configure_requirements($meta, $distfile) };
@@ -252,7 +297,7 @@ sub find_prebuilt {
     my $phase  = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
 
     my %req;
-    if (!$self->menlo->opts_in_static_install($meta)) {
+    if (!$self->opts_in_static_install($meta)) {
         # XXX Actually we don't need configure requirements for prebuilt.
         # But requires them for consistency for now.
         %req = ( configure => $self->_extract_configure_requirements($meta, $uri) );
@@ -263,7 +308,7 @@ sub find_prebuilt {
         open my $fh, "<", 'blib/meta/install.json' or die;
         my $json = JSON::PP::decode_json(do { local $/; <$fh> });
         my $provides = $json->{provides};
-        [ map +{ package => $_, version => $provides->{$_}{version} }, sort keys %$provides ];
+        [ map +{ package => $_, version => $provides->{$_}{version}, file => $provides->{$_}{file} }, sort keys %$provides ];
     };
     return +{
         directory => $dir,
@@ -384,110 +429,192 @@ sub configure {
     my ($self, $task) = @_;
     my ($dir, $distfile, $meta, $source) = @{$task}{qw(directory distfile meta source)};
     my $guard = pushd $dir;
-    my $menlo = $self->menlo;
-    my $menlo_dist = { meta => $meta, cpanmeta => $meta }; # XXX
 
+    my $install_base = $self->{local_lib} || $self->{implicit_install_base};
     $self->{logger}->log("Configuring distribution");
     my ($static_builder, $configure_ok);
     {
-        if ($menlo->opts_in_static_install($meta)) {
-            my $state = {};
-            $menlo->static_install_configure($state, $menlo_dist, 1);
-            $static_builder = $state->{static_install};
+        if ($self->opts_in_static_install($meta)) {
+            $static_builder = $self->static_install_configure($meta);
             ++$configure_ok and last;
         }
         if (-f 'Build.PL') {
-            my @cmd = ($menlo->{perl}, 'Build.PL');
+            my @cmd = ($self->{perl}, 'Build.PL');
+            push @cmd, "--install_base", $install_base if $install_base;
+            push @cmd, qw(--config installman1dir= --config installsiteman1dir= --config installman3dir= --config installsiteman3dir=) if $self->{need_noman_argv};
             push @cmd, '--pureperl-only' if $self->{pureperl_only};
+            push @cmd, @{$self->{mb_argv}} if @{$self->{mb_argv}};
             $self->_retry(sub {
-                $menlo->configure(\@cmd, $menlo_dist, 1);
+                $self->_configure(\@cmd, $meta);
                 -f 'Build';
             }) and ++$configure_ok and last;
         }
         if (-f 'Makefile.PL') {
-            if (!$menlo->{make}) {
+            if (!$self->{make}) {
                 $self->{logger}->log("There is Makefile.PL, but you don't have 'make' command; you should install 'make' command first");
                 last;
             }
-            my @cmd = ($menlo->{perl}, 'Makefile.PL');
+            my @cmd = ($self->{perl}, 'Makefile.PL');
+            push @cmd, "INSTALL_BASE=$install_base" if $install_base;
+            push @cmd, qw(INSTALLMAN1DIR=none INSTALLMAN3DIR=none) if $self->{need_noman_argv};
             push @cmd, 'PUREPERL_ONLY=1' if $self->{pureperl_only};
+            push @cmd, @{$self->{eumm_argv}} if @{$self->{eumm_argv}};
             $self->_retry(sub {
-                $menlo->configure(\@cmd, $menlo_dist, 1); # XXX depth == 1?
+                $self->_configure(\@cmd, $meta);
                 -f 'Makefile';
             }) and ++$configure_ok and last;
         }
     }
     return unless $configure_ok;
 
-    my $distdata = $self->_build_distdata($source, $distfile, $meta);
     my $phase = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
     my $mymeta = $self->_load_metafile($distfile, 'MYMETA.json', 'MYMETA.yml');
     my $req = $self->_extract_requirements($mymeta, $phase);
     return +{
-        distdata => $distdata,
         requirements => $req,
         static_builder => $static_builder,
     };
 }
 
-sub _build_distdata {
-    my ($self, $source, $distfile, $meta) = @_;
+sub _local_lib_env_path {
+    my $self = shift;
+    join $Config{path_sep}, File::Spec->catdir($self->{local_lib}, "bin"), ( $ENV{PATH} ? $ENV{PATH} : () );
+}
 
-    my $menlo = $self->menlo;
-    my $fake_state = { configured_ok => 1, use_module_build => -f "Build" };
-    my $module_name = $menlo->find_module_name($fake_state) || $meta->{name};
-    $module_name =~ s/-/::/g;
+sub _local_lib_env_perl5lib {
+    my $self = shift;
+    join $Config{path_sep}, File::Spec->catdir($self->{local_lib}, "lib", "perl5"), ( $ENV{PERL5LIB} ? $ENV{PERL5LIB} : ());
+}
 
-    # XXX: if $source ne "cpan", then menlo->save_meta does nothing.
-    # Moreover, if $distfile is git url, CPAN::DistnameInfo->distvname returns undef.
-    # Then menlo->save_meta does nothing.
-    my $distvname = CPAN::DistnameInfo->new($distfile)->distvname;
-    my $provides = $meta->{provides} || $menlo->extract_packages($meta, ".");
-    +{
-        distvname => $distvname,
-        pathname => $distfile,
-        provides => $provides,
-        version => $meta->{version} || 0,
-        source => $source,
-        module_name => $module_name,
-    };
+sub _configure {
+    my ($self, $cmd, $meta) = @_;
+    local %ENV = %ENV;
+    $ENV{PERL5_CPAN_IS_RUNNING} = $$;
+    $ENV{PERL5_CPANPLUS_IS_RUNNING} = $$;
+    $ENV{PERL5_CPANM_IS_RUNNING} = $$;
+    $ENV{PERL_MM_USE_DEFAULT} = 1;
+    $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($meta);
+    if ($self->{local_lib}) {
+        $ENV{PATH} = $self->_local_lib_env_path;
+        $ENV{PERL5LIB} = $self->_local_lib_env_perl5lib;
+    }
+    $self->run_timeout($cmd, $self->{configure_timeout});
+}
+
+sub static_install_configure {
+    my ($self, $meta) = @_;
+
+    my $builder = App::cpm::Builder::Static->new(meta => $meta);
+    my @argv;
+    if (my $install_base = $self->{local_lib} || $self->{implicit_install_base}) {
+        push @argv, "--install_base", $install_base;
+    }
+    if ($self->{need_noman_argv}) {
+        push @argv, qw(--config installman1dir= --config installsiteman1dir= --config installman3dir= --config installsiteman3dir=);
+    }
+    if ($self->{pureperl_only}) {
+        push @argv, '--pureperl-only';
+    }
+    if (@{$self->{mb_argv}}) {
+        push @argv, @{$self->{mb_argv}};
+    }
+    local %ENV = %ENV;
+    if ($self->{local_lib}) {
+        $ENV{PATH} = $self->_local_lib_env_path;
+        $ENV{PERL5LIB} = $self->_local_lib_env_perl5lib;
+    }
+    $builder->configure(@argv);
+    return $builder;
+}
+
+
+sub _build {
+    my ($self, $cmd, $meta) = @_;
+    local %ENV = %ENV;
+    $ENV{PERL_MM_USE_DEFAULT} = 1;
+    $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($meta);
+    if ($self->{local_lib}) {
+        $ENV{PATH} = $self->_local_lib_env_path;
+        $ENV{PERL5LIB} = $self->_local_lib_env_perl5lib;
+    }
+    $self->run_timeout($cmd, $self->{build_timeout});
+}
+
+sub _test {
+    my ($self, $cmd, $meta) = @_;
+    local %ENV = %ENV;
+    $ENV{PERL_MM_USE_DEFAULT} = 1;
+    $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($meta);
+    $ENV{NONINTERACTIVE_TESTING} = 1;
+    if ($self->{local_lib}) {
+        $ENV{PATH} = $self->_local_lib_env_path;
+        $ENV{PERL5LIB} = $self->_local_lib_env_perl5lib;
+    }
+    $self->run_timeout($cmd, $self->{test_timeout});
+}
+
+sub _install {
+    my ($self, $cmd, $meta) = @_;
+    local %ENV = %ENV;
+    $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($meta);
+    if ($self->{local_lib}) {
+        $ENV{PATH} = $self->_local_lib_env_path;
+        $ENV{PERL5LIB} = $self->_local_lib_env_perl5lib;
+    }
+    if (ref $cmd eq 'ARRAY' && $self->{sudo}) {
+        unshift @$cmd, 'sudo';
+    }
+    $self->run_timeout($cmd, 0);
+}
+
+sub _use_unsafe_inc {
+    my ($self, $meta) = @_;
+    if (exists $ENV{PERL_USE_UNSAFE_INC}) {
+        return $ENV{PERL_USE_UNSAFE_INC};
+    }
+    if (exists $meta->{x_use_unsafe_inc}) {
+        $self->log("Distribution opts in x_use_unsafe_inc: $meta->{x_use_unsafe_inc}"); # XXX
+        return $meta->{x_use_unsafe_inc};
+    }
+    1;
+}
+
+sub opts_in_static_install {
+    my ($self, $meta) = @_;
+    return if !$self->{static_install};
+    return if $self->{sudo} or $self->{uninstall_shadows};
+    return $meta->{x_static_install} && $meta->{x_static_install} == 1;
 }
 
 sub install {
     my ($self, $task) = @_;
     return $self->install_prebuilt($task) if $task->{prebuilt};
 
-    my ($dir, $distdata, $static_builder, $distvname, $meta)
-        = @{$task}{qw(directory distdata static_builder distvname meta)};
+    my ($dir, $static_builder, $distvname, $meta, $provides, $distfile)
+        = @{$task}{qw(directory static_builder distvname meta provides distfile)};
     my $guard = pushd $dir;
-    my $menlo = $self->menlo;
-    my $menlo_dist = { meta => $meta }; # XXX
 
-    $self->{logger}->log("Building " . ($menlo->{notest} ? "" : "and testing ") . "distribution");
+    $self->{logger}->log("Building " . ($self->{notest} ? "" : "and testing ") . "distribution");
     my $installed;
     if ($static_builder) {
-        $menlo->build(sub { $static_builder->build }, $distvname, $menlo_dist)
-        && $menlo->test(sub { $static_builder->build("test") }, $distvname, $menlo_dist)
-        && $menlo->install(sub { $static_builder->build("install") }, [], $distvname, $menlo_dist)
+        $self->_build(sub { $static_builder->build }, $meta)
+        && ($self->{notest} || $self->_test(sub { $static_builder->build("test") }, $meta))
+        && $self->_install(sub { $static_builder->build("install") }, $meta)
         && $installed++;
     } elsif (-f 'Build') {
-        $self->_retry(sub { $menlo->build([ $menlo->{perl}, "./Build" ], $distvname, $menlo_dist)  })
-        && $self->_retry(sub { $menlo->test([ $menlo->{perl}, "./Build", "test" ], $distvname, $menlo_dist)  })
-        && $self->_retry(sub { $menlo->install([ $menlo->{perl}, "./Build", "install" ], [], $distvname, $menlo_dist)  })
+        $self->_retry(sub { $self->_build([ $self->{perl}, "./Build" ], $meta)  })
+        && ($self->{notest} || $self->_retry(sub { $self->_test([ $self->{perl}, "./Build", "test" ], $meta) }))
+        && $self->_retry(sub { $self->_install([ $self->{perl}, "./Build", "install" ], $meta)  })
         && $installed++;
     } else {
-        $self->_retry(sub { $menlo->build([ $menlo->{make} ], $distvname, $menlo_dist)  })
-        && $self->_retry(sub { $menlo->test([ $menlo->{make}, "test" ], $distvname, $menlo_dist)  })
-        && $self->_retry(sub { $menlo->install([ $menlo->{make}, "install" ], [], $distvname, $menlo_dist) })
+        $self->_retry(sub { $self->_build([ $self->{make} ], $meta)  })
+        && ($self->{notest} || $self->_retry(sub { $self->_test([ $self->{make}, "test" ], $meta) }))
+        && $self->_retry(sub { $self->_install([ $self->{make}, "install" ], $meta) })
         && $installed++;
     }
 
-    if ($installed && $distdata) {
-        $menlo->save_meta(
-            $distdata->{module_name},
-            $distdata,
-            $distdata->{module_name},
-        );
+    if ($installed && $distfile) {
+        $self->save_meta($meta, $distfile, $provides);
         $self->save_prebuilt($task) if $self->enable_prebuilt($task->{uri});
     }
     return $installed;
@@ -496,10 +623,7 @@ sub install {
 sub install_prebuilt {
     my ($self, $task) = @_;
 
-    my $install_base = $self->{local_lib};
-    if (!$install_base && ($ENV{PERL_MM_OPT} || '') =~ /INSTALL_BASE=(\S+)/) {
-        $install_base = $1;
-    }
+    my $install_base = $self->{local_lib} || $self->{implicit_install_base};
 
     $self->{logger}->log("Copying prebuilt $task->{directory}/blib");
     my $guard = pushd $task->{directory};
@@ -507,8 +631,9 @@ sub install_prebuilt {
         dist_name => $task->distname, # this enables the installation of packlist
         $install_base ? (install_base => $install_base) : (),
     );
-    my $install_base_meta = $install_base ? "$install_base/lib/perl5" : $Config{sitelibexp};
-    my $distvname = $task->distvname;
+    my $install_base_meta = $install_base ? File::Spec->catdir($install_base, "lib", "perl5") : $Config{sitelibexp};
+    my $meta_target_dir = File::Spec->catdir($install_base_meta, $Config{archname}, ".meta", $task->distvname);
+
     open my $fh, ">", \my $stdout;
     {
         local *STDOUT = $fh;
@@ -522,11 +647,161 @@ sub install_prebuilt {
             result => \my %result,
         ]);
         ExtUtils::Install::install({
-            'blib/meta' => "$install_base_meta/$Config{archname}/.meta/$distvname",
+            'blib/meta' => $meta_target_dir,
         });
     }
     $self->{logger}->log($stdout);
     return 1;
+}
+
+sub log {
+    my $self = shift;
+    $self->{logger}->log(@_);
+}
+
+sub run_command {
+    my ($self, $cmd) = @_;
+    $self->run_timeout($cmd, 0);
+}
+
+sub run_timeout {
+    my ($self, $cmd, $timeout) = @_;
+
+    my $str = ref $cmd eq 'CODE' ? '' : ref $cmd eq 'ARRAY' ? "@$cmd" : $cmd;
+    $self->log("Executing $str") if $str;
+
+    my $runner = Command::Runner->new(
+        command => $cmd,
+        keep => 0,
+        redirect => 1,
+        timeout => $timeout,
+        stdout => sub { $self->log(@_) },
+    );
+    my $res = $runner->run;
+    if ($res->{timeout}) {
+        $self->log("Timed out (> ${timeout}s).");
+        return;
+    }
+    my $result = $res->{result};
+    ref $cmd eq 'CODE' ? $result : $result == 0;
+}
+
+sub unpack {
+    my ($self, $file) = @_;
+    $self->log("Unpacking $file");
+    my ($dir, $err) = $self->{unpacker}->unpack($file);
+    $self->log($err) if !$dir && $err;
+    $dir;
+}
+
+# XXX assume current dir is distribution dir
+sub extract_packages {
+    my ($self, $meta) = @_;
+
+    if (my $provides = $meta->{provides}) {
+        my @out;
+        for my $package (sort keys %$provides) {
+            push @out, {
+                package => $package,
+                %{$provides->{$package}},
+            };
+        }
+        return \@out;
+    }
+
+    my $parser = Parse::LocalDistribution->new({
+        META_CONTENT => $meta,
+        UNSAFE => 1,
+        ALLOW_DEV_VERSION => 1,
+    });
+
+    my $provides = $parser->parse(".");
+    my @out;
+    for my $package (sort keys %$provides) {
+        my $info = $provides->{$package};
+        (my $file = $info->{infile}) =~ s{^\./}{};
+        push @out, {
+            package => $package,
+            file => $file,
+            ($info->{version} eq 'undef' ? () : (version => $info->{version})),
+        };
+    }
+    \@out;
+}
+
+sub mirror {
+    my ($self, $uri, $local) = @_;
+    my $res = $self->{http}->mirror($uri, $local);
+    $self->log($res->{status} . ($res->{reason} ? " $res->{reason}" : ""));
+    return 1 if $res->{success};
+    unlink $local;
+    $self->log($res->{content}) if $res->{status} == 599;
+    return;
+}
+
+sub fetch_distribution {
+    my ($self, $uri, $distfile) = @_;
+
+    my $local = File::Spec->catfile($self->{base}, File::Basename::basename($uri));
+    $self->log("Fetching $uri");
+    if (!$self->mirror($uri, $local)) {
+        $self->log("Failed to download $uri");
+        return;
+    }
+    my $dir = $self->unpack($local);
+    if (!$dir) {
+        return;
+    }
+
+    if ($distfile and $TRUSTED_MIRROR->($uri)) {
+        my $cache = File::Spec->catfile($self->{cache}, "authors/id/$distfile");
+        File::Path::mkpath([ File::Basename::dirname($cache) ], 0, 0777);
+        File::Copy::copy($local, $cache) or warn $!;
+    }
+    return $dir;
+}
+
+sub save_meta {
+    my ($self, $meta, $distfile, $provides) = @_;
+
+    my $install_base = $self->{local_lib} || $self->{implicit_install_base};
+    my $install_base_meta = $install_base ? File::Spec->catdir($install_base, "lib", "perl5") : $Config{sitelibexp};
+
+    my %provides2 = map {
+        my $package = $_->{package};
+        my %info;
+        $info{file} = $_->{file};
+        $info{version} = $_->{version} if $_->{version};
+        ($package, \%info);
+    } @$provides;
+
+    my $distvname = CPAN::DistnameInfo->new($distfile)->distvname;
+    (my $name = $meta->{name}) =~ s/-/::/g;
+    my %data = (
+        name => $name,
+        target => $name,
+        version => $meta->{version},
+        dist => $distvname,
+        pathname => $distfile,
+        provides => \%provides2,
+    );
+
+    File::Path::mkpath("blib/meta", 0, 0777);
+    open my $fh, ">", "blib/meta/install.json" or die $!;
+    print {$fh} JSON::PP->new->canonical->encode(\%data) . "\n";
+    close $fh;
+
+    File::Copy::copy("MYMETA.json", "blib/meta/MYMETA.json") or die $!;
+
+    my $meta_target_dir = File::Spec->catdir($install_base_meta, $Config{archname}, ".meta", $distvname);
+    my @cmd = (
+        ($self->{sudo} ? 'sudo' : ()),
+        $self->{perl},
+        '-MExtUtils::Install=install',
+        '-e',
+        qq[install({ 'blib/meta' => '$meta_target_dir' })],
+    );
+    $self->run_command(\@cmd);
 }
 
 1;

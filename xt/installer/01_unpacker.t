@@ -17,7 +17,7 @@ my $store = tempdir CLEANUP => 1;
 
     !system "curl", "-fsSL", "-o", "master.tar.gz", "https://github.com/skaji/Archive-Unpack/archive/master.tar.gz" or die;
     !system "curl", "-fsSLO", "https://cpan.metacpan.org/authors/id/S/SK/SKAJI/CPAN-Flatten-0.01.tar.gz" or die;
-    !system "curl", "-fsSLO", "https://ftp.gnu.org/gnu/m4/m4-1.4.3.tar.bz2" or die;
+    !system "curl", "-fsSLO", "https://cpan.metacpan.org/authors/id/A/AN/ANDK/File-Rsync-Mirror-Recent-0.4.6.tar.bz2" or die;
 }
 
 my $unpacker = App::cpm::Installer::Unpacker->new(_init_all => 1);
@@ -35,8 +35,8 @@ my $test = sub {
 
             ($root, $err) = $unpacker->$method(catfile($store, "CPAN-Flatten-0.01.tar.gz"));
             is $root, "CPAN-Flatten-0.01" or diag $err;
-            ($root, $err) = $unpacker->$method(catfile($store, "m4-1.4.3.tar.bz2"));
-            is $root, "m4-1.4.3" or diag $err;
+            ($root, $err) = $unpacker->$method(catfile($store, "File-Rsync-Mirror-Recent-0.4.6.tar.bz2"));
+            is $root, "File-Rsync-Mirror-Recent-0.4.6" or diag $err;
             ($root, $err) = $unpacker->$method(catfile($store, "master.tar.gz"));
             is $root, "Archive-Unpack-master" or diag $err;
         }

@@ -176,18 +176,6 @@
    {
       "copyright" : "Tatsuhiko Miyagawa",
       "license" : "the same as Perl 5",
-      "name" : "Menlo",
-      "url" : "https://metacpan.org/dist/Menlo"
-   },
-   {
-      "copyright" : "Tatsuhiko Miyagawa",
-      "license" : "the same as Perl 5",
-      "name" : "Menlo-Legacy",
-      "url" : "https://metacpan.org/dist/Menlo-Legacy"
-   },
-   {
-      "copyright" : "Tatsuhiko Miyagawa",
-      "license" : "the same as Perl 5",
       "name" : "Module-CPANfile",
       "url" : "https://metacpan.org/dist/Module-CPANfile"
    },
@@ -214,6 +202,12 @@
       "license" : "the same as Perl 5",
       "name" : "Parallel-Pipes",
       "url" : "https://metacpan.org/dist/Parallel-Pipes"
+   },
+   {
+     "copyright" : "Andreas Koenig, Kenichi Ishigaki",
+     "license" : "the same as Perl 5",
+     "name" : "Parse-LocalDistribution",
+     "url" : "https://metacpan.org/dist/Parse-LocalDistribution"
    },
    {
       "copyright" : "Andreas Koenig, Kenichi Ishigaki",
@@ -268,12 +262,6 @@
       "license" : "the same as Perl 5",
       "name" : "Win32-ShellQuote",
       "url" : "https://metacpan.org/dist/Win32-ShellQuote"
-   },
-   {
-      "copyright" : "Matt S Trout, CONTRIBUTORS",
-      "license" : "the same as Perl 5",
-      "name" : "local-lib",
-      "url" : "https://metacpan.org/dist/local-lib"
    },
    {
       "copyright" : "John Peacock",
