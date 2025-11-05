@@ -49,7 +49,6 @@ sub requirements {
 for my $attr (qw(
     source
     directory
-    distdata
     meta
     uri
     provides
