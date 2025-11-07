@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.998000  2025-11-08 07:22:17 JST
+        - Use our own installer; drop dependencies on Menlo and local::lib (#263)
+
 0.997024  2025-07-11 21:55:17 JST
         - Use --depth=1 option by default for git clone (shawnlaffan #259)
 
