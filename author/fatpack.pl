@@ -70,10 +70,7 @@ sub inject_git_info ($file, $describe, $url) {
 }
 
 my @extra = qw(
-    Class::C3
-    Devel::GlobalDestruction
     ExtUtils::PL2Bat
-    MRO::Compat
 );
 
 my $exclude = join ",", qw(

@@ -1,11 +1,5 @@
 [
    {
-      "copyright" : "Infinity Interactive, Inc.",
-      "license" : "the same as Perl 5",
-      "name" : "Algorithm-C3",
-      "url" : "https://metacpan.org/dist/Algorithm-C3"
-   },
-   {
       "copyright" : "Shoichi Kaji",
       "license" : "the same as Perl 5",
       "name" : "CPAN-02Packages-Search",
@@ -42,12 +36,6 @@
       "url" : "https://metacpan.org/dist/Capture-Tiny"
    },
    {
-      "copyright" : "Infinity Interactive, Inc.",
-      "license" : "the same as Perl 5",
-      "name" : "Class-C3",
-      "url" : "https://metacpan.org/dist/Class-C3"
-   },
-   {
       "copyright" : "David Golden",
       "license" : "Apache 2.0",
       "name" : "Class-Tiny",
@@ -64,12 +52,6 @@
       "license" : "the same as Perl 5",
       "name" : "Darwin-InitObjC",
       "url" : "https://metacpan.org/dist/Darwin-InitObjC"
-   },
-   {
-      "copyright" : "Yuval Kogman",
-      "license" : "the same as Perl 5",
-      "name" : "Devel-GlobalDestruction",
-      "url" : "https://metacpan.org/dist/Devel-GlobalDestruction"
    },
    {
       "copyright" : "Unknown",
@@ -168,12 +150,6 @@
       "url" : "https://metacpan.org/dist/JSON-PP"
    },
    {
-      "copyright" : "Brandon L. Black",
-      "license" : "the same as Perl 5",
-      "name" : "MRO-Compat",
-      "url" : "https://metacpan.org/dist/MRO-Compat"
-   },
-   {
       "copyright" : "Tatsuhiko Miyagawa",
       "license" : "the same as Perl 5",
       "name" : "Module-CPANfile",
@@ -232,12 +208,6 @@
       "license" : "the same as Perl 5",
       "name" : "String-ShellQuote",
       "url" : "https://metacpan.org/dist/String-ShellQuote"
-   },
-   {
-      "copyright" : "Arthur Axel \"fREW\" Schmidt",
-      "license" : "the same as Perl 5",
-      "name" : "Sub-Exporter-Progressive",
-      "url" : "https://metacpan.org/dist/Sub-Exporter-Progressive"
    },
    {
       "copyright" : "Alexandr Ciornii",
