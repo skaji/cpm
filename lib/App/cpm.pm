@@ -23,9 +23,9 @@ App::cpm - a fast CPAN module installer
 =for html
 <a href="https://skaji.github.io/images/cpm-Plack.svg"><img src="https://skaji.github.io/images/cpm-Plack.svg" alt="demo" style="max-width:100%;"></a>
 
-cpm is a fast CPAN module installer, which uses L<Menlo> in parallel.
+cpm is a fast CPAN module installer.
 
-Moreover cpm keeps the each builds of distributions in your home directory,
+cpm keeps the each builds of distributions in your home directory,
 and reuses them later.
 That is, if prebuilts are available, cpm never builds distributions again, just copies the prebuilts into an appropriate directory.
 This is (of course!) inspired by L<Carmel>.
@@ -70,23 +70,6 @@ Moreover, for a workaround, cpm automatically retries the installation if it fai
 I hope that
 if almost all CPAN modules are distributed with L<static install enabled|http://blogs.perl.org/users/shoichi_kaji1/2017/03/make-your-cpan-module-static-installable.html>,
 then cpm will parallelize the installation for these CPAN modules safely and we can eliminate this new type of failure completely.
-
-=head1 ROADMAP
-
-If you all find cpm useful,
-then cpm should be merged into cpanm 2.0. How exciting!
-
-To merge cpm into cpanm, there are several TODOs:
-
-=over 4
-
-=item * (DONE) Win32? - support platforms that do not have fork(2) system call
-
-=item * (DONE) Logging? - the parallel feature makes log really messy
-
-=back
-
-Your feedback is highly appreciated.
 
 =head1 COPYRIGHT AND LICENSE
 
