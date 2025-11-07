@@ -49,16 +49,16 @@ jobs:
         include:
           - perl: /usr/bin/perl
             prove: /usr/bin/prove
-            cpm-option: --sudo
+            sudo: 'sudo -H'
           - perl: /opt/homebrew/bin/perl
             prove: /opt/homebrew/bin/prove
-            cpm-option: ''
+            sudo: ''
     steps:
       - uses: actions/checkout@v5
       - name: perl -V
         run: ${{ matrix.perl }} -V
       - name: Install Dependencies
-        run: curl -fsSL --compressed https://raw.githubusercontent.com/skaji/cpm/main/cpm | ${{ matrix.perl }} - install -g ${{ matrix.cpm-option }} --with-develop --with-recommends --show-build-log-on-failure
+        run: curl -fsSL --compressed https://raw.githubusercontent.com/skaji/cpm/main/cpm | ${{ matrix.sudo }} ${{ matrix.perl }} - install -g --with-develop --with-recommends --show-build-log-on-failure
       - name: Run Tests
         run: ${{ matrix.prove }} -lr --timer t xt
 
