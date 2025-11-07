@@ -134,6 +134,7 @@ sub parse_options {
         die "The number of workers must be 1 under WIN32 environment.\n";
     }
     if ($self->{sudo}) {
+        warn "Warning: --sudo is deprecated and will be removed in cpm version 1.\n";
         !system "sudo", $^X, "-e1" or exit 1;
     }
     if ($self->{pureperl_only} or $self->{sudo} or !$self->{notest} or $self->{man_pages} or $] < 5.012) {
