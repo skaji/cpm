@@ -16,10 +16,11 @@ path($tempdir, qw(lib App cpm Resolver))->mkpath;
 path($tempdir, qw(lib App cpm Resolver Hoge.pm))->spew_raw(<<'EOF');
 package App::cpm::Resolver::Hoge;
 sub new {
-    bless {}, shift;
+    my ($class, $ctx) = @_;
+    bless {}, $class;
 }
 sub resolve {
-    my ($self, $task) = @_;
+    my ($self, $ctx, $task) = @_;
     if ($task->{package} ne 'App::ChangeShebang') {
         die;
     }
@@ -34,12 +35,12 @@ path($tempdir, qw(lib Foo))->mkpath;
 path($tempdir, qw(lib Foo Bar.pm))->spew_raw(<<'EOF');
 package Foo::Bar;
 sub new {
-    my ($class, @argv) = @_;
+    my ($class, $ctx, @argv) = @_;
     die if !(@argv == 2 && $argv[0] eq "arg1" && $argv[1] eq "arg2");
     bless {}, shift;
 }
 sub resolve {
-    my ($self, $task) = @_;
+    my ($self, $ctx, $task) = @_;
     if ($task->{package} ne 'App::ChangeShebang') {
         die;
     }

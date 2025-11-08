@@ -3,29 +3,26 @@ use strict;
 use warnings;
 
 use App::cpm::DistNotation;
-use App::cpm::HTTP;
 use App::cpm::version;
 use CPAN::Meta::YAML;
 
 sub new {
-    my ($class, %option) = @_;
+    my ($class, $ctx, %option) = @_;
     my $uri = $option{uri} || "https://cpanmetadb.plackperl.org/v1.0/";
     my $mirror = $option{mirror} || "https://cpan.metacpan.org/";
     s{/*$}{/} for $uri, $mirror;
-    my $http = App::cpm::HTTP->create;
     bless {
         %option,
-        http => $http,
         uri => $uri,
         mirror => $mirror,
     }, $class;
 }
 
 sub _get {
-    my ($self, $uri) = @_;
+    my ($self, $ctx, $uri) = @_;
     my $res;
     for (1..2) {
-        $res = $self->{http}->get($uri);
+        $res = $ctx->{http}->get($uri);
         last if $res->{success} or $res->{status} == 404;
     }
     $res;
@@ -36,11 +33,11 @@ sub _uniq {
 }
 
 sub resolve {
-    my ($self, $task) = @_;
+    my ($self, $ctx, $task) = @_;
 
     if (defined $task->{version_range} and $task->{version_range} =~ /(?:<|!=|==)/) {
         my $uri = "$self->{uri}history/$task->{package}";
-        my $res = $self->_get($uri);
+        my $res = $self->_get($ctx, $uri);
         if (!$res->{success}) {
             my $error = "$res->{status} $res->{reason}, $uri";
             $error .= ", $res->{content}" if $res->{status} == 599;
@@ -81,7 +78,7 @@ sub resolve {
         }
     } else {
         my $uri = "$self->{uri}package/$task->{package}";
-        my $res = $self->_get($uri);
+        my $res = $self->_get($ctx, $uri);
         if (!$res->{success}) {
             my $error = "$res->{status} $res->{reason}, $uri";
             $error .= ", $res->{content}" if $res->{status} == 599;

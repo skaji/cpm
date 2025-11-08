@@ -3,6 +3,7 @@ use 5.008001;
 use strict;
 use warnings;
 
+use App::cpm::Context;
 use App::cpm::DistNotation;
 use App::cpm::Distribution;
 use App::cpm::Logger::File;
@@ -21,6 +22,7 @@ use Command::Runner;
 use Config;
 use Cwd ();
 use Darwin::InitObjC;
+use ExtUtils::Helpers ();
 use File::Copy ();
 use File::Path ();
 use File::Spec;
@@ -266,9 +268,29 @@ sub cmd_install {
     File::Path::mkpath($self->{home}) unless -d $self->{home};
     my $logger = App::cpm::Logger::File->new("$self->{home}/build.log.@{[time]}");
     $logger->symlink_to("$self->{home}/build.log");
+
+
     $logger->log("Running cpm $App::cpm::VERSION ($0) on perl $Config{version} built for $Config{archname} ($^X)");
     $logger->log("This is a self-contained version, $App::cpm::GIT_DESCRIBE ($App::cpm::GIT_URL)") if $App::cpm::GIT_DESCRIBE;
     $logger->log("Command line arguments are: @ARGV");
+
+    my $ctx = App::cpm::Context->new(logger => $logger);
+    $logger->log("You have make $ctx->{make}") if $ctx->{make};
+    $logger->log("You have $ctx->{http_description}");
+    my $unpacker_desc = $ctx->unpacker->describe;
+    for my $key (sort keys %$unpacker_desc) {
+        $logger->log("You have $key $unpacker_desc->{$key}");
+    }
+
+    my ($implicit_install_base, $eumm_argv, $mb_argv) = $self->_parse_builder_env;
+    if ($implicit_install_base or @$eumm_argv or @$mb_argv) {
+        $logger->log("Loading configuration from PERL_MM_OPT and PERL_MB_OPT:");
+        $logger->log("  install_base: $implicit_install_base") if $implicit_install_base;
+        $logger->log("  ExtUtils::MakeMaker options: @$eumm_argv") if @$eumm_argv;
+        $logger->log("  Module::Build options: @$mb_argv") if @$mb_argv;
+    }
+
+    $logger->log("--", `$ctx->{perl} -V`, "--");
 
     my $master = App::cpm::Master->new(
         logger => $logger,
@@ -279,16 +301,16 @@ sub cmd_install {
         (exists $self->{target_perl} ? (target_perl => $self->{target_perl}) : ()),
     );
 
-    my ($packages, $dists, $resolver) = $self->initial_task($master);
+    my ($packages, $dists, $resolver) = $self->initial_task($ctx, $master);
     return 0 unless $packages;
 
     my $worker = App::cpm::Worker->new(
+        $ctx,
         verbose   => $self->{verbose},
         home      => $self->{home},
-        logger    => $logger,
         notest    => $self->{notest},
         sudo      => $self->{sudo},
-        resolver  => $self->generate_resolver($resolver),
+        resolver  => $self->generate_resolver($ctx, $resolver),
         man_pages => $self->{man_pages},
         retry     => $self->{retry},
         prebuilt  => $self->{prebuilt},
@@ -298,6 +320,9 @@ sub cmd_install {
         build_timeout     => $self->{build_timeout},
         test_timeout      => $self->{test_timeout},
         ($self->{global} ? () : (local_lib => $self->{local_lib})),
+        implicit_install_base => $implicit_install_base,
+        eumm_argv => $eumm_argv,
+        mb_argv => $mb_argv,
     );
 
     {
@@ -314,7 +339,7 @@ sub cmd_install {
         last if $is_satisfied;
         $master->add_task(type => "resolve", %$_) for @need_resolve;
 
-        $self->install($master, $worker, 1);
+        $self->install($ctx, $master, $worker, 1);
         if (my $fail = $master->fail) {
             local $App::cpm::Logger::VERBOSE = 0;
             for my $type (qw(install resolve)) {
@@ -336,7 +361,7 @@ sub cmd_install {
 
     $master->add_task(type => "resolve", %$_) for @$packages;
     $master->add_distribution($_) for @$dists;
-    $self->install($master, $worker, $self->{workers});
+    $self->install($ctx, $master, $worker, $self->{workers});
     my $fail = $master->fail;
     if ($fail) {
         local $App::cpm::Logger::VERBOSE = 0;
@@ -363,8 +388,40 @@ sub cmd_install {
     }
 }
 
+sub _parse_builder_env {
+    my $class = shift;
+    my ($install_base, @eumm_argv, @mb_argv);
+    if ($ENV{PERL_MM_OPT}) {
+        my @argv = ExtUtils::Helpers::split_like_shell($ENV{PERL_MM_OPT});
+        while (@argv) {
+            my $arg = shift @argv;
+            if ($arg =~ /^INSTALL_BASE=(.+)/) {
+                $install_base = $1;
+            } else {
+                push @eumm_argv, $arg;
+            }
+        }
+        delete $ENV{PERL_MM_OPT};
+    }
+    if ($ENV{PERL_MB_OPT}) {
+        my @argv = ExtUtils::Helpers::split_like_shell($ENV{PERL_MB_OPT});
+        while (@argv) {
+            my $arg = shift @argv;
+            if ($arg eq "--install_base") {
+                $install_base = shift @argv;
+            } elsif ($arg =~ /^--install_base=(.+)/) {
+                $install_base = $1;
+            } else {
+                push @eumm_argv, $arg;
+            }
+        }
+        delete $ENV{PERL_MB_OPT};
+    }
+    ($install_base, \@eumm_argv, \@mb_argv);
+}
+
 sub install {
-    my ($self, $master, $worker, $num) = @_;
+    my ($self, $ctx, $master, $worker, $num) = @_;
 
     Darwin::InitObjC::maybe_init();
 
@@ -377,7 +434,7 @@ sub install {
         },
         work => sub {
             my $task = shift;
-            return $worker->work($task);
+            return $worker->work($ctx, $task);
         },
         after_work => sub {
             my $result = shift;
@@ -411,10 +468,10 @@ sub cleanup {
 }
 
 sub initial_task {
-    my ($self, $master) = @_;
+    my ($self, $ctx, $master) = @_;
 
     if (!$self->{argv}) {
-        my ($requirement, $reinstall, $resolver) = $self->load_dependency_file;
+        my ($requirement, $reinstall, $resolver) = $self->load_dependency_file($ctx);
         my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirement);
         if (!@$reinstall and $is_satisfied) {
             warn "All requirements are satisfied.\n";
@@ -540,7 +597,7 @@ sub locate_dependency_file {
 }
 
 sub load_dependency_file {
-    my $self = shift;
+    my ($self, $ctx) = @_;
 
     my $cpmfile = do {
         my ($type, $path) = @{ $self->{dependency_file} }{qw(type path)};
@@ -585,6 +642,7 @@ sub load_dependency_file {
 
     require App::cpm::Resolver::Custom;
     my $resolver = App::cpm::Resolver::Custom->new(
+        $ctx,
         requirements => $reqs,
         mirror => $self->{mirror},
         from => $self->{dependency_file}{type},
@@ -593,14 +651,14 @@ sub load_dependency_file {
 }
 
 sub generate_resolver {
-    my ($self, $initial) = @_;
+    my ($self, $ctx, $initial) = @_;
 
-    my $cascade = App::cpm::Resolver::Cascade->new;
+    my $cascade = App::cpm::Resolver::Cascade->new($ctx);
     $cascade->add($initial) if $initial;
     if (@{$self->{resolver}}) {
         for my $r (@{$self->{resolver}}) {
             my ($klass, @argv) = split /,/, $r;
-            my $resolver = $self->_generate_resolver($klass, @argv);
+            my $resolver = $self->_generate_resolver($ctx, $klass, @argv);
             $cascade->add($resolver);
         }
     }
@@ -609,6 +667,7 @@ sub generate_resolver {
     if ($self->{mirror_only}) {
         require App::cpm::Resolver::02Packages;
         my $resolver = App::cpm::Resolver::02Packages->new(
+            $ctx,
             mirror => $self->{mirror},
             cache => "$self->{home}/sources",
         );
@@ -622,6 +681,7 @@ sub generate_resolver {
         }
         warn "Loading distributions from $self->{snapshot}...\n";
         my $resolver = App::cpm::Resolver::Snapshot->new(
+            $ctx,
             path => $self->{snapshot},
             mirror => $self->{mirror},
         );
@@ -629,16 +689,18 @@ sub generate_resolver {
     }
 
     my $resolver = App::cpm::Resolver::MetaCPAN->new(
+        $ctx,
         $self->{dev} ? (dev => 1) : (only_dev => 1)
     );
     $cascade->add($resolver);
     $resolver = App::cpm::Resolver::MetaDB->new(
+        $ctx,
         uri => $self->{cpanmetadb},
         mirror => $self->{mirror},
     );
     $cascade->add($resolver);
     if (!$self->{dev}) {
-        $resolver = App::cpm::Resolver::MetaCPAN->new;
+        $resolver = App::cpm::Resolver::MetaCPAN->new($ctx);
         $cascade->add($resolver);
     }
 
@@ -646,7 +708,7 @@ sub generate_resolver {
 }
 
 sub _generate_resolver {
-    my ($self, $klass, @argv) = @_;
+    my ($self, $ctx, $klass, @argv) = @_;
     if ($klass =~ /^metadb$/i) {
         my ($uri, $mirror);
         if (@argv > 1) {
@@ -657,11 +719,12 @@ sub _generate_resolver {
             $mirror = $self->{mirror};
         }
         return App::cpm::Resolver::MetaDB->new(
+            $ctx,
             $uri ? (uri => $uri) : (),
             mirror => $self->normalize_mirror($mirror),
         );
     } elsif ($klass =~ /^metacpan$/i) {
-        return App::cpm::Resolver::MetaCPAN->new(dev => $self->{dev});
+        return App::cpm::Resolver::MetaCPAN->new($ctx, dev => $self->{dev});
     } elsif ($klass =~ /^02packages?$/i) {
         require App::cpm::Resolver::02Packages;
         my ($path, $mirror);
@@ -673,6 +736,7 @@ sub _generate_resolver {
             $mirror = $self->{mirror};
         }
         return App::cpm::Resolver::02Packages->new(
+            $ctx,
             $path ? (path => $path) : (),
             cache => "$self->{home}/sources",
             mirror => $self->normalize_mirror($mirror),
@@ -680,6 +744,7 @@ sub _generate_resolver {
     } elsif ($klass =~ /^snapshot$/i) {
         require App::cpm::Resolver::Snapshot;
         return App::cpm::Resolver::Snapshot->new(
+            $ctx,
             path => $self->{snapshot},
             mirror => @argv ? $self->normalize_mirror($argv[0]) : $self->{mirror},
         );
@@ -687,7 +752,7 @@ sub _generate_resolver {
     my $full_klass = $klass =~ s/^\+// ? $klass : "App::cpm::Resolver::$klass";
     (my $file = $full_klass) =~ s{::}{/}g;
     require "$file.pm"; # may die
-    return $full_klass->new(@argv);
+    return $full_klass->new($ctx, @argv);
 }
 
 1;

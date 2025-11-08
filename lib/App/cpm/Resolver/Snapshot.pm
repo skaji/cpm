@@ -7,7 +7,7 @@ use App::cpm::version;
 use Carton::Snapshot;
 
 sub new {
-    my ($class, %option) = @_;
+    my ($class, $ctx, %option) = @_;
     my $snapshot = Carton::Snapshot->new(path => $option{path} || "cpanfile.snapshot");
     $snapshot->load;
     my $mirror = $option{mirror} || "https://cpan.metacpan.org/";
@@ -22,7 +22,7 @@ sub new {
 sub snapshot { shift->{snapshot} }
 
 sub resolve {
-    my ($self, $task) = @_;
+    my ($self, $ctx, $task) = @_;
     my $package = $task->{package};
     my $found = $self->snapshot->find($package);
     if (!$found) {
