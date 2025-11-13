@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.998001  2025-11-13 15:50:00 JST
+        - The --sudo option is deprecated and will be removed in cpm version 1 (#264)
+
 0.998000  2025-11-08 07:22:17 JST
         - Use our own installer; drop dependencies on Menlo and local::lib (#263)
 
