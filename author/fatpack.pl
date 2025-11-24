@@ -74,29 +74,11 @@ my @extra = qw(
 );
 
 my $exclude = join ",", qw(
-    CPAN::Common::Index
-    CPAN::Meta::Check
     Carp
-    Digest::SHA
-    ExtUtils::CBuilder
     ExtUtils::MakeMaker
     ExtUtils::MakeMaker::CPANfile
-    ExtUtils::ParseXS
-    File::Fetch
-    File::Spec
-    IPC::Cmd
-    Locale::Maketext::Simple
-    MIME::Base32
-    Module::Build::Tiny
-    Module::CoreList
-    Module::Load::Conditional
-    Params::Check
-    Perl::OSType
     Term::Table
-    Test
-    Test2
-    Test::Harness
-    URI
+    Test::Simple
 );
 
 my $target = '5.8.1';
