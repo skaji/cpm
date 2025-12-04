@@ -210,6 +210,12 @@
       "url" : "https://metacpan.org/dist/String-ShellQuote"
    },
    {
+      "copyright" : "Andy Armstrong",
+      "license" : "the same as Perl 5",
+      "name" : "Test-Harness",
+      "url" : "https://metacpan.org/dist/Test-Harness"
+   },
+   {
       "copyright" : "Alexandr Ciornii",
       "license" : "the same as Perl 5",
       "name" : "Text-ParseWords",

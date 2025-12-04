@@ -41,6 +41,7 @@ my @prereq = (
         'Parse::LocalDistribution' => '0.20',
         'Parse::PMFile' => '0.43',
         'Proc::ForkSafe' => '0.001',
+        'TAP::Harness::Env' => '0',
         'parent' => '0',
         'perl' => '5.008001',
         'version' => '0.77',
