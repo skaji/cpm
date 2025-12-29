@@ -145,7 +145,7 @@ sub _parse_builder_env {
             } elsif ($arg =~ /^--install_base=(.+)/) {
                 $install_base = $1;
             } else {
-                push @eumm_argv, $arg;
+                push @mb_argv, $arg;
             }
         }
         delete $ENV{PERL_MB_OPT};
