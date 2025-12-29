@@ -43,8 +43,7 @@ File::Temp 0.2312 E/ET/ETHER/File-Temp-0.2312.tar.gz
 File::Which 1.27 P/PL/PLICEASE/File-Which-1.27.tar.gz
 Getopt::Long 2.58 J/JV/JV/Getopt-Long-2.58.tar.gz
 Getopt::Long::Parser 2.58 J/JV/JV/Getopt-Long-2.58.tar.gz
-Harness::Hook undef L/LE/LEONT/Test-Harness-3.52.tar.gz
-HTTP::Tiny 0.090 H/HA/HAARG/HTTP-Tiny-0.090.tar.gz
+HTTP::Tiny 0.092 H/HA/HAARG/HTTP-Tiny-0.092.tar.gz
 HTTP::Tinyish 0.19 M/MI/MIYAGAWA/HTTP-Tinyish-0.19.tar.gz
 HTTP::Tinyish::Base undef M/MI/MIYAGAWA/HTTP-Tinyish-0.19.tar.gz
 HTTP::Tinyish::Curl undef M/MI/MIYAGAWA/HTTP-Tinyish-0.19.tar.gz
