@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 sub new {
-    my $class = shift;
+    my ($class, $ctx) = @_;
     bless { backends => [] }, $class;
 }
 
@@ -14,12 +14,12 @@ sub add {
 }
 
 sub resolve {
-    my ($self, $task) = @_;
+    my ($self, $ctx, $task) = @_;
     # here task = { package => "Plack", version_range => ">= 1.000, < 1.0030" }
 
     my @error;
     for my $backend (@{ $self->{backends} }) {
-        my $result = $backend->resolve($task);
+        my $result = $backend->resolve($ctx, $task);
         next unless $result;
 
         my $klass = ref $backend;

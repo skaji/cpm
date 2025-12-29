@@ -82,6 +82,9 @@
       "App::cpm::CircularDependency" : {
          "file" : "lib/App/cpm/CircularDependency.pm"
       },
+      "App::cpm::Context" : {
+         "file" : "lib/App/cpm/Context.pm"
+      },
       "App::cpm::DistNotation" : {
          "file" : "lib/App/cpm/DistNotation.pm"
       },
