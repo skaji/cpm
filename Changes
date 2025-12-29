@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+0.998003  2025-12-29 13:23:24 JST
+        - Internal refactor: introduce App::cpm::Context (#272)
+        - Fix how to parse PERL_MB_OPT (#271)
+
 0.998002  2025-12-04 21:44:00 JST
         - Embed Test-Harness (XSven #267, #268)
 
