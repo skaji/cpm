@@ -3,15 +3,13 @@ use strict;
 use warnings;
 
 use App::cpm::DistNotation;
-use App::cpm::HTTP;
 use JSON::PP ();
 
 sub new {
-    my ($class, %option) = @_;
+    my ($class, $ctx, %option) = @_;
     my $uri = $option{uri} || "https://fastapi.metacpan.org/v1/download_url/";
     $uri =~ s{/*$}{/};
-    my $http = App::cpm::HTTP->create;
-    bless { %option, uri => $uri, http => $http }, $class;
+    bless { %option, uri => $uri }, $class;
 }
 
 sub _encode {
@@ -21,7 +19,7 @@ sub _encode {
 }
 
 sub resolve {
-    my ($self, $task) = @_;
+    my ($self, $ctx, $task) = @_;
     if ($self->{only_dev} and !$task->{dev}) {
         return { error => "skip, because MetaCPAN is configured to resolve dev releases only" };
     }
@@ -34,7 +32,7 @@ sub resolve {
     my $uri = "$self->{uri}$task->{package}" . ($query ? "?$query" : "");
     my $res;
     for (1..2) {
-        $res = $self->{http}->get($uri);
+        $res = $ctx->{http}->get($uri);
         last if $res->{success} or $res->{status} == 404;
     }
     if (!$res->{success}) {

@@ -5,7 +5,7 @@ use warnings;
 use App::cpm::DistNotation;
 
 sub new {
-    my ($class, %argv) = @_;
+    my ($class, $ctx, %argv) = @_;
 
     my $from = $argv{from};
     my $requirements = $argv{requirements};
@@ -67,7 +67,7 @@ sub effective {
 }
 
 sub resolve {
-    my ($self, $task) = @_;
+    my ($self, $ctx, $task) = @_;
     my $found = $self->{resolve}{$task->{package}};
     if (!$found) {
         return { error => "not found in $self->{from}" };

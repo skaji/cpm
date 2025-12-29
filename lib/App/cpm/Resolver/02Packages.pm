@@ -3,7 +3,6 @@ use strict;
 use warnings;
 
 use App::cpm::DistNotation;
-use App::cpm::HTTP;
 use App::cpm::Util;
 use App::cpm::version;
 use CPAN::02Packages::Search;
@@ -16,7 +15,7 @@ use File::Temp ();
 use Proc::ForkSafe;
 
 sub new {
-    my ($class, %option) = @_;
+    my ($class, $ctx, %option) = @_;
     my $cache_dir_base = $option{cache} or die "cache option is required\n";
     my $mirror = $option{mirror} or die "mirror option is required\n";
     $mirror =~ s{/*$}{/};
@@ -24,7 +23,7 @@ sub new {
     my $path = $option{path} || "${mirror}modules/02packages.details.txt.gz";
     if ($path =~ m{^https?://}) {
         my $cache_dir = $class->_cache_dir($mirror, $cache_dir_base);
-        $path = $class->_fetch($path => $cache_dir);
+        $path = $class->_fetch($ctx, $path, $cache_dir);
     } else {
         $path =~ s{^file://}{};
         -f $path or die "$path: No such file or directory\n";
@@ -52,9 +51,9 @@ sub _cache_dir {
 }
 
 sub _fetch {
-    my ($class, $path, $cache_dir) = @_;
+    my ($class, $ctx, $path, $cache_dir) = @_;
     my $dest = File::Spec->catfile($cache_dir, File::Basename::basename($path));
-    my $res = App::cpm::HTTP->create->mirror($path => $dest);
+    my $res = $ctx->{http}->mirror($path => $dest);
     die "$res->{status} $res->{reason}, $path\n" if !$res->{success};
     return $dest;
 }
@@ -69,7 +68,7 @@ sub _gunzip {
 }
 
 sub resolve {
-    my ($self, $task) = @_;
+    my ($self, $ctx, $task) = @_;
     my $res = $self->{index}->call(search => $task->{package});
     if (!$res) {
         return { error => "not found, @{[$self->{path}]}" };

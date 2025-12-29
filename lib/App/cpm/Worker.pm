@@ -2,7 +2,6 @@ package App::cpm::Worker;
 use strict;
 use warnings;
 
-use App::cpm::Logger::File;
 use App::cpm::Util;
 use App::cpm::Worker::Installer;
 use App::cpm::Worker::Resolver;
@@ -12,9 +11,8 @@ use File::Spec;
 use Time::HiRes qw(gettimeofday tv_interval);
 
 sub new {
-    my ($class, %option) = @_;
+    my ($class, $ctx, %option) = @_;
     my $home = $option{home};
-    my $logger = $option{logger} || App::cpm::Logger::File->new("$home/build.log.@{[time]}");
     my $prebuilt_base;
     if ($option{prebuilt}) {
         $prebuilt_base = $class->prebuilt_base($home);
@@ -27,13 +25,10 @@ sub new {
     }
     %option = (
         %option,
-        logger => $logger,
-        base => "$home/work/" . time . ".$$",
-        cache => "$home/cache",
         $prebuilt_base ? (prebuilt_base => $prebuilt_base) : (),
     );
-    my $installer = App::cpm::Worker::Installer->new(%option);
-    my $resolver  = App::cpm::Worker::Resolver->new(%option, impl => $option{resolver});
+    my $installer = App::cpm::Worker::Installer->new($ctx, %option);
+    my $resolver  = App::cpm::Worker::Resolver->new($ctx, %option, impl => $option{resolver});
     bless { %option, installer => $installer, resolver => $resolver }, $class;
 }
 
@@ -44,15 +39,15 @@ sub prebuilt_base {
 }
 
 sub work {
-    my ($self, $task) = @_;
+    my ($self, $ctx, $task) = @_;
     my $type = $task->{type} || "(undef)";
     my $result;
     my $start = $self->{verbose} ? [gettimeofday] : undef;
     if (grep {$type eq $_} qw(fetch configure install)) {
-        $result = eval { $self->{installer}->work($task) };
+        $result = eval { $self->{installer}->work($ctx, $task) };
         warn $@ if $@;
     } elsif ($type eq "resolve") {
-        $result = eval { $self->{resolver}->work($task) };
+        $result = eval { $self->{resolver}->work($ctx, $task) };
         warn $@ if $@;
     } else {
         die "Unknown type: $type\n";

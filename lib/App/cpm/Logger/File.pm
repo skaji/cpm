@@ -54,14 +54,4 @@ sub log {
     }
 }
 
-sub log_with_fh {
-    my ($self, $fh) = @_;
-    my $prefix = $self->prefix;
-    local $self->{fh} = IO::File->new($self->{file}, 'a') if WIN32;
-    while (my $line = <$fh>) {
-        chomp $line;
-        print { $self->{fh} } "@{[POSIX::strftime('%Y-%m-%dT%H:%M:%S', localtime)]},$prefix| $line\n";
-    }
-}
-
 1;
