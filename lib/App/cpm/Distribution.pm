@@ -15,8 +15,7 @@ use constant STATE_FETCHED         => 0b001000;
 use constant STATE_CONFIGURED      => 0b010000;
 use constant STATE_INSTALLED       => 0b100000;
 
-sub new {
-    my ($class, %option) = @_;
+sub new ($class, %option) {
     my $uri = delete $option{uri};
     my $distfile = delete $option{distfile};
     my $source = delete $option{source} || "cpan";
@@ -32,8 +31,7 @@ sub new {
     }, $class;
 }
 
-sub requirements {
-    my ($self, $phase, $req) = @_;
+sub requirements ($self, $phase, $req = undef) {
     if (ref $phase) {
         my $req = App::cpm::Requirement->new;
         for my $p (@$phase) {
@@ -70,15 +68,13 @@ sub distfile {
     $self->{distfile} || $self->{uri};
 }
 
-sub distvname {
-    my $self = shift;
+sub distvname ($self) {
     $self->{distvname} ||= do {
         CPAN::DistnameInfo->new($self->{distfile})->distvname || $self->distfile;
     };
 }
 
-sub overwrite_provide {
-    my ($self, $provide) = @_;
+sub overwrite_provide ($self, $provide) {
     my $overwrote;
     for my $exist (@{$self->{provides}}) {
         if ($exist->{package} eq $provide->{package}) {
@@ -140,8 +136,7 @@ sub installed {
     $self->{_state} & STATE_INSTALLED;
 }
 
-sub providing {
-    my ($self, $package, $version_range) = @_;
+sub providing ($self, $package, $version_range = undef) {
     for my $provide (@{$self->provides}) {
         if ($provide->{package} eq $package) {
             if (!$version_range or App::cpm::version->parse($provide->{version})->satisfy($version_range)) {
@@ -157,8 +152,7 @@ sub providing {
     return;
 }
 
-sub equals {
-    my ($self, $that) = @_;
+sub equals ($self, $that) {
     $self->distfile && $that->distfile and $self->distfile eq $that->distfile;
 }
 

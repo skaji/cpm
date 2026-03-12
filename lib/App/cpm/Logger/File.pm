@@ -7,8 +7,7 @@ use App::cpm::Util 'WIN32';
 use File::Temp ();
 use POSIX ();
 
-sub new {
-    my ($class, $file) = @_;
+sub new ($class, $file = undef) {
     my $fh;
     if (WIN32) {
         require IO::File;
@@ -26,20 +25,16 @@ sub new {
     }, $class;
 }
 
-sub symlink_to {
-    my ($self, $dest) = @_;
+sub symlink_to ($self, $dest) {
     unlink $dest;
     if (!eval { symlink $self->file, $dest }) {
         $self->{file} = $dest;
     }
 }
 
-sub file {
-    shift->{file};
-}
+sub file ($self) { $self->{file} }
 
-sub prefix {
-    my $self = shift;
+sub prefix ($self) {
     my $pid = $self->{pid} || $$;
     $self->{context} ? "$pid,$self->{context}" : $pid;
 }
