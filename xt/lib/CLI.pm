@@ -1,6 +1,7 @@
 package CLI;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 use utf8;
 use Capture::Tiny 'capture';
 use File::Temp 'tempdir';
@@ -34,13 +35,11 @@ my $TEMPDIR = tempdir CLEANUP => 1;
 
 our ($_LOCAL, $_HOME);
 
-sub with_same_local (&) {
-    my $sub = shift;
+sub with_same_local :prototype(&) ($sub) {
     local $_LOCAL = tempdir DIR => $TEMPDIR;
     $sub->();
 }
-sub with_same_home (&) {
-    my $sub = shift;
+sub with_same_home :prototype(&) ($sub) {
     local $_HOME = tempdir DIR => $TEMPDIR;
     $sub->();
 }

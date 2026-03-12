@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use Capture::Tiny qw(capture);
 use Config;

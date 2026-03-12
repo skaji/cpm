@@ -1,6 +1,7 @@
 package App::cpm::Task;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 use CPAN::DistnameInfo;
 
 sub new {

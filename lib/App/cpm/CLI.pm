@@ -1,6 +1,7 @@
 package App::cpm::CLI;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use App::cpm::Context;
 use App::cpm::DistNotation;

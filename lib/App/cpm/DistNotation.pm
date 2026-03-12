@@ -1,6 +1,7 @@
 package App::cpm::DistNotation;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 my $A1 = q{[A-Z]};
 my $A2 = q{[A-Z]{2}};

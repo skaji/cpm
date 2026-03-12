@@ -1,6 +1,7 @@
 package App::cpm::Logger;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use App::cpm::Util 'WIN32';
 use List::Util 'max';

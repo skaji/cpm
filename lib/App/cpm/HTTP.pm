@@ -1,6 +1,7 @@
 package App::cpm::HTTP;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use App::cpm;
 use HTTP::Tinyish;

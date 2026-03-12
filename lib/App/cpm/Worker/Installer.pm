@@ -1,6 +1,7 @@
 package App::cpm::Worker::Installer;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use App::cpm::Builder::Static;
 use App::cpm::Requirement;

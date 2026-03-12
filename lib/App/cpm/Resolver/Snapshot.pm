@@ -1,6 +1,7 @@
 package App::cpm::Resolver::Snapshot;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use App::cpm::DistNotation;
 use App::cpm::version;

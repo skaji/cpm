@@ -1,6 +1,7 @@
 package App::cpm::Resolver::Cascade;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 sub new {
     my ($class, $ctx) = @_;

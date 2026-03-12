@@ -1,6 +1,7 @@
 package App::cpm::Worker::Installer::Prebuilt;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 my @SKIP = (
     qr{/XML-SAX-v?[0-9\.]+\.tar\.gz$},
