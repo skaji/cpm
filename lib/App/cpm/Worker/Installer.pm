@@ -236,7 +236,7 @@ sub find_prebuilt ($self, $ctx, $uri) {
         open my $fh, "<", 'blib/meta/install.json' or die;
         my $json = JSON::PP::decode_json(do { local $/; <$fh> });
         my $provides = $json->{provides};
-        [ map +{ package => $_, version => $provides->{$_}{version}, file => $provides->{$_}{file} }, sort keys %$provides ];
+        [ map +{ package => $_, version => $provides->{$_}{version}, file => $provides->{$_}{file} }, sort keys $provides->%* ];
     };
     return +{
         directory => $dir,
@@ -298,10 +298,10 @@ sub _extract_requirements ($self, $ctx, $meta, $phases) {
     my $hash = $meta->effective_prereqs->as_string_hash;
 
     my %req;
-    for my $phase (@$phases) {
+    for my $phase ($phases->@*) {
         my $req = App::cpm::Requirement->new;
         my $from = ($hash->{$phase} || +{})->{requires} || +{};
-        for my $package (sort keys %$from) {
+        for my $package (sort keys $from->%*) {
             $req->add($package, $from->{$package});
         }
         $req{$phase} = $req;
@@ -445,7 +445,7 @@ sub _install ($self, $ctx, $cmd, $meta) {
         $ENV{PERL5LIB} = $self->_local_lib_env_perl5lib($ctx);
     }
     if (ref $cmd eq 'ARRAY' && $self->{sudo}) {
-        unshift @$cmd, 'sudo';
+        unshift $cmd->@*, 'sudo';
     }
     $ctx->run_command($cmd, 0);
 }
@@ -543,10 +543,10 @@ sub unpack ($self, $ctx, $file) {
 sub extract_packages ($self, $ctx, $meta) {
     if (my $provides = $meta->{provides}) {
         my @out;
-        for my $package (sort keys %$provides) {
+        for my $package (sort keys $provides->%*) {
             push @out, {
                 package => $package,
-                %{$provides->{$package}},
+                $provides->{$package}->%*,
             };
         }
         return \@out;
@@ -611,7 +611,7 @@ sub save_meta ($self, $ctx, $meta, $distfile, $provides) {
         $info{file} = $_->{file};
         $info{version} = $_->{version} if $_->{version};
         ($package, \%info);
-    } @$provides;
+    } $provides->@*;
 
     my $distvname = CPAN::DistnameInfo->new($distfile)->distvname;
     (my $name = $meta->{name}) =~ s/-/::/g;

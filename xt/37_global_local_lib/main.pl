@@ -20,7 +20,7 @@ for my $case (@case) {
     my $install_base = $case->{install_base};
 
     my ($stdout, $stderr, $exit) = capture {
-        system $^X, "-Ilib", "script/cpm", "install", "--home", $home, @{$case->{options}},
+        system $^X, "-Ilib", "script/cpm", "install", "--home", $home, $case->{options}->@*,
             "common::sense\@3.75", # ExtUtils::MakeMaker
             "CPAN::Test::Dummy::Perl5::ModuleBuild\@0.001", # Module::Build
             "Darwin::InitObjC\@0.001", # static install

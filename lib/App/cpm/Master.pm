@@ -60,7 +60,7 @@ sub fail ($self, $ctx) {
     $detector->finalize;
 
     my $detected = $detector->detect;
-    for my $distfile (sort keys %$detected) {
+    for my $distfile (sort keys $detected->%*) {
         my $distvname = $self->distribution($distfile)->distvname;
         my @circular = $detected->{$distfile}->@*;
         my $msg = join " -> ", map { $self->distribution($_)->distvname } @circular;
@@ -206,7 +206,7 @@ sub _calculate_tasks ($self, $ctx) {
                     distvname => $dist->distvname,
                 );
             } elsif (!defined $is_satisfied) {
-                my ($req) = grep { $_->{package} eq "perl" } @$dist_requirements;
+                my ($req) = grep { $_->{package} eq "perl" } $dist_requirements->@*;
                 my $msg = sprintf "%s requires perl %s, but you have only %s",
                     $dist->distvname, $req->{version_range}, $self->{target_perl} || $];
                 $ctx->log($msg);
@@ -245,7 +245,7 @@ sub _calculate_tasks ($self, $ctx) {
                     provides => $dist->provides,
                 );
             } elsif (!defined $is_satisfied) {
-                my ($req) = grep { $_->{package} eq "perl" } @$dist_requirements;
+                my ($req) = grep { $_->{package} eq "perl" } $dist_requirements->@*;
                 my $msg = sprintf "%s requires perl %s, but you have only %s",
                     $dist->distvname, $req->{version_range}, $self->{target_perl} || $];
                 $ctx->log($msg);
@@ -342,7 +342,7 @@ sub is_satisfied ($self, $requirements) {
     my $is_satisfied = 1;
     my @need_resolve;
     my @distributions = $self->distributions;
-    for my $req (@$requirements) {
+    for my $req ($requirements->@*) {
         my ($package, $version_range) = $req->@{qw(package version_range)};
         if ($package eq "perl") {
             $is_satisfied = undef if !$self->is_satisfied_perl_version($version_range);
@@ -412,7 +412,7 @@ sub _register_resolve_result ($self, $ctx, $task) {
     }
 
     my $provides = $task->{provides};
-    if (!$provides or @$provides == 0) {
+    if (!$provides or $provides->@* == 0) {
         my $version = App::cpm::version->parse($task->{version}) || 0;
         $provides = [{package => $task->{package}, version => $version}];
     }

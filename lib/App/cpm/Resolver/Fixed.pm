@@ -25,7 +25,7 @@ sub resolve ($self, $ctx, $argv) {
     } else {
         $version_range = "== $fixed_version";
     }
-    $self->SUPER::resolve($ctx, { %$argv, version_range => $version_range });
+    $self->SUPER::resolve($ctx, { $argv->%*, version_range => $version_range });
 }
 
 1;

@@ -52,7 +52,7 @@ sub work ($self, $ctx, $task) {
     }
     my $elapsed = $start ? tv_interval($start) : undef;
     $result ||= { ok => 0 };
-    $task->merge({%$result, pid => $$, elapsed => $elapsed});
+    $task->merge({$result->%*, pid => $$, elapsed => $elapsed});
     return $task;
 }
 

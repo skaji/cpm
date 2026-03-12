@@ -34,8 +34,8 @@ sub new ($class) {
 
 sub add ($self, $distfile, $provides, $requirements) {
     $self->{_tmp}{$distfile} = +{
-        provides => [ map $_->{package}, @$provides ],
-        requirements => [ map $_->{package}, @$requirements ],
+        provides => [ map $_->{package}, $provides->@* ],
+        requirements => [ map $_->{package}, $requirements->@* ],
     };
 }
 

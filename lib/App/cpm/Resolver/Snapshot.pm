@@ -39,7 +39,7 @@ sub resolve ($self, $ctx, $task) {
         my $package = $_;
         my $version = $found->provides->{$_}{version};
         +{ package => $package, version => $version };
-    } sort keys %{$found->provides};
+    } sort keys $found->provides->%*;
 
     my $dist = App::cpm::DistNotation->new_from_dist($found->distfile);
     return {

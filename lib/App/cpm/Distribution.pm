@@ -34,7 +34,7 @@ sub new ($class, %option) {
 sub requirements ($self, $phase, $req = undef) {
     if (ref $phase) {
         my $req = App::cpm::Requirement->new;
-        for my $p (@$phase) {
+        for my $p ($phase->@*) {
             if (my $r = $self->{requirements}{$p}) {
                 $req->merge($r);
             }

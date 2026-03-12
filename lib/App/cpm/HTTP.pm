@@ -45,7 +45,7 @@ sub create ($class, %args) {
     for my $try (@try) {
         my $meta = HTTP::Tinyish->configure_backend($try) or next;
         $try->supports("https") or next;
-        ($tool) = sort keys %$meta;
+        ($tool) = sort keys $meta->%*;
         ($desc = $meta->{$tool}) =~ s/^(.*?)\n.*/$1/s;
         $backend = $try, last;
     }

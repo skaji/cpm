@@ -146,7 +146,7 @@ sub parse_options ($self, @argv) {
     if (@ARGV) {
         if ($ARGV[0] eq "-") {
             my $argv = $self->read_argv_from_stdin;
-            return -1 if @$argv == 0;
+            return -1 if $argv->@* == 0;
             $self->{argv} = $argv;
         } else {
             $self->{argv} = \@ARGV;
@@ -271,12 +271,12 @@ sub cmd_install ($self) {
     $ctx->log("You have make $ctx->{make}") if $ctx->{make};
     $ctx->log("You have $ctx->{http_description}");
     my $unpacker_desc = $ctx->{unpacker}->describe;
-    for my $key (sort keys %$unpacker_desc) {
+    for my $key (sort keys $unpacker_desc->%*) {
         $ctx->log("You have $key $unpacker_desc->{$key}");
     }
 
     my ($implicit_install_base, $eumm_argv, $mb_argv) = $self->_parse_builder_env;
-    if ($implicit_install_base or @$eumm_argv or @$mb_argv) {
+    if ($implicit_install_base or $eumm_argv->@* or $mb_argv->@*) {
         $ctx->log("Loading configuration from PERL_MM_OPT and PERL_MB_OPT:");
         $ctx->log("  install_base: $implicit_install_base") if $implicit_install_base;
         $ctx->log("  ExtUtils::MakeMaker options: @$eumm_argv") if @$eumm_argv;
@@ -319,8 +319,8 @@ sub cmd_install ($self) {
         mb_argv => $mb_argv,
     );
 
-    $master->add_task($ctx, type => "resolve", %$_) for @$packages;
-    $master->add_distribution($_) for @$dists;
+    $master->add_task($ctx, type => "resolve", %$_) for $packages->@*;
+    $master->add_distribution($_) for $dists->@*;
     $self->install($ctx, $master, $worker, $self->{workers});
     my $fail = $master->fail($ctx);
     if ($fail) {
@@ -424,15 +424,15 @@ sub initial_task ($self, $ctx, $master) {
     if (!$self->{argv}) {
         my ($requirement, $reinstall, $resolver) = $self->load_dependency_file($ctx);
         my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirement);
-        if (!@$reinstall and $is_satisfied) {
+        if (!$reinstall->@* and $is_satisfied) {
             warn "All requirements are satisfied.\n";
             return;
         } elsif (!defined $is_satisfied) {
-            my ($req) = grep { $_->{package} eq "perl" } @$requirement;
+            my ($req) = grep { $_->{package} eq "perl" } $requirement->@*;
             die sprintf "%s requires perl %s, but you have only %s\n",
                 $self->{dependency_file}{path}, $req->{version_range}, $self->{target_perl} || $];
         }
-        my @package = (@need_resolve, @$reinstall);
+        my @package = (@need_resolve, $reinstall->@*);
         return (\@package, [], $resolver);
     }
 
@@ -562,7 +562,7 @@ sub load_dependency_file ($self, $ctx) {
     };
     if (!$self->{mirror}) {
         my $mirrors = $cpmfile->{_mirrors} || [];
-        if (@$mirrors) {
+        if ($mirrors->@*) {
             $self->{mirror} = $self->normalize_mirror($mirrors->[0]);
         } else {
             $self->{mirror} = $self->{_default_mirror};
@@ -573,7 +573,7 @@ sub load_dependency_file ($self, $ctx) {
     my $reqs = $cpmfile->effective_requirements($self->{feature}, \@phase, \@type);
 
     my (@package, @reinstall);
-    for my $package (sort keys %$reqs) {
+    for my $package (sort keys $reqs->%*) {
         my $options = $reqs->{$package};
         my $req = {
             package => $package,

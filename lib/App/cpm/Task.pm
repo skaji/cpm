@@ -65,7 +65,7 @@ sub equals ($self, $that) {
 }
 
 sub merge ($self, $that) {
-    for my $key (keys %$that) {
+    for my $key (keys $that->%*) {
         $self->{$key} = $that->{$key};
     }
     $self;

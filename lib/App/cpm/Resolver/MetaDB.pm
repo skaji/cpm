@@ -92,7 +92,7 @@ sub resolve ($self, $ctx, $task) {
             my $version = $meta->{provides}{$_};
             $version = undef if $version eq "undef";
             +{ package => $package, version => $version };
-        } sort keys %{$meta->{provides}};
+        } sort keys $meta->{provides}->%*;
 
         my $dist = App::cpm::DistNotation->new_from_dist($meta->{distfile});
         return {
