@@ -17,15 +17,13 @@ jobs:
         perl-version:
           - '5.24'
           - 'latest'
-          - 'threaded'
-    container:
-      image: perl:${{ matrix.perl-version }}
     steps:
       - uses: actions/checkout@v6
       - name: Install deb packages
-        run: apt-get -qq update && apt-get -qq install -y unzip libdb-dev
-      - name: perl -V
-        run: perl -V
+        run: sudo apt-get -qq update && sudo apt-get -qq install -y unzip libdb-dev
+      - uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: ${{ matrix.perl-version }}
       - name: Install Dependencies
         run: curl -fsSL --compressed https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g --with-develop --with-recommends --show-build-log-on-failure --resolver Fixed,CPAN::Meta::Requirements@2.140
       - name: Run Tests
