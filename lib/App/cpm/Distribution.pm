@@ -74,14 +74,14 @@ sub distvname ($self) {
 
 sub overwrite_provide ($self, $provide) {
     my $overwrote;
-    for my $exist (@{$self->{provides}}) {
+    for my $exist ($self->{provides}->@*) {
         if ($exist->{package} eq $provide->{package}) {
             $exist = $provide;
             $overwrote++;
         }
     }
     if (!$overwrote) {
-        push @{$self->{provides}}, $provide;
+        push $self->{provides}->@*, $provide;
     }
     return 1;
 }
@@ -129,7 +129,7 @@ sub installed ($self, @argv) {
 }
 
 sub providing ($self, $package, $version_range = undef) {
-    for my $provide (@{$self->provides}) {
+    for my $provide ($self->provides->@*) {
         if ($provide->{package} eq $package) {
             if (!$version_range or App::cpm::version->parse($provide->{version})->satisfy($version_range)) {
                 return 1;

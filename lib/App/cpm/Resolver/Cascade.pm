@@ -8,7 +8,7 @@ sub new ($class, $ctx) {
 }
 
 sub add ($self, $resolver) {
-    push @{ $self->{backends} }, $resolver;
+    push $self->{backends}->@*, $resolver;
     $self;
 }
 
@@ -16,7 +16,7 @@ sub resolve ($self, $ctx, $task) {
     # here task = { package => "Plack", version_range => ">= 1.000, < 1.0030" }
 
     my @error;
-    for my $backend (@{ $self->{backends} }) {
+    for my $backend ($self->{backends}->@*) {
         my $result = $backend->resolve($ctx, $task);
         next unless $result;
 

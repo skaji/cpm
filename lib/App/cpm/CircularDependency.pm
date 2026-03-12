@@ -14,7 +14,7 @@ package App::cpm::CircularDependency::OrderedSet {
         exists $self->{hash}{$name};
     }
     sub values ($self) {
-        sort { $self->{hash}{$a} <=> $self->{hash}{$b} } keys %{$self->{hash}};
+        sort { $self->{hash}{$a} <=> $self->{hash}{$b} } keys $self->{hash}->%*;
     }
     sub clone ($self) {
         my $new = (ref $self)->new;
@@ -40,9 +40,9 @@ sub add ($self, $distfile, $provides, $requirements) {
 }
 
 sub finalize ($self) {
-    for my $distfile (sort keys %{$self->{_tmp}}) {
+    for my $distfile (sort keys $self->{_tmp}->%*) {
         $self->{$distfile} = [
-            _uniq map $self->_find($_), @{$self->{_tmp}{$distfile}{requirements}}
+            _uniq map $self->_find($_), $self->{_tmp}{$distfile}{requirements}->@*
         ];
     }
     delete $self->{_tmp};
@@ -50,8 +50,8 @@ sub finalize ($self) {
 }
 
 sub _find ($self, $package) {
-    for my $distfile (sort keys %{$self->{_tmp}}) {
-        if (grep { $_ eq $package } @{$self->{_tmp}{$distfile}{provides}}) {
+    for my $distfile (sort keys $self->{_tmp}->%*) {
+        if (grep { $_ eq $package } $self->{_tmp}{$distfile}{provides}->@*) {
             return $distfile;
         }
     }
@@ -73,7 +73,7 @@ sub detect ($self) {
 
 sub _detect ($self, $distfile, $seen) {
 
-    for my $req (@{$self->{$distfile}}) {
+    for my $req ($self->{$distfile}->@*) {
         if ($seen->exists($req)) {
             return [$seen->values, $req];
         }

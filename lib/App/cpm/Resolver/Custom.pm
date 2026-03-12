@@ -24,7 +24,7 @@ sub new ($class, $ctx, %argv) {
 sub _load ($self) {
 
     my %resolve;
-    for my $package (sort keys %{$self->{requirements}}) {
+    for my $package (sort keys $self->{requirements}->%*) {
         my $options = $self->{requirements}{$package};
 
         my $uri;
@@ -61,7 +61,7 @@ sub _load ($self) {
 }
 
 sub effective ($self) {
-    %{$self->{resolve}} ? 1 : 0;
+    $self->{resolve}->%* ? 1 : 0;
 }
 
 sub resolve ($self, $ctx, $task) {

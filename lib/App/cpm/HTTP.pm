@@ -23,7 +23,7 @@ package App::cpm::HTTP::_HTTPTiny {
     sub _tiny ($self, $url) {
         my ($key) = $url =~ m{^(https?://[^/]+)};
         $key ||= "_";
-        $self->{_conns}{$key} ||= HTTP::Tiny->new(%{$self->{_new_argv}});
+        $self->{_conns}{$key} ||= HTTP::Tiny->new($self->{_new_argv}->%*);
     }
     sub request ($self, $method, $url, @argv) {
         $self->_tiny($url)->request($method, $url, @argv);
@@ -37,7 +37,7 @@ package App::cpm::HTTP::_HTTPTiny {
 sub create ($class, %args) {
     my $wantarray = wantarray;
 
-    my @try = $args{prefer} ? @{$args{prefer}} : qw(HTTPTiny LWP Curl Wget);
+    my @try = $args{prefer} ? $args{prefer}->@* : qw(HTTPTiny LWP Curl Wget);
     @try = map { "HTTP::Tinyish::$_" } @try;
     @try = map { $_ eq "HTTP::Tinyish::HTTPTiny" ? "App::cpm::HTTP::_HTTPTiny": $_ } @try;
 

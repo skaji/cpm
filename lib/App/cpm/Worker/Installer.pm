@@ -232,7 +232,7 @@ sub find_prebuilt ($self, $ctx, $uri) {
         # But requires them for consistency for now.
         %req = ( configure => $self->_extract_configure_requirements($ctx, $meta, $uri) );
     }
-    %req = (%req, %{$self->_extract_requirements($ctx, $mymeta, $phase)});
+    %req = (%req, $self->_extract_requirements($ctx, $mymeta, $phase)->%*);
 
     my $provides = do {
         open my $fh, "<", 'blib/meta/install.json' or die;
@@ -350,7 +350,7 @@ sub _retry ($self, $ctx, $sub) {
 }
 
 sub configure ($self, $ctx, $task) {
-    my ($dir, $distfile, $meta, $source) = @{$task}{qw(directory distfile meta source)};
+    my ($dir, $distfile, $meta, $source) = $task->@{qw(directory distfile meta source)};
     my $guard = pushd $dir;
 
     my $install_base = $self->{local_lib} || $self->{implicit_install_base};
@@ -366,7 +366,7 @@ sub configure ($self, $ctx, $task) {
             push @cmd, "--install_base", $install_base if $install_base;
             push @cmd, qw(--config installman1dir= --config installsiteman1dir= --config installman3dir= --config installsiteman3dir=) if $self->{need_noman_argv};
             push @cmd, '--pureperl-only' if $self->{pureperl_only};
-            push @cmd, @{$self->{mb_argv}} if @{$self->{mb_argv}};
+            push @cmd, $self->{mb_argv}->@* if $self->{mb_argv}->@*;
             $self->_retry($ctx, sub () {
                 $self->_configure($ctx, \@cmd, $meta);
                 -f 'Build';
@@ -381,7 +381,7 @@ sub configure ($self, $ctx, $task) {
             push @cmd, "INSTALL_BASE=$install_base" if $install_base;
             push @cmd, qw(INSTALLMAN1DIR=none INSTALLMAN3DIR=none) if $self->{need_noman_argv};
             push @cmd, 'PUREPERL_ONLY=1' if $self->{pureperl_only};
-            push @cmd, @{$self->{eumm_argv}} if @{$self->{eumm_argv}};
+            push @cmd, $self->{eumm_argv}->@* if $self->{eumm_argv}->@*;
             $self->_retry($ctx, sub () {
                 $self->_configure($ctx, \@cmd, $meta);
                 -f 'Makefile';
@@ -434,8 +434,8 @@ sub static_install_configure ($self, $ctx, $meta) {
     if ($self->{pureperl_only}) {
         push @argv, '--pureperl-only';
     }
-    if (@{$self->{mb_argv}}) {
-        push @argv, @{$self->{mb_argv}};
+    if ($self->{mb_argv}->@*) {
+        push @argv, $self->{mb_argv}->@*;
     }
     local %ENV = %ENV;
     if ($self->{local_lib}) {
@@ -504,7 +504,7 @@ sub install ($self, $ctx, $task) {
     return $self->install_prebuilt($ctx, $task) if $task->{prebuilt};
 
     my ($dir, $static_builder, $distvname, $meta, $provides, $distfile)
-        = @{$task}{qw(directory static_builder distvname meta provides distfile)};
+        = $task->@{qw(directory static_builder distvname meta provides distfile)};
     my $guard = pushd $dir;
 
     $ctx->log("Building " . ($self->{notest} ? "" : "and testing ") . "distribution");

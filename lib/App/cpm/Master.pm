@@ -48,8 +48,8 @@ sub new ($class, %option) {
 
 sub fail ($self, $ctx) {
 
-    my @fail_resolve = sort keys %{$self->{_fail_resolve}};
-    my @fail_install = sort keys %{$self->{_fail_install}};
+    my @fail_resolve = sort keys $self->{_fail_resolve}->%*;
+    my @fail_install = sort keys $self->{_fail_install}->%*;
     my @not_installed = grep { !$self->{_fail_install}{$_->distfile} && !$_->installed } $self->distributions;
     return if !@fail_resolve && !@fail_install && !@not_installed;
 
@@ -63,7 +63,7 @@ sub fail ($self, $ctx) {
     my $detected = $detector->detect;
     for my $distfile (sort keys %$detected) {
         my $distvname = $self->distribution($distfile)->distvname;
-        my @circular = @{$detected->{$distfile}};
+        my @circular = $detected->{$distfile}->@*;
         my $msg = join " -> ", map { $self->distribution($_)->distvname } @circular;
         local $ctx->{logger}{context} = $distvname;
         $ctx->log("Detected circular dependencies $msg");
@@ -89,7 +89,7 @@ sub fail ($self, $ctx) {
     { resolve => \@fail_resolve, install => [sort @fail_install_name, @not_installed_name] };
 }
 
-sub tasks ($self) { values %{$self->{tasks}} }
+sub tasks ($self) { values $self->{tasks}->%* }
 
 sub add_task ($self, $ctx, %task) {
     my $new = App::cpm::Task->new(%task);
@@ -117,7 +117,7 @@ sub register_result ($self, $ctx, $result) {
     my ($task) = grep { $_->uid eq $result->{uid} } $self->tasks;
     die "Missing task that has uid=$result->{uid}" unless $task;
 
-    %{$task} = %{$result}; # XXX
+    $task->%* = $result->%*; # XXX
 
     my $logged = $self->info($task);
     my $method = "_register_@{[$task->{type}]}_result";
@@ -155,7 +155,7 @@ sub info ($self, $task) {
 }
 
 sub _show_progress ($self) {
-    my $all = keys %{$self->{distributions}};
+    my $all = keys $self->{distributions}->%*;
     my $num = $self->installed_distributions;
     print STDERR "--- $num/$all ---";
     STDERR->flush; # this is needed at least with perl <= 5.24
@@ -165,7 +165,7 @@ sub remove_task ($self, $ctx, $task) {
     delete $self->{tasks}{$task->uid};
 }
 
-sub distributions ($self) { values %{$self->{distributions}} }
+sub distributions ($self) { values $self->{distributions}->%* }
 
 sub distribution ($self, $distfile) {
     $self->{distributions}{$distfile};
@@ -313,7 +313,7 @@ sub is_installed ($self, $package, $version_range) {
 }
 
 sub _in_core_inc ($self, $file) {
-    !!grep { $file =~ /^\Q$_/ } @{$self->{core_inc}};
+    !!grep { $file =~ /^\Q$_/ } $self->{core_inc}->@*;
 }
 
 sub is_core ($self, $package, $version_range) {
@@ -345,7 +345,7 @@ sub is_satisfied ($self, $requirements) {
     my @need_resolve;
     my @distributions = $self->distributions;
     for my $req (@$requirements) {
-        my ($package, $version_range) = @{$req}{qw(package version_range)};
+        my ($package, $version_range) = $req->@{qw(package version_range)};
         if ($package eq "perl") {
             $is_satisfied = undef if !$self->is_satisfied_perl_version($version_range);
             next;
@@ -367,7 +367,7 @@ sub add_distribution ($self, $distribution) {
     my $distfile = $distribution->distfile;
     if (my $already = $self->{distributions}{$distfile}) {
         if ($already->resolved) {
-            $already->overwrite_provide($_) for @{ $distribution->provides };
+            $already->overwrite_provide($_) for $distribution->provides->@*;
         }
         return 0;
     } else {
@@ -440,14 +440,14 @@ sub _register_fetch_result ($self, $ctx, $task) {
 
     if ($task->{prebuilt}) {
         $distribution->configured(1);
-        $distribution->requirements($_ => $task->{requirements}{$_}) for keys %{$task->{requirements}};
+        $distribution->requirements($_ => $task->{requirements}{$_}) for keys $task->{requirements}->%*;
         $distribution->prebuilt(1);
     } else {
         $distribution->fetched(1);
-        $distribution->requirements($_ => $task->{requirements}{$_}) for keys %{$task->{requirements}};
+        $distribution->requirements($_ => $task->{requirements}{$_}) for keys $task->{requirements}->%*;
     }
     local $ctx->{logger}{context} = $distribution->distvname;
-    my $msg = join ", ", map { sprintf "%s (%s)", $_->{package}, $_->{version} || 0 } @{$distribution->provides};
+    my $msg = join ", ", map { sprintf "%s (%s)", $_->{package}, $_->{version} || 0 } $distribution->provides->@*;
     $ctx->log("Distribution provides: $msg");
     return 1;
 }
@@ -459,7 +459,7 @@ sub _register_configure_result ($self, $ctx, $task) {
     }
     my $distribution = $self->distribution($task->distfile);
     $distribution->configured(1);
-    $distribution->requirements($_ => $task->{requirements}{$_}) for keys %{$task->{requirements}};
+    $distribution->requirements($_ => $task->{requirements}{$_}) for keys $task->{requirements}->%*;
     $distribution->static_builder($task->{static_builder});
     return 1;
 }

@@ -188,7 +188,7 @@ sub _search_inc ($self) {
     if ($self->{target_perl}) {
         return [@local_lib];
     } else {
-        return [@local_lib, @{$self->_core_inc}];
+        return [@local_lib, $self->_core_inc->@*];
     }
 }
 
@@ -338,7 +338,7 @@ sub cmd_install ($self) {
         if (my $fail = $master->fail($ctx)) {
             local $App::cpm::Logger::VERBOSE = 0;
             for my $type (qw(install resolve)) {
-                App::cpm::Logger->log(result => "FAIL", type => $type, message => $_) for @{$fail->{$type}};
+                App::cpm::Logger->log(result => "FAIL", type => $type, message => $_) for $fail->{$type}->@*;
             }
             print STDERR "\r" if $self->{show_progress};
             warn sprintf "%d distribution%s installed.\n",
@@ -361,7 +361,7 @@ sub cmd_install ($self) {
     if ($fail) {
         local $App::cpm::Logger::VERBOSE = 0;
         for my $type (qw(install resolve)) {
-            App::cpm::Logger->log(result => "FAIL", type => $type, message => $_) for @{$fail->{$type}};
+            App::cpm::Logger->log(result => "FAIL", type => $type, message => $_) for $fail->{$type}->@*;
         }
     }
     print STDERR "\r" if $self->{show_progress};
@@ -476,7 +476,7 @@ sub initial_task ($self, $ctx, $master) {
     $self->{mirror} ||= $self->{_default_mirror};
 
     my (@package, @dist);
-    for (@{$self->{argv}}) {
+    for ($self->{argv}->@*) {
         my $arg = $_; # copy
         my ($package, $dist);
         if (-d $arg || -f $arg || $arg =~ s{^file://}{}) {
@@ -586,7 +586,7 @@ sub locate_dependency_file ($self) {
 sub load_dependency_file ($self, $ctx) {
 
     my $cpmfile = do {
-        my ($type, $path) = @{ $self->{dependency_file} }{qw(type path)};
+        my ($type, $path) = $self->{dependency_file}->@{qw(type path)};
         warn "Loading requirements from $path...\n";
         if ($type eq "cpmfile") {
             Module::cpmfile->load($path);
@@ -640,8 +640,8 @@ sub generate_resolver ($self, $ctx, $initial) {
 
     my $cascade = App::cpm::Resolver::Cascade->new($ctx);
     $cascade->add($initial) if $initial;
-    if (@{$self->{resolver}}) {
-        for my $r (@{$self->{resolver}}) {
+    if ($self->{resolver}->@*) {
+        for my $r ($self->{resolver}->@*) {
             my ($klass, @argv) = split /,/, $r;
             my $resolver = $self->_generate_resolver($ctx, $klass, @argv);
             $cascade->add($resolver);

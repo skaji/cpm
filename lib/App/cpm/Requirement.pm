@@ -12,11 +12,11 @@ sub new ($class, @argv) {
 }
 
 sub empty ($self) {
-    @{$self->{requirement}} == 0;
+    $self->{requirement}->@* == 0;
 }
 
 sub has ($self, $package) {
-    my ($found) = grep { $_->{package} eq $package } @{$self->{requirement}};
+    my ($found) = grep { $_->{package} eq $package } $self->{requirement}->@*;
     $found;
 }
 
@@ -24,7 +24,7 @@ sub add ($self, @argv) {
     my %package = (@argv, @argv % 2 ? (0) : ());
     for my $package (sort keys %package) {
         my $version_range = $package{$package};
-        if (my ($found) = grep { $_->{package} eq $package } @{$self->{requirement}}) {
+        if (my ($found) = grep { $_->{package} eq $package } $self->{requirement}->@*) {
             my $merged = eval {
                 App::cpm::version::range_merge($found->{version_range}, $version_range);
             };
@@ -39,21 +39,21 @@ sub add ($self, @argv) {
             }
             $found->{version_range} = $merged;
         } else {
-            push @{$self->{requirement}}, { package => $package, version_range => $version_range };
+            push $self->{requirement}->@*, { package => $package, version_range => $version_range };
         }
     }
     return 1;
 }
 
 sub merge ($self, $other) {
-    $self->add(map { ($_->{package}, $_->{version_range}) } @{ $other->as_array });
+    $self->add(map { ($_->{package}, $_->{version_range}) } $other->as_array->@*);
 }
 
 sub delete :method ($self, @package) {
     for my $i (reverse 0 .. $#{ $self->{requirement} }) {
         my $current = $self->{requirement}[$i]{package};
         if (grep { $current eq $_ } @package) {
-            splice @{$self->{requirement}}, $i, 1;
+            splice $self->{requirement}->@*, $i, 1;
         }
     }
 }
