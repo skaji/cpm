@@ -3,9 +3,7 @@ use v5.24;
 use warnings;
 use experimental qw(lexical_subs signatures);
 
-{
-    package
-        App::cpm::CircularDependency::OrderedSet;
+package App::cpm::CircularDependency::OrderedSet {
     sub new ($class) {
         bless { index => 0, hash => +{} }, $class;
     }

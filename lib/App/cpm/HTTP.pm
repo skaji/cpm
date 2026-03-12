@@ -6,8 +6,7 @@ use experimental qw(lexical_subs signatures);
 use App::cpm;
 use HTTP::Tinyish;
 
-{
-    package App::cpm::HTTP::_HTTPTiny;
+package App::cpm::HTTP::_HTTPTiny {
     $INC{"App/cpm/HTTP/_HTTPTiny.pm"} = __FILE__;
     use parent 'HTTP::Tinyish::Base';
     use HTTP::Tiny;

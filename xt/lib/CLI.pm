@@ -15,8 +15,7 @@ my $base = abs_path( File::Spec->catdir(File::Basename::dirname(__FILE__), "..",
 
 my $TEMPDIR = tempdir CLEANUP => 1;
 
-{
-    package Result;
+package Result {
     no strict 'refs';
     sub new ($class, %argv) {
         bless \%argv, $class;
