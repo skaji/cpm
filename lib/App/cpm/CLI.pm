@@ -59,7 +59,7 @@ sub new ($class, %option) {
         with_develop => 0,
         feature => [],
         notest => 1,
-        prebuilt => $] >= 5.012 && $prebuilt,
+        prebuilt => $prebuilt,
         pureperl_only => 0,
         static_install => 1,
         default_resolvers => 1,
@@ -122,7 +122,6 @@ sub parse_options ($self, @argv) {
     $self->{show_progress} = 1 if !WIN32 && !defined $self->{show_progress} && -t STDOUT;
     if ($target_perl) {
         die "--target-perl option conflicts with --global option\n" if $self->{global};
-        die "--target-perl option can be used only if perl version >= 5.18.0\n" if $] < 5.018;
         # 5.8 is interpreted as 5.800, fix it
         $target_perl = "v$target_perl" if $target_perl =~ /^5\.[1-9]\d*$/;
         $target_perl = sprintf '%0.6f', App::cpm::version->parse($target_perl)->numify;
@@ -136,7 +135,7 @@ sub parse_options ($self, @argv) {
         warn "Warning: --sudo is deprecated and will be removed in cpm version 1.\n";
         !system "sudo", $^X, "-e1" or exit 1;
     }
-    if ($self->{pureperl_only} or $self->{sudo} or !$self->{notest} or $self->{man_pages} or $] < 5.012) {
+    if ($self->{pureperl_only} or $self->{sudo} or !$self->{notest} or $self->{man_pages}) {
         $self->{prebuilt} = 0;
     }
 
@@ -319,40 +318,6 @@ sub cmd_install ($self) {
         eumm_argv => $eumm_argv,
         mb_argv => $mb_argv,
     );
-
-    {
-        last if $] >= 5.018;
-        my $requirement = App::cpm::Requirement->new('ExtUtils::MakeMaker' => '6.64', 'ExtUtils::ParseXS' => '3.16');
-        for my $name ('ExtUtils::MakeMaker', 'ExtUtils::ParseXS') {
-            if (my ($i) = grep { $packages->[$_]{package} eq $name } 0..$#{$packages}) {
-                $requirement->add($name, $packages->[$i]{version_range})
-                    or die sprintf "We have to install newer $name first: $@\n";
-                splice @$packages, $i, 1;
-            }
-        }
-        my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirement->as_array);
-        last if $is_satisfied;
-        $master->add_task($ctx, type => "resolve", %$_) for @need_resolve;
-
-        $self->install($ctx, $master, $worker, 1);
-        if (my $fail = $master->fail($ctx)) {
-            local $App::cpm::Logger::VERBOSE = 0;
-            for my $type (qw(install resolve)) {
-                App::cpm::Logger->log(result => "FAIL", type => $type, message => $_) for $fail->{$type}->@*;
-            }
-            print STDERR "\r" if $self->{show_progress};
-            warn sprintf "%d distribution%s installed.\n",
-                $master->installed_distributions, $master->installed_distributions > 1 ? "s" : "";
-            if ($self->{show_build_log_on_failure}) {
-                File::Copy::copy($ctx->{logger}->file, \*STDERR);
-            } else {
-                warn "See $self->{home}/build.log for details.\n";
-                warn "You may want to execute cpm with --show-build-log-on-failure,\n";
-                warn "so that the build.log is automatically dumped on failure.\n";
-            }
-            return 1;
-        }
-    }
 
     $master->add_task($ctx, type => "resolve", %$_) for @$packages;
     $master->add_distribution($_) for @$dists;

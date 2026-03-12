@@ -24,8 +24,6 @@ use JSON::PP ();
 use Parse::LocalDistribution;
 use Time::HiRes ();
 
-use constant NEED_INJECT_TOOLCHAIN_REQUIREMENTS => $] < 5.018;
-
 my $TRUSTED_MIRROR = sub ($uri) {
     !!( $uri =~ m{^https?://(?:www.cpan.org|backpan.perl.org|cpan.metacpan.org)} );
 };
@@ -271,33 +269,6 @@ sub save_prebuilt ($self, $ctx, $task) {
     }
 }
 
-sub _inject_toolchain_requirements ($self, $ctx, $distfile, $requirement) {
-    $distfile ||= "";
-
-    if (    -f "Makefile.PL"
-        and !$requirement->has('ExtUtils::MakeMaker')
-        and !-f "Build.PL"
-        and $distfile !~ m{/ExtUtils-MakeMaker-[0-9v]}
-    ) {
-        $requirement->add('ExtUtils::MakeMaker');
-    }
-    if ($requirement->has('Module::Build')) {
-        $requirement->add('ExtUtils::Install');
-    }
-
-    my %inject = (
-        'Module::Build' => '0.38',
-        'ExtUtils::MakeMaker' => '6.64',
-        'ExtUtils::Install' => '1.46',
-    );
-
-    for my $package (sort keys %inject) {
-        $requirement->has($package) or next;
-        $requirement->add($package, $inject{$package});
-    }
-    $requirement;
-}
-
 sub _load_metafile ($self, $ctx, $distfile, @file) {
     my $meta;
     if (my ($file) = grep -f, @file) {
@@ -318,9 +289,6 @@ sub _extract_configure_requirements ($self, $ctx, $meta, $distfile) {
     my $requirement = $self->_extract_requirements($ctx, $meta, [qw(configure)])->{configure};
     if ($requirement->empty and -f "Build.PL" and ($distfile || "") !~ m{/Module-Build-[0-9v]}) {
         $requirement->add("Module::Build" => "0.38");
-    }
-    if (NEED_INJECT_TOOLCHAIN_REQUIREMENTS) {
-        $self->_inject_toolchain_requirements($ctx, $distfile, $requirement);
     }
     return $requirement;
 }
