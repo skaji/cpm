@@ -6,24 +6,19 @@ use experimental qw(lexical_subs signatures);
 {
     package
         App::cpm::CircularDependency::OrderedSet;
-    sub new {
-        my $class = shift;
+    sub new ($class) {
         bless { index => 0, hash => +{} }, $class;
     }
-    sub add {
-        my ($self, $name) = @_;
+    sub add ($self, $name) {
         $self->{hash}{$name} = $self->{index}++;
     }
-    sub exists {
-        my ($self, $name) = @_;
+    sub exists ($self, $name) {
         exists $self->{hash}{$name};
     }
-    sub values {
-        my $self = shift;
+    sub values ($self) {
         sort { $self->{hash}{$a} <=> $self->{hash}{$b} } keys %{$self->{hash}};
     }
-    sub clone {
-        my $self = shift;
+    sub clone ($self) {
         my $new = (ref $self)->new;
         $new->add($_) for $self->values;
         $new;
@@ -35,21 +30,18 @@ sub _uniq {
     grep !$u{$_}++, @_;
 }
 
-sub new {
-    my $class = shift;
+sub new ($class) {
     bless { _tmp => {} }, $class;
 }
 
-sub add {
-    my ($self, $distfile, $provides, $requirements) = @_;
+sub add ($self, $distfile, $provides, $requirements) {
     $self->{_tmp}{$distfile} = +{
         provides => [ map $_->{package}, @$provides ],
         requirements => [ map $_->{package}, @$requirements ],
     };
 }
 
-sub finalize {
-    my $self = shift;
+sub finalize ($self) {
     for my $distfile (sort keys %{$self->{_tmp}}) {
         $self->{$distfile} = [
             _uniq map $self->_find($_), @{$self->{_tmp}{$distfile}{requirements}}
@@ -59,8 +51,7 @@ sub finalize {
     return;
 }
 
-sub _find {
-    my ($self, $package) = @_;
+sub _find ($self, $package) {
     for my $distfile (sort keys %{$self->{_tmp}}) {
         if (grep { $_ eq $package } @{$self->{_tmp}{$distfile}{provides}}) {
             return $distfile;
@@ -69,8 +60,7 @@ sub _find {
     return;
 }
 
-sub detect {
-    my $self = shift;
+sub detect ($self) {
 
     my %result;
     for my $distfile (sort keys %$self) {
@@ -83,8 +73,7 @@ sub detect {
     return \%result;
 }
 
-sub _detect {
-    my ($self, $distfile, $seen) = @_;
+sub _detect ($self, $distfile, $seen) {
 
     for my $req (@{$self->{$distfile}}) {
         if ($seen->exists($req)) {

@@ -12,8 +12,7 @@ use CPAN::DistnameInfo;
 use IO::Handle;
 use Module::Metadata;
 
-sub new {
-    my ($class, %option) = @_;
+sub new ($class, %option) {
     my $self = bless {
         %option,
         installed_distributions => 0,
@@ -47,8 +46,7 @@ sub new {
     $self;
 }
 
-sub fail {
-    my ($self, $ctx) = @_;
+sub fail ($self, $ctx) {
 
     my @fail_resolve = sort keys %{$self->{_fail_resolve}};
     my @fail_install = sort keys %{$self->{_fail_install}};
@@ -91,10 +89,9 @@ sub fail {
     { resolve => \@fail_resolve, install => [sort @fail_install_name, @not_installed_name] };
 }
 
-sub tasks { values %{shift->{tasks}} }
+sub tasks ($self) { values %{$self->{tasks}} }
 
-sub add_task {
-    my ($self, $ctx, %task) = @_;
+sub add_task ($self, $ctx, %task) {
     my $new = App::cpm::Task->new(%task);
     if (grep { $_->equals($new) } $self->tasks) {
         return 0;
@@ -104,8 +101,7 @@ sub add_task {
     }
 }
 
-sub get_task {
-    my ($self, $ctx) = @_;
+sub get_task ($self, $ctx) {
     if (my @task = grep { !$_->in_charge } $self->tasks) {
         return @task;
     }
@@ -117,8 +113,7 @@ sub get_task {
     return;
 }
 
-sub register_result {
-    my ($self, $ctx, $result) = @_;
+sub register_result ($self, $ctx, $result) {
     my ($task) = grep { $_->uid eq $result->{uid} } $self->tasks;
     die "Missing task that has uid=$result->{uid}" unless $task;
 
@@ -133,8 +128,7 @@ sub register_result {
     return 1;
 }
 
-sub info {
-    my ($self, $task) = @_;
+sub info ($self, $task) {
     my $type = $task->type;
     return if !$App::cpm::Logger::VERBOSE && $type ne "install";
     my $name = $task->distvname;
@@ -160,28 +154,24 @@ sub info {
     return 1;
 }
 
-sub _show_progress {
-    my $self = shift;
+sub _show_progress ($self) {
     my $all = keys %{$self->{distributions}};
     my $num = $self->installed_distributions;
     print STDERR "--- $num/$all ---";
     STDERR->flush; # this is needed at least with perl <= 5.24
 }
 
-sub remove_task {
-    my ($self, $ctx, $task) = @_;
+sub remove_task ($self, $ctx, $task) {
     delete $self->{tasks}{$task->uid};
 }
 
-sub distributions { values %{shift->{distributions}} }
+sub distributions ($self) { values %{$self->{distributions}} }
 
-sub distribution {
-    my ($self, $distfile) = @_;
+sub distribution ($self, $distfile) {
     $self->{distributions}{$distfile};
 }
 
-sub _calculate_tasks {
-    my ($self, $ctx) = @_;
+sub _calculate_tasks ($self, $ctx) {
 
     my @distributions
         = grep { !$self->{_fail_install}{$_->distfile} } $self->distributions;
@@ -296,13 +286,11 @@ sub _register_resolve_task {
     return $ok;
 }
 
-sub is_satisfied_perl_version {
-    my ($self, $version_range) = @_;
+sub is_satisfied_perl_version ($self, $version_range) {
     App::cpm::version->parse($self->{target_perl} || $])->satisfy($version_range);
 }
 
-sub is_installed {
-    my ($self, $package, $version_range) = @_;
+sub is_installed ($self, $package, $version_range) {
     my $wantarray = wantarray;
     if (exists $self->{_is_installed}{$package}) {
         if ($self->{_is_installed}{$package}->satisfy($version_range)) {
@@ -325,13 +313,11 @@ sub is_installed {
     $wantarray ? ($ok, $current_version) : $ok;
 }
 
-sub _in_core_inc {
-    my ($self, $file) = @_;
+sub _in_core_inc ($self, $file) {
     !!grep { $file =~ /^\Q$_/ } @{$self->{core_inc}};
 }
 
-sub is_core {
-    my ($self, $package, $version_range) = @_;
+sub is_core ($self, $package, $version_range) {
     my $target_perl = $self->{target_perl};
     if (exists $Module::CoreList::version{$target_perl}{$package}) {
         if (!exists $Module::CoreList::version{$]}{$package}) {
@@ -355,8 +341,7 @@ sub is_core {
 # 0:     not satisfied, need wait for satisfying requirements
 # 1:     satisfied, ready to install
 # undef: not satisfied because of perl version
-sub is_satisfied {
-    my ($self, $requirements) = @_;
+sub is_satisfied ($self, $requirements) {
     my $is_satisfied = 1;
     my @need_resolve;
     my @distributions = $self->distributions;
@@ -379,8 +364,7 @@ sub is_satisfied {
     return ($is_satisfied, @need_resolve);
 }
 
-sub add_distribution {
-    my ($self, $distribution) = @_;
+sub add_distribution ($self, $distribution) {
     my $distfile = $distribution->distfile;
     if (my $already = $self->{distributions}{$distfile}) {
         if ($already->resolved) {
@@ -393,8 +377,7 @@ sub add_distribution {
     }
 }
 
-sub _register_resolve_result {
-    my ($self, $ctx, $task) = @_;
+sub _register_resolve_result ($self, $ctx, $task) {
     if (!$task->is_success) {
         $self->{_fail_resolve}{$task->{package}}++;
         return;
@@ -446,8 +429,7 @@ sub _register_resolve_result {
     $self->add_distribution($distribution);
 }
 
-sub _register_fetch_result {
-    my ($self, $ctx, $task) = @_;
+sub _register_fetch_result ($self, $ctx, $task) {
     if (!$task->is_success) {
         $self->{_fail_install}{$task->distfile}++;
         return;
@@ -471,8 +453,7 @@ sub _register_fetch_result {
     return 1;
 }
 
-sub _register_configure_result {
-    my ($self, $ctx, $task) = @_;
+sub _register_configure_result ($self, $ctx, $task) {
     if (!$task->is_success) {
         $self->{_fail_install}{$task->distfile}++;
         return;
@@ -484,8 +465,7 @@ sub _register_configure_result {
     return 1;
 }
 
-sub _register_install_result {
-    my ($self, $ctx, $task) = @_;
+sub _register_install_result ($self, $ctx, $task) {
     if (!$task->is_success) {
         $self->{_fail_install}{$task->distfile}++;
         return;
@@ -496,8 +476,6 @@ sub _register_install_result {
     return 1;
 }
 
-sub installed_distributions {
-    shift->{installed_distributions};
-}
+sub installed_distributions ($self) { $self->{installed_distributions} }
 
 1;
