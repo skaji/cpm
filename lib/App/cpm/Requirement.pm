@@ -5,27 +5,23 @@ use experimental qw(lexical_subs signatures);
 
 use App::cpm::version;
 
-sub new {
-    my $class = shift;
+sub new ($class, @argv) {
     my $self = bless { requirement => [] }, $class;
-    $self->add(@_) if @_;
+    $self->add(@argv) if @argv;
     $self;
 }
 
-sub empty {
-    my $self = shift;
+sub empty ($self) {
     @{$self->{requirement}} == 0;
 }
 
-sub has {
-    my ($self, $package) = @_;
+sub has ($self, $package) {
     my ($found) = grep { $_->{package} eq $package } @{$self->{requirement}};
     $found;
 }
 
-sub add {
-    my $self = shift;
-    my %package = (@_, @_ % 2 ? (0) : ());
+sub add ($self, @argv) {
+    my %package = (@argv, @argv % 2 ? (0) : ());
     for my $package (sort keys %package) {
         my $version_range = $package{$package};
         if (my ($found) = grep { $_->{package} eq $package } @{$self->{requirement}}) {
@@ -49,13 +45,11 @@ sub add {
     return 1;
 }
 
-sub merge {
-    my ($self, $other) = @_;
+sub merge ($self, $other) {
     $self->add(map { ($_->{package}, $_->{version_range}) } @{ $other->as_array });
 }
 
-sub delete :method {
-    my ($self, @package) = @_;
+sub delete :method ($self, @package) {
     for my $i (reverse 0 .. $#{ $self->{requirement} }) {
         my $current = $self->{requirement}[$i]{package};
         if (grep { $current eq $_ } @package) {
@@ -64,8 +58,7 @@ sub delete :method {
     }
 }
 
-sub as_array {
-    my $self = shift;
+sub as_array ($self) {
     $self->{requirement};
 }
 

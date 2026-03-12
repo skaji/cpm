@@ -26,13 +26,11 @@ use Time::HiRes ();
 
 use constant NEED_INJECT_TOOLCHAIN_REQUIREMENTS => $] < 5.018;
 
-my $TRUSTED_MIRROR = sub {
-    my $uri = shift;
+my $TRUSTED_MIRROR = sub ($uri) {
     !!( $uri =~ m{^https?://(?:www.cpan.org|backpan.perl.org|cpan.metacpan.org)} );
 };
 
-sub work {
-    my ($self, $ctx, $task) = @_;
+sub work ($self, $ctx, $task) {
     my $type = $task->{type} || "(undef)";
     local $ctx->{logger}{context} = $task->distvname;
     if ($type eq "fetch") {
@@ -71,8 +69,7 @@ sub work {
     return { ok => 0 };
 }
 
-sub new {
-    my ($class, $ctx, %option) = @_;
+sub new ($class, $ctx, %option) {
     $option{work_dir}  or die "work_dir option is required\n";
     $option{cache_dir} or die "cache_dir option is required\n";
     mkpath $_ for grep !-d, $option{work_dir}, $option{cache_dir};
@@ -90,8 +87,7 @@ sub new {
     }, $class;
 }
 
-sub _fetch_git {
-    my ($self, $ctx, $uri, $ref) = @_;
+sub _fetch_git ($self, $ctx, $uri, $ref) {
     my $basename = File::Basename::basename($uri);
     $basename =~ s/\.git$//;
     $basename =~ s/[^a-zA-Z0-9_.-]/-/g;
@@ -122,13 +118,11 @@ sub _fetch_git {
     ($dir, $rev);
 }
 
-sub enable_prebuilt {
-    my ($self, $ctx, $uri) = @_;
+sub enable_prebuilt ($self, $ctx, $uri) {
     $self->{prebuilt} && !$self->{prebuilt}->skip($uri) && $TRUSTED_MIRROR->($uri);
 }
 
-sub fetch {
-    my ($self, $ctx, $task) = @_;
+sub fetch ($self, $ctx, $task) {
     my $guard = pushd;
 
     my $source   = $task->{source};
@@ -221,8 +215,7 @@ sub fetch {
     };
 }
 
-sub find_prebuilt {
-    my ($self, $ctx, $uri) = @_;
+sub find_prebuilt ($self, $ctx, $uri) {
     my $info = CPAN::DistnameInfo->new($uri);
     my $dir = File::Spec->catdir($self->{prebuilt_base}, $info->cpanid, $info->distvname);
     return unless -f File::Spec->catfile($dir, ".prebuilt");
@@ -256,8 +249,7 @@ sub find_prebuilt {
     };
 }
 
-sub save_prebuilt {
-    my ($self, $ctx, $task) = @_;
+sub save_prebuilt ($self, $ctx, $task) {
     my $dir = File::Spec->catdir($self->{prebuilt_base}, $task->cpanid, $task->distvname);
 
     if (-d $dir and !File::Path::rmtree($dir)) {
@@ -279,8 +271,7 @@ sub save_prebuilt {
     }
 }
 
-sub _inject_toolchain_requirements {
-    my ($self, $ctx, $distfile, $requirement) = @_;
+sub _inject_toolchain_requirements ($self, $ctx, $distfile, $requirement) {
     $distfile ||= "";
 
     if (    -f "Makefile.PL"
@@ -307,8 +298,7 @@ sub _inject_toolchain_requirements {
     $requirement;
 }
 
-sub _load_metafile {
-    my ($self, $ctx, $distfile, @file) = @_;
+sub _load_metafile ($self, $ctx, $distfile, @file) {
     my $meta;
     if (my ($file) = grep -f, @file) {
         $meta = eval { CPAN::Meta->load_file($file) };
@@ -324,8 +314,7 @@ sub _load_metafile {
 
 # XXX Assume current directory is distribution directory
 # because the test "-f Build.PL" or similar is present
-sub _extract_configure_requirements {
-    my ($self, $ctx, $meta, $distfile) = @_;
+sub _extract_configure_requirements ($self, $ctx, $meta, $distfile) {
     my $requirement = $self->_extract_requirements($ctx, $meta, [qw(configure)])->{configure};
     if ($requirement->empty and -f "Build.PL" and ($distfile || "") !~ m{/Module-Build-[0-9v]}) {
         $requirement->add("Module::Build" => "0.38");
@@ -336,8 +325,7 @@ sub _extract_configure_requirements {
     return $requirement;
 }
 
-sub _extract_requirements {
-    my ($self, $ctx, $meta, $phases) = @_;
+sub _extract_requirements ($self, $ctx, $meta, $phases) {
     $phases = [$phases] unless ref $phases;
     my $hash = $meta->effective_prereqs->as_string_hash;
 
@@ -353,8 +341,7 @@ sub _extract_requirements {
     \%req;
 }
 
-sub _retry {
-    my ($self, $ctx, $sub) = @_;
+sub _retry ($self, $ctx, $sub) {
     return 1 if $sub->();
     return unless $self->{retry};
     Time::HiRes::sleep(0.1);
@@ -362,8 +349,7 @@ sub _retry {
     return $sub->();
 }
 
-sub configure {
-    my ($self, $ctx, $task) = @_;
+sub configure ($self, $ctx, $task) {
     my ($dir, $distfile, $meta, $source) = @{$task}{qw(directory distfile meta source)};
     my $guard = pushd $dir;
 
@@ -413,18 +399,15 @@ sub configure {
     };
 }
 
-sub _local_lib_env_path {
-    my ($self, $ctx) = @_;
+sub _local_lib_env_path ($self, $ctx) {
     join $Config{path_sep}, File::Spec->catdir($self->{local_lib}, "bin"), ( $ENV{PATH} ? $ENV{PATH} : () );
 }
 
-sub _local_lib_env_perl5lib {
-    my ($self, $ctx) = @_;
+sub _local_lib_env_perl5lib ($self, $ctx) {
     join $Config{path_sep}, File::Spec->catdir($self->{local_lib}, "lib", "perl5"), ( $ENV{PERL5LIB} ? $ENV{PERL5LIB} : ());
 }
 
-sub _configure {
-    my ($self, $ctx, $cmd, $meta) = @_;
+sub _configure ($self, $ctx, $cmd, $meta) {
     local %ENV = %ENV;
     $ENV{PERL5_CPAN_IS_RUNNING} = $$;
     $ENV{PERL5_CPANPLUS_IS_RUNNING} = $$;
@@ -438,8 +421,7 @@ sub _configure {
     $ctx->run_command($cmd, $self->{configure_timeout});
 }
 
-sub static_install_configure {
-    my ($self, $ctx, $meta) = @_;
+sub static_install_configure ($self, $ctx, $meta) {
 
     my $builder = App::cpm::Builder::Static->new(meta => $meta);
     my @argv;
@@ -465,8 +447,7 @@ sub static_install_configure {
 }
 
 
-sub _build {
-    my ($self, $ctx, $cmd, $meta) = @_;
+sub _build ($self, $ctx, $cmd, $meta) {
     local %ENV = %ENV;
     $ENV{PERL_MM_USE_DEFAULT} = 1;
     $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($ctx, $meta);
@@ -477,8 +458,7 @@ sub _build {
     $ctx->run_command($cmd, $self->{build_timeout});
 }
 
-sub _test {
-    my ($self, $ctx, $cmd, $meta) = @_;
+sub _test ($self, $ctx, $cmd, $meta) {
     local %ENV = %ENV;
     $ENV{PERL_MM_USE_DEFAULT} = 1;
     $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($ctx, $meta);
@@ -490,8 +470,7 @@ sub _test {
     $ctx->run_command($cmd, $self->{test_timeout});
 }
 
-sub _install {
-    my ($self, $ctx, $cmd, $meta) = @_;
+sub _install ($self, $ctx, $cmd, $meta) {
     local %ENV = %ENV;
     $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($ctx, $meta);
     if ($self->{local_lib}) {
@@ -504,8 +483,7 @@ sub _install {
     $ctx->run_command($cmd, 0);
 }
 
-sub _use_unsafe_inc {
-    my ($self, $ctx, $meta) = @_;
+sub _use_unsafe_inc ($self, $ctx, $meta) {
     if (exists $ENV{PERL_USE_UNSAFE_INC}) {
         return $ENV{PERL_USE_UNSAFE_INC};
     }
@@ -516,15 +494,13 @@ sub _use_unsafe_inc {
     1;
 }
 
-sub opts_in_static_install {
-    my ($self, $ctx, $meta) = @_;
+sub opts_in_static_install ($self, $ctx, $meta) {
     return if !$self->{static_install};
     return if $self->{sudo} or $self->{uninstall_shadows};
     return $meta->{x_static_install} && $meta->{x_static_install} == 1;
 }
 
-sub install {
-    my ($self, $ctx, $task) = @_;
+sub install ($self, $ctx, $task) {
     return $self->install_prebuilt($ctx, $task) if $task->{prebuilt};
 
     my ($dir, $static_builder, $distvname, $meta, $provides, $distfile)
@@ -557,8 +533,7 @@ sub install {
     return $installed;
 }
 
-sub install_prebuilt {
-    my ($self, $ctx, $task) = @_;
+sub install_prebuilt ($self, $ctx, $task) {
 
     my $install_base = $self->{local_lib} || $self->{implicit_install_base};
 
@@ -591,8 +566,7 @@ sub install_prebuilt {
     return 1;
 }
 
-sub unpack {
-    my ($self, $ctx, $file) = @_;
+sub unpack ($self, $ctx, $file) {
     $ctx->log("Unpacking $file");
     my ($dir, $err) = $ctx->{unpacker}->unpack($file);
     $ctx->log($err) if !$dir && $err;
@@ -600,8 +574,7 @@ sub unpack {
 }
 
 # XXX assume current dir is distribution dir
-sub extract_packages {
-    my ($self, $ctx, $meta) = @_;
+sub extract_packages ($self, $ctx, $meta) {
 
     if (my $provides = $meta->{provides}) {
         my @out;
@@ -634,8 +607,7 @@ sub extract_packages {
     \@out;
 }
 
-sub mirror {
-    my ($self, $ctx, $uri, $local) = @_;
+sub mirror ($self, $ctx, $uri, $local) {
     my $res = $ctx->{http}->mirror($uri, $local);
     $ctx->log($res->{status} . ($res->{reason} ? " $res->{reason}" : ""));
     return 1 if $res->{success};
@@ -644,8 +616,7 @@ sub mirror {
     return;
 }
 
-sub fetch_distribution {
-    my ($self, $ctx, $uri, $distfile) = @_;
+sub fetch_distribution ($self, $ctx, $uri, $distfile) {
 
     my $local = File::Spec->catfile($self->{work_dir}, File::Basename::basename($uri));
     $ctx->log("Fetching $uri");
@@ -666,8 +637,7 @@ sub fetch_distribution {
     return $dir;
 }
 
-sub save_meta {
-    my ($self, $ctx, $meta, $distfile, $provides) = @_;
+sub save_meta ($self, $ctx, $meta, $distfile, $provides) {
 
     my $install_base = $self->{local_lib} || $self->{implicit_install_base};
     my $install_base_meta = $install_base ? File::Spec->catdir($install_base, "lib", "perl5") : $Config{sitelibexp};
