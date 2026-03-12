@@ -33,8 +33,7 @@ use Module::cpmfile;
 use Parallel::Pipes::App;
 use Pod::Text ();
 
-sub new {
-    my ($class, %option) = @_;
+sub new ($class, %option) {
     my $prebuilt = exists $ENV{PERL_CPM_PREBUILT} && !$ENV{PERL_CPM_PREBUILT} ? 0 : 1;
     bless {
         argv => undef,
@@ -161,8 +160,7 @@ sub parse_options {
     return 1;
 }
 
-sub read_argv_from_stdin {
-    my $self = shift;
+sub read_argv_from_stdin ($self) {
     my @argv;
     while (my $line = <STDIN>) {
         next if $line !~ /\S/;
@@ -174,16 +172,14 @@ sub read_argv_from_stdin {
     return \@argv;
 }
 
-sub _core_inc {
-    my $self = shift;
+sub _core_inc ($self) {
     [
         (!$self->{exclude_vendor} ? grep {$_} @Config{qw(vendorarch vendorlibexp)} : ()),
         @Config{qw(archlibexp privlibexp)},
     ];
 }
 
-sub _search_inc {
-    my $self = shift;
+sub _search_inc ($self) {
     return \@INC if $self->{global};
 
     my $base = $self->{local_lib};
@@ -198,8 +194,7 @@ sub _search_inc {
     }
 }
 
-sub normalize_mirror {
-    my ($self, $mirror) = @_;
+sub normalize_mirror ($self, $mirror) {
     $mirror =~ s{/*$}{/};
     return $mirror if $mirror =~ m{^https?://};
     $mirror =~ s{^file://}{};
@@ -224,7 +219,7 @@ sub run {
     }
 }
 
-sub cmd_help {
+sub cmd_help ($self) {
     open my $fh, ">", \my $out;
     Pod::Text->new->parse_from_file($0, $fh);
     $out =~ s/^[ ]{6}/    /mg;
@@ -232,7 +227,7 @@ sub cmd_help {
     return 0;
 }
 
-sub cmd_version {
+sub cmd_version ($self) {
     print "cpm $App::cpm::VERSION ($0)\n";
     if ($App::cpm::GIT_DESCRIBE) {
         print "This is a self-contained version, $App::cpm::GIT_DESCRIBE ($App::cpm::GIT_URL)\n";
@@ -424,8 +419,7 @@ sub _parse_builder_env {
     ($install_base, \@eumm_argv, \@mb_argv);
 }
 
-sub install {
-    my ($self, $ctx, $master, $worker, $num) = @_;
+sub install ($self, $ctx, $master, $worker, $num) {
 
     Darwin::InitObjC::maybe_init();
 
@@ -449,8 +443,7 @@ sub install {
     );
 }
 
-sub cleanup {
-    my $self = shift;
+sub cleanup ($self) {
     my $week = time - 7*24*60*60;
     my @entry = glob "$self->{home}/build.log.*";
     if (opendir my $dh, "$self->{home}/work") {
@@ -471,8 +464,7 @@ sub cleanup {
     }
 }
 
-sub initial_task {
-    my ($self, $ctx, $master) = @_;
+sub initial_task ($self, $ctx, $master) {
 
     if (!$self->{argv}) {
         my ($requirement, $reinstall, $resolver) = $self->load_dependency_file($ctx);
@@ -545,8 +537,7 @@ sub initial_task {
     return (\@package, \@dist, undef);
 }
 
-sub locate_dependency_file {
-    my $self = shift;
+sub locate_dependency_file ($self) {
     if (-f "cpm.yml") {
         return { type => "cpmfile", path => "cpm.yml" };
     }
@@ -600,8 +591,7 @@ sub locate_dependency_file {
     return;
 }
 
-sub load_dependency_file {
-    my ($self, $ctx) = @_;
+sub load_dependency_file ($self, $ctx) {
 
     my $cpmfile = do {
         my ($type, $path) = @{ $self->{dependency_file} }{qw(type path)};
@@ -654,8 +644,7 @@ sub load_dependency_file {
     return (\@package, \@reinstall, $resolver->effective ? $resolver : undef);
 }
 
-sub generate_resolver {
-    my ($self, $ctx, $initial) = @_;
+sub generate_resolver ($self, $ctx, $initial) {
 
     my $cascade = App::cpm::Resolver::Cascade->new($ctx);
     $cascade->add($initial) if $initial;

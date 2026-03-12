@@ -12,35 +12,30 @@ use HTTP::Tinyish;
     use parent 'HTTP::Tinyish::Base';
     use HTTP::Tiny;
     my %supports = (http => 1);
-    sub configure {
+    sub configure () {
         my %meta = ("HTTP::Tiny" => $HTTP::Tiny::VERSION);
         $supports{https} = HTTP::Tiny->can_ssl;
         \%meta;
     }
-    sub supports { $supports{$_[1]} }
-    sub new {
-        my ($class, %argv) = @_;
+    sub supports ($self, $scheme) { $supports{$scheme} }
+    sub new ($class, %argv) {
         bless { _conns => {}, _new_argv => \%argv }, $class;
     }
-    sub _tiny {
-        my ($self, $url) = @_;
+    sub _tiny ($self, $url) {
         my ($key) = $url =~ m{^(https?://[^/]+)};
         $key ||= "_";
         $self->{_conns}{$key} ||= HTTP::Tiny->new(%{$self->{_new_argv}});
     }
-    sub request {
-        my ($self, $method, $url, @argv) = @_;
+    sub request ($self, $method, $url, @argv) {
         $self->_tiny($url)->request($method, $url, @argv);
     }
-    sub mirror {
-        my ($self, $url, @argv) = @_;
+    sub mirror ($self, $url, @argv) {
         $self->_tiny($url)->mirror($url, @argv);
     }
 }
 
 
-sub create {
-    my ($class, %args) = @_;
+sub create ($class, %args) {
     my $wantarray = wantarray;
 
     my @try = $args{prefer} ? @{$args{prefer}} : qw(HTTPTiny LWP Curl Wget);

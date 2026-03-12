@@ -22,13 +22,11 @@ my %color = (
 
 our $HAS_WIN32_COLOR;
 
-sub new {
-    my $class = shift;
-    bless {@_}, $class;
+sub new ($class, %args) {
+    bless \%args, $class;
 }
 
-sub log {
-    my ($self, %option) = @_;
+sub log ($self, %option) {
     my $type = $option{type} || "";
     my $message = $option{message};
     chomp $message;

@@ -16,22 +16,21 @@ our @EXPORT_OK = qw(perl_identity maybe_abs WIN32 determine_home);
 
 use constant WIN32 => $^O eq 'MSWin32';
 
-sub perl_identity {
+sub perl_identity () {
     my $digest = Digest::MD5::md5_hex($Config{perlpath} . Config->myconfig);
     $digest = substr $digest, 0, 8;
     join '-', $Config{version}, $Config{archname}, $digest
 }
 
-sub maybe_abs {
-    my $path = shift;
+sub maybe_abs ($path, $cwd = undef) {
     if (File::Spec->file_name_is_absolute($path)) {
         return $path;
     }
-    my $cwd = shift || Cwd::cwd();
+    $cwd ||= Cwd::cwd();
     File::Spec->canonpath(File::Spec->catdir($cwd, $path));
 }
 
-sub determine_home { # taken from Menlo
+sub determine_home () { # taken from Menlo
     my $homedir = $ENV{HOME}
       || eval { require File::HomeDir; File::HomeDir->my_home }
       || join('', @ENV{qw(HOMEDRIVE HOMEPATH)}); # Win32
@@ -45,8 +44,7 @@ sub determine_home { # taken from Menlo
 }
 
 my $gzip;
-sub gunzip {
-    my ($from, $to) = @_;
+sub gunzip ($from, $to) {
     if (!$gzip) {
         $gzip = File::Which::which('gzip');
         die "need gzip command to decompress $from\n" if !$gzip;
