@@ -56,15 +56,13 @@ for my $attr (qw(
     prebuilt
 )) {
     no strict 'refs';
-    *$attr = sub {
-        my $self = shift;
-        $self->{$attr} = shift if @_;
+    *$attr = sub ($self, @argv) {
+        $self->{$attr} = $argv[0] if @argv;
         $self->{$attr};
     };
 }
-sub distfile {
-    my $self = shift;
-    $self->{distfile} = shift if @_;
+sub distfile ($self, @argv) {
+    $self->{distfile} = $argv[0] if @argv;
     $self->{distfile} || $self->{uri};
 }
 
@@ -88,49 +86,43 @@ sub overwrite_provide ($self, $provide) {
     return 1;
 }
 
-sub registered {
-    my $self = shift;
-    if (@_ && $_[0]) {
+sub registered ($self, @argv) {
+    if (@argv && $argv[0]) {
         $self->{_state} |= STATE_REGISTERED;
     }
     $self->{_state} & STATE_REGISTERED;
 }
 
-sub deps_registered {
-    my $self = shift;
-    if (@_ && $_[0]) {
+sub deps_registered ($self, @argv) {
+    if (@argv && $argv[0]) {
         $self->{_state} |= STATE_DEPS_REGISTERED;
     }
     $self->{_state} & STATE_DEPS_REGISTERED;
 }
 
-sub resolved {
-    my $self = shift;
-    if (@_ && $_[0]) {
+sub resolved ($self, @argv) {
+    if (@argv && $argv[0]) {
         $self->{_state} = STATE_RESOLVED;
     }
     $self->{_state} & STATE_RESOLVED;
 }
 
-sub fetched {
-    my $self = shift;
-    if (@_ && $_[0]) {
+sub fetched ($self, @argv) {
+    if (@argv && $argv[0]) {
         $self->{_state} = STATE_FETCHED;
     }
     $self->{_state} & STATE_FETCHED;
 }
 
-sub configured {
-    my $self = shift;
-    if (@_ && $_[0]) {
+sub configured ($self, @argv) {
+    if (@argv && $argv[0]) {
         $self->{_state} = STATE_CONFIGURED
     }
     $self->{_state} & STATE_CONFIGURED;
 }
 
-sub installed {
-    my $self = shift;
-    if (@_ && $_[0]) {
+sub installed ($self, @argv) {
+    if (@argv && $argv[0]) {
         $self->{_state} = STATE_INSTALLED;
     }
     $self->{_state} & STATE_INSTALLED;

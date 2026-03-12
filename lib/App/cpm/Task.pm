@@ -52,9 +52,8 @@ sub type ($self) {
     $self->{type};
 }
 
-sub in_charge {
-    my $self = shift;
-    @_ ? $self->{in_charge} = shift : $self->{in_charge};
+sub in_charge ($self, @argv) {
+    @argv ? $self->{in_charge} = $argv[0] : $self->{in_charge};
 }
 
 sub is_success ($self) {
