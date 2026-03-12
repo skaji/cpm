@@ -156,8 +156,7 @@ sub _untar_module ($self, $file) {
     return (undef, $t->error);
 }
 
-sub _find_tarroot {
-    my ($self, $root, @others) = @_;
+sub _find_tarroot ($self, $root, @others) {
     FILE: {
         chomp $root;
         $root =~ s!^\./!!;
@@ -210,8 +209,7 @@ sub _unzip_module ($self, $file) {
     return (undef, $err);
 }
 
-sub _find_ziproot {
-    my ($self, undef, $root, @others) = @_;
+sub _find_ziproot ($self, $, $root, @others) {
     FILE: {
         chomp $root;
         if ($root !~ s{^\s+testing:\s+([^/]+)/.*?\s+OK$}{$1}) {

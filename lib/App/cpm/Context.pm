@@ -25,8 +25,7 @@ sub new ($class, %argv) {
     }, $class;
 }
 
-sub log {
-    my ($self, @msg) = @_;
+sub log ($self, @msg) {
     $self->{logger}->log(@msg);
 }
 

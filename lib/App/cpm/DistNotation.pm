@@ -45,8 +45,6 @@ sub cpan_uri ($self, $mirror = undef) {
     sprintf "%s/authors/id/%s", $mirror, $self->{distfile};
 }
 
-sub distfile {
-    shift->{distfile};
-}
+sub distfile ($self) { $self->{distfile} }
 
 1;
