@@ -18,15 +18,13 @@ my $TEMPDIR = tempdir CLEANUP => 1;
 {
     package Result;
     no strict 'refs';
-    sub new {
-        my $class = shift;
-        bless {@_}, $class;
+    sub new ($class, %argv) {
+        bless \%argv, $class;
     }
     for my $attr (qw(local out err exit home logfile)) {
-        *$attr = sub { shift->{$attr} };
+        *$attr = sub ($self) { $self->{$attr} };
     }
-    sub log {
-        my $self = shift;
+    sub log ($self) {
         return $self->{_log} if $self->{_log};
         open my $fh, "<", $self->logfile or die "$self->{logfile}: $!";
         $self->{_log} = do { local $/; <$fh> };
@@ -44,8 +42,7 @@ sub with_same_home :prototype(&) ($sub) {
     $sub->();
 }
 
-sub cpm_install {
-    my @argv = @_;
+sub cpm_install (@argv) {
     my $local = $_LOCAL || tempdir DIR => $TEMPDIR;
     my $home  = $_HOME  || tempdir DIR => $TEMPDIR;
     if ($] < 5.010) {

@@ -39,8 +39,7 @@ sub prefix ($self) {
     $self->{context} ? "$pid,$self->{context}" : $pid;
 }
 
-sub log {
-    my ($self, @line) = @_;
+sub log ($self, @line) {
     my $now = POSIX::strftime('%Y-%m-%dT%H:%M:%S', localtime);
     my $prefix = $self->prefix;
     local $self->{fh} = IO::File->new($self->{file}, 'a') if WIN32;

@@ -27,8 +27,8 @@ sub _get ($self, $ctx, $uri) {
     $res;
 }
 
-sub _uniq {
-    my %x; grep { !$x{$_ || ""}++ } @_;
+sub _uniq (@argv) {
+    my %x; grep { !$x{$_ || ""}++ } @argv;
 }
 
 sub resolve ($self, $ctx, $task) {

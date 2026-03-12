@@ -25,9 +25,9 @@ use experimental qw(lexical_subs signatures);
     }
 }
 
-sub _uniq {
+sub _uniq (@argv) {
     my %u;
-    grep !$u{$_}++, @_;
+    grep !$u{$_}++, @argv;
 }
 
 sub new ($class) {

@@ -19,7 +19,7 @@ sub new ($class, $ctx, %option) {
     }, $class;
 }
 
-sub snapshot { shift->{snapshot} }
+sub snapshot ($self) { $self->{snapshot} }
 
 sub resolve ($self, $ctx, $task) {
     my $package = $task->{package};
