@@ -9,6 +9,7 @@ use Exporter 'import';
 use File::Basename ();
 use File::Spec;
 use Cwd 'abs_path';
+use Sub::Util 'set_prototype';
 our @EXPORT = qw(cpm_install with_same_local with_same_home);
 
 my $base = abs_path( File::Spec->catdir(File::Basename::dirname(__FILE__), "..", "..") );
@@ -32,14 +33,16 @@ package Result {
 
 our ($_LOCAL, $_HOME);
 
-sub with_same_local :prototype(&) ($sub) {
+sub with_same_local ($sub) {
     local $_LOCAL = tempdir DIR => $TEMPDIR;
     $sub->();
 }
-sub with_same_home :prototype(&) ($sub) {
+sub with_same_home ($sub) {
     local $_HOME = tempdir DIR => $TEMPDIR;
     $sub->();
 }
+set_prototype '&', \&with_same_local;
+set_prototype '&', \&with_same_home;
 
 sub cpm_install (@argv) {
     my $local = $_LOCAL || tempdir DIR => $TEMPDIR;

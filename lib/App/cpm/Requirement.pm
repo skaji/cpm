@@ -49,7 +49,7 @@ sub merge ($self, $other) {
     $self->add(map { ($_->{package}, $_->{version_range}) } $other->as_array->@*);
 }
 
-sub delete :method ($self, @package) {
+sub delete ($self, @package) {
     for my $i (reverse 0 .. $#{ $self->{requirement} }) {
         my $current = $self->{requirement}[$i]{package};
         if (grep { $current eq $_ } @package) {
