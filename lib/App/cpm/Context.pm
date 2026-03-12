@@ -10,8 +10,7 @@ use Command::Runner;
 use Config;
 use File::Which ();
 
-sub new {
-    my ($class, %argv) = @_;
+sub new ($class, %argv) {
     my $logger = App::cpm::Logger::File->new($argv{log_file});
     my ($http, $http_description) = App::cpm::HTTP->create;
     my $unpacker = App::cpm::Installer::Unpacker->new;
@@ -31,8 +30,7 @@ sub log {
     $self->{logger}->log(@msg);
 }
 
-sub run_command {
-    my ($self, $cmd, $timeout) = @_;
+sub run_command ($self, $cmd, $timeout = 0) {
     my $str = ref $cmd eq 'CODE' ? '' : ref $cmd eq 'ARRAY' ? "@$cmd" : $cmd;
     $self->log("Executing $str") if $str;
     my $runner = Command::Runner->new(

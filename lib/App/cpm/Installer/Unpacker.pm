@@ -10,29 +10,25 @@ use File::Temp ();
 use File::Which ();
 use IPC::Run3 ();
 
-sub run3 {
-    my ($cmd, $outfile) = @_;
+sub run3 ($cmd, $outfile = undef) {
     my $out;
     IPC::Run3::run3 $cmd, \undef, ($outfile ? $outfile : \$out), \my $err;
     return ($?, $out, $err);
 }
 
-sub new {
-    my ($class, %argv) = @_;
+sub new ($class, %argv) {
     my $self = bless \%argv, $class;
     $self->_init_untar;
     $self->_init_unzip;
     $self;
 }
 
-sub unpack {
-    my ($self, $file) = @_;
+sub unpack ($self, $file) {
     my $method = $file =~ /\.zip$/ ? $self->{method}{unzip} : $self->{method}{untar};
     $self->$method($file);
 }
 
-sub describe {
-    my $self = shift;
+sub describe ($self) {
     my %describe = (
         map { ($_, $self->{$_}) }
         grep $self->{$_},
@@ -48,8 +44,7 @@ sub describe {
     \%describe;
 }
 
-sub _init_untar {
-    my $self = shift;
+sub _init_untar ($self) {
 
     my $tar = $self->{tar} = File::Which::which('gtar') || File::Which::which("tar");
     if ($tar) {
@@ -89,8 +84,7 @@ sub _init_untar {
     $self->{method}{untar} = sub { die "There is no backend for untar" };
 }
 
-sub _init_unzip {
-    my $self = shift;
+sub _init_unzip ($self) {
 
     my $unzip = $self->{unzip} = File::Which::which("unzip");
     if ($unzip) {
@@ -108,8 +102,7 @@ sub _init_unzip {
     $self->{method}{unzip} = sub { die "There is no backend for unzip" };
 }
 
-sub _untar {
-    my ($self, $file) = @_;
+sub _untar ($self, $file) {
     my $wantarray = wantarray;
 
     my ($exit, $out, $err);
@@ -126,8 +119,7 @@ sub _untar {
     return (undef, $err || $out);
 }
 
-sub _untar_bad {
-    my ($self, $file) = @_;
+sub _untar_bad ($self, $file) {
     my $wantarray = wantarray;
     my ($exit, $out, $err);
     {
@@ -148,8 +140,7 @@ sub _untar_bad {
     return (undef, $err || $out);
 }
 
-sub _untar_module {
-    my ($self, $file) = @_;
+sub _untar_module ($self, $file) {
     my $wantarray = wantarray;
     no warnings 'once';
     local $Archive::Tar::WARN = 0;
@@ -179,8 +170,7 @@ sub _find_tarroot {
     $root;
 }
 
-sub _unzip {
-    my ($self, $file) = @_;
+sub _unzip ($self, $file) {
     my $wantarray = wantarray;
 
     my ($exit, $out, $err);
@@ -195,8 +185,7 @@ sub _unzip {
     return (undef, $err || $out);
 }
 
-sub _unzip_module {
-    my ($self, $file) = @_;
+sub _unzip_module ($self, $file) {
     my $wantarray = wantarray;
 
     no warnings 'once';

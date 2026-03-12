@@ -6,21 +6,18 @@ use experimental qw(lexical_subs signatures);
 use App::cpm::DistNotation;
 use JSON::PP ();
 
-sub new {
-    my ($class, $ctx, %option) = @_;
+sub new ($class, $ctx, %option) {
     my $uri = $option{uri} || "https://fastapi.metacpan.org/v1/download_url/";
     $uri =~ s{/*$}{/};
     bless { %option, uri => $uri }, $class;
 }
 
-sub _encode {
-    my $str = shift;
+sub _encode ($str) {
     $str =~ s/([^a-zA-Z0-9_\-.])/uc sprintf("%%%02x",ord($1))/eg;
     $str;
 }
 
-sub resolve {
-    my ($self, $ctx, $task) = @_;
+sub resolve ($self, $ctx, $task) {
     if ($self->{only_dev} and !$task->{dev}) {
         return { error => "skip, because MetaCPAN is configured to resolve dev releases only" };
     }

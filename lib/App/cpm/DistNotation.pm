@@ -10,17 +10,15 @@ my $AUTHOR = qr{[A-Z]{2}[\-A-Z0-9]*};
 our $CPAN_URI = qr{^(.*)/authors/id/($A1/$A2/$AUTHOR/.*)$}o;
 our $DISTFILE = qr{^(?:$A1/$A2/)?($AUTHOR)/(.*)$}o;
 
-sub new {
-    my $class = shift;
+sub new ($class) {
     bless {
         mirror => '',
         distfile => '',
     }, $class;
 }
 
-sub new_from_dist {
-    my $self = shift->new;
-    my $dist = shift;
+sub new_from_dist ($class, $dist) {
+    my $self = $class->new;
     if ($dist =~ $DISTFILE) {
         my $author = $1;
         my $rest = $2;
@@ -31,9 +29,8 @@ sub new_from_dist {
     return;
 }
 
-sub new_from_uri {
-    my $self = shift->new;
-    my $uri = shift;
+sub new_from_uri ($class, $uri) {
+    my $self = $class->new;
     if ($uri =~ $CPAN_URI) {
         $self->{mirror} = $1;
         $self->{distfile} = $2;
@@ -42,9 +39,8 @@ sub new_from_uri {
     return;
 }
 
-sub cpan_uri {
-    my $self = shift;
-    my $mirror = shift || $self->{mirror};
+sub cpan_uri ($self, $mirror = undef) {
+    $mirror ||= $self->{mirror};
     $mirror =~ s{/+$}{};
     sprintf "%s/authors/id/%s", $mirror, $self->{distfile};
 }
