@@ -47,7 +47,6 @@ sub new ($class, %option) {
 }
 
 sub fail ($self, $ctx) {
-
     my @fail_resolve = sort keys $self->{_fail_resolve}->%*;
     my @fail_install = sort keys $self->{_fail_install}->%*;
     my @not_installed = grep { !$self->{_fail_install}{$_->distfile} && !$_->installed } $self->distributions;
@@ -172,7 +171,6 @@ sub distribution ($self, $distfile) {
 }
 
 sub _calculate_tasks ($self, $ctx) {
-
     my @distributions
         = grep { !$self->{_fail_install}{$_->distfile} } $self->distributions;
 

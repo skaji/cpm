@@ -59,7 +59,6 @@ sub _find ($self, $package) {
 }
 
 sub detect ($self) {
-
     my %result;
     for my $distfile (sort keys %$self) {
         my $seen = App::cpm::CircularDependency::OrderedSet->new;
@@ -72,7 +71,6 @@ sub detect ($self) {
 }
 
 sub _detect ($self, $distfile, $seen) {
-
     for my $req ($self->{$distfile}->@*) {
         if ($seen->exists($req)) {
             return [$seen->values, $req];

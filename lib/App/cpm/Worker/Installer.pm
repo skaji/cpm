@@ -422,7 +422,6 @@ sub _configure ($self, $ctx, $cmd, $meta) {
 }
 
 sub static_install_configure ($self, $ctx, $meta) {
-
     my $builder = App::cpm::Builder::Static->new(meta => $meta);
     my @argv;
     if (my $install_base = $self->{local_lib} || $self->{implicit_install_base}) {
@@ -534,7 +533,6 @@ sub install ($self, $ctx, $task) {
 }
 
 sub install_prebuilt ($self, $ctx, $task) {
-
     my $install_base = $self->{local_lib} || $self->{implicit_install_base};
 
     $ctx->log("Copying prebuilt $task->{directory}/blib");
@@ -575,7 +573,6 @@ sub unpack ($self, $ctx, $file) {
 
 # XXX assume current dir is distribution dir
 sub extract_packages ($self, $ctx, $meta) {
-
     if (my $provides = $meta->{provides}) {
         my @out;
         for my $package (sort keys %$provides) {
@@ -617,7 +614,6 @@ sub mirror ($self, $ctx, $uri, $local) {
 }
 
 sub fetch_distribution ($self, $ctx, $uri, $distfile) {
-
     my $local = File::Spec->catfile($self->{work_dir}, File::Basename::basename($uri));
     $ctx->log("Fetching $uri");
     if (!$self->mirror($ctx, $uri, $local)) {
@@ -638,7 +634,6 @@ sub fetch_distribution ($self, $ctx, $uri, $distfile) {
 }
 
 sub save_meta ($self, $ctx, $meta, $distfile, $provides) {
-
     my $install_base = $self->{local_lib} || $self->{implicit_install_base};
     my $install_base_meta = $install_base ? File::Spec->catdir($install_base, "lib", "perl5") : $Config{sitelibexp};
 

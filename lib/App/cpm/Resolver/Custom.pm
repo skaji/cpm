@@ -6,7 +6,6 @@ use experimental qw(lexical_subs signatures);
 use App::cpm::DistNotation;
 
 sub new ($class, $ctx, %argv) {
-
     my $from = $argv{from};
     my $requirements = $argv{requirements};
     my $mirror = $argv{mirror} || 'https://cpan.metacpan.org/';
@@ -22,7 +21,6 @@ sub new ($class, $ctx, %argv) {
 }
 
 sub _load ($self) {
-
     my %resolve;
     for my $package (sort keys $self->{requirements}->%*) {
         my $options = $self->{requirements}{$package};

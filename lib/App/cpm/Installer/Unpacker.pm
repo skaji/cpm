@@ -45,7 +45,6 @@ sub describe ($self) {
 }
 
 sub _init_untar ($self) {
-
     my $tar = $self->{tar} = File::Which::which('gtar') || File::Which::which("tar");
     if ($tar) {
         my ($exit, $out, $err) = run3 [$tar, '--version'];
@@ -85,7 +84,6 @@ sub _init_untar ($self) {
 }
 
 sub _init_unzip ($self) {
-
     my $unzip = $self->{unzip} = File::Which::which("unzip");
     if ($unzip) {
         $self->{method}{unzip} = *_unzip;

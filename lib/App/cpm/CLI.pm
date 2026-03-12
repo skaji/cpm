@@ -415,7 +415,6 @@ sub _parse_builder_env ($class) {
 }
 
 sub install ($self, $ctx, $master, $worker, $num) {
-
     Darwin::InitObjC::maybe_init();
 
     my @task = $master->get_task($ctx);
@@ -457,7 +456,6 @@ sub cleanup ($self) {
 }
 
 sub initial_task ($self, $ctx, $master) {
-
     if (!$self->{argv}) {
         my ($requirement, $reinstall, $resolver) = $self->load_dependency_file($ctx);
         my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirement);
@@ -584,7 +582,6 @@ sub locate_dependency_file ($self) {
 }
 
 sub load_dependency_file ($self, $ctx) {
-
     my $cpmfile = do {
         my ($type, $path) = $self->{dependency_file}->@{qw(type path)};
         warn "Loading requirements from $path...\n";
@@ -637,7 +634,6 @@ sub load_dependency_file ($self, $ctx) {
 }
 
 sub generate_resolver ($self, $ctx, $initial) {
-
     my $cascade = App::cpm::Resolver::Cascade->new($ctx);
     $cascade->add($initial) if $initial;
     if ($self->{resolver}->@*) {

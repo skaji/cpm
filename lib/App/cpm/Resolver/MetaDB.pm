@@ -32,7 +32,6 @@ sub _uniq (@argv) {
 }
 
 sub resolve ($self, $ctx, $task) {
-
     if (defined $task->{version_range} and $task->{version_range} =~ /(?:<|!=|==)/) {
         my $uri = "$self->{uri}history/$task->{package}";
         my $res = $self->_get($ctx, $uri);

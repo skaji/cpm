@@ -8,7 +8,6 @@ sub new ($class, $ctx, %option) {
 }
 
 sub work ($self, $ctx, $task) {
-
     local $ctx->{logger}{context} = $task->{package};
     my $result = $self->{impl}->resolve($ctx, $task);
     if ($result and !$result->{error}) {
