@@ -265,8 +265,7 @@ sub _calculate_tasks ($self, $ctx) {
     }
 }
 
-sub _register_resolve_task {
-    my ($self, $ctx, @package) = @_;
+sub _register_resolve_task ($self, $ctx, @package) {
     my $ok = 1;
     for my $package (@package) {
         if ($self->{_fail_resolve}{$package->{package}}

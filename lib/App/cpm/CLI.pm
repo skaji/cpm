@@ -67,12 +67,10 @@ sub new ($class, %option) {
     }, $class;
 }
 
-sub parse_options {
-    my $self = shift;
-    local @ARGV = @_;
+sub parse_options ($self, @argv) {
+    local @ARGV = @argv;
     my ($mirror, @resolver, @feature);
-    my $with_option = sub {
-        my $n = shift;
+    my $with_option = sub ($n) {
         ("with-$n", \$self->{"with_$n"}, "without-$n", sub { $self->{"with_$n"} = 0 });
     };
     my @type  = qw(requires recommends suggests);
@@ -202,8 +200,7 @@ sub normalize_mirror ($self, $mirror) {
     "file://" . maybe_abs($mirror, $self->{cwd});
 }
 
-sub run {
-    my ($self, @argv) = @_;
+sub run ($self, @argv) {
     my $cmd = shift @argv or die "Need subcommand, try `cpm --help`\n";
     $cmd = "help"    if $cmd =~ /^(-h|--help)$/;
     $cmd = "version" if $cmd =~ /^(-V|--version)$/;
@@ -254,8 +251,7 @@ sub cmd_version ($self) {
     return 0;
 }
 
-sub cmd_install {
-    my $self = shift;
+sub cmd_install ($self) {
     die "Need arguments or cpm.yml/cpanfile/Build.PL/Makefile.PL\n" if !$self->{argv} && !$self->{dependency_file};
 
     local %ENV = %ENV;
@@ -387,8 +383,7 @@ sub cmd_install {
     }
 }
 
-sub _parse_builder_env {
-    my $class = shift;
+sub _parse_builder_env ($class) {
     my ($install_base, @eumm_argv, @mb_argv);
     if ($ENV{PERL_MM_OPT}) {
         my @argv = ExtUtils::Helpers::split_like_shell($ENV{PERL_MM_OPT});
@@ -700,8 +695,7 @@ sub generate_resolver ($self, $ctx, $initial) {
     $cascade;
 }
 
-sub _generate_resolver {
-    my ($self, $ctx, $klass, @argv) = @_;
+sub _generate_resolver ($self, $ctx, $klass, @argv) {
     if ($klass =~ /^metadb$/i) {
         my ($uri, $mirror);
         if (@argv > 1) {
