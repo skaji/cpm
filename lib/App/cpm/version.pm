@@ -22,11 +22,11 @@ sub satisfy ($self, $version_range) {
 # alpha->numify() is lossy at -e line 1.
 # 1.020300
 sub numify ($self, @args) {
-    local $SIG{__WARN__} = sub {};
+    local $SIG{__WARN__} = sub (@) {};
     $self->SUPER::numify(@args);
 }
 sub parse ($self, @args) {
-    local $SIG{__WARN__} = sub {};
+    local $SIG{__WARN__} = sub (@) {};
     $self->SUPER::parse(@args);
 }
 

@@ -71,7 +71,7 @@ sub parse_options ($self, @argv) {
     local @ARGV = @argv;
     my ($mirror, @resolver, @feature);
     my $with_option = sub ($n) {
-        ("with-$n", \$self->{"with_$n"}, "without-$n", sub { $self->{"with_$n"} = 0 });
+        ("with-$n", \$self->{"with_$n"}, "without-$n", sub (@) { $self->{"with_$n"} = 0 });
     };
     my @type  = qw(requires recommends suggests);
     my @phase = qw(configure build test runtime develop);
@@ -84,10 +84,10 @@ sub parse_options ($self, @argv) {
         "v|verbose" => \($self->{verbose}),
         "w|workers=i" => \($self->{workers}),
         "target-perl=s" => \my $target_perl,
-        "test!" => sub { $self->{notest} = $_[1] ? 0 : 1 },
-        "cpanfile=s" => sub { $self->{dependency_file} = { type => "cpanfile", path => $_[1] } },
-        "cpmfile=s" => sub { $self->{dependency_file} = { type => "cpmfile", path => $_[1] } },
-        "metafile=s" => sub { $self->{dependency_file} = { type => "metafile", path => $_[1] } },
+        "test!" => sub ($, $value, @) { $self->{notest} = $value ? 0 : 1 },
+        "cpanfile=s" => sub ($, $value, @) { $self->{dependency_file} = { type => "cpanfile", path => $value } },
+        "cpmfile=s" => sub ($, $value, @) { $self->{dependency_file} = { type => "cpmfile", path => $value } },
+        "metafile=s" => sub ($, $value, @) { $self->{dependency_file} = { type => "metafile", path => $value } },
         "snapshot=s" => \($self->{snapshot}),
         "sudo" => \($self->{sudo}),
         "r|resolver=s@" => \@resolver,
@@ -106,7 +106,7 @@ sub parse_options ($self, @argv) {
         "reinstall" => \($self->{reinstall}),
         "pp|pureperl|pureperl-only" => \($self->{pureperl_only}),
         "static-install!" => \($self->{static_install}),
-        "with-all" => sub { map { $self->{"with_$_"} = 1 } @type, @phase },
+        "with-all" => sub (@) { map { $self->{"with_$_"} = 1 } @type, @phase },
         (map $with_option->($_), @type),
         (map $with_option->($_), @phase),
         "feature=s@" => \@feature,
@@ -421,16 +421,13 @@ sub install ($self, $ctx, $master, $worker, $num) {
     my @task = $master->get_task($ctx);
     Parallel::Pipes::App->run(
         num => $num,
-        before_work => sub {
-            my $task = shift;
+        before_work => sub ($task, @) {
             $task->in_charge(1);
         },
-        work => sub {
-            my $task = shift;
+        work => sub ($task, @) {
             return $worker->work($ctx, $task);
         },
-        after_work => sub {
-            my $result = shift;
+        after_work => sub ($result, @) {
             $master->register_result($ctx, $result);
             @task = $master->get_task($ctx);
         },

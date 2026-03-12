@@ -10,19 +10,19 @@ use File::Path qw(mkpath);
 use HTTP::Tinyish;
 use CPAN::Mirror::Tiny;
 
-subtest metadb => sub {
+subtest metadb => sub () {
     my $r = cpm_install "-v", "--resolver", "metadb", "common::sense";
     is $r->exit, 0;
     like $r->err, qr/MetaDB/;
 };
 
-subtest metacpan => sub {
+subtest metacpan => sub () {
     my $r = cpm_install "-v", "--resolver", "metacpan", "common::sense";
     is $r->exit, 0;
     like $r->err, qr/MetaCPAN/;
 };
 
-subtest snapshot => sub {
+subtest snapshot => sub () {
     my $snapshot = Path::Tiny->tempfile;
     $snapshot->spew(<<'...');
 # carton snapshot format: version 1.0
@@ -226,13 +226,13 @@ DISTRIBUTIONS
     like $r->err, qr/Snapshot/;
 };
 
-subtest '02packages_http' => sub {
+subtest '02packages_http' => sub () {
     my $r = cpm_install "-v", "--resolver", "02packages,https://cpan.metacpan.org", "common::sense";
     is $r->exit, 0;
     like $r->err, qr/02Packages/;
 };
 
-subtest '02packages_file' => sub {
+subtest '02packages_file' => sub () {
     with_same_home {
         my $base = tempdir(CLEANUP => 1);
         my $cpan = CPAN::Mirror::Tiny->new(base => $base);
@@ -273,7 +273,7 @@ subtest '02packages_file' => sub {
     };
 };
 
-subtest '02packages_file_no_prefix' => sub {
+subtest '02packages_file_no_prefix' => sub () {
     my $base = tempdir(CLEANUP => 1);
     my $cpan = CPAN::Mirror::Tiny->new(base => $base);
     $cpan->inject('cpan:App::ChangeShebang@0.06');

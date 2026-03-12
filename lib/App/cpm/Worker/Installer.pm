@@ -367,7 +367,7 @@ sub configure ($self, $ctx, $task) {
             push @cmd, qw(--config installman1dir= --config installsiteman1dir= --config installman3dir= --config installsiteman3dir=) if $self->{need_noman_argv};
             push @cmd, '--pureperl-only' if $self->{pureperl_only};
             push @cmd, @{$self->{mb_argv}} if @{$self->{mb_argv}};
-            $self->_retry($ctx, sub {
+            $self->_retry($ctx, sub () {
                 $self->_configure($ctx, \@cmd, $meta);
                 -f 'Build';
             }) and ++$configure_ok and last;
@@ -382,7 +382,7 @@ sub configure ($self, $ctx, $task) {
             push @cmd, qw(INSTALLMAN1DIR=none INSTALLMAN3DIR=none) if $self->{need_noman_argv};
             push @cmd, 'PUREPERL_ONLY=1' if $self->{pureperl_only};
             push @cmd, @{$self->{eumm_argv}} if @{$self->{eumm_argv}};
-            $self->_retry($ctx, sub {
+            $self->_retry($ctx, sub () {
                 $self->_configure($ctx, \@cmd, $meta);
                 -f 'Makefile';
             }) and ++$configure_ok and last;
@@ -510,19 +510,19 @@ sub install ($self, $ctx, $task) {
     $ctx->log("Building " . ($self->{notest} ? "" : "and testing ") . "distribution");
     my $installed;
     if ($static_builder) {
-        $self->_build($ctx, sub { $static_builder->build }, $meta)
-        && ($self->{notest} || $self->_test($ctx, sub { $static_builder->build("test") }, $meta))
-        && $self->_install($ctx, sub { $static_builder->build("install") }, $meta)
+        $self->_build($ctx, sub () { $static_builder->build }, $meta)
+        && ($self->{notest} || $self->_test($ctx, sub () { $static_builder->build("test") }, $meta))
+        && $self->_install($ctx, sub () { $static_builder->build("install") }, $meta)
         && $installed++;
     } elsif (-f 'Build') {
-        $self->_retry($ctx, sub { $self->_build($ctx, [ $ctx->{perl}, "./Build" ], $meta)  })
-        && ($self->{notest} || $self->_retry($ctx, sub { $self->_test($ctx, [ $ctx->{perl}, "./Build", "test" ], $meta) }))
-        && $self->_retry($ctx, sub { $self->_install($ctx, [ $ctx->{perl}, "./Build", "install" ], $meta)  })
+        $self->_retry($ctx, sub () { $self->_build($ctx, [ $ctx->{perl}, "./Build" ], $meta)  })
+        && ($self->{notest} || $self->_retry($ctx, sub () { $self->_test($ctx, [ $ctx->{perl}, "./Build", "test" ], $meta) }))
+        && $self->_retry($ctx, sub () { $self->_install($ctx, [ $ctx->{perl}, "./Build", "install" ], $meta)  })
         && $installed++;
     } else {
-        $self->_retry($ctx, sub { $self->_build($ctx, [ $ctx->{make} ], $meta)  })
-        && ($self->{notest} || $self->_retry($ctx, sub { $self->_test($ctx, [ $ctx->{make}, "test" ], $meta) }))
-        && $self->_retry($ctx, sub { $self->_install($ctx, [ $ctx->{make}, "install" ], $meta) })
+        $self->_retry($ctx, sub () { $self->_build($ctx, [ $ctx->{make} ], $meta)  })
+        && ($self->{notest} || $self->_retry($ctx, sub () { $self->_test($ctx, [ $ctx->{make}, "test" ], $meta) }))
+        && $self->_retry($ctx, sub () { $self->_install($ctx, [ $ctx->{make}, "install" ], $meta) })
         && $installed++;
     }
 

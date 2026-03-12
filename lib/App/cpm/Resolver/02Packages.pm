@@ -30,7 +30,7 @@ sub new ($class, $ctx, %option) {
     }
 
     my $text_file = $path =~ /\.gz$/ ? $class->_gunzip($path) : App::cpm::Util::maybe_abs($path);
-    my $index = Proc::ForkSafe->wrap(sub {
+    my $index = Proc::ForkSafe->wrap(sub () {
         CPAN::02Packages::Search->new(file => $text_file);
     });
     bless { mirror => $mirror, path => $path, index => $index }, $class;

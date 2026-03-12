@@ -81,7 +81,7 @@ sub _init_untar ($self) {
     }
 
     return if $self->{_init_all};
-    $self->{method}{untar} = sub { die "There is no backend for untar" };
+    $self->{method}{untar} = sub ($, @) { die "There is no backend for untar" };
 }
 
 sub _init_unzip ($self) {
@@ -99,7 +99,7 @@ sub _init_unzip ($self) {
     }
 
     return if $self->{_init_all};
-    $self->{method}{unzip} = sub { die "There is no backend for unzip" };
+    $self->{method}{unzip} = sub ($, @) { die "There is no backend for unzip" };
 }
 
 sub _untar ($self, $file) {
@@ -188,7 +188,7 @@ sub _unzip_module ($self, $file) {
     my $wantarray = wantarray;
 
     no warnings 'once';
-    my $err = ''; local $Archive::Zip::ErrorHandler = sub { $err .= "@_" };
+    my $err = ''; local $Archive::Zip::ErrorHandler = sub (@argv) { $err .= "@argv" };
     my $zip = Archive::Zip->new;
     UNZIP: {
         my $status = $zip->read($file);

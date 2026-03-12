@@ -11,7 +11,7 @@ use version;
 
 plan skip_all => 'only for perl 5.18+' if $] < 5.018;
 
-subtest test1 => sub {
+subtest test1 => sub () {
     plan skip_all => 'only for perl 5.22+' if $] < 5.022;
     my $guard = tempd;
     path("cpanfile")->spew(qq{requires "Module::Build";\n});
@@ -21,7 +21,7 @@ subtest test1 => sub {
     note $r->err;
 };
 
-subtest test2 => sub {
+subtest test2 => sub () {
     my $guard = tempd;
     path("cpanfile")->spew(qq{requires 'HTTP::Tinyish';\n});
     my $r = cpm_install "--target-perl", "5.8.5";
@@ -30,7 +30,7 @@ subtest test2 => sub {
     note $r->err;
 };
 
-subtest test3 => sub {
+subtest test3 => sub () {
     my $guard = tempd;
     path("cpanfile")->spew(qq{requires 'HTTP::Tinyish';\n});
     my $r = cpm_install "--target-perl", "5.10.1";

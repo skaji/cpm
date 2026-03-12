@@ -24,9 +24,8 @@ my $store = tempdir CLEANUP => 1;
 my $unpacker = App::cpm::Installer::Unpacker->new(_init_all => 1);
 note explain $unpacker->describe;
 
-my $test = sub {
-    my $method = shift;
-    subtest $method => sub {
+my $test = sub ($method) {
+    subtest $method => sub () {
         my $guard = tempd;
         if ($method !~ /unzip/) {
             my ($root, $err) = $unpacker->$method("__bad__.tar.gz");

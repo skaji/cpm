@@ -23,13 +23,13 @@ on configure => sub {
 };
 ___
 
-subtest 'normal' => sub {
+subtest 'normal' => sub () {
     my $r = cpm_install '--cpanfile', $cpanfile;
     is $r->exit, 0;
     like $r->err, qr/All requirements are satisfied/;
 };
 
-subtest 'develop' => sub {
+subtest 'develop' => sub () {
     my $r = cpm_install '--with-develop', '--cpanfile', $cpanfile;
     is $r->exit, 0;
     unlike $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-ModuleBuild/;
@@ -40,7 +40,7 @@ subtest 'develop' => sub {
     unlike $r->err, qr/DONE install Devel-CheckBin/;
 };
 
-subtest 'recommends' => sub {
+subtest 'recommends' => sub () {
     my $r = cpm_install '--with-recommends', '--cpanfile', $cpanfile;
     is $r->exit, 0;
     like   $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-ModuleBuild/;
@@ -51,7 +51,7 @@ subtest 'recommends' => sub {
     unlike $r->err, qr/DONE install Devel-CheckBin/;
 };
 
-subtest 'suggests' => sub {
+subtest 'suggests' => sub () {
     my $r = cpm_install '--with-suggests', '--cpanfile', $cpanfile;
     is $r->exit, 0;
     unlike $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-ModuleBuild/;
@@ -62,7 +62,7 @@ subtest 'suggests' => sub {
     unlike $r->err, qr/DONE install Devel-CheckBin/;
 };
 
-subtest 'mix1' => sub {
+subtest 'mix1' => sub () {
     my $r = cpm_install '--with-configure', '--without-test', '--with-recommends', '--cpanfile', $cpanfile;
     is $r->exit, 0;
     unlike $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-ModuleBuild/;
@@ -73,7 +73,7 @@ subtest 'mix1' => sub {
     like   $r->err, qr/DONE install Devel-CheckBin/;
 };
 
-subtest 'mix2' => sub {
+subtest 'mix2' => sub () {
     my $r = cpm_install '--with-develop', '--with-recommends', '--with-suggests', '--cpanfile', $cpanfile;
     is $r->exit, 0;
     like   $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-ModuleBuild/;

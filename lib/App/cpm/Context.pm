@@ -37,7 +37,7 @@ sub run_command ($self, $cmd, $timeout = 0) {
         keep => 0,
         redirect => 1,
         timeout => $timeout,
-        stdout => sub { $self->log(@_) },
+        stdout => sub (@msg) { $self->log(@msg) },
     );
     my $res = $runner->run;
     if ($res->{timeout}) {
