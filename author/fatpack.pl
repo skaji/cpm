@@ -36,14 +36,6 @@ sub fatpack (@argv) {
     App::FatPacker::Simple->new->parse_options(@argv)->run
 }
 
-sub remove_version_xs () {
-    my $arch = $Config{archname};
-    my $file = "local/lib/perl5/$arch/version/vxs.pm";
-    my $dir  = "local/lib/perl5/$arch/auto/version";
-    unlink $file if -f $file;
-    Path::Tiny->new($dir)->remove_tree({ safe => 0 }) if -d $dir;
-}
-
 sub generate_index (@argv) {
     my $exit = system "perl-cpan-index-generate", @argv;
     $exit == 0 or die;
@@ -81,7 +73,7 @@ my $exclude = join ",", qw(
     Test::Simple
 );
 
-my $target = '5.8.1';
+my $target = 'v5.24';
 
 my ($git_describe, $git_url);
 if (my $version = $ENV{CPAN_RELEASE_VERSION}) {
@@ -107,15 +99,12 @@ ___
 my @resolver;
 if (-f "index.txt" && !$force && !$test && !$update_only) {
     @resolver = ("-r", "02packages,index.txt,https://cpan.metacpan.org/");
-} else {
-    @resolver = ("-r", 'Fixed,CPAN::Meta::Requirements@2.140');
 }
 
 warn "Resolver: @resolver\n";
 cpm "install", "--target-perl", $target, @resolver, "--metafile", "../META.json";
 cpm "install", "--target-perl", $target, @resolver, @extra;
 generate_index "local/lib/perl5", "--exclude", $exclude, "--output", "index.txt" if !$test;
-remove_version_xs;
 exit if $update_only;
 
 print STDERR "FatPacking...";

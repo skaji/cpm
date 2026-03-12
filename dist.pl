@@ -1,7 +1,7 @@
 my @prereq = (
     [ Prereqs => 'ConfigureRequires' ] => [
         'Module::Build::Tiny' => '0.051',
-        'perl' => '5.008001',
+        'perl' => 'v5.24',
     ],
     [ Prereqs => 'DevelopRequires' ] => [
         'Archive::Tar' => '0',
