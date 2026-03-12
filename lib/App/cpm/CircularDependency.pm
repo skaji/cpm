@@ -3,7 +3,7 @@ use v5.24;
 use warnings;
 use experimental qw(lexical_subs signatures);
 
-package App::cpm::CircularDependency::OrderedSet {
+package App::cpm::CircularDependency::_OrderedSet {
     sub new ($class) {
         bless { index => 0, hash => +{} }, $class;
     }
@@ -61,7 +61,7 @@ sub _find ($self, $package) {
 sub detect ($self) {
     my %result;
     for my $distfile (sort keys %$self) {
-        my $seen = App::cpm::CircularDependency::OrderedSet->new;
+        my $seen = App::cpm::CircularDependency::_OrderedSet->new;
         $seen->add($distfile);
         if (my $detected = $self->_detect($distfile, $seen)) {
             $result{$distfile} = $detected;
