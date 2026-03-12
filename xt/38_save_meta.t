@@ -25,7 +25,7 @@ with_same_home {
 
         if ($times == 1) {
             unlike $res->err, qr/prebuilt/;
-        } elsif ($times == 2 && $] >= 5.012) {
+        } elsif ($times == 2) {
             like $res->err, qr/prebuilt/;
         }
 
