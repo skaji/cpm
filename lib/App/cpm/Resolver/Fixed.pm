@@ -11,7 +11,7 @@ sub new ($class, $ctx, @argv) {
         my ($package, $fixed_version) = split /\@/, $argv;
         $package{$package} = $fixed_version;
     }
-    my $self = $class->SUPER::new;
+    my $self = $class->SUPER::new($ctx);
     $self->{_packages} = \%package;
     $self;
 }
