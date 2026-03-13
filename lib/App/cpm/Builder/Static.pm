@@ -1,6 +1,7 @@
 package App::cpm::Builder::Static;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use CPAN::Meta;
 use ExtUtils::Config 0.003;

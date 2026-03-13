@@ -4,7 +4,7 @@
       "Shoichi Kaji <skaji@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 6.036, CPAN::Meta::Converter version 2.150010",
+   "generated_by" : "Dist::Zilla version 6.037, CPAN::Meta::Converter version 2.150013",
    "license" : [
       "perl_5"
    ],
@@ -17,7 +17,7 @@
       "configure" : {
          "requires" : {
             "Module::Build::Tiny" : "0.051",
-            "perl" : "5.008001"
+            "perl" : "v5.24.0"
          }
       },
       "develop" : {
@@ -63,7 +63,7 @@
             "Proc::ForkSafe" : "0.001",
             "TAP::Harness::Env" : "0",
             "parent" : "0",
-            "perl" : "5.008001",
+            "perl" : "v5.24.0",
             "version" : "0.77"
          }
       }
@@ -71,7 +71,7 @@
    "provides" : {
       "App::cpm" : {
          "file" : "lib/App/cpm.pm",
-         "version" : "0.998003"
+         "version" : "v0.998.3"
       },
       "App::cpm::Builder::Static" : {
          "file" : "lib/App/cpm/Builder/Static.pm"
@@ -170,7 +170,7 @@
          "web" : "https://github.com/skaji/cpm"
       }
    },
-   "version" : "0.998003",
+   "version" : "v0.998.3",
    "x_contributors" : [
       "Andrew Rodland <andrew@cleverdomain.org>",
       "Dave Rolsky <autarch@urth.org>",
@@ -190,7 +190,7 @@
       "Will Sheppard <will.sheppard.uk@gmail.com>",
       "yoshikazusawa <883514+yoshikazusawa@users.noreply.github.com>"
    ],
-   "x_generated_by_perl" : "v5.42.0",
+   "x_generated_by_perl" : "v5.42.1",
    "x_serialization_backend" : "Cpanel::JSON::XS version 4.40",
    "x_spdx_expression" : "Artistic-1.0-Perl OR GPL-1.0-or-later",
    "x_static_install" : 1

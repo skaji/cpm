@@ -1,5 +1,6 @@
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 use Test::More;
 
 use lib "xt/lib";
@@ -7,7 +8,7 @@ use CLI;
 use Path::Tiny;
 use File::pushd 'tempd';
 
-subtest basic => sub {
+subtest basic => sub () {
     my $metafile = Path::Tiny->tempfile;
     $metafile->spew(<<'EOF');
 {
@@ -47,7 +48,7 @@ EOF
     like $r->err, qr/DONE install common-sense-/;
 };
 
-subtest dynamic_config => sub {
+subtest dynamic_config => sub () {
     my $guard = tempd;
     Path::Tiny->new('META.json')->spew(<<'EOF');
 {

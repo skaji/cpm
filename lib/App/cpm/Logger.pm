@@ -1,6 +1,7 @@
 package App::cpm::Logger;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use App::cpm::Util 'WIN32';
 use List::Util 'max';
@@ -21,13 +22,11 @@ my %color = (
 
 our $HAS_WIN32_COLOR;
 
-sub new {
-    my $class = shift;
-    bless {@_}, $class;
+sub new ($class, %args) {
+    bless \%args, $class;
 }
 
-sub log {
-    my ($self, %option) = @_;
+sub log ($self, %option) {
     my $type = $option{type} || "";
     my $message = $option{message};
     chomp $message;

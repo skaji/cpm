@@ -1,6 +1,7 @@
 package App::cpm::Master;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use App::cpm::CircularDependency;
 use App::cpm::Distribution;
@@ -11,8 +12,7 @@ use CPAN::DistnameInfo;
 use IO::Handle;
 use Module::Metadata;
 
-sub new {
-    my ($class, %option) = @_;
+sub new ($class, %option) {
     my $self = bless {
         %option,
         installed_distributions => 0,
@@ -46,11 +46,9 @@ sub new {
     $self;
 }
 
-sub fail {
-    my ($self, $ctx) = @_;
-
-    my @fail_resolve = sort keys %{$self->{_fail_resolve}};
-    my @fail_install = sort keys %{$self->{_fail_install}};
+sub fail ($self, $ctx) {
+    my @fail_resolve = sort keys $self->{_fail_resolve}->%*;
+    my @fail_install = sort keys $self->{_fail_install}->%*;
     my @not_installed = grep { !$self->{_fail_install}{$_->distfile} && !$_->installed } $self->distributions;
     return if !@fail_resolve && !@fail_install && !@not_installed;
 
@@ -62,9 +60,9 @@ sub fail {
     $detector->finalize;
 
     my $detected = $detector->detect;
-    for my $distfile (sort keys %$detected) {
+    for my $distfile (sort keys $detected->%*) {
         my $distvname = $self->distribution($distfile)->distvname;
-        my @circular = @{$detected->{$distfile}};
+        my @circular = $detected->{$distfile}->@*;
         my $msg = join " -> ", map { $self->distribution($_)->distvname } @circular;
         local $ctx->{logger}{context} = $distvname;
         $ctx->log("Detected circular dependencies $msg");
@@ -90,10 +88,9 @@ sub fail {
     { resolve => \@fail_resolve, install => [sort @fail_install_name, @not_installed_name] };
 }
 
-sub tasks { values %{shift->{tasks}} }
+sub tasks ($self) { values $self->{tasks}->%* }
 
-sub add_task {
-    my ($self, $ctx, %task) = @_;
+sub add_task ($self, $ctx, %task) {
     my $new = App::cpm::Task->new(%task);
     if (grep { $_->equals($new) } $self->tasks) {
         return 0;
@@ -103,8 +100,7 @@ sub add_task {
     }
 }
 
-sub get_task {
-    my ($self, $ctx) = @_;
+sub get_task ($self, $ctx) {
     if (my @task = grep { !$_->in_charge } $self->tasks) {
         return @task;
     }
@@ -116,12 +112,11 @@ sub get_task {
     return;
 }
 
-sub register_result {
-    my ($self, $ctx, $result) = @_;
+sub register_result ($self, $ctx, $result) {
     my ($task) = grep { $_->uid eq $result->{uid} } $self->tasks;
     die "Missing task that has uid=$result->{uid}" unless $task;
 
-    %{$task} = %{$result}; # XXX
+    $task->%* = $result->%*; # XXX
 
     my $logged = $self->info($task);
     my $method = "_register_@{[$task->{type}]}_result";
@@ -132,8 +127,7 @@ sub register_result {
     return 1;
 }
 
-sub info {
-    my ($self, $task) = @_;
+sub info ($self, $task) {
     my $type = $task->type;
     return if !$App::cpm::Logger::VERBOSE && $type ne "install";
     my $name = $task->distvname;
@@ -159,29 +153,24 @@ sub info {
     return 1;
 }
 
-sub _show_progress {
-    my $self = shift;
-    my $all = keys %{$self->{distributions}};
+sub _show_progress ($self) {
+    my $all = keys $self->{distributions}->%*;
     my $num = $self->installed_distributions;
     print STDERR "--- $num/$all ---";
     STDERR->flush; # this is needed at least with perl <= 5.24
 }
 
-sub remove_task {
-    my ($self, $ctx, $task) = @_;
+sub remove_task ($self, $ctx, $task) {
     delete $self->{tasks}{$task->uid};
 }
 
-sub distributions { values %{shift->{distributions}} }
+sub distributions ($self) { values $self->{distributions}->%* }
 
-sub distribution {
-    my ($self, $distfile) = @_;
+sub distribution ($self, $distfile) {
     $self->{distributions}{$distfile};
 }
 
-sub _calculate_tasks {
-    my ($self, $ctx) = @_;
-
+sub _calculate_tasks ($self, $ctx) {
     my @distributions
         = grep { !$self->{_fail_install}{$_->distfile} } $self->distributions;
 
@@ -217,7 +206,7 @@ sub _calculate_tasks {
                     distvname => $dist->distvname,
                 );
             } elsif (!defined $is_satisfied) {
-                my ($req) = grep { $_->{package} eq "perl" } @$dist_requirements;
+                my ($req) = grep { $_->{package} eq "perl" } $dist_requirements->@*;
                 my $msg = sprintf "%s requires perl %s, but you have only %s",
                     $dist->distvname, $req->{version_range}, $self->{target_perl} || $];
                 $ctx->log($msg);
@@ -256,7 +245,7 @@ sub _calculate_tasks {
                     provides => $dist->provides,
                 );
             } elsif (!defined $is_satisfied) {
-                my ($req) = grep { $_->{package} eq "perl" } @$dist_requirements;
+                my ($req) = grep { $_->{package} eq "perl" } $dist_requirements->@*;
                 my $msg = sprintf "%s requires perl %s, but you have only %s",
                     $dist->distvname, $req->{version_range}, $self->{target_perl} || $];
                 $ctx->log($msg);
@@ -274,8 +263,7 @@ sub _calculate_tasks {
     }
 }
 
-sub _register_resolve_task {
-    my ($self, $ctx, @package) = @_;
+sub _register_resolve_task ($self, $ctx, @package) {
     my $ok = 1;
     for my $package (@package) {
         if ($self->{_fail_resolve}{$package->{package}}
@@ -295,13 +283,11 @@ sub _register_resolve_task {
     return $ok;
 }
 
-sub is_satisfied_perl_version {
-    my ($self, $version_range) = @_;
+sub is_satisfied_perl_version ($self, $version_range) {
     App::cpm::version->parse($self->{target_perl} || $])->satisfy($version_range);
 }
 
-sub is_installed {
-    my ($self, $package, $version_range) = @_;
+sub is_installed ($self, $package, $version_range) {
     my $wantarray = wantarray;
     if (exists $self->{_is_installed}{$package}) {
         if ($self->{_is_installed}{$package}->satisfy($version_range)) {
@@ -324,13 +310,11 @@ sub is_installed {
     $wantarray ? ($ok, $current_version) : $ok;
 }
 
-sub _in_core_inc {
-    my ($self, $file) = @_;
-    !!grep { $file =~ /^\Q$_/ } @{$self->{core_inc}};
+sub _in_core_inc ($self, $file) {
+    !!grep { $file =~ /^\Q$_/ } $self->{core_inc}->@*;
 }
 
-sub is_core {
-    my ($self, $package, $version_range) = @_;
+sub is_core ($self, $package, $version_range) {
     my $target_perl = $self->{target_perl};
     if (exists $Module::CoreList::version{$target_perl}{$package}) {
         if (!exists $Module::CoreList::version{$]}{$package}) {
@@ -354,13 +338,12 @@ sub is_core {
 # 0:     not satisfied, need wait for satisfying requirements
 # 1:     satisfied, ready to install
 # undef: not satisfied because of perl version
-sub is_satisfied {
-    my ($self, $requirements) = @_;
+sub is_satisfied ($self, $requirements) {
     my $is_satisfied = 1;
     my @need_resolve;
     my @distributions = $self->distributions;
-    for my $req (@$requirements) {
-        my ($package, $version_range) = @{$req}{qw(package version_range)};
+    for my $req ($requirements->@*) {
+        my ($package, $version_range) = $req->@{qw(package version_range)};
         if ($package eq "perl") {
             $is_satisfied = undef if !$self->is_satisfied_perl_version($version_range);
             next;
@@ -378,12 +361,11 @@ sub is_satisfied {
     return ($is_satisfied, @need_resolve);
 }
 
-sub add_distribution {
-    my ($self, $distribution) = @_;
+sub add_distribution ($self, $distribution) {
     my $distfile = $distribution->distfile;
     if (my $already = $self->{distributions}{$distfile}) {
         if ($already->resolved) {
-            $already->overwrite_provide($_) for @{ $distribution->provides };
+            $already->overwrite_provide($_) for $distribution->provides->@*;
         }
         return 0;
     } else {
@@ -392,8 +374,7 @@ sub add_distribution {
     }
 }
 
-sub _register_resolve_result {
-    my ($self, $ctx, $task) = @_;
+sub _register_resolve_result ($self, $ctx, $task) {
     if (!$task->is_success) {
         $self->{_fail_resolve}{$task->{package}}++;
         return;
@@ -431,7 +412,7 @@ sub _register_resolve_result {
     }
 
     my $provides = $task->{provides};
-    if (!$provides or @$provides == 0) {
+    if (!$provides or $provides->@* == 0) {
         my $version = App::cpm::version->parse($task->{version}) || 0;
         $provides = [{package => $task->{package}, version => $version}];
     }
@@ -445,8 +426,7 @@ sub _register_resolve_result {
     $self->add_distribution($distribution);
 }
 
-sub _register_fetch_result {
-    my ($self, $ctx, $task) = @_;
+sub _register_fetch_result ($self, $ctx, $task) {
     if (!$task->is_success) {
         $self->{_fail_install}{$task->distfile}++;
         return;
@@ -458,33 +438,31 @@ sub _register_fetch_result {
 
     if ($task->{prebuilt}) {
         $distribution->configured(1);
-        $distribution->requirements($_ => $task->{requirements}{$_}) for keys %{$task->{requirements}};
+        $distribution->requirements($_ => $task->{requirements}{$_}) for keys $task->{requirements}->%*;
         $distribution->prebuilt(1);
     } else {
         $distribution->fetched(1);
-        $distribution->requirements($_ => $task->{requirements}{$_}) for keys %{$task->{requirements}};
+        $distribution->requirements($_ => $task->{requirements}{$_}) for keys $task->{requirements}->%*;
     }
     local $ctx->{logger}{context} = $distribution->distvname;
-    my $msg = join ", ", map { sprintf "%s (%s)", $_->{package}, $_->{version} || 0 } @{$distribution->provides};
+    my $msg = join ", ", map { sprintf "%s (%s)", $_->{package}, $_->{version} || 0 } $distribution->provides->@*;
     $ctx->log("Distribution provides: $msg");
     return 1;
 }
 
-sub _register_configure_result {
-    my ($self, $ctx, $task) = @_;
+sub _register_configure_result ($self, $ctx, $task) {
     if (!$task->is_success) {
         $self->{_fail_install}{$task->distfile}++;
         return;
     }
     my $distribution = $self->distribution($task->distfile);
     $distribution->configured(1);
-    $distribution->requirements($_ => $task->{requirements}{$_}) for keys %{$task->{requirements}};
+    $distribution->requirements($_ => $task->{requirements}{$_}) for keys $task->{requirements}->%*;
     $distribution->static_builder($task->{static_builder});
     return 1;
 }
 
-sub _register_install_result {
-    my ($self, $ctx, $task) = @_;
+sub _register_install_result ($self, $ctx, $task) {
     if (!$task->is_success) {
         $self->{_fail_install}{$task->distfile}++;
         return;
@@ -495,8 +473,6 @@ sub _register_install_result {
     return 1;
 }
 
-sub installed_distributions {
-    shift->{installed_distributions};
-}
+sub installed_distributions ($self) { $self->{installed_distributions} }
 
 1;

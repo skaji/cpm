@@ -1,12 +1,13 @@
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 use Test::More;
 
 use lib "xt/lib";
 use CLI;
 use Path::Tiny;
 
-subtest basic => sub {
+subtest basic => sub () {
     my $cpmfile = Path::Tiny->tempfile;
     $cpmfile->spew(<<'EOF');
 prereqs:
@@ -30,7 +31,7 @@ EOF
     like $r->err, qr/DONE install common-sense-3.75/;
 };
 
-subtest git => sub {
+subtest git => sub () {
     my $cpmfile = Path::Tiny->tempfile;
     $cpmfile->spew(<<'___');
 prereqs:
@@ -69,7 +70,7 @@ ___
     };
 };
 
-subtest dist_url => sub {
+subtest dist_url => sub () {
     my $cpmfile = Path::Tiny->tempfile;
     $cpmfile->spew(<<'___');
 prereqs:

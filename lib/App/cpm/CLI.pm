@@ -1,7 +1,7 @@
 package App::cpm::CLI;
-use 5.008001;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use App::cpm::Context;
 use App::cpm::DistNotation;
@@ -33,8 +33,7 @@ use Module::cpmfile;
 use Parallel::Pipes::App;
 use Pod::Text ();
 
-sub new {
-    my ($class, %option) = @_;
+sub new ($class, %option) {
     my $prebuilt = exists $ENV{PERL_CPM_PREBUILT} && !$ENV{PERL_CPM_PREBUILT} ? 0 : 1;
     bless {
         argv => undef,
@@ -60,7 +59,7 @@ sub new {
         with_develop => 0,
         feature => [],
         notest => 1,
-        prebuilt => $] >= 5.012 && $prebuilt,
+        prebuilt => $prebuilt,
         pureperl_only => 0,
         static_install => 1,
         default_resolvers => 1,
@@ -68,13 +67,11 @@ sub new {
     }, $class;
 }
 
-sub parse_options {
-    my $self = shift;
-    local @ARGV = @_;
+sub parse_options ($self, @argv) {
+    local @ARGV = @argv;
     my ($mirror, @resolver, @feature);
-    my $with_option = sub {
-        my $n = shift;
-        ("with-$n", \$self->{"with_$n"}, "without-$n", sub { $self->{"with_$n"} = 0 });
+    my $with_option = sub ($n) {
+        ("with-$n", \$self->{"with_$n"}, "without-$n", sub (@) { $self->{"with_$n"} = 0 });
     };
     my @type  = qw(requires recommends suggests);
     my @phase = qw(configure build test runtime develop);
@@ -87,10 +84,10 @@ sub parse_options {
         "v|verbose" => \($self->{verbose}),
         "w|workers=i" => \($self->{workers}),
         "target-perl=s" => \my $target_perl,
-        "test!" => sub { $self->{notest} = $_[1] ? 0 : 1 },
-        "cpanfile=s" => sub { $self->{dependency_file} = { type => "cpanfile", path => $_[1] } },
-        "cpmfile=s" => sub { $self->{dependency_file} = { type => "cpmfile", path => $_[1] } },
-        "metafile=s" => sub { $self->{dependency_file} = { type => "metafile", path => $_[1] } },
+        "test!" => sub ($, $value, @) { $self->{notest} = $value ? 0 : 1 },
+        "cpanfile=s" => sub ($, $value, @) { $self->{dependency_file} = { type => "cpanfile", path => $value } },
+        "cpmfile=s" => sub ($, $value, @) { $self->{dependency_file} = { type => "cpmfile", path => $value } },
+        "metafile=s" => sub ($, $value, @) { $self->{dependency_file} = { type => "metafile", path => $value } },
         "snapshot=s" => \($self->{snapshot}),
         "sudo" => \($self->{sudo}),
         "r|resolver=s@" => \@resolver,
@@ -109,7 +106,7 @@ sub parse_options {
         "reinstall" => \($self->{reinstall}),
         "pp|pureperl|pureperl-only" => \($self->{pureperl_only}),
         "static-install!" => \($self->{static_install}),
-        "with-all" => sub { map { $self->{"with_$_"} = 1 } @type, @phase },
+        "with-all" => sub (@) { map { $self->{"with_$_"} = 1 } @type, @phase },
         (map $with_option->($_), @type),
         (map $with_option->($_), @phase),
         "feature=s@" => \@feature,
@@ -125,7 +122,6 @@ sub parse_options {
     $self->{show_progress} = 1 if !WIN32 && !defined $self->{show_progress} && -t STDOUT;
     if ($target_perl) {
         die "--target-perl option conflicts with --global option\n" if $self->{global};
-        die "--target-perl option can be used only if perl version >= 5.18.0\n" if $] < 5.018;
         # 5.8 is interpreted as 5.800, fix it
         $target_perl = "v$target_perl" if $target_perl =~ /^5\.[1-9]\d*$/;
         $target_perl = sprintf '%0.6f', App::cpm::version->parse($target_perl)->numify;
@@ -139,7 +135,7 @@ sub parse_options {
         warn "Warning: --sudo is deprecated and will be removed in cpm version 1.\n";
         !system "sudo", $^X, "-e1" or exit 1;
     }
-    if ($self->{pureperl_only} or $self->{sudo} or !$self->{notest} or $self->{man_pages} or $] < 5.012) {
+    if ($self->{pureperl_only} or $self->{sudo} or !$self->{notest} or $self->{man_pages}) {
         $self->{prebuilt} = 0;
     }
 
@@ -150,7 +146,7 @@ sub parse_options {
     if (@ARGV) {
         if ($ARGV[0] eq "-") {
             my $argv = $self->read_argv_from_stdin;
-            return -1 if @$argv == 0;
+            return -1 if $argv->@* == 0;
             $self->{argv} = $argv;
         } else {
             $self->{argv} = \@ARGV;
@@ -161,8 +157,7 @@ sub parse_options {
     return 1;
 }
 
-sub read_argv_from_stdin {
-    my $self = shift;
+sub read_argv_from_stdin ($self) {
     my @argv;
     while (my $line = <STDIN>) {
         next if $line !~ /\S/;
@@ -174,16 +169,14 @@ sub read_argv_from_stdin {
     return \@argv;
 }
 
-sub _core_inc {
-    my $self = shift;
+sub _core_inc ($self) {
     [
         (!$self->{exclude_vendor} ? grep {$_} @Config{qw(vendorarch vendorlibexp)} : ()),
         @Config{qw(archlibexp privlibexp)},
     ];
 }
 
-sub _search_inc {
-    my $self = shift;
+sub _search_inc ($self) {
     return \@INC if $self->{global};
 
     my $base = $self->{local_lib};
@@ -194,12 +187,11 @@ sub _search_inc {
     if ($self->{target_perl}) {
         return [@local_lib];
     } else {
-        return [@local_lib, @{$self->_core_inc}];
+        return [@local_lib, $self->_core_inc->@*];
     }
 }
 
-sub normalize_mirror {
-    my ($self, $mirror) = @_;
+sub normalize_mirror ($self, $mirror) {
     $mirror =~ s{/*$}{/};
     return $mirror if $mirror =~ m{^https?://};
     $mirror =~ s{^file://}{};
@@ -207,8 +199,7 @@ sub normalize_mirror {
     "file://" . maybe_abs($mirror, $self->{cwd});
 }
 
-sub run {
-    my ($self, @argv) = @_;
+sub run ($self, @argv) {
     my $cmd = shift @argv or die "Need subcommand, try `cpm --help`\n";
     $cmd = "help"    if $cmd =~ /^(-h|--help)$/;
     $cmd = "version" if $cmd =~ /^(-V|--version)$/;
@@ -224,7 +215,7 @@ sub run {
     }
 }
 
-sub cmd_help {
+sub cmd_help ($self) {
     open my $fh, ">", \my $out;
     Pod::Text->new->parse_from_file($0, $fh);
     $out =~ s/^[ ]{6}/    /mg;
@@ -232,7 +223,7 @@ sub cmd_help {
     return 0;
 }
 
-sub cmd_version {
+sub cmd_version ($self) {
     print "cpm $App::cpm::VERSION ($0)\n";
     if ($App::cpm::GIT_DESCRIBE) {
         print "This is a self-contained version, $App::cpm::GIT_DESCRIBE ($App::cpm::GIT_URL)\n";
@@ -259,8 +250,7 @@ sub cmd_version {
     return 0;
 }
 
-sub cmd_install {
-    my $self = shift;
+sub cmd_install ($self) {
     die "Need arguments or cpm.yml/cpanfile/Build.PL/Makefile.PL\n" if !$self->{argv} && !$self->{dependency_file};
 
     local %ENV = %ENV;
@@ -281,16 +271,16 @@ sub cmd_install {
     $ctx->log("You have make $ctx->{make}") if $ctx->{make};
     $ctx->log("You have $ctx->{http_description}");
     my $unpacker_desc = $ctx->{unpacker}->describe;
-    for my $key (sort keys %$unpacker_desc) {
+    for my $key (sort keys $unpacker_desc->%*) {
         $ctx->log("You have $key $unpacker_desc->{$key}");
     }
 
     my ($implicit_install_base, $eumm_argv, $mb_argv) = $self->_parse_builder_env;
-    if ($implicit_install_base or @$eumm_argv or @$mb_argv) {
+    if ($implicit_install_base or $eumm_argv->@* or $mb_argv->@*) {
         $ctx->log("Loading configuration from PERL_MM_OPT and PERL_MB_OPT:");
         $ctx->log("  install_base: $implicit_install_base") if $implicit_install_base;
-        $ctx->log("  ExtUtils::MakeMaker options: @$eumm_argv") if @$eumm_argv;
-        $ctx->log("  Module::Build options: @$mb_argv") if @$mb_argv;
+        $ctx->log("  ExtUtils::MakeMaker options: $eumm_argv->@*") if $eumm_argv->@*;
+        $ctx->log("  Module::Build options: $mb_argv->@*") if $mb_argv->@*;
     }
 
     $ctx->log("--", `$ctx->{perl} -V`, "--");
@@ -329,48 +319,14 @@ sub cmd_install {
         mb_argv => $mb_argv,
     );
 
-    {
-        last if $] >= 5.018;
-        my $requirement = App::cpm::Requirement->new('ExtUtils::MakeMaker' => '6.64', 'ExtUtils::ParseXS' => '3.16');
-        for my $name ('ExtUtils::MakeMaker', 'ExtUtils::ParseXS') {
-            if (my ($i) = grep { $packages->[$_]{package} eq $name } 0..$#{$packages}) {
-                $requirement->add($name, $packages->[$i]{version_range})
-                    or die sprintf "We have to install newer $name first: $@\n";
-                splice @$packages, $i, 1;
-            }
-        }
-        my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirement->as_array);
-        last if $is_satisfied;
-        $master->add_task($ctx, type => "resolve", %$_) for @need_resolve;
-
-        $self->install($ctx, $master, $worker, 1);
-        if (my $fail = $master->fail($ctx)) {
-            local $App::cpm::Logger::VERBOSE = 0;
-            for my $type (qw(install resolve)) {
-                App::cpm::Logger->log(result => "FAIL", type => $type, message => $_) for @{$fail->{$type}};
-            }
-            print STDERR "\r" if $self->{show_progress};
-            warn sprintf "%d distribution%s installed.\n",
-                $master->installed_distributions, $master->installed_distributions > 1 ? "s" : "";
-            if ($self->{show_build_log_on_failure}) {
-                File::Copy::copy($ctx->{logger}->file, \*STDERR);
-            } else {
-                warn "See $self->{home}/build.log for details.\n";
-                warn "You may want to execute cpm with --show-build-log-on-failure,\n";
-                warn "so that the build.log is automatically dumped on failure.\n";
-            }
-            return 1;
-        }
-    }
-
-    $master->add_task($ctx, type => "resolve", %$_) for @$packages;
-    $master->add_distribution($_) for @$dists;
+    $master->add_task($ctx, type => "resolve", $_->%*) for $packages->@*;
+    $master->add_distribution($_) for $dists->@*;
     $self->install($ctx, $master, $worker, $self->{workers});
     my $fail = $master->fail($ctx);
     if ($fail) {
         local $App::cpm::Logger::VERBOSE = 0;
         for my $type (qw(install resolve)) {
-            App::cpm::Logger->log(result => "FAIL", type => $type, message => $_) for @{$fail->{$type}};
+            App::cpm::Logger->log(result => "FAIL", type => $type, message => $_) for $fail->{$type}->@*;
         }
     }
     print STDERR "\r" if $self->{show_progress};
@@ -392,8 +348,7 @@ sub cmd_install {
     }
 }
 
-sub _parse_builder_env {
-    my $class = shift;
+sub _parse_builder_env ($class) {
     my ($install_base, @eumm_argv, @mb_argv);
     if ($ENV{PERL_MM_OPT}) {
         my @argv = ExtUtils::Helpers::split_like_shell($ENV{PERL_MM_OPT});
@@ -424,24 +379,19 @@ sub _parse_builder_env {
     ($install_base, \@eumm_argv, \@mb_argv);
 }
 
-sub install {
-    my ($self, $ctx, $master, $worker, $num) = @_;
-
+sub install ($self, $ctx, $master, $worker, $num) {
     Darwin::InitObjC::maybe_init();
 
     my @task = $master->get_task($ctx);
     Parallel::Pipes::App->run(
         num => $num,
-        before_work => sub {
-            my $task = shift;
+        before_work => sub ($task, @) {
             $task->in_charge(1);
         },
-        work => sub {
-            my $task = shift;
+        work => sub ($task, @) {
             return $worker->work($ctx, $task);
         },
-        after_work => sub {
-            my $result = shift;
+        after_work => sub ($result, @) {
             $master->register_result($ctx, $result);
             @task = $master->get_task($ctx);
         },
@@ -449,8 +399,7 @@ sub install {
     );
 }
 
-sub cleanup {
-    my $self = shift;
+sub cleanup ($self) {
     my $week = time - 7*24*60*60;
     my @entry = glob "$self->{home}/build.log.*";
     if (opendir my $dh, "$self->{home}/work") {
@@ -471,28 +420,26 @@ sub cleanup {
     }
 }
 
-sub initial_task {
-    my ($self, $ctx, $master) = @_;
-
+sub initial_task ($self, $ctx, $master) {
     if (!$self->{argv}) {
         my ($requirement, $reinstall, $resolver) = $self->load_dependency_file($ctx);
         my ($is_satisfied, @need_resolve) = $master->is_satisfied($requirement);
-        if (!@$reinstall and $is_satisfied) {
+        if (!$reinstall->@* and $is_satisfied) {
             warn "All requirements are satisfied.\n";
             return;
         } elsif (!defined $is_satisfied) {
-            my ($req) = grep { $_->{package} eq "perl" } @$requirement;
+            my ($req) = grep { $_->{package} eq "perl" } $requirement->@*;
             die sprintf "%s requires perl %s, but you have only %s\n",
                 $self->{dependency_file}{path}, $req->{version_range}, $self->{target_perl} || $];
         }
-        my @package = (@need_resolve, @$reinstall);
+        my @package = (@need_resolve, $reinstall->@*);
         return (\@package, [], $resolver);
     }
 
     $self->{mirror} ||= $self->{_default_mirror};
 
     my (@package, @dist);
-    for (@{$self->{argv}}) {
+    for ($self->{argv}->@*) {
         my $arg = $_; # copy
         my ($package, $dist);
         if (-d $arg || -f $arg || $arg =~ s{^file://}{}) {
@@ -545,8 +492,7 @@ sub initial_task {
     return (\@package, \@dist, undef);
 }
 
-sub locate_dependency_file {
-    my $self = shift;
+sub locate_dependency_file ($self) {
     if (-f "cpm.yml") {
         return { type => "cpmfile", path => "cpm.yml" };
     }
@@ -600,11 +546,9 @@ sub locate_dependency_file {
     return;
 }
 
-sub load_dependency_file {
-    my ($self, $ctx) = @_;
-
+sub load_dependency_file ($self, $ctx) {
     my $cpmfile = do {
-        my ($type, $path) = @{ $self->{dependency_file} }{qw(type path)};
+        my ($type, $path) = $self->{dependency_file}->@{qw(type path)};
         warn "Loading requirements from $path...\n";
         if ($type eq "cpmfile") {
             Module::cpmfile->load($path);
@@ -618,7 +562,7 @@ sub load_dependency_file {
     };
     if (!$self->{mirror}) {
         my $mirrors = $cpmfile->{_mirrors} || [];
-        if (@$mirrors) {
+        if ($mirrors->@*) {
             $self->{mirror} = $self->normalize_mirror($mirrors->[0]);
         } else {
             $self->{mirror} = $self->{_default_mirror};
@@ -629,7 +573,7 @@ sub load_dependency_file {
     my $reqs = $cpmfile->effective_requirements($self->{feature}, \@phase, \@type);
 
     my (@package, @reinstall);
-    for my $package (sort keys %$reqs) {
+    for my $package (sort keys $reqs->%*) {
         my $options = $reqs->{$package};
         my $req = {
             package => $package,
@@ -654,13 +598,11 @@ sub load_dependency_file {
     return (\@package, \@reinstall, $resolver->effective ? $resolver : undef);
 }
 
-sub generate_resolver {
-    my ($self, $ctx, $initial) = @_;
-
+sub generate_resolver ($self, $ctx, $initial) {
     my $cascade = App::cpm::Resolver::Cascade->new($ctx);
     $cascade->add($initial) if $initial;
-    if (@{$self->{resolver}}) {
-        for my $r (@{$self->{resolver}}) {
+    if ($self->{resolver}->@*) {
+        for my $r ($self->{resolver}->@*) {
             my ($klass, @argv) = split /,/, $r;
             my $resolver = $self->_generate_resolver($ctx, $klass, @argv);
             $cascade->add($resolver);
@@ -711,8 +653,7 @@ sub generate_resolver {
     $cascade;
 }
 
-sub _generate_resolver {
-    my ($self, $ctx, $klass, @argv) = @_;
+sub _generate_resolver ($self, $ctx, $klass, @argv) {
     if ($klass =~ /^metadb$/i) {
         my ($uri, $mirror);
         if (@argv > 1) {

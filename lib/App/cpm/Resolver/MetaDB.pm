@@ -1,13 +1,13 @@
 package App::cpm::Resolver::MetaDB;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use App::cpm::DistNotation;
 use App::cpm::version;
 use CPAN::Meta::YAML;
 
-sub new {
-    my ($class, $ctx, %option) = @_;
+sub new ($class, $ctx, %option) {
     my $uri = $option{uri} || "https://cpanmetadb.plackperl.org/v1.0/";
     my $mirror = $option{mirror} || "https://cpan.metacpan.org/";
     s{/*$}{/} for $uri, $mirror;
@@ -18,8 +18,7 @@ sub new {
     }, $class;
 }
 
-sub _get {
-    my ($self, $ctx, $uri) = @_;
+sub _get ($self, $ctx, $uri) {
     my $res;
     for (1..2) {
         $res = $ctx->{http}->get($uri);
@@ -28,13 +27,11 @@ sub _get {
     $res;
 }
 
-sub _uniq {
-    my %x; grep { !$x{$_ || ""}++ } @_;
+sub _uniq (@argv) {
+    my %x; grep { !$x{$_ || ""}++ } @argv;
 }
 
-sub resolve {
-    my ($self, $ctx, $task) = @_;
-
+sub resolve ($self, $ctx, $task) {
     if (defined $task->{version_range} and $task->{version_range} =~ /(?:<|!=|==)/) {
         my $uri = "$self->{uri}history/$task->{package}";
         my $res = $self->_get($ctx, $uri);
@@ -95,7 +92,7 @@ sub resolve {
             my $version = $meta->{provides}{$_};
             $version = undef if $version eq "undef";
             +{ package => $package, version => $version };
-        } sort keys %{$meta->{provides}};
+        } sort keys $meta->{provides}->%*;
 
         my $dist = App::cpm::DistNotation->new_from_dist($meta->{distfile});
         return {

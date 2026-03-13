@@ -1,6 +1,7 @@
 package App::cpm::Resolver::02Packages;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use App::cpm::DistNotation;
 use App::cpm::Util;
@@ -14,8 +15,7 @@ use File::Spec;
 use File::Temp ();
 use Proc::ForkSafe;
 
-sub new {
-    my ($class, $ctx, %option) = @_;
+sub new ($class, $ctx, %option) {
     my $cache_dir_base = $option{cache} or die "cache option is required\n";
     my $mirror = $option{mirror} or die "mirror option is required\n";
     $mirror =~ s{/*$}{/};
@@ -30,14 +30,13 @@ sub new {
     }
 
     my $text_file = $path =~ /\.gz$/ ? $class->_gunzip($path) : App::cpm::Util::maybe_abs($path);
-    my $index = Proc::ForkSafe->wrap(sub {
+    my $index = Proc::ForkSafe->wrap(sub () {
         CPAN::02Packages::Search->new(file => $text_file);
     });
     bless { mirror => $mirror, path => $path, index => $index }, $class;
 }
 
-sub _cache_dir {
-    my ($class, $mirror, $base) = @_;
+sub _cache_dir ($class, $mirror, $base) {
     if ($mirror !~ m{^https?://}) {
         $mirror =~ s{^file://}{};
         $mirror = Cwd::abs_path($mirror);
@@ -50,16 +49,14 @@ sub _cache_dir {
     return $dir;
 }
 
-sub _fetch {
-    my ($class, $ctx, $path, $cache_dir) = @_;
+sub _fetch ($class, $ctx, $path, $cache_dir) {
     my $dest = File::Spec->catfile($cache_dir, File::Basename::basename($path));
     my $res = $ctx->{http}->mirror($path => $dest);
     die "$res->{status} $res->{reason}, $path\n" if !$res->{success};
     return $dest;
 }
 
-sub _gunzip {
-    my ($class, $path) = @_;
+sub _gunzip ($class, $path) {
     my ($fh, $dest) = File::Temp::tempfile("perl-cpm-XXXXX",
         UNLINK => 1, SUFFIX => ".txt", EXLOCK => 0, TMPDIR => 1);
     App::cpm::Util::gunzip $path, $fh;
@@ -67,8 +64,7 @@ sub _gunzip {
     $dest;
 }
 
-sub resolve {
-    my ($self, $ctx, $task) = @_;
+sub resolve ($self, $ctx, $task) {
     my $res = $self->{index}->call(search => $task->{package});
     if (!$res) {
         return { error => "not found, @{[$self->{path}]}" };

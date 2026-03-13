@@ -15,29 +15,17 @@ jobs:
     strategy:
       matrix:
         perl-version:
-          - '5.8-buster'
-          - '5.10-buster'
-          - '5.16-buster'
-          - '5.18-buster'
+          - '5.24'
           - 'latest'
-          - 'threaded'
-    container:
-      image: perl:${{ matrix.perl-version }}
     steps:
-      - uses: actions/checkout@v5
-      - name: change /etc/apt/sources.list
-        run: perl -i -pe 's/(deb|security).debian.org/archive.debian.org/' /etc/apt/sources.list
-        if: endsWith(matrix.perl-version, '-buster')
+      - uses: actions/checkout@v6
       - name: Install deb packages
-        run: apt-get -qq update && apt-get -qq install -y unzip libdb-dev
-      - name: perl -V
-        run: perl -V
-      - name: Install Dependencies
-        run: curl -fsSL --compressed https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g --with-develop --with-recommends --show-build-log-on-failure
-        if: matrix.perl-version != '5.8-buster'
+        run: sudo apt-get -qq update && sudo apt-get -qq install -y unzip libdb-dev
+      - uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: ${{ matrix.perl-version }}
       - name: Install Dependencies
         run: curl -fsSL --compressed https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g --with-develop --with-recommends --show-build-log-on-failure --resolver Fixed,CPAN::Meta::Requirements@2.140
-        if: matrix.perl-version == '5.8-buster'
       - name: Run Tests
         run: prove -lr --timer t xt
 
@@ -54,7 +42,7 @@ jobs:
             prove: /opt/homebrew/bin/prove
             sudo: ''
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: perl -V
         run: ${{ matrix.perl }} -V
       - name: Install Dependencies
@@ -72,7 +60,7 @@ jobs:
           - '1'
           - '2'
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: perl -V
         run: perl -V
       - name: Install Dependencies

@@ -1,6 +1,7 @@
 package App::cpm::Worker;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use App::cpm::Util;
 use App::cpm::Worker::Installer;
@@ -10,8 +11,7 @@ use File::Path ();
 use File::Spec;
 use Time::HiRes qw(gettimeofday tv_interval);
 
-sub new {
-    my ($class, $ctx, %option) = @_;
+sub new ($class, $ctx, %option) {
     my $home = $option{home};
     my $prebuilt_base;
     if ($option{prebuilt}) {
@@ -32,14 +32,12 @@ sub new {
     bless { %option, installer => $installer, resolver => $resolver }, $class;
 }
 
-sub prebuilt_base {
-    my ($class, $home) = @_;
+sub prebuilt_base ($class, $home) {
     my $identity = App::cpm::Util::perl_identity;
     File::Spec->catdir($home, "builds", $identity);
 }
 
-sub work {
-    my ($self, $ctx, $task) = @_;
+sub work ($self, $ctx, $task) {
     my $type = $task->{type} || "(undef)";
     my $result;
     my $start = $self->{verbose} ? [gettimeofday] : undef;
@@ -54,7 +52,7 @@ sub work {
     }
     my $elapsed = $start ? tv_interval($start) : undef;
     $result ||= { ok => 0 };
-    $task->merge({%$result, pid => $$, elapsed => $elapsed});
+    $task->merge({$result->%*, pid => $$, elapsed => $elapsed});
     return $task;
 }
 

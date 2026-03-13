@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use Capture::Tiny qw(capture);
 use Config;
@@ -19,11 +20,7 @@ for my $case (@case) {
     my $install_base = $case->{install_base};
 
     my ($stdout, $stderr, $exit) = capture {
-        my @resolver;
-        if ($] < 5.010) {
-            @resolver = ("--resolver", 'Fixed,CPAN::Meta::Requirements@2.140');
-        }
-        system $^X, "-Ilib", "script/cpm", "install", @resolver, "--home", $home, @{$case->{options}},
+        system $^X, "-Ilib", "script/cpm", "install", "--home", $home, $case->{options}->@*,
             "common::sense\@3.75", # ExtUtils::MakeMaker
             "CPAN::Test::Dummy::Perl5::ModuleBuild\@0.001", # Module::Build
             "Darwin::InitObjC\@0.001", # static install

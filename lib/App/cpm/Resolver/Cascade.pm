@@ -1,24 +1,22 @@
 package App::cpm::Resolver::Cascade;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
-sub new {
-    my ($class, $ctx) = @_;
+sub new ($class, $ctx) {
     bless { backends => [] }, $class;
 }
 
-sub add {
-    my ($self, $resolver) = @_;
-    push @{ $self->{backends} }, $resolver;
+sub add ($self, $resolver) {
+    push $self->{backends}->@*, $resolver;
     $self;
 }
 
-sub resolve {
-    my ($self, $ctx, $task) = @_;
+sub resolve ($self, $ctx, $task) {
     # here task = { package => "Plack", version_range => ">= 1.000, < 1.0030" }
 
     my @error;
-    for my $backend (@{ $self->{backends} }) {
+    for my $backend ($self->{backends}->@*) {
         my $result = $backend->resolve($ctx, $task);
         next unless $result;
 

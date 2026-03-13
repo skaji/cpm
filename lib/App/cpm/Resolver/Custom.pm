@@ -1,12 +1,11 @@
 package App::cpm::Resolver::Custom;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use App::cpm::DistNotation;
 
-sub new {
-    my ($class, $ctx, %argv) = @_;
-
+sub new ($class, $ctx, %argv) {
     my $from = $argv{from};
     my $requirements = $argv{requirements};
     my $mirror = $argv{mirror} || 'https://cpan.metacpan.org/';
@@ -21,11 +20,9 @@ sub new {
     $self;
 }
 
-sub _load {
-    my $self = shift;
-
+sub _load ($self) {
     my %resolve;
-    for my $package (sort keys %{$self->{requirements}}) {
+    for my $package (sort keys $self->{requirements}->%*) {
         my $options = $self->{requirements}{$package};
 
         my $uri;
@@ -61,13 +58,11 @@ sub _load {
     $self->{resolve} = \%resolve;
 }
 
-sub effective {
-    my $self = shift;
-    %{$self->{resolve}} ? 1 : 0;
+sub effective ($self) {
+    $self->{resolve}->%* ? 1 : 0;
 }
 
-sub resolve {
-    my ($self, $ctx, $task) = @_;
+sub resolve ($self, $ctx, $task) {
     my $found = $self->{resolve}{$task->{package}};
     if (!$found) {
         return { error => "not found in $self->{from}" };

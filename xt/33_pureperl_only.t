@@ -1,18 +1,19 @@
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 use Test::More;
 
 use lib "xt/lib";
 use CLI;
 
-subtest basic => sub {
+subtest basic => sub () {
     my $r = cpm_install '--pureperl-only', 'Scalar::Induce';
     is $r->exit, 0;
     unlike $r->log, qr{cc.*Scalar.Induce\.o};
     note $r->log;
 };
 
-subtest env => sub {
+subtest env => sub () {
     local %ENV = %ENV;
     $ENV{PERL_MM_OPT} = "PUREPERL_ONLY=1";
     $ENV{PERL_MB_OPT} = "--pureperl-only";

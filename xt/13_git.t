@@ -1,22 +1,23 @@
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 use Test::More;
 use lib "xt/lib";
 use CLI;
 
-subtest git1 => sub {
+subtest git1 => sub () {
     my $r = cpm_install "-v", "https://github.com/skaji/CPAN-Test-Dummy-Perl5-ModuleBuild.git";
     is $r->exit, 0;
     note $r->err;
 };
 
-subtest git2 => sub {
+subtest git2 => sub () {
     my $r = cpm_install "-v", 'https://github.com/skaji/CPAN-Test-Dummy-Perl5-ModuleBuild.git@60fa42d', "App::FatPacker";
     is $r->exit, 0;
     note $r->err;
 };
 
-subtest fail => sub {
+subtest fail => sub () {
     local $ENV{GIT_TERMINAL_PROMPT} = 0;
     my $r = cpm_install "-v", "https://github.com/skaji/xxxxx.git";
     isnt $r->exit, 0;

@@ -1,5 +1,6 @@
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 use Test::More;
 use lib "xt/lib";
 use CLI;
@@ -8,8 +9,7 @@ use Module::Metadata;
 use Config;
 use File::Spec;
 
-sub has_DB_File {
-    my @inc = @_;
+sub has_DB_File (@inc) {
     my @core = (
         (grep {$_} @Config{qw(vendorarch vendorlibexp)}),
         @Config{qw(archlibexp privlibexp)},

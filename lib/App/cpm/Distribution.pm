@@ -1,6 +1,7 @@
 package App::cpm::Distribution;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use App::cpm::Logger;
 use App::cpm::Requirement;
@@ -14,8 +15,7 @@ use constant STATE_FETCHED         => 0b001000;
 use constant STATE_CONFIGURED      => 0b010000;
 use constant STATE_INSTALLED       => 0b100000;
 
-sub new {
-    my ($class, %option) = @_;
+sub new ($class, %option) {
     my $uri = delete $option{uri};
     my $distfile = delete $option{distfile};
     my $source = delete $option{source} || "cpan";
@@ -31,11 +31,10 @@ sub new {
     }, $class;
 }
 
-sub requirements {
-    my ($self, $phase, $req) = @_;
+sub requirements ($self, $phase, $req = undef) {
     if (ref $phase) {
         my $req = App::cpm::Requirement->new;
-        for my $p (@$phase) {
+        for my $p ($phase->@*) {
             if (my $r = $self->{requirements}{$p}) {
                 $req->merge($r);
             }
@@ -57,91 +56,80 @@ for my $attr (qw(
     prebuilt
 )) {
     no strict 'refs';
-    *$attr = sub {
-        my $self = shift;
-        $self->{$attr} = shift if @_;
+    *$attr = sub ($self, @argv) {
+        $self->{$attr} = $argv[0] if @argv;
         $self->{$attr};
     };
 }
-sub distfile {
-    my $self = shift;
-    $self->{distfile} = shift if @_;
+sub distfile ($self, @argv) {
+    $self->{distfile} = $argv[0] if @argv;
     $self->{distfile} || $self->{uri};
 }
 
-sub distvname {
-    my $self = shift;
+sub distvname ($self) {
     $self->{distvname} ||= do {
         CPAN::DistnameInfo->new($self->{distfile})->distvname || $self->distfile;
     };
 }
 
-sub overwrite_provide {
-    my ($self, $provide) = @_;
+sub overwrite_provide ($self, $provide) {
     my $overwrote;
-    for my $exist (@{$self->{provides}}) {
+    for my $exist ($self->{provides}->@*) {
         if ($exist->{package} eq $provide->{package}) {
             $exist = $provide;
             $overwrote++;
         }
     }
     if (!$overwrote) {
-        push @{$self->{provides}}, $provide;
+        push $self->{provides}->@*, $provide;
     }
     return 1;
 }
 
-sub registered {
-    my $self = shift;
-    if (@_ && $_[0]) {
+sub registered ($self, @argv) {
+    if (@argv && $argv[0]) {
         $self->{_state} |= STATE_REGISTERED;
     }
     $self->{_state} & STATE_REGISTERED;
 }
 
-sub deps_registered {
-    my $self = shift;
-    if (@_ && $_[0]) {
+sub deps_registered ($self, @argv) {
+    if (@argv && $argv[0]) {
         $self->{_state} |= STATE_DEPS_REGISTERED;
     }
     $self->{_state} & STATE_DEPS_REGISTERED;
 }
 
-sub resolved {
-    my $self = shift;
-    if (@_ && $_[0]) {
+sub resolved ($self, @argv) {
+    if (@argv && $argv[0]) {
         $self->{_state} = STATE_RESOLVED;
     }
     $self->{_state} & STATE_RESOLVED;
 }
 
-sub fetched {
-    my $self = shift;
-    if (@_ && $_[0]) {
+sub fetched ($self, @argv) {
+    if (@argv && $argv[0]) {
         $self->{_state} = STATE_FETCHED;
     }
     $self->{_state} & STATE_FETCHED;
 }
 
-sub configured {
-    my $self = shift;
-    if (@_ && $_[0]) {
+sub configured ($self, @argv) {
+    if (@argv && $argv[0]) {
         $self->{_state} = STATE_CONFIGURED
     }
     $self->{_state} & STATE_CONFIGURED;
 }
 
-sub installed {
-    my $self = shift;
-    if (@_ && $_[0]) {
+sub installed ($self, @argv) {
+    if (@argv && $argv[0]) {
         $self->{_state} = STATE_INSTALLED;
     }
     $self->{_state} & STATE_INSTALLED;
 }
 
-sub providing {
-    my ($self, $package, $version_range) = @_;
-    for my $provide (@{$self->provides}) {
+sub providing ($self, $package, $version_range = undef) {
+    for my $provide ($self->provides->@*) {
         if ($provide->{package} eq $package) {
             if (!$version_range or App::cpm::version->parse($provide->{version})->satisfy($version_range)) {
                 return 1;
@@ -156,8 +144,7 @@ sub providing {
     return;
 }
 
-sub equals {
-    my ($self, $that) = @_;
+sub equals ($self, $that) {
     $self->distfile && $that->distfile and $self->distfile eq $that->distfile;
 }
 

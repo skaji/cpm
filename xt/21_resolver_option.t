@@ -1,5 +1,6 @@
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 use Test::More;
 use lib "xt/lib";
 use CLI;
@@ -9,19 +10,19 @@ use File::Path qw(mkpath);
 use HTTP::Tinyish;
 use CPAN::Mirror::Tiny;
 
-subtest metadb => sub {
+subtest metadb => sub () {
     my $r = cpm_install "-v", "--resolver", "metadb", "common::sense";
     is $r->exit, 0;
     like $r->err, qr/MetaDB/;
 };
 
-subtest metacpan => sub {
+subtest metacpan => sub () {
     my $r = cpm_install "-v", "--resolver", "metacpan", "common::sense";
     is $r->exit, 0;
     like $r->err, qr/MetaCPAN/;
 };
 
-subtest snapshot => sub {
+subtest snapshot => sub () {
     my $snapshot = Path::Tiny->tempfile;
     $snapshot->spew(<<'...');
 # carton snapshot format: version 1.0
@@ -225,33 +226,17 @@ DISTRIBUTIONS
     like $r->err, qr/Snapshot/;
 };
 
-subtest '02packages_http' => sub {
+subtest '02packages_http' => sub () {
     my $r = cpm_install "-v", "--resolver", "02packages,https://cpan.metacpan.org", "common::sense";
     is $r->exit, 0;
     like $r->err, qr/02Packages/;
 };
 
-subtest '02packages_file' => sub {
+subtest '02packages_file' => sub () {
     with_same_home {
         my $base = tempdir(CLEANUP => 1);
         my $cpan = CPAN::Mirror::Tiny->new(base => $base);
         $cpan->inject('cpan:App::ChangeShebang@0.06');
-        if ($] < 5.018) {
-            $cpan->inject('cpan:ExtUtils::MakeMaker@7.24');
-            $cpan->inject('cpan:ExtUtils::ParseXS@3.30');
-        }
-        if ($] < 5.010) {
-            $cpan->inject('cpan:ExtUtils::CBuilder@0.280231');
-            $cpan->inject('cpan:IPC::Cmd@1.02');
-            $cpan->inject('cpan:Locale::Maketext::Simple@0.21');
-            $cpan->inject('cpan:Module::CoreList@5.20190420');
-            $cpan->inject('cpan:Module::Load@0.34');
-            $cpan->inject('cpan:Module::Load::Conditional@0.68');
-            $cpan->inject('cpan:Module::Metadata@1.000036');
-            $cpan->inject('cpan:Params::Check@0.38');
-            $cpan->inject('cpan:Perl::OSType@1.010');
-            $cpan->inject('cpan:version@0.9924');
-        }
         $cpan->write_index(compress => 1);
 
         my $yesterday = time - 24*60*60;
@@ -272,26 +257,10 @@ subtest '02packages_file' => sub {
     };
 };
 
-subtest '02packages_file_no_prefix' => sub {
+subtest '02packages_file_no_prefix' => sub () {
     my $base = tempdir(CLEANUP => 1);
     my $cpan = CPAN::Mirror::Tiny->new(base => $base);
     $cpan->inject('cpan:App::ChangeShebang@0.06');
-    if ($] < 5.018) {
-        $cpan->inject('cpan:ExtUtils::MakeMaker@7.24');
-        $cpan->inject('cpan:ExtUtils::ParseXS@3.30');
-    }
-    if ($] < 5.010) {
-        $cpan->inject('cpan:ExtUtils::CBuilder@0.280231');
-        $cpan->inject('cpan:IPC::Cmd@1.02');
-        $cpan->inject('cpan:Locale::Maketext::Simple@0.21');
-        $cpan->inject('cpan:Module::CoreList@5.20190420');
-        $cpan->inject('cpan:Module::Load@0.34');
-        $cpan->inject('cpan:Module::Load::Conditional@0.68');
-        $cpan->inject('cpan:Module::Metadata@1.000036');
-        $cpan->inject('cpan:Params::Check@0.38');
-        $cpan->inject('cpan:Perl::OSType@1.010');
-        $cpan->inject('cpan:version@0.9924');
-    }
     $cpan->write_index(compress => 1);
     my $r = cpm_install "-v", "--resolver", "02packages,$base", "App::ChangeShebang";
     like $r->err, qr/\QApp::ChangeShebang -> App-ChangeShebang-0.06 (from 02Packages)/;

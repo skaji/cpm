@@ -1,18 +1,17 @@
 package App::cpm::Worker::Installer::Prebuilt;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 my @SKIP = (
     qr{/XML-SAX-v?[0-9\.]+\.tar\.gz$},
 );
 
-sub new {
-    my $class = shift;
+sub new ($class) {
     bless {}, $class;
 }
 
-sub skip {
-    my ($self, $uri) = @_;
+sub skip ($self, $uri) {
     !!grep { $uri =~ $_ } @SKIP;
 }
 
