@@ -30,7 +30,7 @@ sub log ($self, @msg) {
 }
 
 sub run_command ($self, $cmd, $timeout = 0) {
-    my $str = ref $cmd eq 'CODE' ? '' : ref $cmd eq 'ARRAY' ? "@$cmd" : $cmd;
+    my $str = ref $cmd eq 'CODE' ? '' : ref $cmd eq 'ARRAY' ? "$cmd->@*" : $cmd;
     $self->log("Executing $str") if $str;
     my $runner = Command::Runner->new(
         command => $cmd,

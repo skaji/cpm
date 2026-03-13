@@ -279,8 +279,8 @@ sub cmd_install ($self) {
     if ($implicit_install_base or $eumm_argv->@* or $mb_argv->@*) {
         $ctx->log("Loading configuration from PERL_MM_OPT and PERL_MB_OPT:");
         $ctx->log("  install_base: $implicit_install_base") if $implicit_install_base;
-        $ctx->log("  ExtUtils::MakeMaker options: @$eumm_argv") if @$eumm_argv;
-        $ctx->log("  Module::Build options: @$mb_argv") if @$mb_argv;
+        $ctx->log("  ExtUtils::MakeMaker options: $eumm_argv->@*") if $eumm_argv->@*;
+        $ctx->log("  Module::Build options: $mb_argv->@*") if $mb_argv->@*;
     }
 
     $ctx->log("--", `$ctx->{perl} -V`, "--");
