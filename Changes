@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+v0.999.0  2026-03-13 13:30:02 JST (TRIAL RELEASE)
+        - Raise the minimum supported Perl version to v5.24 per the Lyon Amendment (#273)
+
 0.998003  2025-12-29 13:23:24 JST
         - Internal refactor: introduce App::cpm::Context (#272)
         - Fix how to parse PERL_MB_OPT (#271)
