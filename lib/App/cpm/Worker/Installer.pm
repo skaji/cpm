@@ -560,7 +560,7 @@ sub extract_packages ($self, $ctx, $meta) {
 
     my $provides = $parser->parse(".");
     my @out;
-    for my $package (sort keys %$provides) {
+    for my $package (sort keys $provides->%*) {
         my $info = $provides->{$package};
         (my $file = $info->{infile}) =~ s{^\./}{};
         push @out, {

@@ -26,7 +26,7 @@ $detector->finalize;
 my $result = $detector->detect;
 note explain $result;
 
-is scalar keys %$result, 3;
+is scalar keys $result->%*, 3;
 is_deeply $result->{A}, [qw(A B C B)];
 is_deeply $result->{B}, [qw(B C B)];
 is_deeply $result->{C}, [qw(C B C)];

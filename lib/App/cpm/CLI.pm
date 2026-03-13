@@ -319,7 +319,7 @@ sub cmd_install ($self) {
         mb_argv => $mb_argv,
     );
 
-    $master->add_task($ctx, type => "resolve", %$_) for $packages->@*;
+    $master->add_task($ctx, type => "resolve", $_->%*) for $packages->@*;
     $master->add_distribution($_) for $dists->@*;
     $self->install($ctx, $master, $worker, $self->{workers});
     my $fail = $master->fail($ctx);

@@ -60,7 +60,7 @@ sub _find ($self, $package) {
 
 sub detect ($self) {
     my %result;
-    for my $distfile (sort keys %$self) {
+    for my $distfile (sort keys $self->%*) {
         my $seen = App::cpm::CircularDependency::_OrderedSet->new;
         $seen->add($distfile);
         if (my $detected = $self->_detect($distfile, $seen)) {
