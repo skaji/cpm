@@ -267,4 +267,11 @@ subtest '02packages_file_no_prefix' => sub () {
     like $r->err, qr/DONE install.*App-ChangeShebang-0.06/;
 };
 
+subtest fixed => sub () {
+    my $r = cpm_install "-r", "Fixed,YAML::PP\@v0.38.1", "Module::cpmfile";
+    is $r->exit, 0;
+    like $r->err, qr/DONE install.*YAML-PP-v0.38.1/;
+    like $r->err, qr/DONE install.*Module-cpmfile-.*/;
+};
+
 done_testing;
