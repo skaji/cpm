@@ -76,8 +76,8 @@ my @config = (
         # XXX
         'Run::AfterRelease' => [ run => 'env CPAN_RELEASE_VERSION=%v %x author/fatpack.pl' ],
 
-        'Git::Commit' => [ commit_msg => '%v', allow_dirty => 'Changes', allow_dirty => 'META.json', allow_dirty => 'cpm', allow_dirty_match => '\.pm$' ],
-        'Git::Tag' => [ tag_format => '%v', tag_message => '%v' ],
+        'Git::Commit' => [ commit_msg => '%v%t', allow_dirty => 'Changes', allow_dirty => 'META.json', allow_dirty => 'cpm', allow_dirty_match => '\.pm$' ],
+        'Git::Tag' => [ tag_format => '%v%t', tag_message => '%v%t' ],
         'Git::Push' => [],
 
         # XXX
