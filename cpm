@@ -258,7 +258,7 @@ BEGIN {
 my %fatpacked;
 
 $fatpacked{"App/cpm.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'APP_CPM';
-  package App::cpm v0.999.0;use v5.24;use warnings;use experimental qw(lexical_subs signatures);our ($GIT_DESCRIBE,$GIT_URL);1;
+  package App::cpm v0.999.1;use v5.24;use warnings;use experimental qw(lexical_subs signatures);our ($GIT_DESCRIBE,$GIT_URL);1;
 APP_CPM
 
 $fatpacked{"App/cpm/Builder/Static.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'APP_CPM_BUILDER_STATIC';
@@ -326,7 +326,7 @@ $fatpacked{"App/cpm/Resolver/Custom.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."
 APP_CPM_RESOLVER_CUSTOM
 
 $fatpacked{"App/cpm/Resolver/Fixed.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'APP_CPM_RESOLVER_FIXED';
-  package App::cpm::Resolver::Fixed;use v5.24;use warnings;use experimental qw(lexical_subs signatures);use parent 'App::cpm::Resolver::MetaDB';sub new ($class,$ctx,@argv){my%package;for my$argv (@argv){my ($package,$fixed_version)=split /\@/,$argv;$package{$package}=$fixed_version}my$self=$class->SUPER::new;$self->{_packages}=\%package;$self}sub resolve ($self,$ctx,$argv){my$fixed_version=$self->{_packages}{$argv->{package}};return {error=>"not found" }if!$fixed_version;my$version_range=$argv->{version_range};if ($version_range){$version_range .= ", == $fixed_version"}else {$version_range="== $fixed_version"}$self->SUPER::resolve($ctx,{$argv->%*,version_range=>$version_range })}1;
+  package App::cpm::Resolver::Fixed;use v5.24;use warnings;use experimental qw(lexical_subs signatures);use parent 'App::cpm::Resolver::MetaDB';sub new ($class,$ctx,@argv){my%package;for my$argv (@argv){my ($package,$fixed_version)=split /\@/,$argv;$package{$package}=$fixed_version}my$self=$class->SUPER::new($ctx);$self->{_packages}=\%package;$self}sub resolve ($self,$ctx,$argv){my$fixed_version=$self->{_packages}{$argv->{package}};return {error=>"not found" }if!$fixed_version;my$version_range=$argv->{version_range};if ($version_range){$version_range .= ", == $fixed_version"}else {$version_range="== $fixed_version"}$self->SUPER::resolve($ctx,{$argv->%*,version_range=>$version_range })}1;
 APP_CPM_RESOLVER_FIXED
 
 $fatpacked{"App/cpm/Resolver/MetaCPAN.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'APP_CPM_RESOLVER_METACPAN';
@@ -830,8 +830,8 @@ use warnings;
 use experimental qw(lexical_subs signatures);
 
 use App::cpm;
-$App::cpm::GIT_DESCRIBE = 'v0.999.0';
-$App::cpm::GIT_URL = 'https://github.com/skaji/cpm/tree/v0.999.0';
+$App::cpm::GIT_DESCRIBE = 'v0.999.1';
+$App::cpm::GIT_URL = 'https://github.com/skaji/cpm/tree/v0.999.1';
 
 use App::cpm::CLI;
 exit App::cpm::CLI->new->run(@ARGV);
