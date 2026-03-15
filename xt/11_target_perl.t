@@ -1,7 +1,7 @@
 use v5.24;
 use warnings;
 use experimental qw(lexical_subs signatures);
-use utf8;
+
 use Test::More;
 use lib "xt/lib";
 use CLI;

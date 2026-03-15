@@ -2,14 +2,15 @@ package CLI;
 use v5.24;
 use warnings;
 use experimental qw(lexical_subs signatures);
-use utf8;
+
 use Capture::Tiny 'capture';
-use File::Temp 'tempdir';
+use Cwd 'abs_path';
 use Exporter 'import';
 use File::Basename ();
 use File::Spec;
-use Cwd 'abs_path';
+use File::Temp 'tempdir';
 use Sub::Util 'set_prototype';
+
 our @EXPORT = qw(cpm_install with_same_local with_same_home);
 
 my $base = abs_path( File::Spec->catdir(File::Basename::dirname(__FILE__), "..", "..") );
@@ -37,10 +38,12 @@ sub with_same_local ($sub) {
     local $_LOCAL = tempdir DIR => $TEMPDIR;
     $sub->();
 }
+
 sub with_same_home ($sub) {
     local $_HOME = tempdir DIR => $TEMPDIR;
     $sub->();
 }
+
 set_prototype '&', \&with_same_local;
 set_prototype '&', \&with_same_home;
 
@@ -55,6 +58,5 @@ sub cpm_install (@argv) {
     my $logfile = "$home/build.log";
     Result->new(home => $home, local => $local, out => $out, err => $err, exit => $exit, logfile => $logfile);
 }
-
 
 1;
