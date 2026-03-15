@@ -12,7 +12,7 @@ sub new ($class, $ctx, %option) {
     bless { %option, uri => $uri }, $class;
 }
 
-sub _encode ($str) {
+my sub encode ($str) {
     $str =~ s/([^a-zA-Z0-9_\-.])/uc sprintf("%%%02x",ord($1))/eg;
     $str;
 }
@@ -26,7 +26,7 @@ sub resolve ($self, $ctx, $task) {
         ( ($self->{dev} || $task->{dev}) ? (dev => 1) : () ),
         ( $task->{version_range} ? (version => $task->{version_range}) : () ),
     );
-    my $query = join "&", map { "$_=" . _encode($query{$_}) } sort keys %query;
+    my $query = join "&", map { "$_=" . encode($query{$_}) } sort keys %query;
     my $uri = "$self->{uri}$task->{package}" . ($query ? "?$query" : "");
     my $res;
     for (1..2) {

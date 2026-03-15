@@ -43,12 +43,9 @@ sub determine_home () { # taken from Menlo
     File::Spec->catdir($homedir, ".perl-cpm");
 }
 
-my $gzip;
 sub gunzip ($from, $to) {
-    if (!$gzip) {
-        $gzip = File::Which::which('gzip');
-        die "need gzip command to decompress $from\n" if !$gzip;
-    }
+    state $gzip = File::Which::which('gzip');
+    die "need gzip command to decompress $from\n" if !$gzip;
     my @cmd = ($gzip, "-dc", $from);
     IPC::Run3::run3(\@cmd, undef, $to, \my $err);
     return if $? == 0;

@@ -3,6 +3,8 @@ use v5.24;
 use warnings;
 use experimental qw(lexical_subs signatures);
 
+use List::Util 'uniqstr';
+
 package App::cpm::CircularDependency::_OrderedSet {
     sub new ($class) {
         bless { index => 0, hash => +{} }, $class;
@@ -23,11 +25,6 @@ package App::cpm::CircularDependency::_OrderedSet {
     }
 }
 
-sub _uniq (@argv) {
-    my %u;
-    grep !$u{$_}++, @argv;
-}
-
 sub new ($class) {
     bless { _tmp => {} }, $class;
 }
@@ -42,7 +39,7 @@ sub add ($self, $distfile, $provides, $requirements) {
 sub finalize ($self) {
     for my $distfile (sort keys $self->{_tmp}->%*) {
         $self->{$distfile} = [
-            _uniq map $self->_find($_), $self->{_tmp}{$distfile}{requirements}->@*
+            uniqstr map $self->_find($_), $self->{_tmp}{$distfile}{requirements}->@*
         ];
     }
     delete $self->{_tmp};

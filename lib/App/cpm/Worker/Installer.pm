@@ -24,9 +24,9 @@ use JSON::PP ();
 use Parse::LocalDistribution;
 use Time::HiRes ();
 
-my $TRUSTED_MIRROR = sub ($uri) {
+my sub trusted_mirror ($uri) {
     !!( $uri =~ m{^https?://(?:www.cpan.org|backpan.perl.org|cpan.metacpan.org)} );
-};
+}
 
 sub work ($self, $ctx, $task) {
     my $type = $task->{type} || "(undef)";
@@ -117,7 +117,7 @@ sub _fetch_git ($self, $ctx, $uri, $ref) {
 }
 
 sub enable_prebuilt ($self, $ctx, $uri) {
-    $self->{prebuilt} && !$self->{prebuilt}->skip($uri) && $TRUSTED_MIRROR->($uri);
+    $self->{prebuilt} && !$self->{prebuilt}->skip($uri) && trusted_mirror($uri);
 }
 
 sub fetch ($self, $ctx, $task) {
@@ -168,7 +168,7 @@ sub fetch ($self, $ctx, $task) {
                     or last FETCH;
                 $dir = $self->unpack($ctx, $basename);
             } else {
-                if ($distfile and $TRUSTED_MIRROR->($uri)) {
+                if ($distfile and trusted_mirror($uri)) {
                     my $cache = File::Spec->catfile($self->{cache_dir}, "authors/id/$distfile");
                     if (-f $cache) {
                         $ctx->log("Using cache $cache");
@@ -593,7 +593,7 @@ sub fetch_distribution ($self, $ctx, $uri, $distfile) {
         return;
     }
 
-    if ($distfile and $TRUSTED_MIRROR->($uri)) {
+    if ($distfile and trusted_mirror($uri)) {
         my $cache = File::Spec->catfile($self->{cache_dir}, "authors/id/$distfile");
         File::Path::mkpath([ File::Basename::dirname($cache) ], 0, 0777);
         File::Copy::copy($local, $cache) or warn $!;
