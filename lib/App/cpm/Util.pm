@@ -12,7 +12,7 @@ use IPC::Run3 ();
 
 use Exporter 'import';
 
-our @EXPORT_OK = qw(perl_identity maybe_abs WIN32 determine_home);
+our @EXPORT_OK = qw(perl_identity maybe_abs WIN32 determine_home uniq);
 
 use constant WIN32 => $^O eq 'MSWin32';
 
@@ -52,6 +52,11 @@ sub gunzip ($from, $to) {
     chomp $err;
     $err ||= "exit status $?";
     die "@cmd: $err\n";
+}
+
+sub uniq (@argv) {
+    my %u;
+    grep !$u{$_}++, @argv;
 }
 
 1;

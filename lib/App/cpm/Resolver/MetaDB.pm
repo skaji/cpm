@@ -4,9 +4,9 @@ use warnings;
 use experimental qw(lexical_subs signatures);
 
 use App::cpm::DistNotation;
+use App::cpm::Util 'uniq';
 use App::cpm::version;
 use CPAN::Meta::YAML;
-use List::Util 'uniqstr';
 
 sub new ($class, $ctx, %option) {
     my $uri = $option{uri} || "https://cpanmetadb.plackperl.org/v1.0/";
@@ -68,7 +68,7 @@ sub resolve ($self, $ctx, $task) {
                 distfile => $dist->distfile,
             };
         } else {
-            return { error => "found versions @{[join ',', uniqstr map $_->{version}, @found]}, but they do not satisfy $task->{version_range}, $uri" };
+            return { error => "found versions @{[join ',', uniq map $_->{version}, @found]}, but they do not satisfy $task->{version_range}, $uri" };
         }
     } else {
         my $uri = "$self->{uri}package/$task->{package}";
