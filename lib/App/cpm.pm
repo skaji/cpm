@@ -3,6 +3,7 @@ use v5.24;
 use warnings;
 use experimental qw(lexical_subs signatures);
 
+our $TRIAL = 1;
 our ($GIT_DESCRIBE, $GIT_URL);
 
 1;
