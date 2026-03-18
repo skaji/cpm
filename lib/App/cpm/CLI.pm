@@ -224,7 +224,8 @@ sub cmd_help ($self) {
 }
 
 sub cmd_version ($self) {
-    print "cpm $App::cpm::VERSION ($0)\n";
+    my $trial = $App::cpm::TRIAL ? '-TRIAL' : '';
+    print "cpm $App::cpm::VERSION$trial ($0)\n";
     if ($App::cpm::GIT_DESCRIBE) {
         print "This is a self-contained version, $App::cpm::GIT_DESCRIBE ($App::cpm::GIT_URL)\n";
     }
@@ -263,7 +264,8 @@ sub cmd_install ($self) {
 
     my $ctx = App::cpm::Context->new(log_file => $log_file);
     $ctx->{logger}->symlink_to("$self->{home}/build.log");
-    $ctx->log("Running cpm $App::cpm::VERSION ($0) on perl $Config{version} built for $Config{archname} ($^X)");
+    my $trial = $App::cpm::TRIAL ? '-TRIAL' : '';
+    $ctx->log("Running cpm $App::cpm::VERSION$trial ($0) on perl $Config{version} built for $Config{archname} ($^X)");
     $ctx->log("This is a self-contained version, $App::cpm::GIT_DESCRIBE ($App::cpm::GIT_URL)") if $App::cpm::GIT_DESCRIBE;
     $ctx->log("Command line arguments are: @ARGV");
     $ctx->log("Work directory is $work_dir");

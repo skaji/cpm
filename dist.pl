@@ -59,6 +59,8 @@ my @config = (
         'VersionFromMainModule' => [],
         'ReversionOnRelease' => [ prompt => 1 ],
         'NextRelease' => [ format => '%v  %{yyyy-MM-dd HH:mm:ss VVV}d%{ (TRIAL RELEASE)}T' ],
+        'lib' => [ lib => 'author' ],
+        '=Trial' => [],
         'Git::Check' => [ allow_dirty => 'Changes', allow_dirty => 'META.json' ],
         'GithubMeta' => [ issues => 1 ],
         'MetaProvides::Package' => [ inherit_version => 0, inherit_missing => 0 ],
