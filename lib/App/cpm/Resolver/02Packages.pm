@@ -59,7 +59,8 @@ sub _fetch ($class, $ctx, $path, $cache_dir) {
 sub _gunzip ($class, $path) {
     my ($fh, $dest) = File::Temp::tempfile("perl-cpm-XXXXX",
         UNLINK => 1, SUFFIX => ".txt", EXLOCK => 0, TMPDIR => 1);
-    App::cpm::Util::gunzip $path, $fh;
+    my ($ok, $err) = App::cpm::Util::gunzip $path, $fh;
+    die $err if !$ok;
     close $fh;
     $dest;
 }

@@ -5,6 +5,7 @@ use v5.24;
 use warnings;
 use experimental qw(lexical_subs signatures);
 
+use App::cpm::Util ();
 use File::Basename ();
 use File::Temp ();
 use File::Which ();
@@ -32,13 +33,13 @@ sub describe ($self) {
     my %describe = (
         map { ($_, $self->{$_}) }
         grep $self->{$_},
-        qw(gzip bzip2 Archive::Tar unzip Archive::Zip),
+        qw(Archive::Tar unzip Archive::Zip),
     );
     if ($self->{tar}) {
         $describe{tar} = sprintf "%s (%s%s)",
             $self->{tar},
             $self->{tar_kind},
-            $self->{tar_bad} ? ", will be used together with gzip/bzip2" : "",
+            $self->{tar_bad} ? ", bad" : "",
         ;
     }
     \%describe;
@@ -65,10 +66,7 @@ sub _init_untar ($self) {
         return if !$self->{_init_all};
     }
 
-    my $gzip  = $self->{gzip} = File::Which::which("gzip");
-    my $bzip2 = $self->{bzip2} = File::Which::which("bzip2");
-
-    if ($tar && $gzip && $bzip2) {
+    if ($tar) {
         $self->{method}{untar} = *_untar_bad;
         return if !$self->{_init_all};
     }
@@ -121,10 +119,13 @@ sub _untar_bad ($self, $file) {
     my $wantarray = wantarray;
     my ($exit, $out, $err);
     {
-        my $ar = $file =~ /\.bz2$/ ? $self->{bzip2} : $self->{gzip};
+        my $ar = $file =~ /\.bz2$/ ? \&App::cpm::Util::bunzip2 : \&App::cpm::Util::gunzip;
         my $temp = File::Temp->new(SUFFIX => '.tar', EXLOCK => 0);
-        ($exit, $out, $err) = run3 [$ar, "-dc", $file], $temp->filename;
-        last if $exit != 0;
+        my $ok;
+        ($ok, $err) = $ar->($file, $temp->filename);
+        if (!$ok) {
+            last;
+        }
 
         # XXX /usr/bin/tar: Cannot connect to C: resolve failed
         my @opt = $^O eq 'MSWin32' && $self->{tar_kind} ne "bsd" ? ('--force-local') : ();
