@@ -8,7 +8,7 @@ use CPAN::Meta::Requirements;
 use parent 'version';
 
 sub satisfy ($self, $version_range) {
-    return 1 unless $version_range;
+    return 1 if !$version_range;
     return $self >= (ref $self)->parse($version_range) if $version_range =~ /^v?[\d_.]+$/;
 
     my $requirements = CPAN::Meta::Requirements->new;

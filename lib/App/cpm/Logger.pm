@@ -40,7 +40,7 @@ sub log ($self, %option) {
         if (!defined $HAS_WIN32_COLOR) {
             $HAS_WIN32_COLOR = eval { require Win32::Console::ANSI; 1 } ? 1 : 0;
         }
-        $is_color = 0 unless $HAS_WIN32_COLOR;
+        $is_color = 0 if !$HAS_WIN32_COLOR;
     }
 
     if ($is_color) {

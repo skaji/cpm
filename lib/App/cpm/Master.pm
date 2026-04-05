@@ -105,7 +105,7 @@ sub get_task ($self, $ctx) {
         return @task;
     }
     $self->_calculate_tasks($ctx);
-    return unless $self->tasks;
+    return if !$self->tasks;
     if (my @task = grep { !$_->in_charge } $self->tasks) {
         return @task;
     }
@@ -114,7 +114,7 @@ sub get_task ($self, $ctx) {
 
 sub register_result ($self, $ctx, $result) {
     my ($task) = grep { $_->uid eq $result->{uid} } $self->tasks;
-    die "Missing task that has uid=$result->{uid}" unless $task;
+    die "Missing task that has uid=$result->{uid}" if !$task;
 
     $task->%* = $result->%*; # XXX
 
@@ -218,7 +218,7 @@ sub _calculate_tasks ($self, $ctx) {
                     join(", ", map { sprintf "%s (%s)", $_->{package}, $_->{version_range} || 0 }  @need_resolve);
                 $ctx->log($msg);
                 my $ok = $self->_register_resolve_task($ctx, @need_resolve);
-                $self->{_fail_install}{$dist->distfile}++ unless $ok;
+                $self->{_fail_install}{$dist->distfile}++ if !$ok;
             }
         }
     }
@@ -257,7 +257,7 @@ sub _calculate_tasks ($self, $ctx) {
                     join(", ", map { sprintf "%s (%s)", $_->{package}, $_->{version_range} || 0 }  @need_resolve);
                 $ctx->log($msg);
                 my $ok = $self->_register_resolve_task($ctx, @need_resolve);
-                $self->{_fail_install}{$dist->distfile}++ unless $ok;
+                $self->{_fail_install}{$dist->distfile}++ if !$ok;
             }
         }
     }
@@ -295,7 +295,7 @@ sub is_installed ($self, $package, $version_range) {
         }
     }
     my $info = Module::Metadata->new_from_module($package, inc => $self->{search_inc});
-    return unless $info;
+    return if !$info;
 
     if (!$self->{global} and $self->{_has_corelist} and $self->_in_core_inc($info->filename)) {
         # https://github.com/miyagawa/cpanminus/blob/7b574ede70cebce3709743ec1727f90d745e8580/Menlo-Legacy/lib/Menlo/CLI/Compat.pm#L1783-L1786
@@ -328,7 +328,7 @@ sub is_core ($self, $package, $version_range) {
             }
             return;
         }
-        return 1 unless $version_range;
+        return 1 if !$version_range;
         my $core_version = $Module::CoreList::version{$target_perl}{$package};
         return App::cpm::version->parse($core_version)->satisfy($version_range);
     }

@@ -13,7 +13,7 @@ use Path::Tiny ();
 my $latest = do {
     my $url = 'https://cpanmetadb.plackperl.org/v1.0/package/Parallel::Pipes';
     my $res = HTTP::Tinyish->new->get($url);
-    die "$res->{status} $res->{reason}, $url\n" unless $res->{success};
+    die "$res->{status} $res->{reason}, $url\n" if !$res->{success};
     my $yaml = CPAN::Meta::YAML->read_string($res->{content});
     $yaml->[0]{version};
 };

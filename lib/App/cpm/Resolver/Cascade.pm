@@ -18,7 +18,7 @@ sub resolve ($self, $ctx, $task) {
     my @error;
     for my $backend ($self->{backends}->@*) {
         my $result = $backend->resolve($ctx, $task);
-        next unless $result;
+        next if !$result;
 
         my $klass = ref $backend;
         $klass = $1 if $klass =~ /^App::cpm::Resolver::(.*)$/;

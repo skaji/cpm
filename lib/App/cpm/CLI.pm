@@ -113,7 +113,7 @@ sub parse_options ($self, @argv) {
         "show-build-log-on-failure" => \($self->{show_build_log_on_failure}),
     or return 0;
 
-    $self->{local_lib} = maybe_abs($self->{local_lib}, $self->{cwd}) unless $self->{global};
+    $self->{local_lib} = maybe_abs($self->{local_lib}, $self->{cwd}) if !$self->{global};
     $self->{home} = maybe_abs($self->{home}, $self->{cwd});
     $self->{resolver} = \@resolver;
     $self->{feature} = \@feature if @feature;
@@ -195,7 +195,7 @@ sub normalize_mirror ($self, $mirror) {
     $mirror =~ s{/*$}{/};
     return $mirror if $mirror =~ m{^https?://};
     $mirror =~ s{^file://}{};
-    die "$mirror: No such directory.\n" unless -d $mirror;
+    die "$mirror: No such directory.\n" if !-d $mirror;
     "file://" . maybe_abs($mirror, $self->{cwd});
 }
 
@@ -245,7 +245,7 @@ sub cmd_version ($self) {
 
     print "  \@INC:\n";
     for my $inc (@INC) {
-        print "    $inc\n" unless ref($inc) eq 'CODE';
+        print "    $inc\n" if ref($inc) ne 'CODE';
     }
 
     return 0;
@@ -256,7 +256,7 @@ sub cmd_install ($self) {
 
     local %ENV = %ENV;
 
-    File::Path::mkpath($self->{home}) unless -d $self->{home};
+    File::Path::mkpath($self->{home}) if !-d $self->{home};
     my $now = time;
     my $log_file = File::Spec->catfile($self->{home}, "build.log.$now");
     my $work_dir = File::Spec->catdir($self->{home}, "work", "$now.$$");
@@ -296,7 +296,7 @@ sub cmd_install ($self) {
     );
 
     my ($packages, $dists, $resolver) = $self->initial_task($ctx, $master);
-    return 0 unless $packages;
+    return 0 if !$packages;
 
     my $worker = App::cpm::Worker->new(
         $ctx,

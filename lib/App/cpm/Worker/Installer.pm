@@ -186,7 +186,7 @@ sub fetch ($self, $ctx, $task) {
         }
         $dir = File::Spec->catdir($self->{work_dir}, $dir) if $dir;
     }
-    return unless $dir;
+    return if !$dir;
 
     chdir $dir or die;
 
@@ -216,7 +216,7 @@ sub fetch ($self, $ctx, $task) {
 sub find_prebuilt ($self, $ctx, $uri) {
     my $info = CPAN::DistnameInfo->new($uri);
     my $dir = File::Spec->catdir($self->{prebuilt_base}, $info->cpanid, $info->distvname);
-    return unless -f File::Spec->catfile($dir, ".prebuilt");
+    return if !-f File::Spec->catfile($dir, ".prebuilt");
 
     my $guard = pushd $dir;
 
@@ -259,7 +259,7 @@ sub save_prebuilt ($self, $ctx, $task) {
         last if -d $parent;
         eval { File::Path::mkpath($parent) };
     }
-    return unless -d $parent;
+    return if !-d $parent;
 
     $ctx->log("Saving the build $task->{directory} in $dir");
     if (File::Copy::Recursive::dircopy($task->{directory}, $dir)) {
@@ -294,7 +294,7 @@ sub _extract_configure_requirements ($self, $ctx, $meta, $distfile) {
 }
 
 sub _extract_requirements ($self, $ctx, $meta, $phases) {
-    $phases = [$phases] unless ref $phases;
+    $phases = [$phases] if !ref $phases;
     my $hash = $meta->effective_prereqs->as_string_hash;
 
     my %req;
@@ -311,7 +311,7 @@ sub _extract_requirements ($self, $ctx, $meta, $phases) {
 
 sub _retry ($self, $ctx, $sub) {
     return 1 if $sub->();
-    return unless $self->{retry};
+    return if !$self->{retry};
     Time::HiRes::sleep(0.1);
     $ctx->log("! Retrying (you can turn off this behavior by --no-retry)");
     return $sub->();
@@ -356,7 +356,7 @@ sub configure ($self, $ctx, $task) {
             }) and ++$configure_ok and last;
         }
     }
-    return unless $configure_ok;
+    return if !$configure_ok;
 
     my $phase = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
     my $mymeta = $self->_load_metafile($ctx, $distfile, 'MYMETA.json', 'MYMETA.yml');

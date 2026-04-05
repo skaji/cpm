@@ -49,7 +49,7 @@ sub create ($class, %args) {
         ($desc = $meta->{$tool}) =~ s/^(.*?)\n.*/$1/s;
         $backend = $try, last;
     }
-    die "Couldn't find HTTP Clients that support https" unless $backend;
+    die "Couldn't find HTTP Clients that support https" if !$backend;
 
     my $http = $backend->new(
         agent => "App::cpm/$App::cpm::VERSION",
