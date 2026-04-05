@@ -7,12 +7,12 @@ use Config;
 use Cwd ();
 use Digest::MD5 ();
 use File::Spec;
-use File::Which ();
-use IPC::Run3 ();
+use IO::Uncompress::Bunzip2 ();
+use IO::Uncompress::Gunzip ();
 
 use Exporter 'import';
 
-our @EXPORT_OK = qw(perl_identity maybe_abs WIN32 determine_home uniq);
+our @EXPORT_OK = qw(perl_identity maybe_abs WIN32 determine_home gunzip bunzip2 uniq);
 
 use constant WIN32 => $^O eq 'MSWin32';
 
@@ -44,14 +44,21 @@ sub determine_home () { # taken from Menlo
 }
 
 sub gunzip ($from, $to) {
-    state $gzip = File::Which::which('gzip');
-    die "need gzip command to decompress $from\n" if !$gzip;
-    my @cmd = ($gzip, "-dc", $from);
-    IPC::Run3::run3(\@cmd, undef, $to, \my $err);
-    return if $? == 0;
-    chomp $err;
-    $err ||= "exit status $?";
-    die "@cmd: $err\n";
+    my $ok = IO::Uncompress::Gunzip::gunzip($from, $to);
+    if ($ok) {
+        return (1, undef);
+    }
+    my $err = "gunzip($from, $to) failed: $IO::Uncompress::Gunzip::GunzipError";
+    return (undef, $err);
+}
+
+sub bunzip2 ($from, $to) {
+    my $ok = IO::Uncompress::Bunzip2::bunzip2($from, $to);
+    if ($ok) {
+        return (1, undef);
+    }
+    my $err = "bunzip2($from, $to) failed: $IO::Uncompress::Bunzip2::Bunzip2Error";
+    return (undef, $err);
 }
 
 sub uniq (@argv) {
