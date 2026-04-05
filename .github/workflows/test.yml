@@ -25,7 +25,7 @@ jobs:
         with:
           perl-version: ${{ matrix.perl-version }}
       - name: Install Dependencies
-        run: curl -fsSL --compressed https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g --with-develop --with-recommends --show-build-log-on-failure --resolver Fixed,CPAN::Meta::Requirements@2.140
+        run: curl -fsSL --compressed https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g --with-develop --with-recommends --show-build-log-on-failure
       - name: Run Tests
         run: prove -lr --timer t xt
 
