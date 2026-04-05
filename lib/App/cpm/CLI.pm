@@ -33,7 +33,7 @@ use Module::cpmfile;
 use Parallel::Pipes::App;
 use Pod::Text ();
 
-sub new ($class, %option) {
+sub new ($class, %argv) {
     my $prebuilt = exists $ENV{PERL_CPM_PREBUILT} && !$ENV{PERL_CPM_PREBUILT} ? 0 : 1;
     bless {
         argv => undef,
@@ -63,7 +63,7 @@ sub new ($class, %option) {
         pureperl_only => 0,
         static_install => 1,
         default_resolvers => 1,
-        %option
+        %argv
     }, $class;
 }
 

@@ -3,8 +3,8 @@ use v5.24;
 use warnings;
 use experimental qw(lexical_subs signatures);
 
-sub new ($class, $ctx, %option) {
-    bless { impl => $option{impl} }, $class;
+sub new ($class, $ctx, %argv) {
+    bless { impl => $argv{impl} }, $class;
 }
 
 sub work ($self, $ctx, $task) {

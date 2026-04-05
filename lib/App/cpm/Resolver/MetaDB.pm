@@ -8,12 +8,12 @@ use App::cpm::Util 'uniq';
 use App::cpm::version;
 use CPAN::Meta::YAML;
 
-sub new ($class, $ctx, %option) {
-    my $uri = $option{uri} || "https://cpanmetadb.plackperl.org/v1.0/";
-    my $mirror = $option{mirror} || "https://cpan.metacpan.org/";
+sub new ($class, $ctx, %argv) {
+    my $uri = $argv{uri} || "https://cpanmetadb.plackperl.org/v1.0/";
+    my $mirror = $argv{mirror} || "https://cpan.metacpan.org/";
     s{/*$}{/} for $uri, $mirror;
     bless {
-        %option,
+        %argv,
         uri => $uri,
         mirror => $mirror,
     }, $class;

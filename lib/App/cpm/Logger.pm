@@ -26,12 +26,12 @@ sub new ($class, %args) {
     bless \%args, $class;
 }
 
-sub log ($self, %option) {
-    my $type = $option{type} || "";
-    my $message = $option{message};
+sub log ($self, %argv) {
+    my $type = $argv{type} || "";
+    my $message = $argv{message};
     chomp $message;
-    my $optional = $option{optional} ? " ($option{optional})" : "";
-    my $result = $option{result};
+    my $optional = $argv{optional} ? " ($argv{optional})" : "";
+    my $result = $argv{result};
     my $is_color = ref $self ? $self->{color} : $COLOR;
     my $verbose = ref $self ? $self->{verbose} : $VERBOSE;
     my $show_progress = ref $self ? $self->{show_progress} : $SHOW_PROGRESS;
@@ -53,7 +53,7 @@ sub log ($self, %option) {
     if ($verbose) {
         # type -> 5 + 9 + 3
         $type = $is_color && $type ? sprintf("%-17s", $type) : sprintf("%-9s", $type || "");
-        warn $r . sprintf "%d %s %s %s%s\n", $option{pid} || $$, $result, $type, $message, $optional;
+        warn $r . sprintf "%d %s %s %s%s\n", $argv{pid} || $$, $result, $type, $message, $optional;
     } else {
         warn $r . join(" ", $result, $type ? $type : (), $message . $optional) . "\n";
     }

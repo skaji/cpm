@@ -6,10 +6,10 @@ use experimental qw(lexical_subs signatures);
 use App::cpm::DistNotation;
 use JSON::PP ();
 
-sub new ($class, $ctx, %option) {
-    my $uri = $option{uri} || "https://fastapi.metacpan.org/v1/download_url/";
+sub new ($class, $ctx, %argv) {
+    my $uri = $argv{uri} || "https://fastapi.metacpan.org/v1/download_url/";
     $uri =~ s{/*$}{/};
-    bless { %option, uri => $uri }, $class;
+    bless { %argv, uri => $uri }, $class;
 }
 
 my sub encode ($str) {

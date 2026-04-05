@@ -15,13 +15,13 @@ use constant STATE_FETCHED         => 0b001000;
 use constant STATE_CONFIGURED      => 0b010000;
 use constant STATE_INSTALLED       => 0b100000;
 
-sub new ($class, %option) {
-    my $uri = delete $option{uri};
-    my $distfile = delete $option{distfile};
-    my $source = delete $option{source} || "cpan";
-    my $provides = delete $option{provides} || [];
+sub new ($class, %argv) {
+    my $uri = delete $argv{uri};
+    my $distfile = delete $argv{distfile};
+    my $source = delete $argv{source} || "cpan";
+    my $provides = delete $argv{provides} || [];
     bless {
-        %option,
+        %argv,
         provides => $provides,
         uri => $uri,
         distfile => $distfile,

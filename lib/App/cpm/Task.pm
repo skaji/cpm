@@ -4,8 +4,8 @@ use warnings;
 use experimental qw(lexical_subs signatures);
 use CPAN::DistnameInfo;
 
-sub new ($class, %option) {
-    my $self = bless {%option}, $class;
+sub new ($class, %argv) {
+    my $self = bless {%argv}, $class;
     $self->{uid} = $self->_uid;
     $self;
 }

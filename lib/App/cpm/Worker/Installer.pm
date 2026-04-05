@@ -67,20 +67,20 @@ sub work ($self, $ctx, $task) {
     return { ok => 0 };
 }
 
-sub new ($class, $ctx, %option) {
-    $option{work_dir}  or die "work_dir option is required\n";
-    $option{cache_dir} or die "cache_dir option is required\n";
-    mkpath $_ for grep !-d, $option{work_dir}, $option{cache_dir};
-    if ($option{local_lib}) {
-        $option{local_lib} = App::cpm::Util::maybe_abs($option{local_lib});
+sub new ($class, $ctx, %argv) {
+    $argv{work_dir}  or die "work_dir option is required\n";
+    $argv{cache_dir} or die "cache_dir option is required\n";
+    mkpath $_ for grep !-d, $argv{work_dir}, $argv{cache_dir};
+    if ($argv{local_lib}) {
+        $argv{local_lib} = App::cpm::Util::maybe_abs($argv{local_lib});
     }
 
-    my $need_noman_argv = !$option{man_pages} &&
+    my $need_noman_argv = !$argv{man_pages} &&
         ($Config{installman1dir} || $Config{installsiteman1dir} || $Config{installman3dir} || $Config{installsiteman3dir});
 
-    $option{prebuilt} = App::cpm::Worker::Installer::Prebuilt->new if $option{prebuilt};
+    $argv{prebuilt} = App::cpm::Worker::Installer::Prebuilt->new if $argv{prebuilt};
     bless {
-        %option,
+        %argv,
         need_noman_argv => $need_noman_argv,
     }, $class;
 }

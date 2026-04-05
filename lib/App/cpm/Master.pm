@@ -12,9 +12,9 @@ use CPAN::DistnameInfo;
 use IO::Handle;
 use Module::Metadata;
 
-sub new ($class, %option) {
+sub new ($class, %argv) {
     my $self = bless {
-        %option,
+        %argv,
         installed_distributions => 0,
         tasks => +{},
         distributions => +{},

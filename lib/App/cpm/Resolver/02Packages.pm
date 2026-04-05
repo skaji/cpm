@@ -15,12 +15,12 @@ use File::Spec;
 use File::Temp ();
 use Proc::ForkSafe;
 
-sub new ($class, $ctx, %option) {
-    my $cache_dir_base = $option{cache} or die "cache option is required\n";
-    my $mirror = $option{mirror} or die "mirror option is required\n";
+sub new ($class, $ctx, %argv) {
+    my $cache_dir_base = $argv{cache} or die "cache option is required\n";
+    my $mirror = $argv{mirror} or die "mirror option is required\n";
     $mirror =~ s{/*$}{/};
 
-    my $path = $option{path} || "${mirror}modules/02packages.details.txt.gz";
+    my $path = $argv{path} || "${mirror}modules/02packages.details.txt.gz";
     if ($path =~ m{^https?://}) {
         my $cache_dir = $class->_cache_dir($mirror, $cache_dir_base);
         $path = $class->_fetch($ctx, $path, $cache_dir);

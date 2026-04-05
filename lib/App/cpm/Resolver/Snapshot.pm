@@ -7,13 +7,13 @@ use App::cpm::DistNotation;
 use App::cpm::version;
 use Carton::Snapshot;
 
-sub new ($class, $ctx, %option) {
-    my $snapshot = Carton::Snapshot->new(path => $option{path} || "cpanfile.snapshot");
+sub new ($class, $ctx, %argv) {
+    my $snapshot = Carton::Snapshot->new(path => $argv{path} || "cpanfile.snapshot");
     $snapshot->load;
-    my $mirror = $option{mirror} || "https://cpan.metacpan.org/";
+    my $mirror = $argv{mirror} || "https://cpan.metacpan.org/";
     $mirror =~ s{/*$}{/};
     bless {
-        %option,
+        %argv,
         mirror => $mirror,
         snapshot => $snapshot
     }, $class;

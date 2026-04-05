@@ -11,10 +11,10 @@ use File::Path ();
 use File::Spec;
 use Time::HiRes qw(gettimeofday tv_interval);
 
-sub new ($class, $ctx, %option) {
-    my $home = $option{home};
+sub new ($class, $ctx, %argv) {
+    my $home = $argv{home};
     my $prebuilt_base;
-    if ($option{prebuilt}) {
+    if ($argv{prebuilt}) {
         $prebuilt_base = $class->prebuilt_base($home);
         File::Path::mkpath($prebuilt_base) if !-d $prebuilt_base;
         my $file = "$prebuilt_base/version";
@@ -23,13 +23,13 @@ sub new ($class, $ctx, %option) {
             print {$fh} "$Config{perlpath}\n";
         }
     }
-    %option = (
-        %option,
+    %argv = (
+        %argv,
         $prebuilt_base ? (prebuilt_base => $prebuilt_base) : (),
     );
-    my $installer = App::cpm::Worker::Installer->new($ctx, %option);
-    my $resolver  = App::cpm::Worker::Resolver->new($ctx, %option, impl => $option{resolver});
-    bless { %option, installer => $installer, resolver => $resolver }, $class;
+    my $installer = App::cpm::Worker::Installer->new($ctx, %argv);
+    my $resolver  = App::cpm::Worker::Resolver->new($ctx, %argv, impl => $argv{resolver});
+    bless { %argv, installer => $installer, resolver => $resolver }, $class;
 }
 
 sub prebuilt_base ($class, $home) {
