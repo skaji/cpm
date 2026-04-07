@@ -215,14 +215,6 @@ sub run ($self, @argv) {
     }
 }
 
-sub cmd_help ($self) {
-    open my $fh, ">", \my $out;
-    Pod::Text->new->parse_from_file($0, $fh);
-    $out =~ s/^[ ]{6}/    /mg;
-    print $out;
-    return 0;
-}
-
 sub cmd_version ($self) {
     my $trial = $App::cpm::TRIAL ? '-TRIAL' : '';
     print "cpm $App::cpm::VERSION$trial ($0)\n";
@@ -700,6 +692,122 @@ sub _generate_resolver ($self, $ctx, $klass, @argv) {
     (my $file = $full_klass) =~ s{::}{/}g;
     require "$file.pm"; # may die
     return $full_klass->new($ctx, @argv);
+}
+
+my $HELP = <<'EOF';
+Usage: cpm install [OPTIONS...] ARGV...
+
+Examples:
+  # install modules into local/
+  > cpm install Module1 Module2 ...
+
+  # install modules from one of
+  #  * cpm.yml
+  #  * cpanfile
+  #  * META.json (with dynamic_config false)
+  #  * Build.PL
+  #  * Makefile.PL
+  > cpm install
+
+  # install module into current @INC instead of local/
+  > cpm install -g Module
+
+  # read modules from STDIN by specifying "-" as an argument
+  > cat module-list.txt | cpm install -
+
+  # prefer TRIAL release
+  > cpm install --dev Moose
+
+  # install modules as if version of your perl is 5.8.5
+  # so that modules which are not core in 5.8.5 will be installed
+  > cpm install --target-perl 5.8.5
+
+  # resolve distribution names from DARKPAN/modules/02packages.details.txt.gz
+  # and fetch distributions from DARKPAN/authors/id/...
+  > cpm install --resolver 02packages,http://example.com/darkpan Your::Module
+  > cpm install --resolver 02packages,file:///path/to/darkpan    Your::Module
+
+  # specify types/phases in cpmfile/cpanfile/metafile by "--with-*" and "--without-*" options
+  > cpm install --with-recommends --without-test
+
+Options:
+  -w, --workers=N
+        number of workers, default: 5
+  -L, --local-lib-contained=DIR
+        directory to install modules into, default: local/
+  -g, --global
+        install modules into current @INC instead of local/
+  -v, --verbose
+        verbose mode; you can see what is going on
+      --prebuilt, --no-prebuilt
+        save builds for CPAN distributions; and later, install the prebuilts if available
+        default: on; you can also set $ENV{PERL_CPM_PREBUILT} false to disable this option.
+        usage of --test and/or --man-pages disables this option.
+      --target-perl=VERSION  (EXPERIMENTAL)
+        install modules as if version is your perl is VERSION
+      --mirror=URL
+        base url for the CPAN mirror to use, cannot be used multiple times. Use --resolver instead.
+        default: https://cpan.metacpan.org
+      --pp, --pureperl-only
+        prefer pureperl only build
+      --static-install, --no-static-install
+        enable/disable the static install, default: enable
+  -r, --resolver=class,args (EXPERIMENTAL, will be removed or renamed)
+        specify resolvers, you can use --resolver multiple times
+        available classes: metadb/metacpan/02packages/snapshot
+      --no-default-resolvers
+        even if you specify --resolver, cpm continues using the default resolvers.
+        if you just want to use your resolvers specified by --resolver,
+        you should specify --no-default-resolvers too
+      --reinstall
+        reinstall the distribution even if you already have the latest version installed
+      --dev (EXPERIMENTAL)
+        resolve TRIAL distributions too
+      --color, --no-color
+        turn on/off color output, default: on
+      --test, --no-test
+        run test cases, default: no
+      --man-pages
+        generate man pages
+      --retry, --no-retry
+        retry configure/build/test/install if fails, default: retry
+      --show-build-log-on-failure
+        show build.log on failure, default: off
+      --configure-timeout=sec, --build-timeout=sec, --test-timeout=sec
+        specify configure/build/test timeout second, default: 60sec, 3600sec, 1800sec
+      --show-progress, --no-show-progress
+        show progress, default: on
+      --cpmfile=path
+        specify cpmfile path, default: ./cpm.yml
+      --cpanfile=path
+        specify cpanfile path, default: ./cpanfile
+      --metafile=path
+        specify META file path, default: N/A
+      --snapshot=path
+        specify cpanfile.snapshot path, default: ./cpanfile.snapshot
+  -V, --version
+        show version
+  -h, --help
+        show this help
+      --feature=identifier
+        specify the feature to enable in cpmfile/cpanfile/metafile; you can use --feature multiple times
+      --with-requires,   --without-requires   (default: with)
+      --with-recommends, --without-recommends (default: without)
+      --with-suggests,   --without-suggests   (default: without)
+      --with-configure,  --without-configure  (default: without)
+      --with-build,      --without-build      (default: with)
+      --with-test,       --without-test       (default: with)
+      --with-runtime,    --without-runtime    (default: with)
+      --with-develop,    --without-develop    (default: without)
+        specify types/phases of dependencies in cpmfile/cpanfile/metafile to be installed
+      --with-all
+        shortcut for --with-requires, --with-recommends, --with-suggests,
+        --with-configure, --with-build, --with-test, --with-runtime and --with-develop
+EOF
+
+sub cmd_help ($self) {
+    print $HELP;
+    return 0;
 }
 
 1;
