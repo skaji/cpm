@@ -460,7 +460,6 @@ sub _use_unsafe_inc ($self, $ctx, $meta) {
 
 sub opts_in_static_install ($self, $ctx, $meta) {
     return if !$self->{static_install};
-    return if $self->{uninstall_shadows};
     return $meta->{x_static_install} && $meta->{x_static_install} == 1;
 }
 
