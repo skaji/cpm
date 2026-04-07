@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+v0.999.2  2026-04-08 00:03:54 JST (TRIAL RELEASE)
+        - Use IO::Uncompress::Gunzip/Bunzip2 instead of gzip/bzip2 (#276)
+
 v0.999.1  2026-03-13 14:04:24 JST (TRIAL RELEASE)
         - Fix App::cpm::Resolver::Fixed (#274)
 

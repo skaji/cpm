@@ -71,7 +71,7 @@
    "provides" : {
       "App::cpm" : {
          "file" : "lib/App/cpm.pm",
-         "version" : "v0.999.1"
+         "version" : "v0.999.2"
       },
       "App::cpm::Builder::Static" : {
          "file" : "lib/App/cpm/Builder/Static.pm"
@@ -170,7 +170,7 @@
          "web" : "https://github.com/skaji/cpm"
       }
    },
-   "version" : "v0.999.1",
+   "version" : "v0.999.2",
    "x_contributors" : [
       "Andrew Rodland <andrew@cleverdomain.org>",
       "Dave Rolsky <autarch@urth.org>",
@@ -190,7 +190,7 @@
       "Will Sheppard <will.sheppard.uk@gmail.com>",
       "yoshikazusawa <883514+yoshikazusawa@users.noreply.github.com>"
    ],
-   "x_generated_by_perl" : "v5.42.1",
+   "x_generated_by_perl" : "v5.42.2",
    "x_serialization_backend" : "Cpanel::JSON::XS version 4.40",
    "x_spdx_expression" : "Artistic-1.0-Perl OR GPL-1.0-or-later",
    "x_static_install" : 1
