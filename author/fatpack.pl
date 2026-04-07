@@ -4,6 +4,7 @@ use experimental qw(builtin class defer for_list try);
 
 use App::FatPacker::Simple;
 use Config;
+use File::Which ();
 use FindBin;
 use Getopt::Long ();
 use JSON::XS ();
@@ -27,6 +28,13 @@ Getopt::Long::GetOptions
     "t|test" => \my $test,
     "u|update-only" => \my $update_only,
 or exit 1;
+
+my $perl_gzip_script = File::Which::which("perl-gzip-script") or die;
+
+sub perl_gzip_script (@argv) {
+    my $exit = system $perl_gzip_script, @argv;
+    $exit == 0  or die;
+}
 
 sub cpm (@argv) {
     App::cpm::CLI->new->run(@argv) == 0 or die
@@ -111,7 +119,8 @@ print STDERR "FatPacking...";
 
 my $fatpack_dir = $test ? "local" : "../lib,local";
 my $output = $test ? "../cpm.test" : "../cpm";
-fatpack "-q", "-o", $output, "-d", $fatpack_dir, "-e", $exclude, "--shebang", $shebang, "../script/cpm", "--cache", "$ENV{HOME}/.perl-cpm/.fatpack-cache";
+fatpack "-q", "-o", $output, "-d", $fatpack_dir, "-e", $exclude, "../script/cpm", "--cache", "$ENV{HOME}/.perl-cpm/.fatpack-cache";
 print STDERR " DONE\n";
 inject_git_info($output, $git_describe, $git_url);
 chmod 0755, $output;
+perl_gzip_script "--in-place", "--shebang", $shebang, $output;

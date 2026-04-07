@@ -1,248 +1,152 @@
 [
-   {
-      "copyright" : "Shoichi Kaji",
-      "license" : "the same as Perl 5",
-      "name" : "CPAN-02Packages-Search",
-      "url" : "https://metacpan.org/dist/CPAN-02Packages-Search"
-   },
-   {
-      "copyright" : "Graham Barr",
-      "license" : "the same as Perl 5",
-      "name" : "CPAN-DistnameInfo",
-      "url" : "https://metacpan.org/dist/CPAN-DistnameInfo"
-   },
-   {
-      "copyright" : "David Golden, Ricardo Signes, Adam Kennedy and Contributors",
-      "license" : "the same as Perl 5",
-      "name" : "CPAN-Meta",
-      "url" : "https://metacpan.org/dist/CPAN-Meta"
-   },
-   {
-      "copyright" : "David Golden and Ricardo Signes",
-      "license" : "the same as Perl 5",
-      "name" : "CPAN-Meta-Requirements",
-      "url" : "https://metacpan.org/dist/CPAN-Meta-Requirements"
-   },
-   {
-      "copyright" : "Adam Kennedy",
-      "license" : "the same as Perl 5",
-      "name" : "CPAN-Meta-YAML",
-      "url" : "https://metacpan.org/dist/CPAN-Meta-YAML"
-   },
-   {
-      "copyright" : "David Golden",
-      "license" : "Apache 2.0",
-      "name" : "Capture-Tiny",
-      "url" : "https://metacpan.org/dist/Capture-Tiny"
-   },
-   {
-      "copyright" : "David Golden",
-      "license" : "Apache 2.0",
-      "name" : "Class-Tiny",
-      "url" : "https://metacpan.org/dist/Class-Tiny"
-   },
-   {
-      "copyright" : "Shoichi Kaji",
-      "license" : "the same as Perl 5",
-      "name" : "Command-Runner",
-      "url" : "https://metacpan.org/dist/Command-Runner"
-   },
-   {
-      "copyright" : "Shoichi Kaji",
-      "license" : "the same as Perl 5",
-      "name" : "Darwin-InitObjC",
-      "url" : "https://metacpan.org/dist/Darwin-InitObjC"
-   },
-   {
-      "copyright" : "Unknown",
-      "license" : "the same as Perl 5",
-      "name" : "Exporter",
-      "url" : "https://metacpan.org/dist/Exporter"
-   },
-   {
-      "copyright" : "Ken Williams, Leon Timmermans",
-      "license" : "the same as Perl 5",
-      "name" : "ExtUtils-Config",
-      "url" : "https://metacpan.org/dist/ExtUtils-Config"
-   },
-   {
-      "copyright" : "Ken Williams, Leon Timmermans",
-      "license" : "the same as Perl 5",
-      "name" : "ExtUtils-Helpers",
-      "url" : "https://metacpan.org/dist/ExtUtils-Helpers"
-   },
-   {
-      "copyright" : "Yves Orton, Michael Schwern, Alan Burlison, Randy W. Sims and others",
-      "license" : "the same as Perl 5",
-      "name" : "ExtUtils-Install",
-      "url" : "https://metacpan.org/dist/ExtUtils-Install"
-   },
-   {
-      "copyright" : "Ken Williams, Leon Timmermans.",
-      "license" : "the same as Perl 5",
-      "name" : "ExtUtils-InstallPaths",
-      "url" : "https://metacpan.org/dist/ExtUtils-InstallPaths"
-   },
-   {
-      "copyright" : "Leon Timmermans.",
-      "license" : "the same as Perl 5",
-      "name" : "ExtUtils-PL2Bat",
-      "url" : "https://metacpan.org/dist/ExtUtils-PL2Bat"
-   },
-   {
-      "copyright" : "Daniel Muey",
-      "license" : "the same as Perl 5",
-      "name" : "File-Copy-Recursive",
-      "url" : "https://metacpan.org/dist/File-Copy-Recursive"
-   },
-   {
-      "copyright" : "Charles Bailey, Tim Bunce, David Landgren, James Keenan, and Richard Elberger",
-      "license" : "the same as Perl 5",
-      "name" : "File-Path",
-      "url" : "https://metacpan.org/dist/File-Path"
-   },
-   {
-      "copyright" : "Tim Jenness and the UK Particle Physics and Astronomy Research Council",
-      "license" : "the same as Perl 5",
-      "name" : "File-Temp",
-      "url" : "https://metacpan.org/dist/File-Temp"
-   },
-   {
-      "copyright" : "Per Einar Ellefsen",
-      "license" : "the same as Perl 5",
-      "name" : "File-Which",
-      "url" : "https://metacpan.org/dist/File-Which"
-   },
-   {
-      "copyright" : "David A Golden",
-      "license" : "the same as Perl 5",
-      "name" : "File-pushd",
-      "url" : "https://metacpan.org/dist/File-pushd"
-   },
-   {
-      "copyright" : "Johan Vromans",
-      "license" : "the terms of the Perl Artistic License or the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version",
-      "name" : "Getopt-Long",
-      "url" : "https://metacpan.org/dist/Getopt-Long"
-   },
-   {
-      "copyright" : "Christian Hansen",
-      "license" : "the same as Perl 5",
-      "name" : "HTTP-Tiny",
-      "url" : "https://metacpan.org/dist/HTTP-Tiny"
-   },
-   {
-      "copyright" : "Tatsuhiko Miyagawa",
-      "license" : "the same as Perl 5",
-      "name" : "HTTP-Tinyish",
-      "url" : "https://metacpan.org/dist/HTTP-Tinyish"
-   },
-   {
-      "copyright" : "R. Barrie Slaymaker, Jr.",
-      "license" : "the BSD, Artistic, or GPL licenses, any version",
-      "name" : "IPC-Run3",
-      "url" : "https://metacpan.org/dist/IPC-Run3"
-   },
-   {
-      "copyright" : "Makamaka Hannyaharamitu",
-      "license" : "the same as Perl 5",
-      "name" : "JSON-PP",
-      "url" : "https://metacpan.org/dist/JSON-PP"
-   },
-   {
-      "copyright" : "Tatsuhiko Miyagawa",
-      "license" : "the same as Perl 5",
-      "name" : "Module-CPANfile",
-      "url" : "https://metacpan.org/dist/Module-CPANfile"
-   },
-   {
-      "copyright" : "Jos Boumans",
-      "license" : "the same as Perl 5",
-      "name" : "Module-Load",
-      "url" : "https://metacpan.org/dist/Module-Load"
-   },
-   {
-      "copyright" : "Ken Williams, Matt Trout and David Golden",
-      "license" : "the same as Perl 5",
-      "name" : "Module-Metadata",
-      "url" : "https://metacpan.org/dist/Module-Metadata"
-   },
-   {
-      "copyright" : "Shoichi Kaji",
-      "license" : "the same as Perl 5",
-      "name" : "Module-cpmfile",
-      "url" : "https://metacpan.org/dist/Module-cpmfile"
-   },
-   {
-      "copyright" : "Shoichi Kaji",
-      "license" : "the same as Perl 5",
-      "name" : "Parallel-Pipes",
-      "url" : "https://metacpan.org/dist/Parallel-Pipes"
-   },
-   {
-     "copyright" : "Andreas Koenig, Kenichi Ishigaki",
-     "license" : "the same as Perl 5",
-     "name" : "Parse-LocalDistribution",
-     "url" : "https://metacpan.org/dist/Parse-LocalDistribution"
-   },
-   {
-      "copyright" : "Andreas Koenig, Kenichi Ishigaki",
-      "license" : "the same as Perl 5",
-      "name" : "Parse-PMFile",
-      "url" : "https://metacpan.org/dist/Parse-PMFile"
-   },
-   {
-      "copyright" : "Shoichi Kaji",
-      "license" : "the same as Perl 5",
-      "name" : "Proc-ForkSafe",
-      "url" : "https://metacpan.org/dist/Proc-ForkSafe"
-   },
-   {
-      "copyright" : "The Perl 5 Porters",
-      "license" : "the same as Perl 5",
-      "name" : "Search-Dict",
-      "url" : "https://metacpan.org/dist/Search-Dict"
-   },
-   {
-      "copyright" : "Roderick Schertler",
-      "license" : "the same as Perl 5",
-      "name" : "String-ShellQuote",
-      "url" : "https://metacpan.org/dist/String-ShellQuote"
-   },
-   {
-      "copyright" : "Andy Armstrong",
-      "license" : "the same as Perl 5",
-      "name" : "Test-Harness",
-      "url" : "https://metacpan.org/dist/Test-Harness"
-   },
-   {
-      "copyright" : "Alexandr Ciornii",
-      "license" : "the same as Perl 5",
-      "name" : "Text-ParseWords",
-      "url" : "https://metacpan.org/dist/Text-ParseWords"
-   },
-   {
-      "copyright" : "David Golden",
-      "license" : "Apache 2.0",
-      "name" : "Tie-Handle-Offset",
-      "url" : "https://metacpan.org/dist/Tie-Handle-Offset"
-   },
-   {
-      "copyright" : "Tina Müller",
-      "license" : "the same as Perl 5",
-      "name" : "YAML-PP",
-      "url" : "https://metacpan.org/dist/YAML-PP"
-   },
-   {
-      "copyright" : "Graham Knop, CONTRIBUTORS",
-      "license" : "the same as Perl 5",
-      "name" : "Win32-ShellQuote",
-      "url" : "https://metacpan.org/dist/Win32-ShellQuote"
-   },
-   {
-      "copyright" : "John Peacock",
-      "license" : "the same as Perl 5",
-      "name" : "version",
-      "url" : "https://metacpan.org/dist/version"
-   }
+  {
+    "copyright": "Shoichi Kaji",
+    "license": "the same as Perl 5",
+    "name": "CPAN-02Packages-Search",
+    "url": "https://metacpan.org/dist/CPAN-02Packages-Search"
+  },
+  {
+    "copyright": "Graham Barr",
+    "license": "the same as Perl 5",
+    "name": "CPAN-DistnameInfo",
+    "url": "https://metacpan.org/dist/CPAN-DistnameInfo"
+  },
+  {
+    "copyright": "David Golden",
+    "license": "Apache 2.0",
+    "name": "Capture-Tiny",
+    "url": "https://metacpan.org/dist/Capture-Tiny"
+  },
+  {
+    "copyright": "Shoichi Kaji",
+    "license": "the same as Perl 5",
+    "name": "Command-Runner",
+    "url": "https://metacpan.org/dist/Command-Runner"
+  },
+  {
+    "copyright": "Shoichi Kaji",
+    "license": "the same as Perl 5",
+    "name": "Darwin-InitObjC",
+    "url": "https://metacpan.org/dist/Darwin-InitObjC"
+  },
+  {
+    "copyright": "Ken Williams, Leon Timmermans",
+    "license": "the same as Perl 5",
+    "name": "ExtUtils-Config",
+    "url": "https://metacpan.org/dist/ExtUtils-Config"
+  },
+  {
+    "copyright": "Ken Williams, Leon Timmermans",
+    "license": "the same as Perl 5",
+    "name": "ExtUtils-Helpers",
+    "url": "https://metacpan.org/dist/ExtUtils-Helpers"
+  },
+  {
+    "copyright": "Yves Orton, Michael Schwern, Alan Burlison, Randy W. Sims and others",
+    "license": "the same as Perl 5",
+    "name": "ExtUtils-Install",
+    "url": "https://metacpan.org/dist/ExtUtils-Install"
+  },
+  {
+    "copyright": "Ken Williams, Leon Timmermans.",
+    "license": "the same as Perl 5",
+    "name": "ExtUtils-InstallPaths",
+    "url": "https://metacpan.org/dist/ExtUtils-InstallPaths"
+  },
+  {
+    "copyright": "Leon Timmermans.",
+    "license": "the same as Perl 5",
+    "name": "ExtUtils-PL2Bat",
+    "url": "https://metacpan.org/dist/ExtUtils-PL2Bat"
+  },
+  {
+    "copyright": "Daniel Muey",
+    "license": "the same as Perl 5",
+    "name": "File-Copy-Recursive",
+    "url": "https://metacpan.org/dist/File-Copy-Recursive"
+  },
+  {
+    "copyright": "Per Einar Ellefsen",
+    "license": "the same as Perl 5",
+    "name": "File-Which",
+    "url": "https://metacpan.org/dist/File-Which"
+  },
+  {
+    "copyright": "David A Golden",
+    "license": "the same as Perl 5",
+    "name": "File-pushd",
+    "url": "https://metacpan.org/dist/File-pushd"
+  },
+  {
+    "copyright": "Tatsuhiko Miyagawa",
+    "license": "the same as Perl 5",
+    "name": "HTTP-Tinyish",
+    "url": "https://metacpan.org/dist/HTTP-Tinyish"
+  },
+  {
+    "copyright": "R. Barrie Slaymaker, Jr.",
+    "license": "the BSD, Artistic, or GPL licenses, any version",
+    "name": "IPC-Run3",
+    "url": "https://metacpan.org/dist/IPC-Run3"
+  },
+  {
+    "copyright": "Tatsuhiko Miyagawa",
+    "license": "the same as Perl 5",
+    "name": "Module-CPANfile",
+    "url": "https://metacpan.org/dist/Module-CPANfile"
+  },
+  {
+    "copyright": "Shoichi Kaji",
+    "license": "the same as Perl 5",
+    "name": "Module-cpmfile",
+    "url": "https://metacpan.org/dist/Module-cpmfile"
+  },
+  {
+    "copyright": "Shoichi Kaji",
+    "license": "the same as Perl 5",
+    "name": "Parallel-Pipes",
+    "url": "https://metacpan.org/dist/Parallel-Pipes"
+  },
+  {
+    "copyright": "Andreas Koenig, Kenichi Ishigaki",
+    "license": "the same as Perl 5",
+    "name": "Parse-LocalDistribution",
+    "url": "https://metacpan.org/dist/Parse-LocalDistribution"
+  },
+  {
+    "copyright": "Andreas Koenig, Kenichi Ishigaki",
+    "license": "the same as Perl 5",
+    "name": "Parse-PMFile",
+    "url": "https://metacpan.org/dist/Parse-PMFile"
+  },
+  {
+    "copyright": "Shoichi Kaji",
+    "license": "the same as Perl 5",
+    "name": "Proc-ForkSafe",
+    "url": "https://metacpan.org/dist/Proc-ForkSafe"
+  },
+  {
+    "copyright": "Roderick Schertler",
+    "license": "the same as Perl 5",
+    "name": "String-ShellQuote",
+    "url": "https://metacpan.org/dist/String-ShellQuote"
+  },
+  {
+    "copyright": "David Golden",
+    "license": "Apache 2.0",
+    "name": "Tie-Handle-Offset",
+    "url": "https://metacpan.org/dist/Tie-Handle-Offset"
+  },
+  {
+    "copyright": "Graham Knop, CONTRIBUTORS",
+    "license": "the same as Perl 5",
+    "name": "Win32-ShellQuote",
+    "url": "https://metacpan.org/dist/Win32-ShellQuote"
+  },
+  {
+    "copyright": "Tina Müller",
+    "license": "the same as Perl 5",
+    "name": "YAML-PP",
+    "url": "https://metacpan.org/dist/YAML-PP"
+  }
 ]
