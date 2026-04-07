@@ -41,7 +41,7 @@ Module::cpmfile::Util undef S/SK/SKAJI/Module-cpmfile-0.006.tar.gz
 Parallel::Pipes 0.201 S/SK/SKAJI/Parallel-Pipes-0.201.tar.gz
 Parallel::Pipes::App 0.201 S/SK/SKAJI/Parallel-Pipes-0.201.tar.gz
 Parse::LocalDistribution 0.20 I/IS/ISHIGAKI/Parse-LocalDistribution-0.20.tar.gz
-Parse::PMFile 0.47 I/IS/ISHIGAKI/Parse-PMFile-0.47.tar.gz
+Parse::PMFile 0.48 I/IS/ISHIGAKI/Parse-PMFile-0.48.tar.gz
 Proc::ForkSafe 0.001 S/SK/SKAJI/Proc-ForkSafe-0.001.tar.gz
 String::ShellQuote 1.04 R/RO/ROSCH/String-ShellQuote-1.04.tar.gz
 Tie::Handle::Offset 0.004 D/DA/DAGOLDEN/Tie-Handle-Offset-0.004.tar.gz
