@@ -621,20 +621,23 @@ sub save_meta ($self, $ctx, $meta, $distfile, $provides) {
     );
 
     File::Path::mkpath("blib/meta", 0, 0777);
-    open my $fh, ">", "blib/meta/install.json" or die $!;
-    print {$fh} JSON::PP->new->canonical->encode(\%data) . "\n";
-    close $fh;
+    {
+        open my $fh, ">", "blib/meta/install.json" or die $!;
+        print {$fh} JSON::PP->new->canonical->pretty->encode(\%data);
+        close $fh;
+    }
 
     File::Copy::copy("MYMETA.json", "blib/meta/MYMETA.json") or die $!;
 
     my $meta_target_dir = File::Spec->catdir($install_base_meta, $Config{archname}, ".meta", $distvname);
-    my @cmd = (
-        $ctx->{perl},
-        '-MExtUtils::Install=install',
-        '-e',
-        qq[install({ 'blib/meta' => '$meta_target_dir' })],
-    );
-    $ctx->run_command(\@cmd);
+    open my $fh, ">", \my $stdout;
+    {
+        local *STDOUT = $fh;
+        ExtUtils::Install::install({
+            'blib/meta' => $meta_target_dir,
+        });
+    }
+    $ctx->log($stdout);
 }
 
 1;
