@@ -444,9 +444,6 @@ sub _install ($self, $ctx, $cmd, $meta) {
         $ENV{PATH} = $self->_local_lib_env_path($ctx);
         $ENV{PERL5LIB} = $self->_local_lib_env_perl5lib($ctx);
     }
-    if (ref $cmd eq 'ARRAY' && $self->{sudo}) {
-        unshift $cmd->@*, 'sudo';
-    }
     $ctx->run_command($cmd, 0);
 }
 
@@ -463,7 +460,6 @@ sub _use_unsafe_inc ($self, $ctx, $meta) {
 
 sub opts_in_static_install ($self, $ctx, $meta) {
     return if !$self->{static_install};
-    return if $self->{sudo} or $self->{uninstall_shadows};
     return $meta->{x_static_install} && $meta->{x_static_install} == 1;
 }
 
@@ -625,21 +621,23 @@ sub save_meta ($self, $ctx, $meta, $distfile, $provides) {
     );
 
     File::Path::mkpath("blib/meta", 0, 0777);
-    open my $fh, ">", "blib/meta/install.json" or die $!;
-    print {$fh} JSON::PP->new->canonical->encode(\%data) . "\n";
-    close $fh;
+    {
+        open my $fh, ">", "blib/meta/install.json" or die $!;
+        print {$fh} JSON::PP->new->canonical->pretty->encode(\%data);
+        close $fh;
+    }
 
     File::Copy::copy("MYMETA.json", "blib/meta/MYMETA.json") or die $!;
 
     my $meta_target_dir = File::Spec->catdir($install_base_meta, $Config{archname}, ".meta", $distvname);
-    my @cmd = (
-        ($self->{sudo} ? 'sudo' : ()),
-        $ctx->{perl},
-        '-MExtUtils::Install=install',
-        '-e',
-        qq[install({ 'blib/meta' => '$meta_target_dir' })],
-    );
-    $ctx->run_command(\@cmd);
+    open my $fh, ">", \my $stdout;
+    {
+        local *STDOUT = $fh;
+        ExtUtils::Install::install({
+            'blib/meta' => $meta_target_dir,
+        });
+    }
+    $ctx->log($stdout);
 }
 
 1;

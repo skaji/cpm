@@ -89,7 +89,6 @@ sub parse_options ($self, @argv) {
         "cpmfile=s" => sub ($, $value, @) { $self->{dependency_file} = { type => "cpmfile", path => $value } },
         "metafile=s" => sub ($, $value, @) { $self->{dependency_file} = { type => "metafile", path => $value } },
         "snapshot=s" => \($self->{snapshot}),
-        "sudo" => \($self->{sudo}),
         "r|resolver=s@" => \@resolver,
         "default-resolvers!" => \($self->{default_resolvers}),
         "mirror-only" => \($self->{mirror_only}),
@@ -131,11 +130,7 @@ sub parse_options ($self, @argv) {
     if (WIN32 and $self->{workers} != 1) {
         die "The number of workers must be 1 under WIN32 environment.\n";
     }
-    if ($self->{sudo}) {
-        warn "Warning: --sudo is deprecated and will be removed in cpm version 1.\n";
-        !system "sudo", $^X, "-e1" or exit 1;
-    }
-    if ($self->{pureperl_only} or $self->{sudo} or !$self->{notest} or $self->{man_pages}) {
+    if ($self->{pureperl_only} or !$self->{notest} or $self->{man_pages}) {
         $self->{prebuilt} = 0;
     }
 
@@ -297,7 +292,6 @@ sub cmd_install ($self) {
         work_dir  => $work_dir,
         cache_dir => $cache_dir,
         notest    => $self->{notest},
-        sudo      => $self->{sudo},
         resolver  => $self->generate_resolver($ctx, $resolver),
         man_pages => $self->{man_pages},
         retry     => $self->{retry},
