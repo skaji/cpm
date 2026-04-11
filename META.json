@@ -52,7 +52,6 @@
             "Module::cpmfile" : "0.001",
             "Parallel::Pipes::App" : "0.100",
             "Parse::LocalDistribution" : "0.20",
-            "Parse::PMFile" : "0.43",
             "Proc::ForkSafe" : "0.001",
             "perl" : "v5.24.0"
          }

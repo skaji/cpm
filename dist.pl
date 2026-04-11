@@ -32,47 +32,46 @@ my @prereq = (
         'Module::cpmfile' => '0.001',
         'Parallel::Pipes::App' => '0.100',
         'Parse::LocalDistribution' => '0.20',
-        'Parse::PMFile' => '0.43',
         'Proc::ForkSafe' => '0.001',
         'perl' => 'v5.24',
     ],
 );
 
+my @plugin = (
+    'ExecDir' => [ dir => 'script' ],
+    'Git::GatherDir' => [ exclude_filename => 'META.json' ],
+    'CopyFilesFromBuild' => [ copy => 'META.json' ],
+    'VersionFromMainModule' => [],
+    'ReversionOnRelease' => [ prompt => 1 ],
+    'NextRelease' => [ format => '%v  %{yyyy-MM-dd HH:mm:ss VVV}d%{ (TRIAL RELEASE)}T' ],
+    'lib' => [ lib => 'author' ],
+    '=Trial' => [],
+    'Git::Check' => [ allow_dirty => 'Changes', allow_dirty => 'META.json' ],
+    'GithubMeta' => [ issues => 1 ],
+    'MetaProvides::Package' => [ inherit_version => 0, inherit_missing => 0 ],
+    'PruneFiles' => [ filename => 'dist.pl', filename => 'cpm', filename => 'README.md', match => '^(xt|author|maint|example|eg)/' ],
+    'GenerateFile' => [ filename => 'Build.PL', content => "use Module::Build::Tiny;\nBuild_PL();" ],
+    'MetaJSON' => [],
+    'Metadata' => [ x_static_install => 1 ],
+    'Git::Contributors' => [],
+
+    'CheckChangesHasContent' => [],
+    'ConfirmRelease' => [],
+    'UploadToCPAN' => [],
+    'CopyFilesFromRelease' => [ match => '\.pm$' ],
+
+    # XXX
+    'Run::AfterRelease' => [ run => 'env CPAN_RELEASE_VERSION=%v%t %x author/fatpack.pl' ],
+
+    'Git::Commit' => [ commit_msg => '%v%t', allow_dirty => 'Changes', allow_dirty => 'META.json', allow_dirty => 'cpm', allow_dirty_match => '\.pm$' ],
+    'Git::Tag' => [ tag_format => '%v%t', tag_message => '%v%t' ],
+    'Git::Push' => [],
+
+    # XXX
+    'Run::AfterBuild' => [ run_if_release => 'rm -rf author/local', run_if_release => '%x author/fatpack.pl --update-only' ],
+);
+
 my @config = (
     name => 'App-cpm',
-
-    [
-        @prereq,
-        'ExecDir' => [ dir => 'script' ],
-        'Git::GatherDir' => [ exclude_filename => 'META.json' ],
-        'CopyFilesFromBuild' => [ copy => 'META.json' ],
-        'VersionFromMainModule' => [],
-        'ReversionOnRelease' => [ prompt => 1 ],
-        'NextRelease' => [ format => '%v  %{yyyy-MM-dd HH:mm:ss VVV}d%{ (TRIAL RELEASE)}T' ],
-        'lib' => [ lib => 'author' ],
-        '=Trial' => [],
-        'Git::Check' => [ allow_dirty => 'Changes', allow_dirty => 'META.json' ],
-        'GithubMeta' => [ issues => 1 ],
-        'MetaProvides::Package' => [ inherit_version => 0, inherit_missing => 0 ],
-        'PruneFiles' => [ filename => 'dist.pl', filename => 'cpm', filename => 'README.md', match => '^(xt|author|maint|example|eg)/' ],
-        'GenerateFile' => [ filename => 'Build.PL', content => "use Module::Build::Tiny;\nBuild_PL();" ],
-        'MetaJSON' => [],
-        'Metadata' => [ x_static_install => 1 ],
-        'Git::Contributors' => [],
-
-        'CheckChangesHasContent' => [],
-        'ConfirmRelease' => [],
-        'UploadToCPAN' => [],
-        'CopyFilesFromRelease' => [ match => '\.pm$' ],
-
-        # XXX
-        'Run::AfterRelease' => [ run => 'env CPAN_RELEASE_VERSION=%v%t %x author/fatpack.pl' ],
-
-        'Git::Commit' => [ commit_msg => '%v%t', allow_dirty => 'Changes', allow_dirty => 'META.json', allow_dirty => 'cpm', allow_dirty_match => '\.pm$' ],
-        'Git::Tag' => [ tag_format => '%v%t', tag_message => '%v%t' ],
-        'Git::Push' => [],
-
-        # XXX
-        'Run::AfterBuild' => [ run_if_release => 'rm -rf author/local', run_if_release => '%x author/fatpack.pl --update-only' ],
-    ],
+    [ @prereq, @plugin ],
 );
