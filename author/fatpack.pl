@@ -74,11 +74,7 @@ my @extra = qw(
 );
 
 my $exclude = join ",", qw(
-    Carp
-    ExtUtils::MakeMaker
     ExtUtils::MakeMaker::CPANfile
-    Term::Table
-    Test::Simple
 );
 
 my $target = 'v5.24';
