@@ -11,6 +11,7 @@ use File::Basename qw(dirname);
 use File::Find ();
 use File::Path qw(mkpath);
 use File::Spec::Functions qw(abs2rel catdir catfile rel2abs);
+
 use parent 'App::cpm::Builder::Base';
 
 my sub find_files ($pattern, $dir) {
@@ -90,17 +91,17 @@ sub configure ($self, $ctx) {
 
 sub build ($self, $ctx) {
     $self->run_build($ctx, sub {
-        my @modules = find_files(qr/\.(?:pm|pod)\z/, 'lib');
-        my @scripts = script_files();
-        my %files = (
-            (map { $_ => catfile('blib', $_) } @modules),
-            (map { $_ => catfile('blib', $_) } @scripts),
+        my @module = find_files(qr/\.(?:pm|pod)\z/, 'lib');
+        my @script = script_files();
+        my %file = (
+            (map { $_ => catfile('blib', $_) } @module),
+            (map { $_ => catfile('blib', $_) } @script),
             share_files($self->meta->name),
         );
-        pm_to_blib(\%files, catdir(qw(blib lib auto)));
-        make_executable($_) for grep { m{\Ablib/script/} } values %files;
+        pm_to_blib(\%file, catdir(qw(blib lib auto)));
+        make_executable($_) for grep { m{\Ablib/script/} } values %file;
         mkpath(catdir(qw(blib arch)));
-        build_manpages($self->_install_paths, ExtUtils::Config->new, \@modules, \@scripts) if $self->{man_pages};
+        build_manpages($self->_install_paths, ExtUtils::Config->new, \@module, \@script) if $self->{man_pages};
         return 1;
     });
 }
@@ -108,7 +109,6 @@ sub build ($self, $ctx) {
 sub test ($self, $ctx) {
     $self->run_test($ctx, sub {
         return 1 if !-d 't';
-
         require TAP::Harness::Env;
         my $tester = TAP::Harness::Env->create({
             color => -t STDOUT ? 1 : 0,
@@ -120,7 +120,6 @@ sub test ($self, $ctx) {
 
 sub install ($self, $ctx) {
     $self->run_install($ctx, sub {
-        die "Must run build first\n" if !-d 'blib';
         ExtUtils::Install::install($self->_install_paths->install_map, 0, 0, 0);
         return 1;
     });

@@ -337,12 +337,12 @@ sub configure ($self, $ctx, $task) {
 }
 
 sub configure_builder ($self, $ctx, $meta) {
-    my @candidates = (
+    my @candidate = (
         ($self->{static_install} ? [ 'App::cpm::Builder::Static', $self->{mb_argv} ] : ()),
         [ 'App::cpm::Builder::MB',     $self->{mb_argv} ],
         [ 'App::cpm::Builder::EUMM',   $self->{eumm_argv} ],
     );
-    for my $candidate (@candidates) {
+    for my $candidate (@candidate) {
         my ($class, $argv) = $candidate->@*;
         next if !$class->supports($meta);
 
