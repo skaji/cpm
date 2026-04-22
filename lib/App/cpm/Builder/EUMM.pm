@@ -1,0 +1,37 @@
+package App::cpm::Builder::EUMM;
+use v5.24;
+use warnings;
+use experimental qw(signatures);
+
+use parent 'App::cpm::Builder';
+
+sub supports ($class, @) {
+    -f 'Makefile.PL';
+}
+
+sub configure ($self, $ctx) {
+    if (!$ctx->{make}) {
+        $ctx->log("There is Makefile.PL, but you don't have 'make' command; you should install 'make' command first");
+        return;
+    }
+    my @cmd = ($ctx->{perl}, 'Makefile.PL');
+    push @cmd, "INSTALL_BASE=$self->{install_base}" if $self->{install_base};
+    push @cmd, qw(INSTALLMAN1DIR=none INSTALLMAN3DIR=none) if $self->{need_noman_argv};
+    push @cmd, 'PUREPERL_ONLY=1' if $self->{pureperl_only};
+    push @cmd, $self->{argv}->@* if $self->{argv}->@*;
+    $self->run_configure($ctx, \@cmd) && -f 'Makefile';
+}
+
+sub build ($self, $ctx) {
+    $self->run_build($ctx, [ $ctx->{make} ]);
+}
+
+sub test ($self, $ctx) {
+    $self->run_test($ctx, [ $ctx->{make}, "test" ]);
+}
+
+sub install ($self, $ctx) {
+    $self->run_install($ctx, [ $ctx->{make}, "install" ]);
+}
+
+1;

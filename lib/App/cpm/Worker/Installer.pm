@@ -3,6 +3,8 @@ use v5.24;
 use warnings;
 use experimental qw(lexical_subs signatures);
 
+use App::cpm::Builder::EUMM;
+use App::cpm::Builder::MB;
 use App::cpm::Builder::Static;
 use App::cpm::Requirement;
 use App::cpm::Util;
@@ -51,7 +53,7 @@ sub work ($self, $ctx, $task) {
             return +{
                 ok => 1,
                 requirements => $result->{requirements},
-                static_builder => $result->{static_builder},
+                builder => $result->{builder},
             };
         } else {
             $ctx->log("Failed to configure distribution");
@@ -321,141 +323,61 @@ sub configure ($self, $ctx, $task) {
     my ($dir, $distfile, $meta, $source) = $task->@{qw(directory distfile meta source)};
     my $guard = pushd $dir;
 
-    my $install_base = $self->{local_lib} || $self->{implicit_install_base};
     $ctx->log("Configuring distribution");
-    my ($static_builder, $configure_ok);
-    {
-        if ($self->opts_in_static_install($ctx, $meta)) {
-            $static_builder = $self->static_install_configure($ctx, $meta);
-            ++$configure_ok and last;
-        }
-        if (-f 'Build.PL') {
-            my @cmd = ($ctx->{perl}, 'Build.PL');
-            push @cmd, "--install_base", $install_base if $install_base;
-            push @cmd, qw(--config installman1dir= --config installsiteman1dir= --config installman3dir= --config installsiteman3dir=) if $self->{need_noman_argv};
-            push @cmd, '--pureperl-only' if $self->{pureperl_only};
-            push @cmd, $self->{mb_argv}->@* if $self->{mb_argv}->@*;
-            $self->_retry($ctx, sub () {
-                $self->_configure($ctx, \@cmd, $meta);
-                -f 'Build';
-            }) and ++$configure_ok and last;
-        }
-        if (-f 'Makefile.PL') {
-            if (!$ctx->{make}) {
-                $ctx->log("There is Makefile.PL, but you don't have 'make' command; you should install 'make' command first");
-                last;
-            }
-            my @cmd = ($ctx->{perl}, 'Makefile.PL');
-            push @cmd, "INSTALL_BASE=$install_base" if $install_base;
-            push @cmd, qw(INSTALLMAN1DIR=none INSTALLMAN3DIR=none) if $self->{need_noman_argv};
-            push @cmd, 'PUREPERL_ONLY=1' if $self->{pureperl_only};
-            push @cmd, $self->{eumm_argv}->@* if $self->{eumm_argv}->@*;
-            $self->_retry($ctx, sub () {
-                $self->_configure($ctx, \@cmd, $meta);
-                -f 'Makefile';
-            }) and ++$configure_ok and last;
-        }
-    }
-    return if !$configure_ok;
+    my $builder = $self->configure_builder($ctx, $meta);
+    return if !$builder;
 
     my $phase = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
     my $mymeta = $self->_load_metafile($ctx, $distfile, 'MYMETA.json', 'MYMETA.yml');
     my $req = $self->_extract_requirements($ctx, $mymeta, $phase);
     return +{
         requirements => $req,
-        static_builder => $static_builder,
+        builder => $builder,
     };
 }
 
-sub _local_lib_env_path ($self, $ctx) {
-    join $Config{path_sep}, File::Spec->catdir($self->{local_lib}, "bin"), ( $ENV{PATH} ? $ENV{PATH} : () );
-}
+sub configure_builder ($self, $ctx, $meta) {
+    my @candidates = (
+        ($self->{static_install} ? [ 'App::cpm::Builder::Static', $self->{mb_argv} ] : ()),
+        [ 'App::cpm::Builder::MB',     $self->{mb_argv} ],
+        [ 'App::cpm::Builder::EUMM',   $self->{eumm_argv} ],
+    );
+    for my $candidate (@candidates) {
+        my ($class, $argv) = $candidate->@*;
+        next if !$class->supports($meta);
 
-sub _local_lib_env_perl5lib ($self, $ctx) {
-    join $Config{path_sep}, File::Spec->catdir($self->{local_lib}, "lib", "perl5"), ( $ENV{PERL5LIB} ? $ENV{PERL5LIB} : ());
-}
+        my $builder = eval {
+            $class->new(
+                meta => $meta,
+                local_lib => $self->{local_lib},
+                install_base => $self->{local_lib} || $self->{implicit_install_base},
+                need_noman_argv => $self->{need_noman_argv},
+                man_pages => $self->{man_pages},
+                pureperl_only => $self->{pureperl_only},
+                argv => $argv,
+                configure_timeout => $self->{configure_timeout},
+                build_timeout => $self->{build_timeout},
+                test_timeout => $self->{test_timeout},
+            );
+        };
+        if (!$builder) {
+            chomp(my $error = $@ || "unknown error");
+            $ctx->log("$class failed to initialize: $error");
+            next;
+        }
 
-sub _configure ($self, $ctx, $cmd, $meta) {
-    local %ENV = %ENV;
-    $ENV{PERL5_CPAN_IS_RUNNING} = $$;
-    $ENV{PERL5_CPANPLUS_IS_RUNNING} = $$;
-    $ENV{PERL5_CPANM_IS_RUNNING} = $$;
-    $ENV{PERL_MM_USE_DEFAULT} = 1;
-    $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($ctx, $meta);
-    if ($self->{local_lib}) {
-        $ENV{PATH} = $self->_local_lib_env_path($ctx);
-        $ENV{PERL5LIB} = $self->_local_lib_env_perl5lib($ctx);
+        my $ok = $self->_retry($ctx, sub () {
+            my $configured = eval { $builder->configure($ctx) };
+            if (!$configured) {
+                chomp(my $error = $@ || "configure failed");
+                $ctx->log("$class failed to configure: $error");
+                return;
+            }
+            return 1;
+        });
+        return $builder if $ok;
     }
-    $ctx->run_command($cmd, $self->{configure_timeout});
-}
-
-sub static_install_configure ($self, $ctx, $meta) {
-    my $builder = App::cpm::Builder::Static->new(meta => $meta);
-    my @argv;
-    if (my $install_base = $self->{local_lib} || $self->{implicit_install_base}) {
-        push @argv, "--install_base", $install_base;
-    }
-    if ($self->{need_noman_argv}) {
-        push @argv, qw(--config installman1dir= --config installsiteman1dir= --config installman3dir= --config installsiteman3dir=);
-    }
-    if ($self->{pureperl_only}) {
-        push @argv, '--pureperl-only';
-    }
-    if ($self->{mb_argv}->@*) {
-        push @argv, $self->{mb_argv}->@*;
-    }
-    local %ENV = %ENV;
-    if ($self->{local_lib}) {
-        $ENV{PATH} = $self->_local_lib_env_path($ctx);
-        $ENV{PERL5LIB} = $self->_local_lib_env_perl5lib($ctx);
-    }
-    $builder->configure(@argv);
-    return $builder;
-}
-
-
-sub _build ($self, $ctx, $cmd, $meta) {
-    local %ENV = %ENV;
-    $ENV{PERL_MM_USE_DEFAULT} = 1;
-    $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($ctx, $meta);
-    if ($self->{local_lib}) {
-        $ENV{PATH} = $self->_local_lib_env_path($ctx);
-        $ENV{PERL5LIB} = $self->_local_lib_env_perl5lib($ctx);
-    }
-    $ctx->run_command($cmd, $self->{build_timeout});
-}
-
-sub _test ($self, $ctx, $cmd, $meta) {
-    local %ENV = %ENV;
-    $ENV{PERL_MM_USE_DEFAULT} = 1;
-    $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($ctx, $meta);
-    $ENV{NONINTERACTIVE_TESTING} = 1;
-    if ($self->{local_lib}) {
-        $ENV{PATH} = $self->_local_lib_env_path($ctx);
-        $ENV{PERL5LIB} = $self->_local_lib_env_perl5lib($ctx);
-    }
-    $ctx->run_command($cmd, $self->{test_timeout});
-}
-
-sub _install ($self, $ctx, $cmd, $meta) {
-    local %ENV = %ENV;
-    $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($ctx, $meta);
-    if ($self->{local_lib}) {
-        $ENV{PATH} = $self->_local_lib_env_path($ctx);
-        $ENV{PERL5LIB} = $self->_local_lib_env_perl5lib($ctx);
-    }
-    $ctx->run_command($cmd, 0);
-}
-
-sub _use_unsafe_inc ($self, $ctx, $meta) {
-    if (exists $ENV{PERL_USE_UNSAFE_INC}) {
-        return $ENV{PERL_USE_UNSAFE_INC};
-    }
-    if (exists $meta->{x_use_unsafe_inc}) {
-        $ctx->log("Distribution opts in x_use_unsafe_inc: $meta->{x_use_unsafe_inc}"); # XXX
-        return $meta->{x_use_unsafe_inc};
-    }
-    1;
+    return;
 }
 
 sub opts_in_static_install ($self, $ctx, $meta) {
@@ -466,28 +388,16 @@ sub opts_in_static_install ($self, $ctx, $meta) {
 sub install ($self, $ctx, $task) {
     return $self->install_prebuilt($ctx, $task) if $task->{prebuilt};
 
-    my ($dir, $static_builder, $distvname, $meta, $provides, $distfile)
-        = $task->@{qw(directory static_builder distvname meta provides distfile)};
+    my ($dir, $builder, $distvname, $meta, $provides, $distfile)
+        = $task->@{qw(directory builder distvname meta provides distfile)};
     my $guard = pushd $dir;
 
     $ctx->log("Building " . ($self->{notest} ? "" : "and testing ") . "distribution");
     my $installed;
-    if ($static_builder) {
-        $self->_build($ctx, sub () { $static_builder->build }, $meta)
-        && ($self->{notest} || $self->_test($ctx, sub () { $static_builder->build("test") }, $meta))
-        && $self->_install($ctx, sub () { $static_builder->build("install") }, $meta)
-        && $installed++;
-    } elsif (-f 'Build') {
-        $self->_retry($ctx, sub () { $self->_build($ctx, [ $ctx->{perl}, "./Build" ], $meta)  })
-        && ($self->{notest} || $self->_retry($ctx, sub () { $self->_test($ctx, [ $ctx->{perl}, "./Build", "test" ], $meta) }))
-        && $self->_retry($ctx, sub () { $self->_install($ctx, [ $ctx->{perl}, "./Build", "install" ], $meta)  })
-        && $installed++;
-    } else {
-        $self->_retry($ctx, sub () { $self->_build($ctx, [ $ctx->{make} ], $meta)  })
-        && ($self->{notest} || $self->_retry($ctx, sub () { $self->_test($ctx, [ $ctx->{make}, "test" ], $meta) }))
-        && $self->_retry($ctx, sub () { $self->_install($ctx, [ $ctx->{make}, "install" ], $meta) })
-        && $installed++;
-    }
+    $self->_retry($ctx, sub () { $builder->build($ctx) })
+    && ($self->{notest} || $self->_retry($ctx, sub () { $builder->test($ctx) }))
+    && $self->_retry($ctx, sub () { $builder->install($ctx) })
+    && $installed++;
 
     if ($installed && $distfile) {
         $self->save_meta($ctx, $meta, $distfile, $provides);

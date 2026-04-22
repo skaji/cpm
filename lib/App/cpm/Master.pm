@@ -240,7 +240,7 @@ sub _calculate_tasks ($self, $ctx) {
                     directory => $dist->directory,
                     distfile => $dist->{distfile},
                     uri => $dist->uri,
-                    static_builder => $dist->static_builder,
+                    builder => $dist->builder,
                     prebuilt => $dist->prebuilt,
                     provides => $dist->provides,
                 );
@@ -458,7 +458,7 @@ sub _register_configure_result ($self, $ctx, $task) {
     my $distribution = $self->distribution($task->distfile);
     $distribution->configured(1);
     $distribution->requirements($_ => $task->{requirements}{$_}) for keys $task->{requirements}->%*;
-    $distribution->static_builder($task->{static_builder});
+    $distribution->builder($task->{builder});
     return 1;
 }
 
