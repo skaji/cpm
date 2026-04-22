@@ -1,4 +1,4 @@
-package App::cpm v0.999.3;
+package App::cpm v0.999.4;
 use v5.24;
 use warnings;
 use experimental qw(lexical_subs signatures);

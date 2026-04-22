@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+v0.999.4  2026-04-22 09:02:25 EEST (TRIAL RELEASE)
+        - Refactor installer build logic into builders (#278)
+
 v0.999.3  2026-04-09 01:06:07 JST (TRIAL RELEASE)
         - Remove --sudo option (#277)
         - Avoid spawning another process to save meta (#277)
