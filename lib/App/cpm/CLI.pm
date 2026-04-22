@@ -27,11 +27,9 @@ use File::Copy ();
 use File::Path ();
 use File::Spec;
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case bundling);
-use List::Util ();
 use Module::CPANfile;
 use Module::cpmfile;
 use Parallel::Pipes::App;
-use Pod::Text ();
 
 sub new ($class, %argv) {
     my $prebuilt = exists $ENV{PERL_CPM_PREBUILT} && !$ENV{PERL_CPM_PREBUILT} ? 0 : 1;
