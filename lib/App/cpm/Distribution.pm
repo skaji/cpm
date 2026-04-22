@@ -52,7 +52,7 @@ for my $attr (qw(
     uri
     provides
     ref
-    static_builder
+    builder
     prebuilt
 )) {
     no strict 'refs';
