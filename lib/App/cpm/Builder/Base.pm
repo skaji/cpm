@@ -1,4 +1,4 @@
-package App::cpm::Builder;
+package App::cpm::Builder::Base;
 use v5.24;
 use warnings;
 use experimental qw(signatures);

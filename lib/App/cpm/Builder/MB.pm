@@ -3,7 +3,7 @@ use v5.24;
 use warnings;
 use experimental qw(signatures);
 
-use parent 'App::cpm::Builder';
+use parent 'App::cpm::Builder::Base';
 
 sub supports ($class, @) {
     -f 'Build.PL';

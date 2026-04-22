@@ -346,35 +346,20 @@ sub configure_builder ($self, $ctx, $meta) {
         my ($class, $argv) = $candidate->@*;
         next if !$class->supports($meta);
 
-        my $builder = eval {
-            $class->new(
-                meta => $meta,
-                local_lib => $self->{local_lib},
-                install_base => $self->{local_lib} || $self->{implicit_install_base},
-                need_noman_argv => $self->{need_noman_argv},
-                man_pages => $self->{man_pages},
-                pureperl_only => $self->{pureperl_only},
-                argv => $argv,
-                configure_timeout => $self->{configure_timeout},
-                build_timeout => $self->{build_timeout},
-                test_timeout => $self->{test_timeout},
-            );
-        };
-        if (!$builder) {
-            chomp(my $error = $@ || "unknown error");
-            $ctx->log("$class failed to initialize: $error");
-            next;
-        }
+        my $builder = $class->new(
+            meta => $meta,
+            local_lib => $self->{local_lib},
+            install_base => $self->{local_lib} || $self->{implicit_install_base},
+            need_noman_argv => $self->{need_noman_argv},
+            man_pages => $self->{man_pages},
+            pureperl_only => $self->{pureperl_only},
+            argv => $argv,
+            configure_timeout => $self->{configure_timeout},
+            build_timeout => $self->{build_timeout},
+            test_timeout => $self->{test_timeout},
+        );
 
-        my $ok = $self->_retry($ctx, sub () {
-            my $configured = eval { $builder->configure($ctx) };
-            if (!$configured) {
-                chomp(my $error = $@ || "configure failed");
-                $ctx->log("$class failed to configure: $error");
-                return;
-            }
-            return 1;
-        });
+        my $ok = $self->_retry($ctx, sub () { $builder->configure($ctx) });
         return $builder if $ok;
     }
     return;

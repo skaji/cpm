@@ -11,7 +11,7 @@ use File::Basename qw(dirname);
 use File::Find ();
 use File::Path qw(mkpath);
 use File::Spec::Functions qw(abs2rel catdir catfile rel2abs);
-use parent 'App::cpm::Builder';
+use parent 'App::cpm::Builder::Base';
 
 my sub find_files ($pattern, $dir) {
     my @files;
