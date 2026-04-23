@@ -129,7 +129,7 @@ sub register_result ($self, $ctx, $result) {
 
 sub info ($self, $task) {
     my $type = $task->type;
-    return if !$App::cpm::Logger::VERBOSE && $type ne "install";
+    return if !$App::cpm::Logger::VERBOSE && $type ne "install" && $task->{ok};
     my $name = $task->distvname;
     my ($message, $optional);
     if ($type eq "resolve") {

@@ -45,7 +45,7 @@ sub work ($self, $ctx, $task) {
                 prebuilt => $result->{prebuilt},
             };
         } else {
-            $ctx->log("Failed to fetch/configure distribution");
+            $ctx->log("Failed to fetch distribution");
         }
     } elsif ($type eq "configure") {
         # $task->{directory}, $task->{distfile}, $task->{meta});
@@ -60,10 +60,12 @@ sub work ($self, $ctx, $task) {
         }
     } elsif ($type eq "build") {
         my $ok = $self->build($ctx, $task);
+        $ctx->log("Failed to build distribution") if !$ok;
         return { ok => $ok };
     } elsif ($type eq "test") {
         my $ok = $self->test($ctx, $task);
-        return { ok => $ok, ready => $ok ? 1 : 0 };
+        $ctx->log("Failed to test distribution") if !$ok;
+        return { ok => $ok };
     } elsif ($type eq "install") {
         my $ok = $self->install($ctx, $task);
         my $message = $ok ? "Successfully installed distribution" : "Failed to install distribution";
