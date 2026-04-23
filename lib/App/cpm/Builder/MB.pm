@@ -1,7 +1,7 @@
 package App::cpm::Builder::MB;
 use v5.24;
 use warnings;
-use experimental qw(signatures);
+use experimental qw(lexical_subs signatures);
 
 use parent 'App::cpm::Builder::Base';
 
