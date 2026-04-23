@@ -58,6 +58,12 @@ sub work ($self, $ctx, $task) {
         } else {
             $ctx->log("Failed to configure distribution");
         }
+    } elsif ($type eq "build") {
+        my $ok = $self->build($ctx, $task);
+        return { ok => $ok };
+    } elsif ($type eq "test") {
+        my $ok = $self->test($ctx, $task);
+        return { ok => $ok, ready => $ok ? 1 : 0 };
     } elsif ($type eq "install") {
         my $ok = $self->install($ctx, $task);
         my $message = $ok ? "Successfully installed distribution" : "Failed to install distribution";
@@ -377,18 +383,30 @@ sub install ($self, $ctx, $task) {
         = $task->@{qw(directory builder distvname meta provides distfile)};
     my $guard = pushd $dir;
 
-    $ctx->log("Building " . ($self->{notest} ? "" : "and testing ") . "distribution");
-    my $installed;
-    $self->_retry($ctx, sub () { $builder->build($ctx) })
-    && ($self->{notest} || $self->_retry($ctx, sub () { $builder->test($ctx) }))
-    && $self->_retry($ctx, sub () { $builder->install($ctx) })
-    && $installed++;
+    $ctx->log("Installing distribution");
+    my $installed = $self->_retry($ctx, sub () { $builder->install($ctx) });
 
     if ($installed && $distfile) {
         $self->save_meta($ctx, $meta, $distfile, $provides);
         $self->save_prebuilt($ctx, $task) if $self->enable_prebuilt($ctx, $task->{uri});
     }
     return $installed;
+}
+
+sub build ($self, $ctx, $task) {
+    my ($dir, $builder) = $task->@{qw(directory builder)};
+    my $guard = pushd $dir;
+
+    $ctx->log("Building distribution");
+    return $self->_retry($ctx, sub () { $builder->build($ctx) });
+}
+
+sub test ($self, $ctx, $task) {
+    my ($dir, $builder) = $task->@{qw(directory builder)};
+    my $guard = pushd $dir;
+
+    $ctx->log("Testing distribution");
+    return $self->_retry($ctx, sub () { $builder->test($ctx) });
 }
 
 sub install_prebuilt ($self, $ctx, $task) {

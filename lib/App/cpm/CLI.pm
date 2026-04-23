@@ -276,6 +276,7 @@ sub cmd_install ($self) {
         core_inc => $self->_core_inc,
         search_inc => $self->_search_inc,
         global => $self->{global},
+        notest => $self->{notest},
         show_progress => $self->{show_progress},
         (exists $self->{target_perl} ? (target_perl => $self->{target_perl}) : ()),
     );

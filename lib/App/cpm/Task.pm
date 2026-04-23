@@ -14,7 +14,7 @@ sub uid ($self) { $self->{uid} }
 
 sub _uid ($self) {
     my $type = $self->type;
-    if (grep { $type eq $_ } qw(fetch configure install)) {
+    if (grep { $type eq $_ } qw(fetch configure build test install)) {
         "$type " . $self->distfile;
     } elsif ($type eq "resolve") {
         "$type " . $self->{package};

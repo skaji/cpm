@@ -233,17 +233,20 @@ sub _calculate_tasks ($self, $ctx) {
             my ($is_satisfied, @need_resolve) = $self->is_satisfied($dist_requirements);
             if ($is_satisfied) {
                 $dist->registered(1);
-                $self->add_task(
-                    $ctx,
-                    type => "install",
-                    meta => $dist->meta,
-                    directory => $dist->directory,
-                    distfile => $dist->{distfile},
-                    uri => $dist->uri,
-                    builder => $dist->builder,
-                    prebuilt => $dist->prebuilt,
-                    provides => $dist->provides,
-                );
+                if ($dist->prebuilt) {
+                    $dist->ready(1);
+                } else {
+                    $self->add_task(
+                        $ctx,
+                        type => "build",
+                        meta => $dist->meta,
+                        directory => $dist->directory,
+                        distfile => $dist->{distfile},
+                        uri => $dist->uri,
+                        builder => $dist->builder,
+                        provides => $dist->provides,
+                    );
+                }
             } elsif (!defined $is_satisfied) {
                 my ($req) = grep { $_->{package} eq "perl" } $dist_requirements->@*;
                 my $msg = sprintf "%s requires perl %s, but you have only %s",
@@ -259,6 +262,39 @@ sub _calculate_tasks ($self, $ctx) {
                 my $ok = $self->_register_resolve_task($ctx, @need_resolve);
                 $self->{_fail_install}{$dist->distfile}++ if !$ok;
             }
+        }
+    }
+
+    if (my @dists = grep { $_->built && !$_->registered } @distributions) {
+        for my $dist (@dists) {
+            $dist->registered(1);
+            $self->add_task(
+                $ctx,
+                type => "test",
+                meta => $dist->meta,
+                directory => $dist->directory,
+                distfile => $dist->{distfile},
+                uri => $dist->uri,
+                builder => $dist->builder,
+                provides => $dist->provides,
+            );
+        }
+    }
+
+    if (my @dists = grep { $_->ready && !$_->registered } @distributions) {
+        for my $dist (@dists) {
+            $dist->registered(1);
+            $self->add_task(
+                $ctx,
+                type => "install",
+                meta => $dist->meta,
+                directory => $dist->directory,
+                distfile => $dist->{distfile},
+                uri => $dist->uri,
+                builder => $dist->builder,
+                prebuilt => $dist->prebuilt,
+                provides => $dist->provides,
+            );
         }
     }
 }
@@ -470,6 +506,30 @@ sub _register_install_result ($self, $ctx, $task) {
     my $distribution = $self->distribution($task->distfile);
     $distribution->installed(1);
     $self->{installed_distributions}++;
+    return 1;
+}
+
+sub _register_build_result ($self, $ctx, $task) {
+    if (!$task->is_success) {
+        $self->{_fail_install}{$task->distfile}++;
+        return;
+    }
+    my $distribution = $self->distribution($task->distfile);
+    if ($self->{notest}) {
+        $distribution->ready(1);
+    } else {
+        $distribution->built(1);
+    }
+    return 1;
+}
+
+sub _register_test_result ($self, $ctx, $task) {
+    if (!$task->is_success) {
+        $self->{_fail_install}{$task->distfile}++;
+        return;
+    }
+    my $distribution = $self->distribution($task->distfile);
+    $distribution->ready(1);
     return 1;
 }
 

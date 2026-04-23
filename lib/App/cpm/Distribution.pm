@@ -13,7 +13,9 @@ use constant STATE_DEPS_REGISTERED => 0b000010;
 use constant STATE_RESOLVED        => 0b000100; # default
 use constant STATE_FETCHED         => 0b001000;
 use constant STATE_CONFIGURED      => 0b010000;
-use constant STATE_INSTALLED       => 0b100000;
+use constant STATE_BUILT           => 0b100000;
+use constant STATE_READY           => 0b1000000;
+use constant STATE_INSTALLED       => 0b10000000;
 
 sub new ($class, %argv) {
     my $uri = delete $argv{uri};
@@ -126,6 +128,20 @@ sub installed ($self, @argv) {
         $self->{_state} = STATE_INSTALLED;
     }
     $self->{_state} & STATE_INSTALLED;
+}
+
+sub ready ($self, @argv) {
+    if (@argv && $argv[0]) {
+        $self->{_state} = STATE_READY;
+    }
+    $self->{_state} & STATE_READY;
+}
+
+sub built ($self, @argv) {
+    if (@argv && $argv[0]) {
+        $self->{_state} = STATE_BUILT;
+    }
+    $self->{_state} & STATE_BUILT;
 }
 
 sub providing ($self, $package, $version_range = undef) {
