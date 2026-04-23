@@ -23,7 +23,7 @@ sub configure ($self, $ctx) {
 }
 
 sub build ($self, $ctx) {
-    $self->run_build($ctx, [ $ctx->{make} ]);
+    $self->run_build($ctx, [ $ctx->{make} ]) && $self->_prepare_paths_cache;
 }
 
 sub test ($self, $ctx) {

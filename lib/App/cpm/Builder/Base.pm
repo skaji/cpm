@@ -4,7 +4,23 @@ use warnings;
 use experimental qw(lexical_subs signatures);
 
 use Config;
+use File::Find ();
 use File::Spec;
+
+my sub nonempty ($path) {
+    return if !-d $path;
+    my $found;
+    File::Find::find({
+        wanted => sub (@) {
+            return if !-f $File::Find::name;
+            return if $File::Find::name =~ /\.exists$/;
+            $found = 1;
+            $File::Find::prune = 1;
+        },
+        no_chdir => 1,
+    }, $path);
+    return $found;
+}
 
 sub new ($class, %args) {
     bless \%args, $class;
@@ -16,6 +32,26 @@ sub meta ($self) {
 
 sub local_lib ($self) {
     $self->{local_lib};
+}
+
+sub _prepare_paths_cache ($self) {
+    $self->{libs} = [
+        grep { nonempty($_) }
+        map { File::Spec->catdir($self->{directory}, qw(blib), $_) } qw(arch lib)
+    ];
+    $self->{paths} = [
+        grep { nonempty($_) }
+        map { File::Spec->catdir($self->{directory}, qw(blib), $_) } qw(script bin)
+    ];
+    return 1;
+}
+
+sub libs ($self) {
+    $self->{libs};
+}
+
+sub paths ($self) {
+    $self->{paths};
 }
 
 sub _local_lib_env_path ($self) {

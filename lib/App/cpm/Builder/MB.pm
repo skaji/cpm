@@ -19,7 +19,7 @@ sub configure ($self, $ctx) {
 }
 
 sub build ($self, $ctx) {
-    $self->run_build($ctx, [ $ctx->{perl}, "./Build" ]);
+    $self->run_build($ctx, [ $ctx->{perl}, "./Build" ]) && $self->_prepare_paths_cache;
 }
 
 sub test ($self, $ctx) {

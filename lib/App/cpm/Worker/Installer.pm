@@ -236,6 +236,7 @@ sub find_prebuilt ($self, $ctx, $uri) {
     my $req = $self->_extract_requirements($ctx, $mymeta, [qw(test runtime)]);
     my $builder = App::cpm::Builder::Prebuilt->new(
         meta => $meta,
+        directory => $dir,
         distvname => $info->distvname,
         local_lib => $self->{local_lib},
         install_base => $self->{local_lib} || $self->{implicit_install_base},
@@ -332,7 +333,7 @@ sub configure ($self, $ctx, $task) {
     my $guard = pushd $dir;
 
     $ctx->log("Configuring distribution");
-    my $builder = $self->configure_builder($ctx, $meta);
+    my $builder = $self->configure_builder($ctx, $dir, $meta);
     return if !$builder;
 
     my $mymeta = $self->_load_metafile($ctx, $distfile, 'MYMETA.json', 'MYMETA.yml');
@@ -343,7 +344,7 @@ sub configure ($self, $ctx, $task) {
     };
 }
 
-sub configure_builder ($self, $ctx, $meta) {
+sub configure_builder ($self, $ctx, $dir, $meta) {
     my @candidate = (
         ($self->{static_install} ? [ 'App::cpm::Builder::Static', $self->{mb_argv} ] : ()),
         [ 'App::cpm::Builder::MB',     $self->{mb_argv} ],
@@ -355,6 +356,7 @@ sub configure_builder ($self, $ctx, $meta) {
 
         my $builder = $class->new(
             meta => $meta,
+            directory => $dir,
             local_lib => $self->{local_lib},
             install_base => $self->{local_lib} || $self->{implicit_install_base},
             need_noman_argv => $self->{need_noman_argv},

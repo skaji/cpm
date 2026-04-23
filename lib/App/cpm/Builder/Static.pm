@@ -103,7 +103,7 @@ sub build ($self, $ctx) {
         mkpath(catdir(qw(blib arch)));
         build_manpages($self->_install_paths, ExtUtils::Config->new, \@module, \@script) if $self->{man_pages};
         return 1;
-    });
+    }) && $self->_prepare_paths_cache;
 }
 
 sub test ($self, $ctx) {
