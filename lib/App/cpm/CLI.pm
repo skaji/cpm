@@ -290,7 +290,6 @@ sub cmd_install ($self) {
         home      => $self->{home},
         work_dir  => $work_dir,
         cache_dir => $cache_dir,
-        notest    => $self->{notest},
         resolver  => $self->generate_resolver($ctx, $resolver),
         man_pages => $self->{man_pages},
         retry     => $self->{retry},

@@ -34,23 +34,37 @@ Notes:
 
 ## Current State Model
 
-`App::cpm::Distribution` currently has these states:
+`App::cpm::Distribution` currently has one lifecycle state plus scheduler flags.
 
-- `registered`
-- `deps_registered`
+Lifecycle state:
+
 - `resolved`
 - `fetched`
 - `configured`
 - `built`
-- `ready`
+- `tested`
 - `installed`
+
+Scheduler flags:
+
+- `registered`
+- `deps_registered`
 
 Current meaning:
 
-- `configured`: builder has been chosen and configure has succeeded
-- `built`: build step has completed
-- `ready`: the distribution is usable by later stages; this is intended to become the dependency gate
+- `resolved`: the distribution is known but nothing has been fetched yet
+- `fetched`: source distribution has been fetched and unpacked
+- `configured`: source distribution has finished `configure`
+- `built`: build artifact exists
+- `tested`: test task has completed successfully
 - `installed`: files have been copied to the final target location
+
+Scheduler flags mean:
+
+- `registered`: the next task for the current lifecycle state has already been enqueued
+- `deps_registered`: dependency resolution needed to leave the current lifecycle state has already been enqueued
+
+When lifecycle state changes, both scheduler flags are reset.
 
 ## Task Model
 
@@ -69,20 +83,20 @@ Current source-distribution flow:
 2. `configure`
 3. `build`
 4. `test` (unless `--notest`)
-5. `ready`
-6. `install`
+5. `install`
 
 Current prebuilt flow:
 
 1. `fetch`
-2. `configured`-equivalent metadata/requirement handling
-3. `ready`
-4. `install`
+2. `built`
+3. `install`
 
 Notes:
 
-- prebuilt is currently treated as already-built / already-tested enough to skip `build` and `test`
-- this is close to a `--notest` assumption, but conceptually it may be cleaner to think of prebuilt as an already-prepared artifact
+- prebuilt is modeled as an already-built artifact
+- prebuilt ignores `configure` and `build` requirements
+- prebuilt currently stores `test` and `runtime` requirements from `blib/meta/MYMETA.json`, but the scheduler only uses `runtime`
+- `--notest` is now a `Master` concern; `Worker` does not receive `notest`
 
 ## Findings
 
@@ -90,19 +104,16 @@ Notes:
 - `local_lib` and `install_base` are not the same thing:
   - `install_base` is the target location used by EUMM/MB/static install path generation
   - `local_lib` is also used to construct `PATH` / `PERL5LIB` during configure/build/test/install
-- `ready` is a better internal concept than `ready_to_install` for the current design
 - user-facing CLI/logging can still say `install`; internal model does not have to
 
 ## Suspicious / Incomplete Areas
 
 ### 1. Dependency gate is still `installed`
 
-Even though `ready` exists, `App::cpm::Master::is_satisfied` still checks:
+`App::cpm::Master::is_satisfied` still checks:
 
 - resolved distribution exists
 - and that distribution is `installed`
-
-This means `ready` is not yet the dependency gate.
 
 This is the next major behavioral change.
 
@@ -111,7 +122,7 @@ This is the next major behavioral change.
 The long-term direction is:
 
 - stop depending on partially populated `local/lib` during the build graph
-- instead construct `@INC` / `PATH` from distributions that are already `ready`
+- instead construct `@INC` / `PATH` from distributions that are already build-usable
 
 That is not implemented yet.
 
@@ -146,16 +157,26 @@ Open question:
 
 ## Decisions Still Needed
 
-### 1. When to switch the dependency gate from `installed` to `ready`
+### 1. When to switch the dependency gate from `installed` to some non-installed state
 
 This is the key next step.
 
 Once this changes:
 
-- dependents can move forward after dependencies are `ready`
+- dependents can move forward after dependencies are available without final placement
 - final `install` can be delayed
 
-### 2. How to build `@INC` / `PATH` from `ready` distributions
+### 2. What the non-installed dependency gate should be
+
+Possible choices:
+
+- `built`
+- `tested`
+- a separate usability state
+
+The current code intentionally does not decide this yet.
+
+### 3. How to build `@INC` / `PATH` from non-installed distributions
 
 Likely needs builder/distribution APIs for:
 
@@ -163,7 +184,7 @@ Likely needs builder/distribution APIs for:
 - executable/script paths
 - maybe blib roots
 
-### 3. Whether final placement should remain mandatory
+### 4. Whether final placement should remain mandatory
 
 Carmel-style `rollout` was discussed as an optional final step:
 
@@ -172,9 +193,7 @@ Carmel-style `rollout` was discussed as an optional final step:
 
 cpm still needs its own decision here.
 
-### 4. Whether `install` should later be renamed internally
-
-`ready` already avoids `ready_to_install`.
+### 5. Whether `install` should later be renamed internally
 
 If final placement becomes optional, `rollout` may be a better internal term than `install`.
 

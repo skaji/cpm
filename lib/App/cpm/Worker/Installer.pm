@@ -230,15 +230,7 @@ sub find_prebuilt ($self, $ctx, $uri) {
 
     my $meta   = $self->_load_metafile($ctx, $uri, 'META.json', 'META.yml');
     my $mymeta = $self->_load_metafile($ctx, $uri, 'blib/meta/MYMETA.json');
-    my $phase  = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
-
-    my %req;
-    if (!$self->opts_in_static_install($ctx, $meta)) {
-        # XXX Actually we don't need configure requirements for prebuilt.
-        # But requires them for consistency for now.
-        %req = ( configure => $self->_extract_configure_requirements($ctx, $meta, $uri) );
-    }
-    %req = (%req, $self->_extract_requirements($ctx, $mymeta, $phase)->%*);
+    my $req = $self->_extract_requirements($ctx, $mymeta, [qw(test runtime)]);
 
     my $provides = do {
         open my $fh, "<", 'blib/meta/install.json' or die;
@@ -251,7 +243,7 @@ sub find_prebuilt ($self, $ctx, $uri) {
         meta => $meta->as_struct,
         provides => $provides,
         prebuilt => 1,
-        requirements => \%req,
+        requirements => $req,
     };
 }
 
@@ -333,9 +325,8 @@ sub configure ($self, $ctx, $task) {
     my $builder = $self->configure_builder($ctx, $meta);
     return if !$builder;
 
-    my $phase = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
     my $mymeta = $self->_load_metafile($ctx, $distfile, 'MYMETA.json', 'MYMETA.yml');
-    my $req = $self->_extract_requirements($ctx, $mymeta, $phase);
+    my $req = $self->_extract_requirements($ctx, $mymeta, [qw(build test runtime)]);
     return +{
         requirements => $req,
         builder => $builder,
