@@ -9,7 +9,7 @@ sub supports ($class, @) {
     -f 'Makefile.PL';
 }
 
-sub configure ($self, $ctx) {
+sub configure ($self, $ctx, $dependency_libs, $dependency_paths) {
     if (!$ctx->{make}) {
         $ctx->log("There is Makefile.PL, but you don't have 'make' command; you should install 'make' command first");
         return;
@@ -19,19 +19,19 @@ sub configure ($self, $ctx) {
     push @cmd, qw(INSTALLMAN1DIR=none INSTALLMAN3DIR=none) if $self->{need_noman_argv};
     push @cmd, 'PUREPERL_ONLY=1' if $self->{pureperl_only};
     push @cmd, $self->{argv}->@* if $self->{argv}->@*;
-    $self->run_configure($ctx, \@cmd) && -f 'Makefile';
+    $self->run_configure($ctx, \@cmd, $dependency_libs, $dependency_paths) && -f 'Makefile';
 }
 
-sub build ($self, $ctx) {
-    $self->run_build($ctx, [ $ctx->{make} ]) && $self->_prepare_paths_cache;
+sub build ($self, $ctx, $dependency_libs, $dependency_paths) {
+    $self->run_build($ctx, [ $ctx->{make} ], $dependency_libs, $dependency_paths) && $self->_prepare_paths_cache;
 }
 
-sub test ($self, $ctx) {
-    $self->run_test($ctx, [ $ctx->{make}, "test" ]);
+sub test ($self, $ctx, $dependency_libs, $dependency_paths) {
+    $self->run_test($ctx, [ $ctx->{make}, "test" ], $dependency_libs, $dependency_paths);
 }
 
-sub install ($self, $ctx) {
-    $self->run_install($ctx, [ $ctx->{make}, "install" ]);
+sub install ($self, $ctx, $dependency_libs, $dependency_paths) {
+    $self->run_install($ctx, [ $ctx->{make}, "install" ], $dependency_libs, $dependency_paths);
 }
 
 1;

@@ -84,12 +84,12 @@ sub supports ($class, $meta) {
     return $meta->{x_static_install} && $meta->{x_static_install} == 1;
 }
 
-sub configure ($self, $ctx) {
+sub configure ($self, $ctx, $dependency_libs, $dependency_paths) {
     $self->meta->save(@$_) for ['MYMETA.json'], [ 'MYMETA.yml' => { version => 1.4 } ];
     return 1;
 }
 
-sub build ($self, $ctx) {
+sub build ($self, $ctx, $dependency_libs, $dependency_paths) {
     $self->run_build($ctx, sub {
         my @module = find_files(qr/\.(?:pm|pod)\z/, 'lib');
         my @script = script_files();
@@ -103,10 +103,10 @@ sub build ($self, $ctx) {
         mkpath(catdir(qw(blib arch)));
         build_manpages($self->_install_paths, ExtUtils::Config->new, \@module, \@script) if $self->{man_pages};
         return 1;
-    }) && $self->_prepare_paths_cache;
+    }, $dependency_libs, $dependency_paths) && $self->_prepare_paths_cache;
 }
 
-sub test ($self, $ctx) {
+sub test ($self, $ctx, $dependency_libs, $dependency_paths) {
     $self->run_test($ctx, sub {
         return 1 if !-d 't';
         require TAP::Harness::Env;
@@ -115,14 +115,14 @@ sub test ($self, $ctx) {
             lib => [ map { rel2abs(catdir(qw(blib), $_)) } qw(arch lib) ],
         });
         return !$tester->runtests(sort(find_files(qr/\.t\z/, 't')))->has_errors;
-    });
+    }, $dependency_libs, $dependency_paths);
 }
 
-sub install ($self, $ctx) {
+sub install ($self, $ctx, $dependency_libs, $dependency_paths) {
     $self->run_install($ctx, sub {
         ExtUtils::Install::install($self->_install_paths->install_map, 0, 0, 0);
         return 1;
-    });
+    }, $dependency_libs, $dependency_paths);
 }
 
 sub _install_paths ($self) {

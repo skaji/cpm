@@ -20,7 +20,7 @@ sub test ($self, $ctx) {
     die ref($self) . " does not implement test";
 }
 
-sub install ($self, $ctx) {
+sub install ($self, $ctx, $dependency_libs, $dependency_paths) {
     my $install_base = $self->{install_base};
 
     $self->run_install($ctx, sub {
@@ -50,7 +50,7 @@ sub install ($self, $ctx) {
         }
         $ctx->log($stdout);
         return 1;
-    });
+    }, $dependency_libs, $dependency_paths);
 }
 
 1;

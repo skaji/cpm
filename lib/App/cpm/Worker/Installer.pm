@@ -62,7 +62,10 @@ sub work ($self, $ctx, $task) {
     } elsif ($type eq "build") {
         my $ok = $self->build($ctx, $task);
         $ctx->log("Failed to build distribution") if !$ok;
-        return { ok => $ok };
+        return {
+            ok => $ok,
+            builder => $task->{builder},
+        };
     } elsif ($type eq "test") {
         my $ok = $self->test($ctx, $task);
         $ctx->log("Failed to test distribution") if !$ok;
@@ -333,7 +336,7 @@ sub configure ($self, $ctx, $task) {
     my $guard = pushd $dir;
 
     $ctx->log("Configuring distribution");
-    my $builder = $self->configure_builder($ctx, $dir, $meta);
+    my $builder = $self->configure_builder($ctx, $dir, $meta, $task->{dependency_libs}, $task->{dependency_paths});
     return if !$builder;
 
     my $mymeta = $self->_load_metafile($ctx, $distfile, 'MYMETA.json', 'MYMETA.yml');
@@ -344,7 +347,7 @@ sub configure ($self, $ctx, $task) {
     };
 }
 
-sub configure_builder ($self, $ctx, $dir, $meta) {
+sub configure_builder ($self, $ctx, $dir, $meta, $dependency_libs, $dependency_paths) {
     my @candidate = (
         ($self->{static_install} ? [ 'App::cpm::Builder::Static', $self->{mb_argv} ] : ()),
         [ 'App::cpm::Builder::MB',     $self->{mb_argv} ],
@@ -368,7 +371,7 @@ sub configure_builder ($self, $ctx, $dir, $meta) {
             test_timeout => $self->{test_timeout},
         );
 
-        my $ok = $self->_retry($ctx, sub () { $builder->configure($ctx) });
+        my $ok = $self->_retry($ctx, sub () { $builder->configure($ctx, $dependency_libs, $dependency_paths) });
         return $builder if $ok;
     }
     return;
@@ -385,7 +388,9 @@ sub install ($self, $ctx, $task) {
     my $guard = pushd $dir;
 
     $ctx->log("Installing distribution");
-    my $installed = $self->_retry($ctx, sub () { $builder->install($ctx) });
+    my $installed = $self->_retry($ctx, sub () {
+        $builder->install($ctx, $task->{dependency_libs}, $task->{dependency_paths});
+    });
 
     if ($installed && $distfile && !$task->{prebuilt}) {
         $self->save_meta($ctx, $meta, $distfile, $provides);
@@ -399,7 +404,9 @@ sub build ($self, $ctx, $task) {
     my $guard = pushd $dir;
 
     $ctx->log("Building distribution");
-    return $self->_retry($ctx, sub () { $builder->build($ctx) });
+    return $self->_retry($ctx, sub () {
+        $builder->build($ctx, $task->{dependency_libs}, $task->{dependency_paths});
+    });
 }
 
 sub test ($self, $ctx, $task) {
@@ -407,7 +414,9 @@ sub test ($self, $ctx, $task) {
     my $guard = pushd $dir;
 
     $ctx->log("Testing distribution");
-    return $self->_retry($ctx, sub () { $builder->test($ctx) });
+    return $self->_retry($ctx, sub () {
+        $builder->test($ctx, $task->{dependency_libs}, $task->{dependency_paths});
+    });
 }
 
 sub unpack ($self, $ctx, $file) {

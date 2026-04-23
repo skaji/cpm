@@ -54,18 +54,28 @@ sub paths ($self) {
     $self->{paths};
 }
 
-sub _local_lib_env_path ($self) {
-    join $Config{path_sep}, File::Spec->catdir($self->local_lib, "bin"), ( $ENV{PATH} ? $ENV{PATH} : () );
+sub _env_path ($self, $dependency_paths) {
+    join $Config{path_sep},
+        $dependency_paths->@*,
+        ($self->local_lib ? File::Spec->catdir($self->local_lib, "bin") : ()),
+        ( $ENV{PATH} ? $ENV{PATH} : () );
 }
 
-sub _local_lib_env_perl5lib ($self) {
-    join $Config{path_sep}, File::Spec->catdir($self->local_lib, "lib", "perl5"), ( $ENV{PERL5LIB} ? $ENV{PERL5LIB} : ());
+sub _env_perl5lib ($self, $dependency_libs) {
+    join $Config{path_sep},
+        $dependency_libs->@*,
+        ($self->local_lib ? File::Spec->catdir($self->local_lib, "lib", "perl5") : ()),
+        ( $ENV{PERL5LIB} ? $ENV{PERL5LIB} : ());
 }
 
-sub _set_local_lib_env ($self) {
-    return if !$self->local_lib;
-    $ENV{PATH} = $self->_local_lib_env_path;
-    $ENV{PERL5LIB} = $self->_local_lib_env_perl5lib;
+sub _set_env ($self, $dependency_libs, $dependency_paths) {
+    if ($dependency_paths->@* || $self->local_lib) {
+        $ENV{PATH} = $self->_env_path($dependency_paths);
+    }
+
+    if ($dependency_libs->@* || $self->local_lib) {
+        $ENV{PERL5LIB} = $self->_env_perl5lib($dependency_libs);
+    }
 }
 
 sub _use_unsafe_inc ($self, $ctx) {
@@ -79,38 +89,38 @@ sub _use_unsafe_inc ($self, $ctx) {
     1;
 }
 
-sub run_configure ($self, $ctx, $cmd) {
+sub run_configure ($self, $ctx, $cmd, $dependency_libs, $dependency_paths) {
     local %ENV = %ENV;
     $ENV{PERL5_CPAN_IS_RUNNING} = $$;
     $ENV{PERL5_CPANPLUS_IS_RUNNING} = $$;
     $ENV{PERL5_CPANM_IS_RUNNING} = $$;
     $ENV{PERL_MM_USE_DEFAULT} = 1;
     $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($ctx);
-    $self->_set_local_lib_env;
+    $self->_set_env($dependency_libs, $dependency_paths);
     $ctx->run_command($cmd, $self->{configure_timeout});
 }
 
-sub run_build ($self, $ctx, $cmd) {
+sub run_build ($self, $ctx, $cmd, $dependency_libs, $dependency_paths) {
     local %ENV = %ENV;
     $ENV{PERL_MM_USE_DEFAULT} = 1;
     $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($ctx);
-    $self->_set_local_lib_env;
+    $self->_set_env($dependency_libs, $dependency_paths);
     $ctx->run_command($cmd, $self->{build_timeout});
 }
 
-sub run_test ($self, $ctx, $cmd) {
+sub run_test ($self, $ctx, $cmd, $dependency_libs, $dependency_paths) {
     local %ENV = %ENV;
     $ENV{PERL_MM_USE_DEFAULT} = 1;
     $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($ctx);
     $ENV{NONINTERACTIVE_TESTING} = 1;
-    $self->_set_local_lib_env;
+    $self->_set_env($dependency_libs, $dependency_paths);
     $ctx->run_command($cmd, $self->{test_timeout});
 }
 
-sub run_install ($self, $ctx, $cmd) {
+sub run_install ($self, $ctx, $cmd, $dependency_libs, $dependency_paths) {
     local %ENV = %ENV;
     $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($ctx);
-    $self->_set_local_lib_env;
+    $self->_set_env($dependency_libs, $dependency_paths);
     $ctx->run_command($cmd, 0);
 }
 
