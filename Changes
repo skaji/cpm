@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+v0.999.5  2026-04-23 15:44:14 CEST (TRIAL RELEASE)
+        - Refine distribution states and prebuilt flow (#279)
+
 v0.999.4  2026-04-22 09:02:25 EEST (TRIAL RELEASE)
         - Refactor installer build logic into builders (#278)
 
