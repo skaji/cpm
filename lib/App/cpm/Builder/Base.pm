@@ -4,6 +4,7 @@ use warnings;
 use experimental qw(lexical_subs signatures);
 
 use Config;
+use App::cpm::Util qw(DEBUG);
 use File::Find ();
 use File::Spec;
 
@@ -78,6 +79,15 @@ sub _set_env ($self, $dependency_libs, $dependency_paths) {
     }
 }
 
+sub _log_env ($self, $ctx) {
+    if (exists $ENV{PERL5LIB}) {
+        $ctx->log("PERL5LIB: $_") for split /\Q$Config{path_sep}\E/, $ENV{PERL5LIB};
+    }
+    if (exists $ENV{PATH}) {
+        $ctx->log("PATH: $_") for split /\Q$Config{path_sep}\E/, $ENV{PATH};
+    }
+}
+
 sub _use_unsafe_inc ($self, $ctx) {
     if (exists $ENV{PERL_USE_UNSAFE_INC}) {
         return $ENV{PERL_USE_UNSAFE_INC};
@@ -97,6 +107,7 @@ sub run_configure ($self, $ctx, $cmd, $dependency_libs, $dependency_paths) {
     $ENV{PERL_MM_USE_DEFAULT} = 1;
     $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($ctx);
     $self->_set_env($dependency_libs, $dependency_paths);
+    DEBUG and $self->_log_env($ctx);
     $ctx->run_command($cmd, $self->{configure_timeout});
 }
 
@@ -105,6 +116,7 @@ sub run_build ($self, $ctx, $cmd, $dependency_libs, $dependency_paths) {
     $ENV{PERL_MM_USE_DEFAULT} = 1;
     $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($ctx);
     $self->_set_env($dependency_libs, $dependency_paths);
+    DEBUG and $self->_log_env($ctx);
     $ctx->run_command($cmd, $self->{build_timeout});
 }
 
@@ -114,6 +126,7 @@ sub run_test ($self, $ctx, $cmd, $dependency_libs, $dependency_paths) {
     $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($ctx);
     $ENV{NONINTERACTIVE_TESTING} = 1;
     $self->_set_env($dependency_libs, $dependency_paths);
+    DEBUG and $self->_log_env($ctx);
     $ctx->run_command($cmd, $self->{test_timeout});
 }
 
@@ -121,6 +134,7 @@ sub run_install ($self, $ctx, $cmd, $dependency_libs, $dependency_paths) {
     local %ENV = %ENV;
     $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($ctx);
     $self->_set_env($dependency_libs, $dependency_paths);
+    DEBUG and $self->_log_env($ctx);
     $ctx->run_command($cmd, 0);
 }
 

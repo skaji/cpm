@@ -12,8 +12,9 @@ use IO::Uncompress::Gunzip ();
 
 use Exporter 'import';
 
-our @EXPORT_OK = qw(perl_identity maybe_abs WIN32 determine_home gunzip bunzip2 uniq);
+our @EXPORT_OK = qw(DEBUG perl_identity maybe_abs WIN32 determine_home gunzip bunzip2 uniq);
 
+use constant DEBUG => $ENV{PERL_CPM_DEBUG} ? 1 : 0;
 use constant WIN32 => $^O eq 'MSWin32';
 
 sub perl_identity () {
