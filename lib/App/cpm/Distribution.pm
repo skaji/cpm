@@ -8,12 +8,12 @@ use App::cpm::Requirement;
 use App::cpm::version;
 use CPAN::DistnameInfo;
 
-use constant STATE_REGISTERED      => 0b000001;
-use constant STATE_DEPS_REGISTERED => 0b000010;
-use constant STATE_RESOLVED        => 0b000100; # default
-use constant STATE_FETCHED         => 0b001000;
-use constant STATE_CONFIGURED      => 0b010000;
-use constant STATE_INSTALLED       => 0b100000;
+use constant STATE_RESOLVED   => "resolved";
+use constant STATE_FETCHED    => "fetched";
+use constant STATE_CONFIGURED => "configured";
+use constant STATE_BUILT      => "built";
+use constant STATE_TESTED     => "tested";
+use constant STATE_INSTALLED  => "installed";
 
 sub new ($class, %argv) {
     my $uri = delete $argv{uri};
@@ -27,8 +27,16 @@ sub new ($class, %argv) {
         distfile => $distfile,
         source => $source,
         _state => STATE_RESOLVED,
+        registered => 0,
+        deps_registered => 0,
         requirements => {},
     }, $class;
+}
+
+sub _set_state ($self, $state) {
+    $self->{_state} = $state;
+    $self->{registered} = 0;
+    $self->{deps_registered} = 0;
 }
 
 sub requirements ($self, $phase, $req = undef) {
@@ -87,45 +95,55 @@ sub overwrite_provide ($self, $provide) {
 }
 
 sub registered ($self, @argv) {
-    if (@argv && $argv[0]) {
-        $self->{_state} |= STATE_REGISTERED;
-    }
-    $self->{_state} & STATE_REGISTERED;
+    $self->{registered} = $argv[0] ? 1 : 0 if @argv;
+    $self->{registered};
 }
 
 sub deps_registered ($self, @argv) {
-    if (@argv && $argv[0]) {
-        $self->{_state} |= STATE_DEPS_REGISTERED;
-    }
-    $self->{_state} & STATE_DEPS_REGISTERED;
+    $self->{deps_registered} = $argv[0] ? 1 : 0 if @argv;
+    $self->{deps_registered};
 }
 
 sub resolved ($self, @argv) {
     if (@argv && $argv[0]) {
-        $self->{_state} = STATE_RESOLVED;
+        $self->_set_state(STATE_RESOLVED);
     }
-    $self->{_state} & STATE_RESOLVED;
+    $self->{_state} eq STATE_RESOLVED;
 }
 
 sub fetched ($self, @argv) {
     if (@argv && $argv[0]) {
-        $self->{_state} = STATE_FETCHED;
+        $self->_set_state(STATE_FETCHED);
     }
-    $self->{_state} & STATE_FETCHED;
+    $self->{_state} eq STATE_FETCHED;
 }
 
 sub configured ($self, @argv) {
     if (@argv && $argv[0]) {
-        $self->{_state} = STATE_CONFIGURED
+        $self->_set_state(STATE_CONFIGURED);
     }
-    $self->{_state} & STATE_CONFIGURED;
+    $self->{_state} eq STATE_CONFIGURED;
+}
+
+sub built ($self, @argv) {
+    if (@argv && $argv[0]) {
+        $self->_set_state(STATE_BUILT);
+    }
+    $self->{_state} eq STATE_BUILT;
+}
+
+sub tested ($self, @argv) {
+    if (@argv && $argv[0]) {
+        $self->_set_state(STATE_TESTED);
+    }
+    $self->{_state} eq STATE_TESTED;
 }
 
 sub installed ($self, @argv) {
     if (@argv && $argv[0]) {
-        $self->{_state} = STATE_INSTALLED;
+        $self->_set_state(STATE_INSTALLED);
     }
-    $self->{_state} & STATE_INSTALLED;
+    $self->{_state} eq STATE_INSTALLED;
 }
 
 sub providing ($self, $package, $version_range = undef) {

@@ -45,7 +45,7 @@ sub work ($self, $ctx, $task) {
                 prebuilt => $result->{prebuilt},
             };
         } else {
-            $ctx->log("Failed to fetch/configure distribution");
+            $ctx->log("Failed to fetch distribution");
         }
     } elsif ($type eq "configure") {
         # $task->{directory}, $task->{distfile}, $task->{meta});
@@ -58,6 +58,14 @@ sub work ($self, $ctx, $task) {
         } else {
             $ctx->log("Failed to configure distribution");
         }
+    } elsif ($type eq "build") {
+        my $ok = $self->build($ctx, $task);
+        $ctx->log("Failed to build distribution") if !$ok;
+        return { ok => $ok };
+    } elsif ($type eq "test") {
+        my $ok = $self->test($ctx, $task);
+        $ctx->log("Failed to test distribution") if !$ok;
+        return { ok => $ok };
     } elsif ($type eq "install") {
         my $ok = $self->install($ctx, $task);
         my $message = $ok ? "Successfully installed distribution" : "Failed to install distribution";
@@ -224,15 +232,7 @@ sub find_prebuilt ($self, $ctx, $uri) {
 
     my $meta   = $self->_load_metafile($ctx, $uri, 'META.json', 'META.yml');
     my $mymeta = $self->_load_metafile($ctx, $uri, 'blib/meta/MYMETA.json');
-    my $phase  = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
-
-    my %req;
-    if (!$self->opts_in_static_install($ctx, $meta)) {
-        # XXX Actually we don't need configure requirements for prebuilt.
-        # But requires them for consistency for now.
-        %req = ( configure => $self->_extract_configure_requirements($ctx, $meta, $uri) );
-    }
-    %req = (%req, $self->_extract_requirements($ctx, $mymeta, $phase)->%*);
+    my $req = $self->_extract_requirements($ctx, $mymeta, [qw(test runtime)]);
 
     my $provides = do {
         open my $fh, "<", 'blib/meta/install.json' or die;
@@ -245,7 +245,7 @@ sub find_prebuilt ($self, $ctx, $uri) {
         meta => $meta->as_struct,
         provides => $provides,
         prebuilt => 1,
-        requirements => \%req,
+        requirements => $req,
     };
 }
 
@@ -327,9 +327,8 @@ sub configure ($self, $ctx, $task) {
     my $builder = $self->configure_builder($ctx, $meta);
     return if !$builder;
 
-    my $phase = $self->{notest} ? [qw(build runtime)] : [qw(build test runtime)];
     my $mymeta = $self->_load_metafile($ctx, $distfile, 'MYMETA.json', 'MYMETA.yml');
-    my $req = $self->_extract_requirements($ctx, $mymeta, $phase);
+    my $req = $self->_extract_requirements($ctx, $mymeta, [qw(build test runtime)]);
     return +{
         requirements => $req,
         builder => $builder,
@@ -377,18 +376,30 @@ sub install ($self, $ctx, $task) {
         = $task->@{qw(directory builder distvname meta provides distfile)};
     my $guard = pushd $dir;
 
-    $ctx->log("Building " . ($self->{notest} ? "" : "and testing ") . "distribution");
-    my $installed;
-    $self->_retry($ctx, sub () { $builder->build($ctx) })
-    && ($self->{notest} || $self->_retry($ctx, sub () { $builder->test($ctx) }))
-    && $self->_retry($ctx, sub () { $builder->install($ctx) })
-    && $installed++;
+    $ctx->log("Installing distribution");
+    my $installed = $self->_retry($ctx, sub () { $builder->install($ctx) });
 
     if ($installed && $distfile) {
         $self->save_meta($ctx, $meta, $distfile, $provides);
         $self->save_prebuilt($ctx, $task) if $self->enable_prebuilt($ctx, $task->{uri});
     }
     return $installed;
+}
+
+sub build ($self, $ctx, $task) {
+    my ($dir, $builder) = $task->@{qw(directory builder)};
+    my $guard = pushd $dir;
+
+    $ctx->log("Building distribution");
+    return $self->_retry($ctx, sub () { $builder->build($ctx) });
+}
+
+sub test ($self, $ctx, $task) {
+    my ($dir, $builder) = $task->@{qw(directory builder)};
+    my $guard = pushd $dir;
+
+    $ctx->log("Testing distribution");
+    return $self->_retry($ctx, sub () { $builder->test($ctx) });
 }
 
 sub install_prebuilt ($self, $ctx, $task) {

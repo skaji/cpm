@@ -276,6 +276,7 @@ sub cmd_install ($self) {
         core_inc => $self->_core_inc,
         search_inc => $self->_search_inc,
         global => $self->{global},
+        notest => $self->{notest},
         show_progress => $self->{show_progress},
         (exists $self->{target_perl} ? (target_perl => $self->{target_perl}) : ()),
     );
@@ -289,7 +290,6 @@ sub cmd_install ($self) {
         home      => $self->{home},
         work_dir  => $work_dir,
         cache_dir => $cache_dir,
-        notest    => $self->{notest},
         resolver  => $self->generate_resolver($ctx, $resolver),
         man_pages => $self->{man_pages},
         retry     => $self->{retry},
