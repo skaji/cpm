@@ -114,7 +114,7 @@ sub test ($self, $ctx) {
             color => -t STDOUT ? 1 : 0,
             lib => [ map { rel2abs(catdir(qw(blib), $_)) } qw(arch lib) ],
         });
-        return !$tester->runtests(sort find_files(qr/\.t\z/, 't'))->has_errors;
+        return !$tester->runtests(sort(find_files(qr/\.t\z/, 't')))->has_errors;
     });
 }
 
