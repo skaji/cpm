@@ -5,6 +5,7 @@ use experimental qw(lexical_subs signatures);
 
 use App::cpm::Builder::EUMM;
 use App::cpm::Builder::MB;
+use App::cpm::Builder::Prebuilt;
 use App::cpm::Builder::Static;
 use App::cpm::Requirement;
 use App::cpm::Util;
@@ -14,7 +15,6 @@ use CPAN::DistnameInfo;
 use CPAN::Meta;
 use Config;
 use ExtUtils::Install ();
-use ExtUtils::InstallPaths ();
 use File::Basename 'basename';
 use File::Copy ();
 use File::Copy::Recursive ();
@@ -43,6 +43,7 @@ sub work ($self, $ctx, $task) {
                 provides => $result->{provides},
                 using_cache => $result->{using_cache},
                 prebuilt => $result->{prebuilt},
+                builder => $result->{builder},
             };
         } else {
             $ctx->log("Failed to fetch distribution");
@@ -233,6 +234,12 @@ sub find_prebuilt ($self, $ctx, $uri) {
     my $meta   = $self->_load_metafile($ctx, $uri, 'META.json', 'META.yml');
     my $mymeta = $self->_load_metafile($ctx, $uri, 'blib/meta/MYMETA.json');
     my $req = $self->_extract_requirements($ctx, $mymeta, [qw(test runtime)]);
+    my $builder = App::cpm::Builder::Prebuilt->new(
+        meta => $meta,
+        distvname => $info->distvname,
+        local_lib => $self->{local_lib},
+        install_base => $self->{local_lib} || $self->{implicit_install_base},
+    );
 
     my $provides = do {
         open my $fh, "<", 'blib/meta/install.json' or die;
@@ -246,6 +253,7 @@ sub find_prebuilt ($self, $ctx, $uri) {
         provides => $provides,
         prebuilt => 1,
         requirements => $req,
+        builder => $builder,
     };
 }
 
@@ -370,8 +378,6 @@ sub opts_in_static_install ($self, $ctx, $meta) {
 }
 
 sub install ($self, $ctx, $task) {
-    return $self->install_prebuilt($ctx, $task) if $task->{prebuilt};
-
     my ($dir, $builder, $distvname, $meta, $provides, $distfile)
         = $task->@{qw(directory builder distvname meta provides distfile)};
     my $guard = pushd $dir;
@@ -379,7 +385,7 @@ sub install ($self, $ctx, $task) {
     $ctx->log("Installing distribution");
     my $installed = $self->_retry($ctx, sub () { $builder->install($ctx) });
 
-    if ($installed && $distfile) {
+    if ($installed && $distfile && !$task->{prebuilt}) {
         $self->save_meta($ctx, $meta, $distfile, $provides);
         $self->save_prebuilt($ctx, $task) if $self->enable_prebuilt($ctx, $task->{uri});
     }
@@ -400,38 +406,6 @@ sub test ($self, $ctx, $task) {
 
     $ctx->log("Testing distribution");
     return $self->_retry($ctx, sub () { $builder->test($ctx) });
-}
-
-sub install_prebuilt ($self, $ctx, $task) {
-    my $install_base = $self->{local_lib} || $self->{implicit_install_base};
-
-    $ctx->log("Copying prebuilt $task->{directory}/blib");
-    my $guard = pushd $task->{directory};
-    my $paths = ExtUtils::InstallPaths->new(
-        dist_name => $task->distname, # this enables the installation of packlist
-        $install_base ? (install_base => $install_base) : (),
-    );
-    my $install_base_meta = $install_base ? File::Spec->catdir($install_base, "lib", "perl5") : $Config{sitelibexp};
-    my $meta_target_dir = File::Spec->catdir($install_base_meta, $Config{archname}, ".meta", $task->distvname);
-
-    open my $fh, ">", \my $stdout;
-    {
-        local *STDOUT = $fh;
-        ExtUtils::Install::install([
-            from_to => $paths->install_map,
-            verbose => 0,
-            dry_run => 0,
-            uninstall_shadows => 0,
-            skip => undef,
-            always_copy => 1,
-            result => \my %result,
-        ]);
-        ExtUtils::Install::install({
-            'blib/meta' => $meta_target_dir,
-        });
-    }
-    $ctx->log($stdout);
-    return 1;
 }
 
 sub unpack ($self, $ctx, $file) {

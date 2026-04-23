@@ -503,6 +503,7 @@ sub _register_fetch_result ($self, $ctx, $task) {
     if ($task->{prebuilt}) {
         $distribution->built(1);
         $distribution->requirements($_ => $task->{requirements}{$_}) for keys $task->{requirements}->%*;
+        $distribution->builder($task->{builder});
         $distribution->prebuilt(1);
     } else {
         $distribution->fetched(1);
