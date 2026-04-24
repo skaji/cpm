@@ -130,7 +130,11 @@ sub register_result ($self, $ctx, $result) {
 
 sub info ($self, $task) {
     my $type = $task->type;
-    return if !$App::cpm::Logger::VERBOSE && $type ne "install" && $task->{ok};
+    if (!$App::cpm::Logger::VERBOSE && $task->{ok}) {
+        return if !($self->{notest} && $type eq "fetch" && $task->{prebuilt})
+            && !($self->{notest} && $type eq "build" && !$task->{prebuilt})
+            && !(!$self->{notest} && $type eq "test");
+    }
     my $name = $task->distvname;
     my ($message, $optional);
     if ($type eq "resolve") {
@@ -156,8 +160,9 @@ sub info ($self, $task) {
 
 sub _show_progress ($self) {
     my $all = keys $self->{distributions}->%*;
-    my $num = $self->installed_distributions;
-    print STDERR "--- $num/$all ---";
+    my $state = $self->{notest} ? "built" : "tested";
+    my $num = grep { $_->$state || $_->installed } $self->distributions;
+    print STDERR "\r--- $num/$all ---";
     STDERR->flush; # this is needed at least with perl <= 5.24
 }
 
@@ -237,12 +242,14 @@ sub install_distributions ($self, $ctx) {
             $dist->installed(1);
             $self->{installed_distributions}++;
             $ctx->log("Successfully installed distribution");
-            App::cpm::Logger->log(
-                type => "install",
-                result => "DONE",
-                message => $dist->distvname,
-                ($dist->prebuilt ? (optional => "using prebuilt") : ()),
-            );
+            if ($App::cpm::Logger::VERBOSE) {
+                App::cpm::Logger->log(
+                    type => "install",
+                    result => "DONE",
+                    message => $dist->distvname,
+                    ($dist->prebuilt ? (optional => "using prebuilt") : ()),
+                );
+            }
             $self->_show_progress if $self->{show_progress};
         } else {
             $self->{_fail_install}{$dist->distfile}++;

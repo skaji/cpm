@@ -11,11 +11,11 @@ our $VERBOSE;
 our $SHOW_PROGRESS;
 
 my %color = (
-    resolve => 33,
-    fetch => 34,
-    configure => 35,
-    build => 35,
-    test => 35,
+    resolve => 36,
+    fetch => 36,
+    configure => 36,
+    build => 36,
+    test => 36,
     install => 36,
     FAIL => 31,
     DONE => 32,
