@@ -231,20 +231,20 @@ sub find_prebuilt ($self, $ctx, $uri) {
     my $meta   = $self->_load_metafile($ctx, $uri, 'META.json', 'META.yml');
     my $mymeta = $self->_load_metafile($ctx, $uri, 'blib/meta/MYMETA.json');
     my $req = $self->_extract_requirements($ctx, $mymeta, [qw(test runtime)]);
-    my $builder = App::cpm::Builder::Prebuilt->new(
-        meta => $meta,
-        directory => $dir,
-        distvname => $info->distvname,
-        local_lib => $self->{local_lib},
-        install_base => $self->{local_lib} || $self->{implicit_install_base},
-    );
-
     my $provides = do {
         open my $fh, "<", 'blib/meta/install.json' or die;
         my $json = JSON::PP::decode_json(do { local $/; <$fh> });
         my $provides = $json->{provides};
         [ map +{ package => $_, version => $provides->{$_}{version}, file => $provides->{$_}{file} }, sort keys $provides->%* ];
     };
+    my $builder = App::cpm::Builder::Prebuilt->new(
+        meta => $meta,
+        directory => $dir,
+        distfile => $uri,
+        provides => $provides,
+        local_lib => $self->{local_lib},
+        install_base => $self->{local_lib} || $self->{implicit_install_base},
+    );
     return +{
         directory => $dir,
         meta => $meta->as_struct,
@@ -357,7 +357,6 @@ sub configure_builder ($self, $ctx, $task) {
             meta => $meta,
             directory => $dir,
             distfile => $task->{distfile},
-            distvname => $task->{distvname},
             provides => $task->{provides},
             local_lib => $self->{local_lib},
             install_base => $self->{local_lib} || $self->{implicit_install_base},

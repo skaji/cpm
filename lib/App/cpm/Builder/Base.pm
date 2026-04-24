@@ -30,6 +30,7 @@ my sub nonempty ($path) {
 }
 
 sub new ($class, %args) {
+    $args{distvname} = CPAN::DistnameInfo->new($args{distfile})->distvname;
     bless \%args, $class;
 }
 
@@ -86,6 +87,7 @@ sub _set_env ($self, $dependency_libs, $dependency_paths) {
 }
 
 sub _write_blib_meta ($self, $ctx) {
+    return 1 if !defined $self->{distvname};
     my $name = $self->meta->{name};
     $name =~ s/-/::/g;
 
@@ -135,6 +137,8 @@ sub _install_blib ($self, $ctx) {
 }
 
 sub _install_blib_meta ($self, $ctx) {
+    return 1 if !defined $self->{distvname};
+
     my $install_base = $self->{install_base};
     my $install_base_meta = $install_base ? File::Spec->catdir($install_base, "lib", "perl5") : $Config{sitelibexp};
     my $meta_target_dir = File::Spec->catdir($install_base_meta, $Config{archname}, ".meta", $self->{distvname});
