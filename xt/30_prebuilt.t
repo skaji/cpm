@@ -20,9 +20,9 @@ with_same_home {
     $r = cpm_install "--prebuilt", "App::ChangeShebang", "File::pushd", "Parallel::Pipes";
     is $r->exit, 0;
     my $v = qr/v?[\d\.]+/;
-    like $r->err, qr/^DONE install App-ChangeShebang-$v \(using prebuilt\)$/m;
-    like $r->err, qr/^DONE install File-pushd-$v \(using prebuilt\)$/m;
-    like $r->err, qr/^DONE install Parallel-Pipes-$v$/m;
+    like $r->log, qr/App-ChangeShebang-$v\| Successfully installed distribution/;
+    like $r->log, qr/File-pushd-$v\| Successfully installed distribution/;
+    like $r->log, qr/Parallel-Pipes-$v\| Successfully installed distribution/;
     note $r->err;
 
     my @Parallel_Pipes = glob "$builds/SKAJI/Parallel-Pipes-*";
@@ -52,7 +52,7 @@ with_same_home {
     note "first time", $r->err;
     $r = cpm_install "--prebuilt", "Parse::Distname";
     note "second time", $r->err;
-    unlike $r->err, qr/DONE install ExtUtils-MakeMaker-CPANfile/;
+    unlike $r->log, qr/ExtUtils-MakeMaker-CPANfile-[^\|]+\| Successfully installed distribution/;
 };
 
 done_testing;

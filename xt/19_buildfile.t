@@ -27,7 +27,7 @@ $builder->create_build_script;
 EOF
         my $r = cpm_install;
         like $r->err, qr/Executing Build.PL/;
-        like $r->err, qr/DONE install File-pushd-/;
+        like $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
     };
 };
 
@@ -43,7 +43,7 @@ WriteMakefile(
 EOF
     my $r = cpm_install;
     like $r->err, qr/Executing Makefile.PL/;
-    like $r->err, qr/DONE install File-pushd-/;
+    like $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
 };
 
 done_testing;

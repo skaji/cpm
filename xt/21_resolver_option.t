@@ -245,7 +245,7 @@ subtest '02packages_file' => sub () {
         my $r = cpm_install "-v", "--resolver", "02packages,file://$base", "App::ChangeShebang";
         is $r->exit, 0;
         like $r->err, qr/\QApp::ChangeShebang -> App-ChangeShebang-0.06 (from 02Packages)/;
-        like $r->err, qr/DONE install.*App-ChangeShebang-0.06/;
+        like $r->log, qr/App-ChangeShebang-0\.06\| Successfully installed distribution/;
 
         $cpan->inject('cpan:Parallel::Pipes@0.001');
         $cpan->write_index(compress => 1);
@@ -253,7 +253,7 @@ subtest '02packages_file' => sub () {
         $r = cpm_install "-v", "--resolver", "02packages,file://$base", "Parallel::Pipes";
         is $r->exit, 0;
         like $r->err, qr/\QParallel::Pipes -> Parallel-Pipes-0.001 (from 02Packages)/;
-        like $r->err, qr/DONE install.*Parallel-Pipes-0.001/;
+        like $r->log, qr/Parallel-Pipes-0\.001\| Successfully installed distribution/;
     };
 };
 
@@ -264,14 +264,14 @@ subtest '02packages_file_no_prefix' => sub () {
     $cpan->write_index(compress => 1);
     my $r = cpm_install "-v", "--resolver", "02packages,$base", "App::ChangeShebang";
     like $r->err, qr/\QApp::ChangeShebang -> App-ChangeShebang-0.06 (from 02Packages)/;
-    like $r->err, qr/DONE install.*App-ChangeShebang-0.06/;
+    like $r->log, qr/App-ChangeShebang-0\.06\| Successfully installed distribution/;
 };
 
 subtest fixed => sub () {
     my $r = cpm_install "-r", "Fixed,YAML::PP\@v0.38.1", "Module::cpmfile";
     is $r->exit, 0;
-    like $r->err, qr/DONE install.*YAML-PP-v0.38.1/;
-    like $r->err, qr/DONE install.*Module-cpmfile-.*/;
+    like $r->log, qr/YAML-PP-v0\.38\.1\| Successfully installed distribution/;
+    like $r->log, qr/Module-cpmfile-[^\|]+\| Successfully installed distribution/;
 };
 
 done_testing;

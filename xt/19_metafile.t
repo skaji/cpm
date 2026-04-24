@@ -40,12 +40,12 @@ subtest basic => sub () {
 }
 EOF
     my $r = cpm_install "--metafile", $metafile;
-    like $r->err, qr/DONE install File-pushd-/;
+    like $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
     unlike $r->err, qr/common-sense/;
 
     $r = cpm_install "--feature", "hoge", "--metafile", $metafile;
-    like $r->err, qr/DONE install File-pushd-/;
-    like $r->err, qr/DONE install common-sense-/;
+    like $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
+    like $r->log, qr/common-sense-[^\|]+\| Successfully installed distribution/;
 };
 
 subtest dynamic_config => sub () {
@@ -90,7 +90,7 @@ EOF
 EOF
     $r = cpm_install;
     is $r->exit, 0;
-    like $r->err, qr/DONE install File-pushd-/;
+    like $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
 };
 
 done_testing;

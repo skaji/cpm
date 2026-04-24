@@ -12,7 +12,7 @@ requires 'Geo::IP', v1.45.0;
 ___
 
 my $r = cpm_install "--cpanfile", "$cpanfile";
-like $r->err, qr/DONE install Geo-IP-/;
+like $r->log, qr/Geo-IP-[^\|]+\| Successfully installed distribution/;
 note explain $r;
 
 done_testing;

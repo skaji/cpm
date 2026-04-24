@@ -24,7 +24,7 @@ note "latest Parallel::Pipes is $latest";
 with_same_local {
     my $r = cpm_install "Parallel::Pipes\@$latest";
     is $r->exit, 0;
-    like $r->err, qr/DONE install Parallel-Pipes-$latest/;
+    like $r->log, qr/\QParallel-Pipes-$latest| Successfully installed distribution/;
 
     $r = cpm_install 'Parallel::Pipes';
     is $r->exit, 0;
@@ -32,22 +32,22 @@ with_same_local {
 
     $r = cpm_install 'Parallel::Pipes@0.102';
     is $r->exit, 0;
-    like $r->err, qr/DONE install Parallel-Pipes-0.102/;
+    like $r->log, qr/Parallel-Pipes-0\.102\| Successfully installed distribution/;
 
     $r = cpm_install 'Parallel::Pipes';
     is $r->exit, 0;
-    like $r->err, qr/DONE install Parallel-Pipes-$latest/;
+    like $r->log, qr/\QParallel-Pipes-$latest| Successfully installed distribution/;
 };
 
 # test for reinstall
 with_same_local {
     my $r = cpm_install 'Parallel::Pipes';
     is $r->exit, 0;
-    like $r->err, qr/DONE install Parallel-Pipes-/;
+    like $r->log, qr/Parallel-Pipes-[^\|]+\| Successfully installed distribution/;
 
     $r = cpm_install '--reinstall', 'Parallel::Pipes';
     is $r->exit, 0;
-    like $r->err, qr/DONE install Parallel-Pipes-/;
+    like $r->log, qr/Parallel-Pipes-[^\|]+\| Successfully installed distribution/;
 };
 
 with_same_local {

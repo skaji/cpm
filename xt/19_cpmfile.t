@@ -23,12 +23,12 @@ features:
 EOF
 
     my $r = cpm_install "--cpmfile", $cpmfile;
-    like $r->err, qr/DONE install File-pushd-1.014/;
+    like $r->log, qr/File-pushd-1\.014\| Successfully installed distribution/;
     unlike $r->err, qr/common-sense/;
 
     $r = cpm_install "--feature", "hoge", "--cpmfile", $cpmfile;
-    like $r->err, qr/DONE install File-pushd-1.014/;
-    like $r->err, qr/DONE install common-sense-3.75/;
+    like $r->log, qr/File-pushd-1\.014\| Successfully installed distribution/;
+    like $r->log, qr/common-sense-3\.75\| Successfully installed distribution/;
 };
 
 subtest git => sub () {
@@ -46,10 +46,10 @@ ___
     with_same_local {
         my $r = cpm_install "--cpmfile", "$cpmfile";
         is $r->exit, 0 or diag $r->err;
-        like $r->err, qr/DONE install CPAN-Mirror-Tiny-0.04/;
-        like $r->err, qr/DONE install HTTP-Tinyish-0.06/;
-        like $r->err, qr{DONE install https://github.com/skaji/change-shebang};
-        like $r->err, qr/DONE install Try-Tiny-0.30/;
+        like $r->log, qr/CPAN-Mirror-Tiny-0\.04\| Successfully installed distribution/;
+        like $r->log, qr/HTTP-Tinyish-0\.06\| Successfully installed distribution/;
+        like $r->log, qr{\Qhttps://github.com/skaji/change-shebang| Successfully installed distribution};
+        like $r->log, qr/Try-Tiny-0\.30\| Successfully installed distribution/;
         like $r->log, qr/Resolved CPAN::Mirror::Tiny.*from MetaDB/;
         like $r->log, qr/Resolved HTTP::Tinyish.*from MetaDB/;
         like $r->log, qr/Resolved App::ChangeShebang.*from Custom/;
@@ -63,7 +63,7 @@ ___
         # 2nd time; only install git
         $r = cpm_install "--cpmfile", "$cpmfile";
         is $r->exit, 0;
-        like $r->err, qr{DONE install https://github.com/skaji/change-shebang};
+        like $r->log, qr{\Qhttps://github.com/skaji/change-shebang| Successfully installed distribution};
         unlike $r->err, qr/CPAN-Mirror-Tiny/;
         unlike $r->err, qr/HTTP-Tinyish/;
         unlike $r->err, qr/Try-Tiny/;
