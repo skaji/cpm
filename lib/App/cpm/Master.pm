@@ -253,25 +253,20 @@ sub _install_env_phases ($self, $dist) {
 sub install_distributions ($self, $ctx) {
     return if $self->{_fail_resolve}->%* || $self->{_fail_install}->%*;
 
-    my @dist = grep { !$_->installed } $self->distributions;
+    my $install_phase_state = $self->{notest} ? 'built' : 'tested';
+    my @dist = grep { $_->$install_phase_state } $self->distributions;
     return if !@dist;
-    return if grep {
-        my $state = $self->install_phase_state($_);
-        !$_->$state;
-    } @dist;
 
     for my $dist (sort { $a->distvname cmp $b->distvname } @dist) {
         my $guard = pushd $dist->directory;
 
         local $ctx->{logger}{context} = $dist->distvname;
         $ctx->log("Installing distribution");
-        my $ok = eval {
-            $dist->builder->install($ctx);
-        };
+        my $ok =$dist->builder->install($ctx);
         if ($ok) {
-            $ctx->log("Successfully installed distribution");
             $dist->installed(1);
             $self->{installed_distributions}++;
+            $ctx->log("Successfully installed distribution");
             App::cpm::Logger->log(
                 type => "install",
                 result => "DONE",
@@ -280,7 +275,6 @@ sub install_distributions ($self, $ctx) {
             );
             $self->_show_progress if $self->{show_progress};
         } else {
-            warn $@ if $@;
             $self->{_fail_install}{$dist->distfile}++;
             $ctx->log("Failed to install distribution");
             App::cpm::Logger->log(
