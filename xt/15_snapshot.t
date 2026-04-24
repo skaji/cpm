@@ -50,7 +50,7 @@ ___
 my $r;
 with_same_local {
     $r = cpm_install "--cpanfile", $cpanfile->stringify, "--snapshot", $snapshot->stringify;
-    like $r->err, qr/DONE install Distribution-Metadata-0.04/;
+    like $r->log, qr/Distribution-Metadata-0\.04\| Successfully installed distribution/;
     note explain $r;
 
     $r = cpm_install "--cpanfile", $cpanfile->stringify, "--snapshot", $snapshot->stringify;

@@ -23,7 +23,7 @@ subtest test2 => sub () {
     path("cpanfile")->spew(qq{requires 'HTTP::Tinyish';\n});
     my $r = cpm_install "--target-perl", "5.8.5";
     is $r->exit, 0;
-    like $r->err, qr/DONE install parent-/;
+    like $r->log, qr/parent-[^\|]+\| Successfully installed distribution/;
     note $r->err;
 };
 
@@ -32,7 +32,7 @@ subtest test3 => sub () {
     path("cpanfile")->spew(qq{requires 'HTTP::Tinyish';\n});
     my $r = cpm_install "--target-perl", "5.10.1";
     is $r->exit, 0;
-    unlike $r->err, qr/DONE install parent-/;
+    unlike $r->log, qr/parent-[^\|]+\| Successfully installed distribution/;
     note $r->err;
 };
 

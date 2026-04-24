@@ -32,56 +32,56 @@ subtest 'normal' => sub () {
 subtest 'develop' => sub () {
     my $r = cpm_install '--with-develop', '--cpanfile', $cpanfile;
     is $r->exit, 0;
-    unlike $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-ModuleBuild/;
-    unlike $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-StaticInstall/;
-    like   $r->err, qr/DONE install Parallel-Pipes/;
-    unlike $r->err, qr/DONE install File-pushd/;
-    unlike $r->err, qr/DONE install Try-Tiny/;
-    unlike $r->err, qr/DONE install Devel-CheckBin/;
+    unlike $r->log, qr/CPAN-Test-Dummy-Perl5-ModuleBuild-[^\|]+\| Successfully installed distribution/;
+    unlike $r->log, qr/CPAN-Test-Dummy-Perl5-StaticInstall-[^\|]+\| Successfully installed distribution/;
+    like   $r->log, qr/Parallel-Pipes-[^\|]+\| Successfully installed distribution/;
+    unlike $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
+    unlike $r->log, qr/Try-Tiny-[^\|]+\| Successfully installed distribution/;
+    unlike $r->log, qr/Devel-CheckBin-[^\|]+\| Successfully installed distribution/;
 };
 
 subtest 'recommends' => sub () {
     my $r = cpm_install '--with-recommends', '--cpanfile', $cpanfile;
     is $r->exit, 0;
-    like   $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-ModuleBuild/;
-    unlike $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-StaticInstall/;
-    unlike $r->err, qr/DONE install Parallel-Pipes/;
-    unlike $r->err, qr/DONE install File-pushd/;
-    unlike $r->err, qr/DONE install Try-Tiny/;
-    unlike $r->err, qr/DONE install Devel-CheckBin/;
+    like   $r->log, qr/CPAN-Test-Dummy-Perl5-ModuleBuild-[^\|]+\| Successfully installed distribution/;
+    unlike $r->log, qr/CPAN-Test-Dummy-Perl5-StaticInstall-[^\|]+\| Successfully installed distribution/;
+    unlike $r->log, qr/Parallel-Pipes-[^\|]+\| Successfully installed distribution/;
+    unlike $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
+    unlike $r->log, qr/Try-Tiny-[^\|]+\| Successfully installed distribution/;
+    unlike $r->log, qr/Devel-CheckBin-[^\|]+\| Successfully installed distribution/;
 };
 
 subtest 'suggests' => sub () {
     my $r = cpm_install '--with-suggests', '--cpanfile', $cpanfile;
     is $r->exit, 0;
-    unlike $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-ModuleBuild/;
-    like   $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-StaticInstall/;
-    unlike $r->err, qr/DONE install Parallel-Pipes/;
-    unlike $r->err, qr/DONE install File-pushd/;
-    unlike $r->err, qr/DONE install Try-Tiny/;
-    unlike $r->err, qr/DONE install Devel-CheckBin/;
+    unlike $r->log, qr/CPAN-Test-Dummy-Perl5-ModuleBuild-[^\|]+\| Successfully installed distribution/;
+    like   $r->log, qr/CPAN-Test-Dummy-Perl5-StaticInstall-[^\|]+\| Successfully installed distribution/;
+    unlike $r->log, qr/Parallel-Pipes-[^\|]+\| Successfully installed distribution/;
+    unlike $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
+    unlike $r->log, qr/Try-Tiny-[^\|]+\| Successfully installed distribution/;
+    unlike $r->log, qr/Devel-CheckBin-[^\|]+\| Successfully installed distribution/;
 };
 
 subtest 'mix1' => sub () {
     my $r = cpm_install '--with-configure', '--without-test', '--with-recommends', '--cpanfile', $cpanfile;
     is $r->exit, 0;
-    unlike $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-ModuleBuild/;
-    unlike $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-StaticInstall/;
-    unlike $r->err, qr/DONE install Parallel-Pipes/;
-    unlike $r->err, qr/DONE install File-pushd/;
-    unlike $r->err, qr/DONE install Try-Tiny/;
-    like   $r->err, qr/DONE install Devel-CheckBin/;
+    unlike $r->log, qr/CPAN-Test-Dummy-Perl5-ModuleBuild-[^\|]+\| Successfully installed distribution/;
+    unlike $r->log, qr/CPAN-Test-Dummy-Perl5-StaticInstall-[^\|]+\| Successfully installed distribution/;
+    unlike $r->log, qr/Parallel-Pipes-[^\|]+\| Successfully installed distribution/;
+    unlike $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
+    unlike $r->log, qr/Try-Tiny-[^\|]+\| Successfully installed distribution/;
+    like   $r->log, qr/Devel-CheckBin-[^\|]+\| Successfully installed distribution/;
 };
 
 subtest 'mix2' => sub () {
     my $r = cpm_install '--with-develop', '--with-recommends', '--with-suggests', '--cpanfile', $cpanfile;
     is $r->exit, 0;
-    like   $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-ModuleBuild/;
-    like   $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-StaticInstall/;
-    like   $r->err, qr/DONE install Parallel-Pipes/;
-    like   $r->err, qr/DONE install File-pushd/;
-    like   $r->err, qr/DONE install Try-Tiny/;
-    unlike $r->err, qr/DONE install Devel-CheckBin/;
+    like   $r->log, qr/CPAN-Test-Dummy-Perl5-ModuleBuild-[^\|]+\| Successfully installed distribution/;
+    like   $r->log, qr/CPAN-Test-Dummy-Perl5-StaticInstall-[^\|]+\| Successfully installed distribution/;
+    like   $r->log, qr/Parallel-Pipes-[^\|]+\| Successfully installed distribution/;
+    like   $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
+    like   $r->log, qr/Try-Tiny-[^\|]+\| Successfully installed distribution/;
+    unlike $r->log, qr/Devel-CheckBin-[^\|]+\| Successfully installed distribution/;
 };
 
 done_testing;

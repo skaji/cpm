@@ -14,7 +14,6 @@ use App::cpm::version;
 use CPAN::DistnameInfo;
 use CPAN::Meta;
 use Config;
-use ExtUtils::Install ();
 use File::Basename 'basename';
 use File::Copy ();
 use File::Copy::Recursive ();
@@ -62,16 +61,14 @@ sub work ($self, $ctx, $task) {
     } elsif ($type eq "build") {
         my $ok = $self->build($ctx, $task);
         $ctx->log("Failed to build distribution") if !$ok;
-        return { ok => $ok };
+        return {
+            ok => $ok,
+            builder => $task->{builder},
+        };
     } elsif ($type eq "test") {
         my $ok = $self->test($ctx, $task);
         $ctx->log("Failed to test distribution") if !$ok;
         return { ok => $ok };
-    } elsif ($type eq "install") {
-        my $ok = $self->install($ctx, $task);
-        my $message = $ok ? "Successfully installed distribution" : "Failed to install distribution";
-        $ctx->log($message);
-        return { ok => $ok, directory => $task->{directory} };
     } else {
         die "Unknown type: $type\n";
     }
@@ -234,19 +231,20 @@ sub find_prebuilt ($self, $ctx, $uri) {
     my $meta   = $self->_load_metafile($ctx, $uri, 'META.json', 'META.yml');
     my $mymeta = $self->_load_metafile($ctx, $uri, 'blib/meta/MYMETA.json');
     my $req = $self->_extract_requirements($ctx, $mymeta, [qw(test runtime)]);
-    my $builder = App::cpm::Builder::Prebuilt->new(
-        meta => $meta,
-        distvname => $info->distvname,
-        local_lib => $self->{local_lib},
-        install_base => $self->{local_lib} || $self->{implicit_install_base},
-    );
-
     my $provides = do {
         open my $fh, "<", 'blib/meta/install.json' or die;
         my $json = JSON::PP::decode_json(do { local $/; <$fh> });
         my $provides = $json->{provides};
         [ map +{ package => $_, version => $provides->{$_}{version}, file => $provides->{$_}{file} }, sort keys $provides->%* ];
     };
+    my $builder = App::cpm::Builder::Prebuilt->new(
+        meta => $meta,
+        directory => $dir,
+        distfile => $uri,
+        provides => $provides,
+        local_lib => $self->{local_lib},
+        install_base => $self->{local_lib} || $self->{implicit_install_base},
+    );
     return +{
         directory => $dir,
         meta => $meta->as_struct,
@@ -332,7 +330,7 @@ sub configure ($self, $ctx, $task) {
     my $guard = pushd $dir;
 
     $ctx->log("Configuring distribution");
-    my $builder = $self->configure_builder($ctx, $meta);
+    my $builder = $self->configure_builder($ctx, $task);
     return if !$builder;
 
     my $mymeta = $self->_load_metafile($ctx, $distfile, 'MYMETA.json', 'MYMETA.yml');
@@ -343,7 +341,9 @@ sub configure ($self, $ctx, $task) {
     };
 }
 
-sub configure_builder ($self, $ctx, $meta) {
+sub configure_builder ($self, $ctx, $task) {
+    my ($dir, $meta, $dependency_libs, $dependency_paths)
+        = $task->@{qw(directory meta dependency_libs dependency_paths)};
     my @candidate = (
         ($self->{static_install} ? [ 'App::cpm::Builder::Static', $self->{mb_argv} ] : ()),
         [ 'App::cpm::Builder::MB',     $self->{mb_argv} ],
@@ -355,6 +355,9 @@ sub configure_builder ($self, $ctx, $meta) {
 
         my $builder = $class->new(
             meta => $meta,
+            directory => $dir,
+            distfile => $task->{distfile},
+            provides => $task->{provides},
             local_lib => $self->{local_lib},
             install_base => $self->{local_lib} || $self->{implicit_install_base},
             need_noman_argv => $self->{need_noman_argv},
@@ -366,7 +369,7 @@ sub configure_builder ($self, $ctx, $meta) {
             test_timeout => $self->{test_timeout},
         );
 
-        my $ok = $self->_retry($ctx, sub () { $builder->configure($ctx) });
+        my $ok = $self->_retry($ctx, sub () { $builder->configure($ctx, $dependency_libs, $dependency_paths) });
         return $builder if $ok;
     }
     return;
@@ -377,27 +380,18 @@ sub opts_in_static_install ($self, $ctx, $meta) {
     return $meta->{x_static_install} && $meta->{x_static_install} == 1;
 }
 
-sub install ($self, $ctx, $task) {
-    my ($dir, $builder, $distvname, $meta, $provides, $distfile)
-        = $task->@{qw(directory builder distvname meta provides distfile)};
-    my $guard = pushd $dir;
-
-    $ctx->log("Installing distribution");
-    my $installed = $self->_retry($ctx, sub () { $builder->install($ctx) });
-
-    if ($installed && $distfile && !$task->{prebuilt}) {
-        $self->save_meta($ctx, $meta, $distfile, $provides);
-        $self->save_prebuilt($ctx, $task) if $self->enable_prebuilt($ctx, $task->{uri});
-    }
-    return $installed;
-}
-
 sub build ($self, $ctx, $task) {
     my ($dir, $builder) = $task->@{qw(directory builder)};
     my $guard = pushd $dir;
 
     $ctx->log("Building distribution");
-    return $self->_retry($ctx, sub () { $builder->build($ctx) });
+    my $ok = $self->_retry($ctx, sub () {
+        $builder->build($ctx, $task->{dependency_libs}, $task->{dependency_paths});
+    });
+    if ($ok && !$task->{prebuilt} && $self->enable_prebuilt($ctx, $task->{uri})) {
+        $self->save_prebuilt($ctx, $task);
+    }
+    return $ok;
 }
 
 sub test ($self, $ctx, $task) {
@@ -405,7 +399,9 @@ sub test ($self, $ctx, $task) {
     my $guard = pushd $dir;
 
     $ctx->log("Testing distribution");
-    return $self->_retry($ctx, sub () { $builder->test($ctx) });
+    return $self->_retry($ctx, sub () {
+        $builder->test($ctx, $task->{dependency_libs}, $task->{dependency_paths});
+    });
 }
 
 sub unpack ($self, $ctx, $file) {
@@ -475,49 +471,6 @@ sub fetch_distribution ($self, $ctx, $uri, $distfile) {
         File::Copy::copy($local, $cache) or warn $!;
     }
     return $dir;
-}
-
-sub save_meta ($self, $ctx, $meta, $distfile, $provides) {
-    my $install_base = $self->{local_lib} || $self->{implicit_install_base};
-    my $install_base_meta = $install_base ? File::Spec->catdir($install_base, "lib", "perl5") : $Config{sitelibexp};
-
-    my %provides2 = map {
-        my $package = $_->{package};
-        my %info;
-        $info{file} = $_->{file};
-        $info{version} = $_->{version} if $_->{version};
-        ($package, \%info);
-    } $provides->@*;
-
-    my $distvname = CPAN::DistnameInfo->new($distfile)->distvname;
-    (my $name = $meta->{name}) =~ s/-/::/g;
-    my %data = (
-        name => $name,
-        target => $name,
-        version => $meta->{version},
-        dist => $distvname,
-        pathname => $distfile,
-        provides => \%provides2,
-    );
-
-    File::Path::mkpath("blib/meta", 0, 0777);
-    {
-        open my $fh, ">", "blib/meta/install.json" or die $!;
-        print {$fh} JSON::PP->new->canonical->pretty->encode(\%data);
-        close $fh;
-    }
-
-    File::Copy::copy("MYMETA.json", "blib/meta/MYMETA.json") or die $!;
-
-    my $meta_target_dir = File::Spec->catdir($install_base_meta, $Config{archname}, ".meta", $distvname);
-    open my $fh, ">", \my $stdout;
-    {
-        local *STDOUT = $fh;
-        ExtUtils::Install::install({
-            'blib/meta' => $meta_target_dir,
-        });
-    }
-    $ctx->log($stdout);
 }
 
 1;

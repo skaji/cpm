@@ -11,6 +11,7 @@ use App::cpm::version;
 use CPAN::DistnameInfo;
 use IO::Handle;
 use Module::Metadata;
+use File::pushd 'pushd';
 
 sub new ($class, %argv) {
     my $self = bless {
@@ -104,7 +105,7 @@ sub get_task ($self, $ctx) {
     if (my @task = grep { !$_->in_charge } $self->tasks) {
         return @task;
     }
-    $self->_calculate_tasks($ctx);
+    $self->_add_tasks($ctx);
     return if !$self->tasks;
     if (my @task = grep { !$_->in_charge } $self->tasks) {
         return @task;
@@ -129,7 +130,11 @@ sub register_result ($self, $ctx, $result) {
 
 sub info ($self, $task) {
     my $type = $task->type;
-    return if !$App::cpm::Logger::VERBOSE && $type ne "install" && $task->{ok};
+    if (!$App::cpm::Logger::VERBOSE && $task->{ok}) {
+        return if !($self->{notest} && $type eq "fetch" && $task->{prebuilt})
+            && !($self->{notest} && $type eq "build" && !$task->{prebuilt})
+            && !(!$self->{notest} && $type eq "test");
+    }
     my $name = $task->distvname;
     my ($message, $optional);
     if ($type eq "resolve") {
@@ -155,8 +160,9 @@ sub info ($self, $task) {
 
 sub _show_progress ($self) {
     my $all = keys $self->{distributions}->%*;
-    my $num = $self->installed_distributions;
-    print STDERR "--- $num/$all ---";
+    my $state = $self->{notest} ? "built" : "tested";
+    my $num = grep { $_->$state || $_->installed } $self->distributions;
+    print STDERR "\r--- $num/$all ---";
     STDERR->flush; # this is needed at least with perl <= 5.24
 }
 
@@ -170,10 +176,161 @@ sub distribution ($self, $distfile) {
     $self->{distributions}{$distfile};
 }
 
-sub _calculate_tasks ($self, $ctx) {
-    my @distributions
-        = grep { !$self->{_fail_install}{$_->distfile} } $self->distributions;
+sub install_phase_state ($self, $dist) {
+    return "built" if $dist->prebuilt;
+    return $self->{notest} ? "built" : "tested";
+}
 
+sub _resolved_distribution ($self, $package, $version_range = undef) {
+    my ($resolved) = grep { $_->providing($package, $version_range) } $self->distributions;
+    $resolved;
+}
+
+sub dependency_env_for ($self, $dist, $phases, $seen = undef, $found = undef) {
+    $seen ||= {};
+    $found ||= {};
+
+    for my $req ($dist->requirements($phases)->as_array->@*) {
+        my ($package, $version_range) = $req->@{qw(package version_range)};
+        next if $package eq "perl";
+        next if $self->{target_perl} and $self->is_core($package, $version_range);
+
+        my $resolved = $self->_resolved_distribution($package, $version_range);
+        if (!$resolved) {
+            next if $self->is_installed($package, $version_range);
+            next;
+        }
+        next if !$resolved->usable;
+        next if $seen->{$resolved->distfile}++;
+
+        $found->{$resolved->distfile} = $resolved;
+        $self->dependency_env_for($resolved, 'runtime', $seen, $found);
+    }
+
+    my (@libs, @paths);
+    for my $resolved (values $found->%*) {
+        push @libs, $resolved->builder->libs->@*;
+        push @paths, $resolved->builder->paths->@*;
+    }
+
+    return {
+        dependency_libs => \@libs,
+        dependency_paths => \@paths,
+    };
+}
+
+sub _install_env_phases ($self, $dist) {
+    return [qw(runtime)] if $dist->prebuilt;
+    return $self->{notest}
+        ? [qw(configure runtime build)]
+        : [qw(configure runtime build test)];
+}
+
+sub install_distributions ($self, $ctx) {
+    return if $self->{_fail_resolve}->%* || $self->{_fail_install}->%*;
+
+    my @dist = grep { $_->usable } $self->distributions;
+    return if !@dist;
+
+    for my $dist (sort { $a->distvname cmp $b->distvname } @dist) {
+        my $guard = pushd $dist->directory;
+
+        local $ctx->{logger}{context} = $dist->distvname;
+        $ctx->log("Installing distribution");
+        my $ok =$dist->builder->install($ctx);
+        if ($ok) {
+            $dist->installed(1);
+            $self->{installed_distributions}++;
+            $ctx->log("Successfully installed distribution");
+            if ($App::cpm::Logger::VERBOSE) {
+                App::cpm::Logger->log(
+                    type => "install",
+                    result => "DONE",
+                    message => $dist->distvname,
+                    ($dist->prebuilt ? (optional => "using prebuilt") : ()),
+                );
+            }
+            $self->_show_progress if $self->{show_progress};
+        } else {
+            $self->{_fail_install}{$dist->distfile}++;
+            $ctx->log("Failed to install distribution");
+            App::cpm::Logger->log(
+                type => "install",
+                result => "FAIL",
+                message => $dist->distvname,
+                ($dist->prebuilt ? (optional => "using prebuilt") : ()),
+            );
+        }
+    }
+    return 1;
+}
+
+sub _add_tasks ($self, $ctx) {
+    while (1) {
+        my $changed = 0;
+
+        if ($self->{notest}) {
+            $changed += $self->_mark_built_usable($ctx);
+        } else {
+            $changed += $self->_mark_tested_usable($ctx);
+        }
+
+        $changed += $self->_add_fetch_tasks($ctx);
+        $changed += $self->_add_configure_tasks($ctx);
+        $changed += $self->_add_build_tasks($ctx);
+
+        if (!$self->{notest}) {
+            $changed += $self->_add_test_tasks($ctx);
+        }
+
+        last if !$changed;
+    }
+}
+
+sub _mark_built_usable ($self, $ctx) {
+    my $changed = 0;
+    my @distributions = grep { !$self->{_fail_install}{$_->distfile} } $self->distributions;
+    if (my @dists = grep { $_->built && !$_->usable } @distributions) {
+        for my $dist (@dists) {
+            my $dist_requirements = $dist->requirements('runtime')->as_array;
+            my ($is_satisfied, @need_resolve) = $self->is_satisfied($dist_requirements);
+            if ($is_satisfied) {
+                $dist->usable(1);
+                $changed++;
+            } elsif (!defined $is_satisfied) {
+                local $ctx->{logger}{context} = $dist->distvname;
+                my ($req) = grep { $_->{package} eq "perl" } $dist_requirements->@*;
+                my $msg = sprintf "%s requires perl %s, but you have only %s",
+                    $dist->distvname, $req->{version_range}, $self->{target_perl} || $];
+                $ctx->log($msg);
+                App::cpm::Logger->log(result => "FAIL", message => $msg);
+                $self->{_fail_install}{$dist->distfile}++;
+                $changed++;
+            } elsif (@need_resolve and !$dist->deps_registered) {
+                local $ctx->{logger}{context} = $dist->distvname;
+                $dist->deps_registered(1);
+                my $msg = sprintf "Found runtime prerequisites: %s",
+                    join(", ", map { sprintf "%s (%s)", $_->{package}, $_->{version_range} || 0 } @need_resolve);
+                $ctx->log($msg);
+                my $ok = $self->_register_resolve_task($ctx, @need_resolve);
+                $self->{_fail_install}{$dist->distfile}++ if !$ok;
+                $changed++;
+            }
+        }
+    }
+    return $changed;
+}
+
+sub _mark_tested_usable ($self, $ctx) {
+    my @distributions = grep { !$self->{_fail_install}{$_->distfile} } $self->distributions;
+    my @dists = grep { $_->tested && !$_->usable } @distributions;
+    $_->usable(1) for @dists;
+    return scalar @dists;
+}
+
+sub _add_fetch_tasks ($self, $ctx) {
+    my $changed = 0;
+    my @distributions = grep { !$self->{_fail_install}{$_->distfile} } $self->distributions;
     if (my @dists = grep { $_->resolved && !$_->registered } @distributions) {
         for my $dist (@dists) {
             $dist->registered(1);
@@ -185,26 +342,37 @@ sub _calculate_tasks ($self, $ctx) {
                 uri => $dist->uri,
                 ref => $dist->ref,
             );
+            $changed++;
         }
     }
+    return $changed;
+}
 
+sub _add_configure_tasks ($self, $ctx) {
+    my $changed = 0;
+    my @distributions = grep { !$self->{_fail_install}{$_->distfile} } $self->distributions;
     if (my @dists = grep { $_->fetched && !$_->registered } @distributions) {
+        my @phase = qw(configure);
         for my $dist (@dists) {
             local $ctx->{logger}{context} = $dist->distvname;
-            my $dist_requirements = $dist->requirements('configure')->as_array;
+            my $dist_requirements = $dist->requirements(\@phase)->as_array;
             my ($is_satisfied, @need_resolve) = $self->is_satisfied($dist_requirements);
             if ($is_satisfied) {
                 $dist->registered(1);
+                my $env = $self->dependency_env_for($dist, \@phase);
                 $self->add_task(
                     $ctx,
                     type => "configure",
                     meta => $dist->meta,
                     directory => $dist->directory,
                     distfile => $dist->{distfile},
+                    provides => $dist->provides,
                     source => $dist->source,
                     uri => $dist->uri,
                     distvname => $dist->distvname,
+                    $env->%*,
                 );
+                $changed++;
             } elsif (!defined $is_satisfied) {
                 my ($req) = grep { $_->{package} eq "perl" } $dist_requirements->@*;
                 my $msg = sprintf "%s requires perl %s, but you have only %s",
@@ -212,25 +380,33 @@ sub _calculate_tasks ($self, $ctx) {
                 $ctx->log($msg);
                 App::cpm::Logger->log(result => "FAIL", message => $msg);
                 $self->{_fail_install}{$dist->distfile}++;
+                $changed++;
             } elsif (@need_resolve and !$dist->deps_registered) {
                 $dist->deps_registered(1);
                 my $msg = sprintf "Found configure dependencies: %s",
-                    join(", ", map { sprintf "%s (%s)", $_->{package}, $_->{version_range} || 0 }  @need_resolve);
+                    join(", ", map { sprintf "%s (%s)", $_->{package}, $_->{version_range} || 0 } @need_resolve);
                 $ctx->log($msg);
                 my $ok = $self->_register_resolve_task($ctx, @need_resolve);
                 $self->{_fail_install}{$dist->distfile}++ if !$ok;
+                $changed++;
             }
         }
     }
+    return $changed;
+}
 
+sub _add_build_tasks ($self, $ctx) {
+    my $changed = 0;
+    my @distributions = grep { !$self->{_fail_install}{$_->distfile} } $self->distributions;
     if (my @dists = grep { $_->configured && !$_->registered } @distributions) {
+        my @phase = qw(configure runtime build);
         for my $dist (@dists) {
             local $ctx->{logger}{context} = $dist->distvname;
-
-            my $dist_requirements = $dist->requirements('build')->as_array;
+            my $dist_requirements = $dist->requirements(\@phase)->as_array;
             my ($is_satisfied, @need_resolve) = $self->is_satisfied($dist_requirements);
             if ($is_satisfied) {
                 $dist->registered(1);
+                my $env = $self->dependency_env_for($dist, \@phase);
                 $self->add_task(
                     $ctx,
                     type => "build",
@@ -240,7 +416,9 @@ sub _calculate_tasks ($self, $ctx) {
                     uri => $dist->uri,
                     builder => $dist->builder,
                     provides => $dist->provides,
+                    $env->%*,
                 );
+                $changed++;
             } elsif (!defined $is_satisfied) {
                 my ($req) = grep { $_->{package} eq "perl" } $dist_requirements->@*;
                 my $msg = sprintf "%s requires perl %s, but you have only %s",
@@ -248,49 +426,45 @@ sub _calculate_tasks ($self, $ctx) {
                 $ctx->log($msg);
                 App::cpm::Logger->log(result => "FAIL", message => $msg);
                 $self->{_fail_install}{$dist->distfile}++;
+                $changed++;
             } elsif (@need_resolve and !$dist->deps_registered) {
                 $dist->deps_registered(1);
-                my $msg = sprintf "Found build dependencies: %s",
-                    join(", ", map { sprintf "%s (%s)", $_->{package}, $_->{version_range} || 0 }  @need_resolve);
+                my $msg = sprintf "Found build prerequisites: %s",
+                    join(", ", map { sprintf "%s (%s)", $_->{package}, $_->{version_range} || 0 } @need_resolve);
                 $ctx->log($msg);
                 my $ok = $self->_register_resolve_task($ctx, @need_resolve);
                 $self->{_fail_install}{$dist->distfile}++ if !$ok;
+                $changed++;
             }
         }
     }
+    return $changed;
+}
 
+sub _add_test_tasks ($self, $ctx) {
+    my $changed = 0;
+    my @distributions = grep { !$self->{_fail_install}{$_->distfile} } $self->distributions;
     if (my @dists = grep { $_->built && !$_->registered } @distributions) {
         for my $dist (@dists) {
             local $ctx->{logger}{context} = $dist->distvname;
-            my @phase = $dist->prebuilt || $self->{notest} ? qw(runtime) : qw(test runtime);
+            my @phase = qw(configure runtime build test);
             my $dist_requirements = $dist->requirements(\@phase)->as_array;
             my ($is_satisfied, @need_resolve) = $self->is_satisfied($dist_requirements);
             if ($is_satisfied) {
                 $dist->registered(1);
-                if ($dist->prebuilt || $self->{notest}) {
-                    $self->add_task(
-                        $ctx,
-                        type => "install",
-                        meta => $dist->meta,
-                        directory => $dist->directory,
-                        distfile => $dist->{distfile},
-                        uri => $dist->uri,
-                        builder => $dist->builder,
-                        prebuilt => $dist->prebuilt,
-                        provides => $dist->provides,
-                    );
-                } else {
-                    $self->add_task(
-                        $ctx,
-                        type => "test",
-                        meta => $dist->meta,
-                        directory => $dist->directory,
-                        distfile => $dist->{distfile},
-                        uri => $dist->uri,
-                        builder => $dist->builder,
-                        provides => $dist->provides,
-                    );
-                }
+                my $env = $self->dependency_env_for($dist, \@phase);
+                $self->add_task(
+                    $ctx,
+                    type => "test",
+                    meta => $dist->meta,
+                    directory => $dist->directory,
+                    distfile => $dist->{distfile},
+                    uri => $dist->uri,
+                    builder => $dist->builder,
+                    provides => $dist->provides,
+                    $env->%*,
+                );
+                $changed++;
             } elsif (!defined $is_satisfied) {
                 my ($req) = grep { $_->{package} eq "perl" } $dist_requirements->@*;
                 my $msg = sprintf "%s requires perl %s, but you have only %s",
@@ -298,33 +472,19 @@ sub _calculate_tasks ($self, $ctx) {
                 $ctx->log($msg);
                 App::cpm::Logger->log(result => "FAIL", message => $msg);
                 $self->{_fail_install}{$dist->distfile}++;
+                $changed++;
             } elsif (@need_resolve and !$dist->deps_registered) {
                 $dist->deps_registered(1);
-                my $msg = sprintf "Found dependencies: %s",
-                    join(", ", map { sprintf "%s (%s)", $_->{package}, $_->{version_range} || 0 }  @need_resolve);
+                my $msg = sprintf "Found test prerequisites: %s",
+                    join(", ", map { sprintf "%s (%s)", $_->{package}, $_->{version_range} || 0 } @need_resolve);
                 $ctx->log($msg);
                 my $ok = $self->_register_resolve_task($ctx, @need_resolve);
                 $self->{_fail_install}{$dist->distfile}++ if !$ok;
+                $changed++;
             }
         }
     }
-
-    if (my @dists = grep { $_->tested && !$_->registered } @distributions) {
-        for my $dist (@dists) {
-            $dist->registered(1);
-            $self->add_task(
-                $ctx,
-                type => "install",
-                meta => $dist->meta,
-                directory => $dist->directory,
-                distfile => $dist->{distfile},
-                uri => $dist->uri,
-                builder => $dist->builder,
-                prebuilt => $dist->prebuilt,
-                provides => $dist->provides,
-            );
-        }
-    }
+    return $changed;
 }
 
 sub _register_resolve_task ($self, $ctx, @package) {
@@ -413,9 +573,12 @@ sub is_satisfied ($self, $requirements) {
             next;
         }
         next if $self->{target_perl} and $self->is_core($package, $version_range);
-        next if $self->is_installed($package, $version_range);
-        my ($resolved) = grep { $_->providing($package, $version_range) } @distributions;
-        next if $resolved && $resolved->installed;
+        my $resolved = $self->_resolved_distribution($package, $version_range);
+        if ($resolved) {
+            next if $resolved->usable;
+        } else {
+            next if $self->is_installed($package, $version_range);
+        }
 
         $is_satisfied = 0 if defined $is_satisfied;
         if (!$resolved) {
@@ -527,17 +690,6 @@ sub _register_configure_result ($self, $ctx, $task) {
     return 1;
 }
 
-sub _register_install_result ($self, $ctx, $task) {
-    if (!$task->is_success) {
-        $self->{_fail_install}{$task->distfile}++;
-        return;
-    }
-    my $distribution = $self->distribution($task->distfile);
-    $distribution->installed(1);
-    $self->{installed_distributions}++;
-    return 1;
-}
-
 sub _register_build_result ($self, $ctx, $task) {
     if (!$task->is_success) {
         $self->{_fail_install}{$task->distfile}++;
@@ -545,6 +697,7 @@ sub _register_build_result ($self, $ctx, $task) {
     }
     my $distribution = $self->distribution($task->distfile);
     $distribution->built(1);
+    $distribution->builder($task->{builder});
     return 1;
 }
 

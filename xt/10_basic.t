@@ -8,7 +8,7 @@ use CLI;
 
 subtest no_meta => sub () {
     my $r = cpm_install "WWW::RobotRules::Extended";
-    like $r->err, qr/DONE install WWW-RobotRules-Extended/;
+    like $r->log, qr/WWW-RobotRules-Extended-[^\|]+\| Successfully installed distribution/;
 };
 
 subtest test => sub () {
@@ -29,19 +29,19 @@ subtest test => sub () {
 subtest range => sub () {
     my $r = cpm_install "CPAN::Test::Dummy::Perl5::Deps::VersionRange";
     is $r->exit, 0;
-    like $r->err, qr/DONE install CPAN-Test-Dummy-Perl5-Deps-VersionRange/;
+    like $r->log, qr/CPAN-Test-Dummy-Perl5-Deps-VersionRange-[^\|]+\| Successfully installed distribution/;
 };
 
 subtest http => sub () {
     my $r = cpm_install "https://cpan.metacpan.org/authors/id/L/LE/LEONT/ExtUtils-Config-0.008.tar.gz";
     is $r->exit, 0;
-    like $r->err, qr/DONE install ExtUtils-Config-0.008/;
+    like $r->log, qr/ExtUtils-Config-0\.008\| Successfully installed distribution/;
 };
 
 subtest distfile => sub () {
     my $r = cpm_install "LEONT/ExtUtils-Config-0.008.tar.gz";
     is $r->exit, 0;
-    like $r->err, qr/DONE install ExtUtils-Config-0.008/;
+    like $r->log, qr/ExtUtils-Config-0\.008\| Successfully installed distribution/;
 };
 
 subtest configure => sub () {

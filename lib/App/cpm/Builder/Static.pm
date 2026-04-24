@@ -6,7 +6,6 @@ use experimental qw(lexical_subs signatures);
 use ExtUtils::Config;
 use ExtUtils::Helpers qw(make_executable man1_pagename man3_pagename);
 use ExtUtils::Install qw(pm_to_blib);
-use ExtUtils::InstallPaths;
 use File::Basename qw(dirname);
 use File::Find ();
 use File::Path qw(mkpath);
@@ -84,13 +83,13 @@ sub supports ($class, $meta) {
     return $meta->{x_static_install} && $meta->{x_static_install} == 1;
 }
 
-sub configure ($self, $ctx) {
+sub configure ($self, $ctx, $dependency_libs, $dependency_paths) {
     $self->meta->save(@$_) for ['MYMETA.json'], [ 'MYMETA.yml' => { version => 1.4 } ];
     return 1;
 }
 
-sub build ($self, $ctx) {
-    $self->run_build($ctx, sub {
+sub build ($self, $ctx, $dependency_libs, $dependency_paths) {
+    my $ok = $self->run_build($ctx, sub {
         my @module = find_files(qr/\.(?:pm|pod)\z/, 'lib');
         my @script = script_files();
         my %file = (
@@ -103,10 +102,14 @@ sub build ($self, $ctx) {
         mkpath(catdir(qw(blib arch)));
         build_manpages($self->_install_paths, ExtUtils::Config->new, \@module, \@script) if $self->{man_pages};
         return 1;
-    });
+    }, $dependency_libs, $dependency_paths);
+    return if !$ok;
+    $self->_prepare_paths_cache;
+    $self->_write_blib_meta($ctx);
+    return 1;
 }
 
-sub test ($self, $ctx) {
+sub test ($self, $ctx, $dependency_libs, $dependency_paths) {
     $self->run_test($ctx, sub {
         return 1 if !-d 't';
         require TAP::Harness::Env;
@@ -115,21 +118,7 @@ sub test ($self, $ctx) {
             lib => [ map { rel2abs(catdir(qw(blib), $_)) } qw(arch lib) ],
         });
         return !$tester->runtests(sort(find_files(qr/\.t\z/, 't')))->has_errors;
-    });
-}
-
-sub install ($self, $ctx) {
-    $self->run_install($ctx, sub {
-        ExtUtils::Install::install($self->_install_paths->install_map, 0, 0, 0);
-        return 1;
-    });
-}
-
-sub _install_paths ($self) {
-    ExtUtils::InstallPaths->new(
-        dist_name => $self->meta->name,
-        ($self->{install_base} ? (install_base => $self->{install_base}) : ()),
-    );
+    }, $dependency_libs, $dependency_paths);
 }
 
 1;
