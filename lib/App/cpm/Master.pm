@@ -271,6 +271,7 @@ sub install_distributions ($self, $ctx) {
             $dist->builder->install($ctx, $env->{dependency_libs}, $env->{dependency_paths});
         };
         if ($ok) {
+            $ctx->log("Successfully installed distribution");
             $dist->installed(1);
             $self->{installed_distributions}++;
             App::cpm::Logger->log(
