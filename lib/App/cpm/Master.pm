@@ -11,6 +11,7 @@ use App::cpm::version;
 use CPAN::DistnameInfo;
 use IO::Handle;
 use Module::Metadata;
+use File::pushd 'pushd';
 
 sub new ($class, %argv) {
     my $self = bless {
@@ -174,6 +175,11 @@ sub dependency_gate_state ($self) {
     $self->{notest} ? "built" : "tested";
 }
 
+sub install_phase_state ($self, $dist) {
+    return "built" if $dist->prebuilt;
+    return $self->{notest} ? "built" : "tested";
+}
+
 sub _resolved_distribution ($self, $package, $version_range = undef) {
     my ($resolved) = grep { $_->providing($package, $version_range) } $self->distributions;
     $resolved;
@@ -191,9 +197,13 @@ sub usable_as_dependency ($self, $dist, $seen = undef) {
         my ($package, $version_range) = $req->@{qw(package version_range)};
         next if $package eq "perl";
         next if $self->{target_perl} and $self->is_core($package, $version_range);
-        next if $self->is_installed($package, $version_range);
         my $resolved = $self->_resolved_distribution($package, $version_range);
-        return if !$resolved || !$self->usable_as_dependency($resolved, $seen);
+        if ($resolved) {
+            return if !$self->usable_as_dependency($resolved, $seen);
+            next;
+        }
+        next if $self->is_installed($package, $version_range);
+        return;
     }
 
     $self->{_usable_as_dependency}{$gate}{$dist->distfile} = 1;
@@ -208,10 +218,13 @@ sub dependency_env_for ($self, $dist, $phases, $seen = undef, $found = undef) {
         my ($package, $version_range) = $req->@{qw(package version_range)};
         next if $package eq "perl";
         next if $self->{target_perl} and $self->is_core($package, $version_range);
-        next if $self->is_installed($package, $version_range);
 
         my $resolved = $self->_resolved_distribution($package, $version_range);
-        next if !$resolved || !$self->usable_as_dependency($resolved);
+        if (!$resolved) {
+            next if $self->is_installed($package, $version_range);
+            next;
+        }
+        next if !$self->usable_as_dependency($resolved);
         next if $seen->{$resolved->distfile}++;
 
         $found->{$resolved->distfile} = $resolved;
@@ -228,6 +241,58 @@ sub dependency_env_for ($self, $dist, $phases, $seen = undef, $found = undef) {
         dependency_libs => \@libs,
         dependency_paths => \@paths,
     };
+}
+
+sub _install_env_phases ($self, $dist) {
+    return [qw(runtime)] if $dist->prebuilt;
+    return $self->{notest}
+        ? [qw(configure runtime build)]
+        : [qw(configure runtime build test)];
+}
+
+sub install_distributions ($self, $ctx) {
+    return if $self->{_fail_resolve}->%* || $self->{_fail_install}->%*;
+
+    my @dist = grep { !$_->installed } $self->distributions;
+    return if !@dist;
+    return if grep {
+        my $state = $self->install_phase_state($_);
+        !$_->$state;
+    } @dist;
+
+    for my $dist (sort { $a->distvname cmp $b->distvname } @dist) {
+        my $phase = $self->_install_env_phases($dist);
+        my $env = $self->dependency_env_for($dist, $phase);
+        my $guard = pushd $dist->directory;
+
+        local $ctx->{logger}{context} = $dist->distvname;
+        $ctx->log("Installing distribution");
+        my $ok = eval {
+            $dist->builder->install($ctx, $env->{dependency_libs}, $env->{dependency_paths});
+        };
+        if ($ok) {
+            $dist->installed(1);
+            $self->{installed_distributions}++;
+            App::cpm::Logger->log(
+                type => "install",
+                result => "DONE",
+                message => $dist->distvname,
+                ($dist->prebuilt ? (optional => "using prebuilt") : ()),
+            );
+            $self->_show_progress if $self->{show_progress};
+        } else {
+            warn $@ if $@;
+            $self->{_fail_install}{$dist->distfile}++;
+            $ctx->log("Failed to install distribution");
+            App::cpm::Logger->log(
+                type => "install",
+                result => "FAIL",
+                message => $dist->distvname,
+                ($dist->prebuilt ? (optional => "using prebuilt") : ()),
+            );
+        }
+    }
+    return 1;
 }
 
 sub _calculate_tasks ($self, $ctx) {
@@ -326,45 +391,29 @@ sub _calculate_tasks ($self, $ctx) {
         }
     }
 
+    # Under !notest, prebuilt is disabled by CLI, so built distributions here are source builds.
+    return if $self->{notest};
+
     if (my @dists = grep { $_->built && !$_->registered } @distributions) {
         for my $dist (@dists) {
             local $ctx->{logger}{context} = $dist->distvname;
-            my @phase = $dist->prebuilt || $self->{notest}
-                ? qw(runtime)
-                : qw(configure runtime build test);
+            my @phase = qw(configure runtime build test);
             my $dist_requirements = $dist->requirements(\@phase)->as_array;
             my ($is_satisfied, @need_resolve) = $self->is_satisfied($dist_requirements);
             if ($is_satisfied) {
                 $dist->registered(1);
-                if ($dist->prebuilt || $self->{notest}) {
-                    my @phase = qw(runtime);
-                    my $env = $self->dependency_env_for($dist, \@phase);
-                    $self->add_task(
-                        $ctx,
-                        type => "install",
-                        meta => $dist->meta,
-                        directory => $dist->directory,
-                        distfile => $dist->{distfile},
-                        uri => $dist->uri,
-                        builder => $dist->builder,
-                        prebuilt => $dist->prebuilt,
-                        provides => $dist->provides,
-                        $env->%*,
-                    );
-                } else {
-                    my $env = $self->dependency_env_for($dist, \@phase);
-                    $self->add_task(
-                        $ctx,
-                        type => "test",
-                        meta => $dist->meta,
-                        directory => $dist->directory,
-                        distfile => $dist->{distfile},
-                        uri => $dist->uri,
-                        builder => $dist->builder,
-                        provides => $dist->provides,
-                        $env->%*,
-                    );
-                }
+                my $env = $self->dependency_env_for($dist, \@phase);
+                $self->add_task(
+                    $ctx,
+                    type => "test",
+                    meta => $dist->meta,
+                    directory => $dist->directory,
+                    distfile => $dist->{distfile},
+                    uri => $dist->uri,
+                    builder => $dist->builder,
+                    provides => $dist->provides,
+                    $env->%*,
+                );
             } elsif (!defined $is_satisfied) {
                 my ($req) = grep { $_->{package} eq "perl" } $dist_requirements->@*;
                 my $msg = sprintf "%s requires perl %s, but you have only %s",
@@ -380,26 +429,6 @@ sub _calculate_tasks ($self, $ctx) {
                 my $ok = $self->_register_resolve_task($ctx, @need_resolve);
                 $self->{_fail_install}{$dist->distfile}++ if !$ok;
             }
-        }
-    }
-
-    if (my @dists = grep { $_->tested && !$_->registered } @distributions) {
-        my @phase = qw(runtime);
-        for my $dist (@dists) {
-            $dist->registered(1);
-            my $env = $self->dependency_env_for($dist, \@phase);
-            $self->add_task(
-                $ctx,
-                type => "install",
-                meta => $dist->meta,
-                directory => $dist->directory,
-                distfile => $dist->{distfile},
-                uri => $dist->uri,
-                builder => $dist->builder,
-                prebuilt => $dist->prebuilt,
-                provides => $dist->provides,
-                $env->%*,
-            );
         }
     }
 }
@@ -490,9 +519,12 @@ sub is_satisfied ($self, $requirements) {
             next;
         }
         next if $self->{target_perl} and $self->is_core($package, $version_range);
-        next if $self->is_installed($package, $version_range);
         my $resolved = $self->_resolved_distribution($package, $version_range);
-        next if $resolved && $self->usable_as_dependency($resolved);
+        if ($resolved) {
+            next if $self->usable_as_dependency($resolved);
+        } else {
+            next if $self->is_installed($package, $version_range);
+        }
 
         $is_satisfied = 0 if defined $is_satisfied;
         if (!$resolved) {

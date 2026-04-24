@@ -308,6 +308,7 @@ sub cmd_install ($self) {
     $master->add_task($ctx, type => "resolve", $_->%*) for $packages->@*;
     $master->add_distribution($_) for $dists->@*;
     $self->install($ctx, $master, $worker, $self->{workers});
+    $master->install_distributions($ctx);
     my $fail = $master->fail($ctx);
     if ($fail) {
         local $App::cpm::Logger::VERBOSE = 0;

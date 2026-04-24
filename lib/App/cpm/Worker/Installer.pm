@@ -69,11 +69,6 @@ sub work ($self, $ctx, $task) {
         my $ok = $self->test($ctx, $task);
         $ctx->log("Failed to test distribution") if !$ok;
         return { ok => $ok };
-    } elsif ($type eq "install") {
-        my $ok = $self->install($ctx, $task);
-        my $message = $ok ? "Successfully installed distribution" : "Failed to install distribution";
-        $ctx->log($message);
-        return { ok => $ok, directory => $task->{directory} };
     } else {
         die "Unknown type: $type\n";
     }
@@ -386,30 +381,18 @@ sub opts_in_static_install ($self, $ctx, $meta) {
     return $meta->{x_static_install} && $meta->{x_static_install} == 1;
 }
 
-sub install ($self, $ctx, $task) {
-    my ($dir, $builder, $distvname, $meta, $provides, $distfile)
-        = $task->@{qw(directory builder distvname meta provides distfile)};
-    my $guard = pushd $dir;
-
-    $ctx->log("Installing distribution");
-    my $installed = $self->_retry($ctx, sub () {
-        $builder->install($ctx, $task->{dependency_libs}, $task->{dependency_paths});
-    });
-
-    if ($installed && $distfile && !$task->{prebuilt}) {
-        $self->save_prebuilt($ctx, $task) if $self->enable_prebuilt($ctx, $task->{uri});
-    }
-    return $installed;
-}
-
 sub build ($self, $ctx, $task) {
     my ($dir, $builder) = $task->@{qw(directory builder)};
     my $guard = pushd $dir;
 
     $ctx->log("Building distribution");
-    return $self->_retry($ctx, sub () {
+    my $ok = $self->_retry($ctx, sub () {
         $builder->build($ctx, $task->{dependency_libs}, $task->{dependency_paths});
     });
+    if ($ok && !$task->{prebuilt} && $self->enable_prebuilt($ctx, $task->{uri})) {
+        $self->save_prebuilt($ctx, $task);
+    }
+    return $ok;
 }
 
 sub test ($self, $ctx, $task) {

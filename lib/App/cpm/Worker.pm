@@ -41,7 +41,7 @@ sub work ($self, $ctx, $task) {
     my $type = $task->{type} || "(undef)";
     my $result;
     my $start = $self->{verbose} ? [gettimeofday] : undef;
-    if (grep {$type eq $_} qw(fetch configure build test install)) {
+    if (grep {$type eq $_} qw(fetch configure build test)) {
         $result = eval { $self->{installer}->work($ctx, $task) };
         warn $@ if $@;
     } elsif ($type eq "resolve") {
