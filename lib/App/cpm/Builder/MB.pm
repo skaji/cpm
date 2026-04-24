@@ -19,7 +19,11 @@ sub configure ($self, $ctx, $dependency_libs, $dependency_paths) {
 }
 
 sub build ($self, $ctx, $dependency_libs, $dependency_paths) {
-    $self->run_build($ctx, [ $ctx->{perl}, "./Build" ], $dependency_libs, $dependency_paths) && $self->_prepare_paths_cache;
+    my $ok = $self->run_build($ctx, [ $ctx->{perl}, "./Build" ], $dependency_libs, $dependency_paths);
+    return if !$ok;
+    $self->_prepare_paths_cache;
+    $self->_write_blib_meta($ctx);
+    return 1;
 }
 
 sub test ($self, $ctx, $dependency_libs, $dependency_paths) {
@@ -27,7 +31,10 @@ sub test ($self, $ctx, $dependency_libs, $dependency_paths) {
 }
 
 sub install ($self, $ctx, $dependency_libs, $dependency_paths) {
-    $self->run_install($ctx, [ $ctx->{perl}, "./Build", "install" ], $dependency_libs, $dependency_paths);
+    my $ok = $self->run_install($ctx, [ $ctx->{perl}, "./Build", "install" ], $dependency_libs, $dependency_paths);
+    return if !$ok;
+    $self->_install_blib_meta($ctx);
+    return 1;
 }
 
 1;

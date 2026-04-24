@@ -263,6 +263,7 @@ sub _calculate_tasks ($self, $ctx) {
                     meta => $dist->meta,
                     directory => $dist->directory,
                     distfile => $dist->{distfile},
+                    provides => $dist->provides,
                     source => $dist->source,
                     uri => $dist->uri,
                     distvname => $dist->distvname,

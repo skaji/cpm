@@ -3,10 +3,15 @@ use v5.24;
 use warnings;
 use experimental qw(lexical_subs signatures);
 
+use CPAN::DistnameInfo;
 use Config;
 use App::cpm::Util qw(DEBUG);
+use ExtUtils::Install ();
+use File::Copy ();
 use File::Find ();
+use File::Path ();
 use File::Spec;
+use JSON::PP ();
 
 my sub nonempty ($path) {
     return if !-d $path;
@@ -77,6 +82,54 @@ sub _set_env ($self, $dependency_libs, $dependency_paths) {
     if ($dependency_libs->@* || $self->local_lib) {
         $ENV{PERL5LIB} = $self->_env_perl5lib($dependency_libs);
     }
+}
+
+sub _write_blib_meta ($self, $ctx) {
+    my $name = $self->meta->{name};
+    $name =~ s/-/::/g;
+
+    my %provides = map {
+        my $package = $_->{package};
+        my %info;
+        $info{file} = $_->{file};
+        $info{version} = $_->{version} if $_->{version};
+        ($package, \%info);
+    } $self->{provides}->@*;
+
+    my %install = (
+        name => $name,
+        target => $name,
+        version => $self->meta->{version},
+        dist => $self->{distvname},
+        pathname => $self->{distfile},
+        provides => \%provides,
+    );
+
+    File::Path::mkpath("blib/meta", 0, 0777);
+    {
+        open my $fh, ">", "blib/meta/install.json" or die $!;
+        print {$fh} JSON::PP->new->canonical->pretty->encode(\%install);
+        close $fh;
+    }
+
+    File::Copy::copy("MYMETA.json", "blib/meta/MYMETA.json") or die $!;
+    return 1;
+}
+
+sub _install_blib_meta ($self, $ctx) {
+    my $install_base = $self->{install_base};
+    my $install_base_meta = $install_base ? File::Spec->catdir($install_base, "lib", "perl5") : $Config{sitelibexp};
+    my $meta_target_dir = File::Spec->catdir($install_base_meta, $Config{archname}, ".meta", $self->{distvname});
+
+    open my $fh, ">", \my $stdout;
+    {
+        local *STDOUT = $fh;
+        ExtUtils::Install::install({
+            'blib/meta' => $meta_target_dir,
+        });
+    }
+    $ctx->log($stdout);
+    return 1;
 }
 
 sub _log_env ($self, $ctx) {

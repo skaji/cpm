@@ -90,7 +90,7 @@ sub configure ($self, $ctx, $dependency_libs, $dependency_paths) {
 }
 
 sub build ($self, $ctx, $dependency_libs, $dependency_paths) {
-    $self->run_build($ctx, sub {
+    my $ok = $self->run_build($ctx, sub {
         my @module = find_files(qr/\.(?:pm|pod)\z/, 'lib');
         my @script = script_files();
         my %file = (
@@ -103,7 +103,11 @@ sub build ($self, $ctx, $dependency_libs, $dependency_paths) {
         mkpath(catdir(qw(blib arch)));
         build_manpages($self->_install_paths, ExtUtils::Config->new, \@module, \@script) if $self->{man_pages};
         return 1;
-    }, $dependency_libs, $dependency_paths) && $self->_prepare_paths_cache;
+    }, $dependency_libs, $dependency_paths);
+    return if !$ok;
+    $self->_prepare_paths_cache;
+    $self->_write_blib_meta($ctx);
+    return 1;
 }
 
 sub test ($self, $ctx, $dependency_libs, $dependency_paths) {
@@ -119,10 +123,13 @@ sub test ($self, $ctx, $dependency_libs, $dependency_paths) {
 }
 
 sub install ($self, $ctx, $dependency_libs, $dependency_paths) {
-    $self->run_install($ctx, sub {
+    my $ok = $self->run_install($ctx, sub {
         ExtUtils::Install::install($self->_install_paths->install_map, 0, 0, 0);
         return 1;
     }, $dependency_libs, $dependency_paths);
+    return if !$ok;
+    $self->_install_blib_meta($ctx);
+    return 1;
 }
 
 sub _install_paths ($self) {
