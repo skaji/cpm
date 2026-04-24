@@ -130,7 +130,7 @@ sub _install_blib ($self, $ctx) {
         local *STDOUT = $fh;
         ExtUtils::Install::install($self->_install_paths->install_map, 0, 0, 0);
     }
-    $ctx->log($stdout);
+    $ctx->log($stdout) if defined $stdout;
     return 1;
 }
 
@@ -146,7 +146,7 @@ sub _install_blib_meta ($self, $ctx) {
             'blib/meta' => $meta_target_dir,
         });
     }
-    $ctx->log($stdout);
+    $ctx->log($stdout) if defined $stdout;
     return 1;
 }
 
