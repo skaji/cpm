@@ -27,6 +27,7 @@ sub new ($class, %argv) {
         distfile => $distfile,
         source => $source,
         _state => STATE_RESOLVED,
+        usable => 0,
         registered => 0,
         deps_registered => 0,
         requirements => {},
@@ -102,6 +103,11 @@ sub registered ($self, @argv) {
 sub deps_registered ($self, @argv) {
     $self->{deps_registered} = $argv[0] ? 1 : 0 if @argv;
     $self->{deps_registered};
+}
+
+sub usable ($self, @argv) {
+    $self->{usable} = $argv[0] ? 1 : 0 if @argv;
+    $self->{usable};
 }
 
 sub resolved ($self, @argv) {
