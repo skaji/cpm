@@ -11,12 +11,12 @@ package App::cpm::HTTP::_HTTPTiny {
     use parent 'HTTP::Tinyish::Base';
     use HTTP::Tiny;
     my %supports = (http => 1);
-    sub configure () {
+    sub configure ($class) {
         my %meta = ("HTTP::Tiny" => $HTTP::Tiny::VERSION);
         $supports{https} = HTTP::Tiny->can_ssl;
         \%meta;
     }
-    sub supports ($self, $scheme) { $supports{$scheme} }
+    sub supports ($class, $scheme) { $supports{$scheme} }
     sub new ($class, %argv) {
         bless { _conns => {}, _new_argv => \%argv }, $class;
     }
