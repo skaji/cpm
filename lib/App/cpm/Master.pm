@@ -261,14 +261,12 @@ sub install_distributions ($self, $ctx) {
     } @dist;
 
     for my $dist (sort { $a->distvname cmp $b->distvname } @dist) {
-        my $phase = $self->_install_env_phases($dist);
-        my $env = $self->dependency_env_for($dist, $phase);
         my $guard = pushd $dist->directory;
 
         local $ctx->{logger}{context} = $dist->distvname;
         $ctx->log("Installing distribution");
         my $ok = eval {
-            $dist->builder->install($ctx, $env->{dependency_libs}, $env->{dependency_paths});
+            $dist->builder->install($ctx);
         };
         if ($ok) {
             $ctx->log("Successfully installed distribution");
@@ -634,17 +632,6 @@ sub _register_configure_result ($self, $ctx, $task) {
     $distribution->configured(1);
     $distribution->requirements($_ => $task->{requirements}{$_}) for keys $task->{requirements}->%*;
     $distribution->builder($task->{builder});
-    return 1;
-}
-
-sub _register_install_result ($self, $ctx, $task) {
-    if (!$task->is_success) {
-        $self->{_fail_install}{$task->distfile}++;
-        return;
-    }
-    my $distribution = $self->distribution($task->distfile);
-    $distribution->installed(1);
-    $self->{installed_distributions}++;
     return 1;
 }
 

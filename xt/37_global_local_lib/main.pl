@@ -38,7 +38,7 @@ for my $case (@case) {
         "lib/perl5/$Config{archname}/auto/common/sense/.packlist",
         "lib/perl5/$Config{archname}/common/sense.pm",
         "lib/perl5/$Config{archname}/common/sense.pod",
-        "lib/perl5/$Config{archname}/perllocal.pod",
+        # "lib/perl5/$Config{archname}/perllocal.pod",
         "lib/perl5/CPAN/Test/Dummy/Perl5/ModuleBuild.pm",
         "lib/perl5/Darwin/InitObjC.pm",
     );

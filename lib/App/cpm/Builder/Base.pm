@@ -7,6 +7,7 @@ use CPAN::DistnameInfo;
 use Config;
 use App::cpm::Util qw(DEBUG);
 use ExtUtils::Install ();
+use ExtUtils::InstallPaths ();
 use File::Copy ();
 use File::Find ();
 use File::Path ();
@@ -116,6 +117,23 @@ sub _write_blib_meta ($self, $ctx) {
     return 1;
 }
 
+sub _install_paths ($self) {
+    ExtUtils::InstallPaths->new(
+        dist_name => $self->meta->name,
+        ($self->{install_base} ? (install_base => $self->{install_base}) : ()),
+    );
+}
+
+sub _install_blib ($self, $ctx) {
+    open my $fh, ">", \my $stdout;
+    {
+        local *STDOUT = $fh;
+        ExtUtils::Install::install($self->_install_paths->install_map, 0, 0, 0);
+    }
+    $ctx->log($stdout);
+    return 1;
+}
+
 sub _install_blib_meta ($self, $ctx) {
     my $install_base = $self->{install_base};
     my $install_base_meta = $install_base ? File::Spec->catdir($install_base, "lib", "perl5") : $Config{sitelibexp};
@@ -129,6 +147,12 @@ sub _install_blib_meta ($self, $ctx) {
         });
     }
     $ctx->log($stdout);
+    return 1;
+}
+
+sub install ($self, $ctx) {
+    $self->_install_blib($ctx);
+    $self->_install_blib_meta($ctx);
     return 1;
 }
 
@@ -181,14 +205,6 @@ sub run_test ($self, $ctx, $cmd, $dependency_libs, $dependency_paths) {
     $self->_set_env($dependency_libs, $dependency_paths);
     DEBUG and $self->_log_env($ctx);
     $ctx->run_command($cmd, $self->{test_timeout});
-}
-
-sub run_install ($self, $ctx, $cmd, $dependency_libs, $dependency_paths) {
-    local %ENV = %ENV;
-    $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($ctx);
-    $self->_set_env($dependency_libs, $dependency_paths);
-    DEBUG and $self->_log_env($ctx);
-    $ctx->run_command($cmd, 0);
 }
 
 1;

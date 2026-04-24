@@ -6,7 +6,6 @@ use experimental qw(lexical_subs signatures);
 use ExtUtils::Config;
 use ExtUtils::Helpers qw(make_executable man1_pagename man3_pagename);
 use ExtUtils::Install qw(pm_to_blib);
-use ExtUtils::InstallPaths;
 use File::Basename qw(dirname);
 use File::Find ();
 use File::Path qw(mkpath);
@@ -120,23 +119,6 @@ sub test ($self, $ctx, $dependency_libs, $dependency_paths) {
         });
         return !$tester->runtests(sort(find_files(qr/\.t\z/, 't')))->has_errors;
     }, $dependency_libs, $dependency_paths);
-}
-
-sub install ($self, $ctx, $dependency_libs, $dependency_paths) {
-    my $ok = $self->run_install($ctx, sub {
-        ExtUtils::Install::install($self->_install_paths->install_map, 0, 0, 0);
-        return 1;
-    }, $dependency_libs, $dependency_paths);
-    return if !$ok;
-    $self->_install_blib_meta($ctx);
-    return 1;
-}
-
-sub _install_paths ($self) {
-    ExtUtils::InstallPaths->new(
-        dist_name => $self->meta->name,
-        ($self->{install_base} ? (install_base => $self->{install_base}) : ()),
-    );
 }
 
 1;

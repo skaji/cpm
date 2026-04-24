@@ -30,11 +30,4 @@ sub test ($self, $ctx, $dependency_libs, $dependency_paths) {
     $self->run_test($ctx, [ $ctx->{perl}, "./Build", "test" ], $dependency_libs, $dependency_paths);
 }
 
-sub install ($self, $ctx, $dependency_libs, $dependency_paths) {
-    my $ok = $self->run_install($ctx, [ $ctx->{perl}, "./Build", "install" ], $dependency_libs, $dependency_paths);
-    return if !$ok;
-    $self->_install_blib_meta($ctx);
-    return 1;
-}
-
 1;
