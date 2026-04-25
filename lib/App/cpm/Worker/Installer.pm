@@ -23,7 +23,6 @@ use File::Temp ();
 use File::pushd 'pushd';
 use JSON::PP ();
 use Parse::LocalDistribution;
-use Time::HiRes ();
 
 my sub trusted_mirror ($uri) {
     !!( $uri =~ m{^https?://(?:www.cpan.org|backpan.perl.org|cpan.metacpan.org)} );
@@ -317,14 +316,6 @@ sub _extract_requirements ($self, $ctx, $meta, $phases) {
     \%req;
 }
 
-sub _retry ($self, $ctx, $sub) {
-    return 1 if $sub->();
-    return if !$self->{retry};
-    Time::HiRes::sleep(0.1);
-    $ctx->log("! Retrying (you can turn off this behavior by --no-retry)");
-    return $sub->();
-}
-
 sub configure ($self, $ctx, $task) {
     my ($dir, $distfile, $meta, $source) = $task->@{qw(directory distfile meta source)};
     my $guard = pushd $dir;
@@ -370,7 +361,7 @@ sub configure_builder ($self, $ctx, $task) {
             test_timeout => $self->{test_timeout},
         );
 
-        my $ok = $self->_retry($ctx, sub () { $builder->configure($ctx, $dependency_libs, $dependency_paths) });
+        my $ok = $builder->configure($ctx, $dependency_libs, $dependency_paths);
         return $builder if $ok;
     }
     return;
@@ -386,9 +377,7 @@ sub build ($self, $ctx, $task) {
     my $guard = pushd $dir;
 
     $ctx->log("Building distribution");
-    my $ok = $self->_retry($ctx, sub () {
-        $builder->build($ctx, $task->{dependency_libs}, $task->{dependency_paths});
-    });
+    my $ok = $builder->build($ctx, $task->{dependency_libs}, $task->{dependency_paths});
     if ($ok && !$task->{prebuilt} && $self->enable_prebuilt($ctx, $task->{uri})) {
         $self->save_prebuilt($ctx, $task);
     }
@@ -400,9 +389,7 @@ sub test ($self, $ctx, $task) {
     my $guard = pushd $dir;
 
     $ctx->log("Testing distribution");
-    return $self->_retry($ctx, sub () {
-        $builder->test($ctx, $task->{dependency_libs}, $task->{dependency_paths});
-    });
+    return $builder->test($ctx, $task->{dependency_libs}, $task->{dependency_paths});
 }
 
 sub unpack ($self, $ctx, $file) {
