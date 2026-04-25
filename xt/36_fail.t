@@ -24,4 +24,13 @@ with_same_local {
     like $r->err, qr/1 distribution installed/;
 };
 
+with_same_local {
+    cpm_install 'Module::Build';
+    my $r = cpm_install '--test', '--install-all', 'Data::Section::Simple', 'CPAN::Test::Dummy::Perl5::Build::DepeFails';
+    isnt $r->exit, 0;
+    ok -f File::Spec->catfile($r->local, qw(lib perl5 Data Section Simple.pm));
+    ok -f File::Spec->catfile($r->local, qw(lib perl5 Test Requires.pm));
+    like $r->err, qr/2 distributions installed/;
+};
+
 done_testing;
