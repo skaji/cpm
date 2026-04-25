@@ -256,7 +256,8 @@ sub dependency_env_for ($self, $dist, $phases, $seen = undef, $found = undef) {
 }
 
 sub _final_install_distributions ($self, $include_unready = 0) {
-    return grep { $include_unready || $self->dependency_ready($_) } $self->distributions if $self->{install_all};
+    return grep { $include_unready || $self->dependency_ready($_) } $self->distributions
+        if $self->{final_install} eq "all";
 
     my %seen;
     my @todo = grep { $_->final_target } $self->distributions;

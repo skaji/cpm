@@ -31,6 +31,9 @@ use Module::CPANfile;
 use Module::cpmfile;
 use Parallel::Pipes::App;
 
+my @TOP_LEVEL_RELATIONSHIP = qw(requires recommends suggests);
+my @TOP_LEVEL_PHASE = qw(configure build test runtime develop);
+
 sub new ($class, %argv) {
     my $prebuilt = exists $ENV{PERL_CPM_PREBUILT} && !$ENV{PERL_CPM_PREBUILT} ? 0 : 1;
     bless {
@@ -44,23 +47,17 @@ sub new ($class, %argv) {
         cpanmetadb => "https://cpanmetadb.plackperl.org/v1.0/",
         _default_mirror => 'https://cpan.metacpan.org/',
         progress => "auto",
+        final_install => "runtime",
         configure_timeout => 60,
         build_timeout => 3600,
         test_timeout => 1800,
-        with_requires => 1,
-        with_recommends => 0,
-        with_suggests => 0,
-        with_configure => 0,
-        with_build => 1,
-        with_test => 1,
-        with_runtime => 1,
-        with_develop => 0,
+        top_level_relationship => [qw(requires)],
+        top_level_phase => [qw(configure build test runtime)],
         feature => [],
         notest => 1,
         prebuilt => $prebuilt,
         pureperl_only => 0,
         static_install => 1,
-        install_all => 0,
         use_install_command => 0,
         default_resolvers => 1,
         %argv
@@ -73,18 +70,77 @@ sub _normalize_progress ($self, $progress) {
     die "Unknown --progress mode '$progress' (expected: auto, tty, plain)\n";
 }
 
+sub _normalize_final_install ($self, $final_install) {
+    return if !defined $final_install;
+    return $final_install if $final_install =~ /\A(?:runtime|all)\z/;
+    die "Unknown --final-install mode '$final_install' (expected: runtime, all)\n";
+}
+
+sub _normalize_top_level_phase ($self, $phase) {
+    return $phase if grep { $phase eq $_ } @TOP_LEVEL_PHASE;
+    die "Unknown --top-level-phase '$phase' (expected: configure, build, test, runtime, develop)\n";
+}
+
+sub _normalize_top_level_relationship ($self, $relationship) {
+    return $relationship if grep { $relationship eq $_ } @TOP_LEVEL_RELATIONSHIP;
+    die "Unknown --top-level-relationship '$relationship' (expected: requires, recommends, suggests)\n";
+}
+
+sub _set_top_level_phase ($self, @phase) {
+    my %selected;
+    for my $value (@phase) {
+        $selected{$self->_normalize_top_level_phase($_)} = 1 for split /,/, $value;
+    }
+    $self->{top_level_phase} = [grep { $selected{$_} } @TOP_LEVEL_PHASE];
+}
+
+sub _set_top_level_relationship ($self, @relationship) {
+    my %selected;
+    for my $value (@relationship) {
+        $selected{$self->_normalize_top_level_relationship($_)} = 1 for split /,/, $value;
+    }
+    $self->{top_level_relationship} = [grep { $selected{$_} } @TOP_LEVEL_RELATIONSHIP];
+}
+
+sub _warn_deprecated_top_level_option ($self, $option) {
+    warn "$option is deprecated; use --top-level-phase and/or --top-level-relationship instead.\n";
+}
+
 sub _progress_default ($self) {
     !WIN32 && !$ENV{CI} && !$self->{verbose} && -t STDERR && terminal_width > 60 ? "tty" : "plain";
 }
 
 sub parse_options ($self, @argv) {
     local @ARGV = @argv;
-    my ($mirror, @resolver, @feature);
-    my $with_option = sub ($n) {
-        ("with-$n", \$self->{"with_$n"}, "without-$n", sub (@) { $self->{"with_$n"} = 0 });
+    my ($mirror, @resolver, @feature, $top_level_phase, $top_level_relationship);
+    my $with_relationship_option = sub ($relationship) {
+        (
+            "with-$relationship",
+            sub (@) {
+                $self->_warn_deprecated_top_level_option("--with-$relationship");
+                $self->_set_top_level_relationship($self->{top_level_relationship}->@*, $relationship);
+            },
+            "without-$relationship",
+            sub (@) {
+                $self->_warn_deprecated_top_level_option("--without-$relationship");
+                $self->_set_top_level_relationship(grep { $_ ne $relationship } $self->{top_level_relationship}->@*);
+            },
+        );
     };
-    my @type  = qw(requires recommends suggests);
-    my @phase = qw(configure build test runtime develop);
+    my $with_phase_option = sub ($phase) {
+        (
+            "with-$phase",
+            sub (@) {
+                $self->_warn_deprecated_top_level_option("--with-$phase");
+                $self->_set_top_level_phase($self->{top_level_phase}->@*, $phase);
+            },
+            "without-$phase",
+            sub (@) {
+                $self->_warn_deprecated_top_level_option("--without-$phase");
+                $self->_set_top_level_phase(grep { $_ ne $phase } $self->{top_level_phase}->@*);
+            },
+        );
+    };
 
     GetOptions
         "L|local-lib-contained=s" => \($self->{local_lib}),
@@ -110,17 +166,23 @@ sub parse_options ($self, @argv) {
         "configure-timeout=i" => \($self->{configure_timeout}),
         "build-timeout=i" => \($self->{build_timeout}),
         "test-timeout=i" => \($self->{test_timeout}),
+        "final-install=s" => sub ($, $value, @) { $self->{final_install} = $self->_normalize_final_install($value) },
         "progress=s" => sub ($, $value, @) { $self->{progress} = $self->_normalize_progress($value) },
         "show-progress!" => sub (@) {},
         "prebuilt!" => \($self->{prebuilt}),
         "reinstall" => \($self->{reinstall}),
         "pp|pureperl|pureperl-only" => \($self->{pureperl_only}),
         "static-install!" => \($self->{static_install}),
-        "install-all!" => \($self->{install_all}),
         "use-install-command!" => \($self->{use_install_command}),
-        "with-all" => sub (@) { map { $self->{"with_$_"} = 1 } @type, @phase },
-        (map $with_option->($_), @type),
-        (map $with_option->($_), @phase),
+        "top-level-phase=s" => \$top_level_phase,
+        "top-level-relationship=s" => \$top_level_relationship,
+        "with-all" => sub (@) {
+            $self->_warn_deprecated_top_level_option("--with-all");
+            $self->{top_level_relationship} = [@TOP_LEVEL_RELATIONSHIP];
+            $self->{top_level_phase} = [@TOP_LEVEL_PHASE];
+        },
+        (map $with_relationship_option->($_), @TOP_LEVEL_RELATIONSHIP),
+        (map $with_phase_option->($_), @TOP_LEVEL_PHASE),
         "feature=s@" => \@feature,
         "show-build-log-on-failure" => \($self->{show_build_log_on_failure}),
     or return 0;
@@ -132,6 +194,12 @@ sub parse_options ($self, @argv) {
     $self->{mirror} = $self->normalize_mirror($mirror) if $mirror;
     $self->{color} = 1 if !defined $self->{color} && -t STDOUT;
     $self->{progress} = $self->_progress_default if $self->{progress} eq "auto";
+    if (defined $top_level_phase) {
+        $self->_set_top_level_phase($top_level_phase);
+    }
+    if (defined $top_level_relationship) {
+        $self->_set_top_level_relationship($top_level_relationship);
+    }
     if ($target_perl) {
         die "--target-perl option conflicts with --global option\n" if $self->{global};
         # 5.8 is interpreted as 5.800, fix it
@@ -292,7 +360,7 @@ sub cmd_install ($self) {
         global => $self->{global},
         notest => $self->{notest},
         progress => $self->{progress},
-        install_all => $self->{install_all},
+        final_install => $self->{final_install},
         (exists $self->{target_perl} ? (target_perl => $self->{target_perl}) : ()),
     );
 
@@ -583,8 +651,8 @@ sub load_dependency_file ($self, $ctx) {
             $self->{mirror} = $self->{_default_mirror};
         }
     }
-    my @phase = grep $self->{"with_$_"}, qw(configure build test runtime develop);
-    my @type  = grep $self->{"with_$_"}, qw(requires recommends suggests);
+    my @phase = $self->{top_level_phase}->@*;
+    my @type = $self->{top_level_relationship}->@*;
     my $reqs = $cpmfile->effective_requirements($self->{feature}, \@phase, \@type);
 
     my (@package, @reinstall);
@@ -748,8 +816,11 @@ Examples:
   > cpm install --resolver 02packages,http://example.com/darkpan Your::Module
   > cpm install --resolver 02packages,file:///path/to/darkpan    Your::Module
 
-  # specify types/phases in cpmfile/cpanfile/metafile by "--with-*" and "--without-*" options
-  > cpm install --with-recommends --without-test
+  # read requires and recommends from the top-level cpanfile/cpmfile/metafile input
+  > cpm install --top-level-relationship requires,recommends
+
+  # read only runtime requirements from the top-level cpanfile/cpmfile/metafile input
+  > cpm install --top-level-phase runtime
 
 Options:
   -w, --workers=N
@@ -773,10 +844,11 @@ Options:
         prefer pureperl only build
       --static-install, --no-static-install
         enable/disable the static install, default: enable
-      --install-all, --no-install-all
-        install every successfully built distribution, including build/test-only dependencies.
-        by default, cpm installs only the runtime dependency closure.
-        default: off
+      --final-install=runtime|all
+        select which dependency-ready distributions are finally installed:
+          runtime  install the requested targets and their runtime dependencies
+          all      install every dependency-ready distribution
+        default: runtime
       --use-install-command, --no-use-install-command
         use make install or ./Build install for final installation when available.
         default: off
@@ -825,18 +897,29 @@ Options:
         show this help
       --feature=identifier
         specify the feature to enable in cpmfile/cpanfile/metafile; you can use --feature multiple times
+      --top-level-phase=phase
+        select phases from the top-level cpmfile/cpanfile/metafile input;
+        specifying this option replaces the default phase selection;
+        use a comma-separated list like configure,test
+        default: configure,build,test,runtime
+      --top-level-relationship=relationship
+        select relationships from the top-level cpmfile/cpanfile/metafile input;
+        specifying this option replaces the default relationship selection;
+        use a comma-separated list like requires,recommends
+        default: requires
       --with-requires,   --without-requires   (default: with)
       --with-recommends, --without-recommends (default: without)
       --with-suggests,   --without-suggests   (default: without)
-      --with-configure,  --without-configure  (default: without)
+      --with-configure,  --without-configure  (default: with)
       --with-build,      --without-build      (default: with)
       --with-test,       --without-test       (default: with)
       --with-runtime,    --without-runtime    (default: with)
       --with-develop,    --without-develop    (default: without)
-        specify types/phases of dependencies in cpmfile/cpanfile/metafile to be installed
+        deprecated compatibility options for top-level dependency selection
       --with-all
         shortcut for --with-requires, --with-recommends, --with-suggests,
         --with-configure, --with-build, --with-test, --with-runtime and --with-develop
+        you can also use --top-level-phase/--top-level-relationship instead
 EOF
 
 sub cmd_help ($self) {

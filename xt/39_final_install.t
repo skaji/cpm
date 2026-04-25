@@ -18,7 +18,7 @@ subtest direct_target => sub () {
     ok $installed->($r->local, "Data/Section/Simple.pm");
     ok !$installed->($r->local, "Test/Requires.pm");
 
-    $r = cpm_install "--test", "--install-all", "Data::Section::Simple";
+    $r = cpm_install "--test", "--final-install=all", "Data::Section::Simple";
     is $r->exit, 0;
     ok $installed->($r->local, "Data/Section/Simple.pm");
     ok $installed->($r->local, "Test/Requires.pm");
@@ -46,7 +46,7 @@ EOF
     ok $installed->($r->local, "File/pushd.pm");
     ok !$installed->($r->local, "Module/Build.pm");
 
-    $r = cpm_install "--install-all", "--cpmfile", $cpmfile;
+    $r = cpm_install "--final-install=all", "--cpmfile", $cpmfile;
     is $r->exit, 0;
     ok $installed->($r->local, "CPAN/Test/Dummy/Perl5/ModuleBuild.pm");
     ok $installed->($r->local, "File/pushd.pm");
@@ -61,7 +61,7 @@ subtest prebuilt => sub () {
     with_same_home {
         cpm_install "--prebuilt", "--test", "Data::Section::Simple";
 
-        my $r = cpm_install "--prebuilt", "--test", "--install-all", "Data::Section::Simple";
+        my $r = cpm_install "--prebuilt", "--test", "--final-install=all", "Data::Section::Simple";
         is $r->exit, 0;
         ok $installed->($r->local, "Data/Section/Simple.pm");
         ok $installed->($r->local, "Test/Requires.pm");
