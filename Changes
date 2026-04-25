@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+v0.999.9  2026-04-25 17:05:00 CEST (TRIAL RELEASE)
+        - Add broader verification tests (#287)
+
 v0.999.8  2026-04-25 14:47:37 CEST (TRIAL RELEASE)
         - Remove worker retry logic (#285)
 
