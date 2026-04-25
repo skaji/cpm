@@ -64,7 +64,7 @@ subtest distfile => sub () {
 subtest use_install_command => sub () {
     my $r = cpm_install "--use-install-command", "ExtUtils::Config\@0.008";
     is $r->exit, 0;
-    like $r->log, qr/ExtUtils-Config-0\.008\| Executing .+make install/;
+    like $r->log, qr/ExtUtils-Config-0\.008\| Executing .+(?:g?make(?:\.EXE)?|nmake(?:\.exe)?) install/i;
 };
 
 subtest configure => sub () {
