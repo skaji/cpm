@@ -43,6 +43,7 @@ sub new ($class, %argv) {
         local_lib => "local",
         cpanmetadb => "https://cpanmetadb.plackperl.org/v1.0/",
         _default_mirror => 'https://cpan.metacpan.org/',
+        progress => "auto",
         configure_timeout => 60,
         build_timeout => 3600,
         test_timeout => 1800,
@@ -64,6 +65,16 @@ sub new ($class, %argv) {
         default_resolvers => 1,
         %argv
     }, $class;
+}
+
+sub _normalize_progress ($self, $progress) {
+    return if !defined $progress;
+    return $progress if $progress =~ /\A(?:auto|tty|plain)\z/;
+    die "Unknown --progress mode '$progress' (expected: auto, tty, plain)\n";
+}
+
+sub _progress_default ($self) {
+    !WIN32 && !$ENV{CI} && !$self->{verbose} && -t STDERR ? "tty" : "plain";
 }
 
 sub parse_options ($self, @argv) {
@@ -99,7 +110,8 @@ sub parse_options ($self, @argv) {
         "configure-timeout=i" => \($self->{configure_timeout}),
         "build-timeout=i" => \($self->{build_timeout}),
         "test-timeout=i" => \($self->{test_timeout}),
-        "show-progress!" => \($self->{show_progress}),
+        "progress=s" => sub ($, $value, @) { $self->{progress} = $self->_normalize_progress($value) },
+        "show-progress!" => sub (@) {},
         "prebuilt!" => \($self->{prebuilt}),
         "reinstall" => \($self->{reinstall}),
         "pp|pureperl|pureperl-only" => \($self->{pureperl_only}),
@@ -119,8 +131,7 @@ sub parse_options ($self, @argv) {
     $self->{feature} = \@feature if @feature;
     $self->{mirror} = $self->normalize_mirror($mirror) if $mirror;
     $self->{color} = 1 if !defined $self->{color} && -t STDOUT;
-    $self->{show_progress} = 1
-        if !WIN32 && !$ENV{CI} && !$self->{verbose} && !defined $self->{show_progress} && -t STDERR;
+    $self->{progress} = $self->_progress_default if $self->{progress} eq "auto";
     if ($target_perl) {
         die "--target-perl option conflicts with --global option\n" if $self->{global};
         # 5.8 is interpreted as 5.800, fix it
@@ -280,7 +291,7 @@ sub cmd_install ($self) {
         search_inc => $self->_search_inc,
         global => $self->{global},
         notest => $self->{notest},
-        show_progress => $self->{show_progress},
+        progress => $self->{progress},
         install_all => $self->{install_all},
         (exists $self->{target_perl} ? (target_perl => $self->{target_perl}) : ()),
     );
@@ -375,18 +386,19 @@ sub _parse_builder_env ($class) {
 sub install ($self, $ctx, $master, $worker, $num) {
     Darwin::InitObjC::maybe_init();
 
-    local $App::cpm::Logger::SILENT = $self->{show_progress} ? 1 : 0;
+    my $tty_progress = $self->{progress} eq "tty";
+    local $App::cpm::Logger::SILENT = $tty_progress ? 1 : 0;
     my @task = $master->get_task($ctx);
     Parallel::Pipes::App->run(
         num => $num,
         init_work => sub ($pipes) {
             my @pid = sort { $a <=> $b } keys $pipes->{pipes}->%*;
-            $master->enable_terminal_logger(@pid) if $self->{show_progress};
-            $master->{terminal_logger}->use_color($self->{color}) if $self->{show_progress};
+            $master->enable_terminal_logger(@pid) if $tty_progress;
+            $master->{terminal_logger}->use_color($self->{color}) if $tty_progress;
         },
         before_work => sub ($task, $pipe, @) {
             $task->in_charge($pipe->{pid});
-            $master->log_task if $self->{show_progress};
+            $master->log_task if $tty_progress;
         },
         work => sub ($task, @) {
             return $worker->work($ctx, $task);
@@ -395,13 +407,13 @@ sub install ($self, $ctx, $master, $worker, $num) {
             $master->register_result($ctx, $result);
             @task = $master->get_task($ctx);
         },
-        idle_tick => $self->{show_progress} ? 0.5 : undef,
-        ($self->{show_progress}
+        idle_tick => $tty_progress ? 0.5 : undef,
+        ($tty_progress
             ? (idle_work => sub (@) { $master->log_task })
             : ()),
         tasks => \@task,
     );
-    $master->finalize_terminal_logger if $self->{show_progress};
+    $master->finalize_terminal_logger if $tty_progress;
 }
 
 sub cleanup ($self) {
@@ -793,8 +805,14 @@ Options:
         show build.log on failure, default: off
       --configure-timeout=sec, --build-timeout=sec, --test-timeout=sec
         specify configure/build/test timeout second, default: 60sec, 3600sec, 1800sec
+      --progress=auto|tty|plain
+        select the progress mode:
+          auto  choose tty for interactive non-Windows non-CI non-verbose terminals, otherwise plain
+          tty   use the terminal progress UI
+          plain use plain line-by-line progress output
+        default: auto
       --show-progress, --no-show-progress
-        show the terminal progress UI, default: on for interactive non-Windows non-CI terminals
+        no-op compatibility options; use --progress instead
       --cpmfile=path
         specify cpmfile path, default: ./cpm.yml
       --cpanfile=path
