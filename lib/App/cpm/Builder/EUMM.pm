@@ -42,4 +42,8 @@ sub install ($self, $ctx, $dependency_libs = [], $dependency_paths = []) {
     return 1;
 }
 
+sub needs_install_env ($self) {
+    return $self->{use_install_command} ? 1 : 0;
+}
+
 1;

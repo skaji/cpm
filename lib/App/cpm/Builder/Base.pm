@@ -160,6 +160,10 @@ sub install ($self, $ctx, $dependency_libs = [], $dependency_paths = []) {
     return 1;
 }
 
+sub needs_install_env ($self) {
+    return 0;
+}
+
 sub _log_env ($self, $ctx) {
     if (exists $ENV{PERL5LIB}) {
         $ctx->log("PERL5LIB: $_") for split /\Q$Config{path_sep}\E/, $ENV{PERL5LIB};

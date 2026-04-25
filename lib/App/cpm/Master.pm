@@ -190,7 +190,11 @@ sub dependency_ready ($self, $dist, @argv) {
 }
 
 sub _resolved_distribution ($self, $package, $version_range = undef) {
+    my $key = join "\0", $package, $version_range // "";
+    return $self->{_resolved_distribution}{$key} if exists $self->{_resolved_distribution}{$key};
+
     my ($resolved) = grep { $_->providing($package, $version_range) } $self->distributions;
+    $self->{_resolved_distribution}{$key} = $resolved;
     $resolved;
 }
 
@@ -260,7 +264,9 @@ sub install_distributions ($self, $ctx) {
 
         local $ctx->{logger}{context} = $dist->distvname;
         $ctx->log("Installing distribution");
-        my $env = $self->dependency_env_for($dist, [qw(configure build runtime)]);
+        my $env = $dist->builder->needs_install_env
+            ? $self->dependency_env_for($dist, [qw(configure build runtime)])
+            : { dependency_libs => [], dependency_paths => [] };
         my $ok = $dist->builder->install($ctx, $env->{dependency_libs}, $env->{dependency_paths});
         if ($ok) {
             $dist->installed(1);
@@ -617,10 +623,12 @@ sub add_distribution ($self, $distribution) {
     if (my $already = $self->{distributions}{$distfile}) {
         if ($already->resolved) {
             $already->overwrite_provide($_) for $distribution->provides->@*;
+            delete $self->{_resolved_distribution};
         }
         return 0;
     } else {
         $self->{distributions}{$distfile} = $distribution;
+        delete $self->{_resolved_distribution};
         return 1;
     }
 }
