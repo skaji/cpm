@@ -323,7 +323,6 @@ sub cmd_install ($self) {
             App::cpm::Logger->log(result => "FAIL", type => $type, message => $_) for $fail->{$type}->@*;
         }
     }
-    print STDERR "\r" if $self->{show_progress};
     my $installed = $master->installed_distributions;
     warn $self->{install_all}
         ? sprintf("%d distribution%s installed.\n", $installed, $installed > 1 ? "s" : "")

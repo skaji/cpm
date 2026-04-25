@@ -9,7 +9,6 @@ use App::cpm::Logger;
 use App::cpm::Task;
 use App::cpm::version;
 use CPAN::DistnameInfo;
-use IO::Handle;
 use Module::Metadata;
 use File::pushd 'pushd';
 
@@ -125,7 +124,6 @@ sub register_result ($self, $ctx, $result) {
     my $method = "_register_@{[$task->{type}]}_result";
     $self->$method($ctx, $task);
     $self->remove_task($ctx, $task);
-    $self->_show_progress if $logged && $self->{show_progress};
 
     return 1;
 }
@@ -158,14 +156,6 @@ sub info ($self, $task) {
         optional => $optional,
     );
     return 1;
-}
-
-sub _show_progress ($self) {
-    my $all = keys $self->{distributions}->%*;
-    my $state = $self->{notest} ? "built" : "tested";
-    my $num = grep { $_->$state || $_->installed } $self->distributions;
-    print STDERR "\r--- $num/$all ---";
-    STDERR->flush; # this is needed at least with perl <= 5.24
 }
 
 sub remove_task ($self, $ctx, $task) {
@@ -280,7 +270,6 @@ sub install_distributions ($self, $ctx) {
                     ($dist->prebuilt ? (optional => "using prebuilt") : ()),
                 );
             }
-            $self->_show_progress if $self->{show_progress};
         } else {
             $self->{_fail_install}{$dist->distfile}++;
             $ctx->log("Failed to install distribution");
