@@ -31,6 +31,9 @@ prereqs:
     runtime:
         requires:
             CPAN::Test::Dummy::Perl5::ModuleBuild: { version: '== 0.001' }
+    test:
+        requires:
+            File::pushd: { version: 0 }
 EOF
 
     my $installed = sub ($local, $path) {
@@ -40,11 +43,13 @@ EOF
     my $r = cpm_install "--cpmfile", $cpmfile;
     is $r->exit, 0;
     ok $installed->($r->local, "CPAN/Test/Dummy/Perl5/ModuleBuild.pm");
+    ok $installed->($r->local, "File/pushd.pm");
     ok !$installed->($r->local, "Module/Build.pm");
 
     $r = cpm_install "--install-all", "--cpmfile", $cpmfile;
     is $r->exit, 0;
     ok $installed->($r->local, "CPAN/Test/Dummy/Perl5/ModuleBuild.pm");
+    ok $installed->($r->local, "File/pushd.pm");
     ok $installed->($r->local, "Module/Build.pm");
 };
 
