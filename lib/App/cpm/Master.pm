@@ -6,6 +6,7 @@ use experimental qw(lexical_subs signatures);
 use App::cpm::CircularDependency;
 use App::cpm::Distribution;
 use App::cpm::Logger;
+use App::cpm::Logger::Terminal;
 use App::cpm::Task;
 use App::cpm::version;
 use CPAN::DistnameInfo;
@@ -156,6 +157,47 @@ sub info ($self, $task) {
         optional => $optional,
     );
     return 1;
+}
+
+sub enable_terminal_logger ($self, @pid) {
+    $self->{terminal_logger} = App::cpm::Logger::Terminal->new(@pid);
+}
+
+sub has_terminal_logger ($self) {
+    !!$self->{terminal_logger};
+}
+
+sub terminal_logger ($self) {
+    $self->{terminal_logger};
+}
+
+sub _terminal_summary_count ($self) {
+    my $state = $self->{notest} ? "built" : "tested";
+    scalar grep { $_->$state || $_->installed } $self->distributions;
+}
+
+sub _terminal_summary_total ($self) {
+    my $distributions = scalar keys $self->{distributions}->%*;
+    my $tasks = scalar keys $self->{tasks}->%*;
+    $distributions > $tasks ? $distributions : $tasks;
+}
+
+sub log_task ($self) {
+    my $terminal = $self->{terminal_logger} or return;
+    my $lines = $terminal->new_lines;
+
+    for my $pid (sort { $a <=> $b } keys $terminal->{pids}->%*) {
+        my ($task) = grep { ($_->in_charge || 0) == $pid } $self->tasks;
+        $lines->set_worker($pid, $task);
+    }
+
+    $lines->set_summary($self->_terminal_summary_count, $self->_terminal_summary_total);
+    $terminal->write($lines);
+}
+
+sub finalize_terminal_logger ($self) {
+    my $terminal = delete $self->{terminal_logger} or return;
+    $terminal->finalize;
 }
 
 sub remove_task ($self, $ctx, $task) {

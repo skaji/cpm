@@ -120,7 +120,8 @@ sub parse_options ($self, @argv) {
     $self->{feature} = \@feature if @feature;
     $self->{mirror} = $self->normalize_mirror($mirror) if $mirror;
     $self->{color} = 1 if !defined $self->{color} && -t STDOUT;
-    $self->{show_progress} = 1 if !WIN32 && !defined $self->{show_progress} && -t STDOUT;
+    $self->{show_progress} = 1
+        if !WIN32 && !$ENV{CI} && !$self->{verbose} && !defined $self->{show_progress} && -t STDERR;
     if ($target_perl) {
         die "--target-perl option conflicts with --global option\n" if $self->{global};
         # 5.8 is interpreted as 5.800, fix it
@@ -138,7 +139,6 @@ sub parse_options ($self, @argv) {
 
     $App::cpm::Logger::COLOR = 1 if $self->{color};
     $App::cpm::Logger::VERBOSE = 1 if $self->{verbose};
-    $App::cpm::Logger::SHOW_PROGRESS = 1 if $self->{show_progress};
 
     if (@ARGV) {
         if ($ARGV[0] eq "-") {
@@ -377,11 +377,18 @@ sub _parse_builder_env ($class) {
 sub install ($self, $ctx, $master, $worker, $num) {
     Darwin::InitObjC::maybe_init();
 
+    local $App::cpm::Logger::SILENT = $self->{show_progress} ? 1 : 0;
     my @task = $master->get_task($ctx);
     Parallel::Pipes::App->run(
         num => $num,
-        before_work => sub ($task, @) {
-            $task->in_charge(1);
+        init_work => sub ($pipes) {
+            my @pid = sort { $a <=> $b } keys $pipes->{pipes}->%*;
+            $master->enable_terminal_logger(@pid) if $self->{show_progress};
+            $master->terminal_logger->use_color($self->{color}) if $self->{show_progress};
+        },
+        before_work => sub ($task, $pipe, @) {
+            $task->in_charge($pipe->{pid});
+            $master->log_task if $self->{show_progress};
         },
         work => sub ($task, @) {
             return $worker->work($ctx, $task);
@@ -390,8 +397,13 @@ sub install ($self, $ctx, $master, $worker, $num) {
             $master->register_result($ctx, $result);
             @task = $master->get_task($ctx);
         },
+        idle_tick => $self->{show_progress} ? 0.5 : undef,
+        ($self->{show_progress}
+            ? (idle_work => sub { $master->log_task })
+            : ()),
         tasks => \@task,
     );
+    $master->finalize_terminal_logger if $self->{show_progress};
 }
 
 sub cleanup ($self) {
@@ -784,7 +796,7 @@ Options:
       --configure-timeout=sec, --build-timeout=sec, --test-timeout=sec
         specify configure/build/test timeout second, default: 60sec, 3600sec, 1800sec
       --show-progress, --no-show-progress
-        show progress, default: on
+        show the terminal progress UI, default: on for interactive non-Windows non-CI terminals
       --cpmfile=path
         specify cpmfile path, default: ./cpm.yml
       --cpanfile=path
