@@ -1,6 +1,22 @@
 # Development Notes
 
-## Builder Refactor
+This note summarizes the work after `e01d6db`.
+
+## Goal
+
+The main goal was to stop treating `install` as part of dependency progression.
+
+Concretely:
+
+- move build-system-specific logic into builder classes
+- separate `configure`, `build`, `test`, and final `install`
+- stop relying on partially populated `local/lib` during the build graph
+- let distributions become usable before final installation
+- make final installation a simple last phase
+
+## What Changed
+
+### 1. Builders became the center of build/install behavior
 
 Current builder classes:
 
@@ -8,35 +24,55 @@ Current builder classes:
 - `App::cpm::Builder::EUMM`
 - `App::cpm::Builder::MB`
 - `App::cpm::Builder::Static`
+- `App::cpm::Builder::Prebuilt`
 
-Current selection order in `App::cpm::Worker::Installer`:
+Builder responsibilities now include:
 
-1. `Static` (only when `--static-install` is enabled and `x_static_install` is true)
-2. `MB`
-3. `EUMM`
+- `configure`
+- `build`
+- `test`
+- `install`
+- reporting built artifact paths via `libs` / `paths`
 
-Current builder interface:
+`Builder::Base` now owns the common install behavior:
 
-- class methods
-  - `supports`
-  - `new`
-- instance methods
-  - `configure`
-  - `build`
-  - `test`
-  - `install`
+- install built files from `blib`
+- install `blib/meta`
 
-Notes:
+This means `make install` / `./Build install` are no longer the normal path.
 
-- `new` is intentionally simple. It currently just stores arguments and should not be treated as a fallback point.
-- builder fallback is currently based on `supports` and `configure`.
-- `Static` is now written in cpm style, but is still based on ideas from `Module::Build::Tiny`.
+### 2. Worker tasks were split into build phases
 
-## Current State Model
+The worker task model is now:
 
-`App::cpm::Distribution` currently has one lifecycle state plus scheduler flags.
+- `resolve`
+- `fetch`
+- `configure`
+- `build`
+- `test`
 
-Lifecycle state:
+`install` is no longer a worker task.
+
+`Worker::Installer` is now focused on:
+
+- fetch / unpack
+- builder selection
+- running `configure`, `build`, `test`
+
+### 3. Final install became a Master phase
+
+`install` is now a final phase run directly by `App::cpm::Master`.
+
+Meaning:
+
+- build/test graph first
+- final file placement later
+
+This was the largest behavioral change in the branch.
+
+### 4. Distribution state was simplified
+
+Current lifecycle state:
 
 - `resolved`
 - `fetched`
@@ -45,168 +81,154 @@ Lifecycle state:
 - `tested`
 - `installed`
 
-Scheduler flags:
+Separate scheduler flags:
 
 - `registered`
 - `deps_registered`
 
-Current meaning:
+Separate derived flag:
 
-- `resolved`: the distribution is known but nothing has been fetched yet
-- `fetched`: source distribution has been fetched and unpacked
-- `configured`: source distribution has finished `configure`
-- `built`: build artifact exists
-- `tested`: test task has completed successfully
-- `installed`: files have been copied to the final target location
+- `usable`
 
-Scheduler flags mean:
+`usable` means:
 
-- `registered`: the next task for the current lifecycle state has already been enqueued
-- `deps_registered`: dependency resolution needed to leave the current lifecycle state has already been enqueued
+- under `--notest`: the distribution is built and its dependency closure is usable
+- under `--test`: the distribution is tested and its dependency closure is usable
 
-When lifecycle state changes, both scheduler flags are reset.
+This replaces the old habit of using `installed` as the only practical dependency gate.
 
-## Task Model
+### 5. Scheduler became fixed-point based
 
-Current worker task types:
+Because `usable` is derived state, one scheduler pass is not enough.
 
-- `fetch`
-- `configure`
-- `build`
-- `test`
-- `install`
-- `resolve`
+`App::cpm::Master` now repeatedly adds tasks until no further change occurs.
 
-Current source-distribution flow:
+This is needed for chains like:
 
-1. `fetch`
-2. `configure`
-3. `build`
-4. `test` (unless `--notest`)
-5. `install`
+- dependency becomes `usable`
+- that enables another distribution to `build`
+- that later enables another distribution to `test`
 
-Current prebuilt flow:
+without requiring another outer `get_task` round just to discover the new tasks.
 
-1. `fetch`
-2. `built`
-3. `install`
+### 6. Build/test environments come from builders
 
-Notes:
+Builders now expose built artifact paths:
 
-- prebuilt is modeled as an already-built artifact
-- prebuilt ignores `configure` and `build` requirements
-- prebuilt currently stores `test` and `runtime` requirements from `blib/meta/MYMETA.json`, but the scheduler only uses `runtime`
-- `--notest` is now a `Master` concern; `Worker` does not receive `notest`
+- `libs`
+- `paths`
 
-## Findings
+These are based on built output under `blib`, not on final install location.
 
-- `install` should mean only final placement into the target location. It should not also run build/test once those became separate tasks.
-- `local_lib` and `install_base` are not the same thing:
-  - `install_base` is the target location used by EUMM/MB/static install path generation
-  - `local_lib` is also used to construct `PATH` / `PERL5LIB` during configure/build/test/install
-- user-facing CLI/logging can still say `install`; internal model does not have to
+`Master` computes dependency environments and passes them through tasks.
+`Builder::Base` then assembles `PERL5LIB` / `PATH`.
 
-## Suspicious / Incomplete Areas
+This moved environment assembly into one place instead of splitting it between `Worker` and `Builder`.
 
-### 1. Dependency gate is still `installed`
+### 7. `blib/meta` handling moved into builders
 
-`App::cpm::Master::is_satisfied` still checks:
+Current rule:
 
-- resolved distribution exists
-- and that distribution is `installed`
+- builder `build` writes `blib/meta`
+- builder `install` installs `blib/meta`
 
-This is the next major behavioral change.
+Meta creation/install is now gated by `distvname` computed in `Builder::Base->new`.
 
-### 2. `build`/`test` environment is not yet derived from dependent distributions' `blib`
+Important behavior:
 
-The long-term direction is:
+- CPAN distributions get `.meta/...`
+- git/url installs do not, matching older `version-1` behavior
 
-- stop depending on partially populated `local/lib` during the build graph
-- instead construct `@INC` / `PATH` from distributions that are already build-usable
+### 8. Prebuilt flow was made consistent with the new model
 
-That is not implemented yet.
+Prebuilt is now represented by `App::cpm::Builder::Prebuilt`.
 
-### 3. `install` naming may still be misleading
+Current prebuilt behavior:
 
-Internally, `install` currently means:
+- prebuilt is treated as already built
+- scheduler uses it via `usable`
+- final install uses the same builder install path as other builders
 
-- copy built/prebuilt files to the final destination
+### 9. Logging/progress changed to match install-last
 
-Possible future rename candidates discussed:
+Non-verbose terminal success logging now shows:
 
-- `rollout`
-- `deploy`
+- `DONE fetch` for prebuilt under `--notest`
+- `DONE build` for source distributions under `--notest`
+- `DONE test` under `--test`
 
-For now, code still uses `install`.
+`DONE install` is no longer the normal non-verbose signal.
 
-### 4. Prebuilt is not fully modeled as a builder yet
+Build log still records:
 
-There was discussion of `App::cpm::Builder::Prebuilt`.
+- `Installing distribution`
+- `Successfully installed distribution`
 
-Open question:
+Progress output was also adjusted so final install no longer dominates terminal output semantics.
 
-- should prebuilt become an install-only builder object
-- or remain a special path handled in `Worker::Installer`
+### 10. HTTP backend detection was fixed
 
-### 5. `Static` install compatibility
+Separate from the install-last work, `App::cpm::HTTP` had a bug where the `HTTP::Tiny` backend was not selected correctly.
 
-`Static` now uses cpm-controlled behavior. That is fine for cpm's direction, but it is still worth remembering:
+That was fixed, and it reduced flaky HTTPS fetch behavior seen with `LWP` in some environments.
 
-- some distributions may assume tool-specific install behavior
-- the long-term direction is still to treat such distributions as needing fixes rather than preserving arbitrary install hooks
+## Current Shape
 
-## Decisions Still Needed
+The current design is roughly:
 
-### 1. When to switch the dependency gate from `installed` to some non-installed state
+1. resolve dependencies
+2. fetch sources / prebuilt artifacts
+3. configure/build/test through builders
+4. mark distributions `usable`
+5. once the graph is done, perform final install
 
-This is the key next step.
+This is the intended direction of the refactor, and at this point it is implemented end-to-end.
 
-Once this changes:
+## Remaining Issues
 
-- dependents can move forward after dependencies are available without final placement
-- final `install` can be delayed
+### 1. `usable` is a practical compromise, not a perfect model
 
-### 2. What the non-installed dependency gate should be
+`usable` lives on `Distribution`, but it is not a pure lifecycle state.
+It is derived from the dependency graph.
 
-Possible choices:
+This is workable, but it still mixes:
 
-- `built`
-- `tested`
-- a separate usability state
+- self state
+- graph-derived readiness
 
-The current code intentionally does not decide this yet.
+more than ideal.
 
-### 3. How to build `@INC` / `PATH` from non-installed distributions
+### 2. `installed` still exists mostly for bookkeeping
 
-Likely needs builder/distribution APIs for:
+Final install still marks distributions as `installed`, and some reporting/failure paths still use that.
 
-- library paths
-- executable/script paths
-- maybe blib roots
+This is acceptable for now, but it is no longer the conceptual center of dependency progression.
 
-### 4. Whether final placement should remain mandatory
+### 3. Final install UX can still improve
 
-Carmel-style `rollout` was discussed as an optional final step:
+With install-last, users may see a long build/test period and only later final placement.
 
-- some environments can run directly from `blib`
-- some environments want a single rolled-out directory
+That is conceptually correct, but terminal UX may still need refinement.
 
-cpm still needs its own decision here.
+### 4. `CPAN::Meta::Spec` phase rules still deserve review
 
-### 5. Whether `install` should later be renamed internally
+The current code was changed to follow the spec more closely, especially around cumulative phase requirements.
 
-If final placement becomes optional, `rollout` may be a better internal term than `install`.
+However, the requirement that `runtime` deps are considered before `build` still looks questionable from a modeling perspective and may deserve an upstream issue/discussion.
 
-## Small History Notes
+### 5. Partial-success final install policy is still open
 
-- `Static` had a bug from the builder-refactor commit where:
+Current install-last behavior does not try to preserve the old “install whatever already succeeded along the way” behavior.
 
-  - `sort find_files(...)`
+This is deliberate for now, but the policy is still open if practical use suggests a different tradeoff.
 
-  was parsed as a sort comparator call
+## Summary
 
-- fixed later as:
+The large refactor after `e01d6db` reached its main target:
 
-  - `sort(find_files(...))`
+- builder-driven build pipeline
+- install-last execution
+- common final installation from built artifacts
+- dependency progression based on `usable`, not `installed`
 
-The fix was committed directly on `version-1`.
+The remaining work is mostly refinement, cleanup, and policy, not the original architectural change.
