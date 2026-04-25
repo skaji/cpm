@@ -49,6 +49,10 @@ subtest use_install_command => sub () {
     my $r = cpm_install "--use-install-command", "ExtUtils::Config\@0.008";
     is $r->exit, 0;
     like $r->log, qr/ExtUtils-Config-0\.008\| Executing .+(?:g?make(?:\.EXE)?|nmake(?:\.exe)?) install/i;
+
+    $r = cpm_install "--use-install-command", "CPAN::Test::Dummy::Perl5::ModuleBuild\@0.001";
+    is $r->exit, 0;
+    like $r->log, qr/CPAN-Test-Dummy-Perl5-ModuleBuild-0\.001\| Executing .+ \.\/Build install/;
 };
 
 subtest configure => sub () {

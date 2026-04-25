@@ -48,4 +48,19 @@ EOF
     ok $installed->($r->local, "Module/Build.pm");
 };
 
+subtest prebuilt => sub () {
+    my $installed = sub ($local, $path) {
+        -f path($local, "lib", "perl5", split "/", $path);
+    };
+
+    with_same_home {
+        cpm_install "--prebuilt", "--test", "Data::Section::Simple";
+
+        my $r = cpm_install "--prebuilt", "--test", "--install-all", "Data::Section::Simple";
+        is $r->exit, 0;
+        ok $installed->($r->local, "Data/Section/Simple.pm");
+        ok $installed->($r->local, "Test/Requires.pm");
+    };
+};
+
 done_testing;

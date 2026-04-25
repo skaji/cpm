@@ -55,4 +55,16 @@ with_same_home {
     unlike $r->log, qr/ExtUtils-MakeMaker-CPANfile-[^\|]+\| Successfully installed distribution/;
 };
 
+with_same_home {
+    cpm_install "--prebuilt", "File::pushd";
+
+    my $r = cpm_install "--prebuilt", "--configure-timeout", 2,
+        "https://github.com/skaji/CPAN-Test-Dummy-Perl5-SleepSteps.git",
+        "File::pushd";
+    isnt $r->exit, 0;
+    like $r->err, qr/DONE fetch File-pushd-[^\s]+ \(using prebuilt\)/;
+    like $r->log, qr/File-pushd-[^\|]+\| Using prebuilt /;
+    like $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
+};
+
 done_testing;
