@@ -384,7 +384,7 @@ sub install ($self, $ctx, $master, $worker, $num) {
         init_work => sub ($pipes) {
             my @pid = sort { $a <=> $b } keys $pipes->{pipes}->%*;
             $master->enable_terminal_logger(@pid) if $self->{show_progress};
-            $master->terminal_logger->use_color($self->{color}) if $self->{show_progress};
+            $master->{terminal_logger}->use_color($self->{color}) if $self->{show_progress};
         },
         before_work => sub ($task, $pipe, @) {
             $task->in_charge($pipe->{pid});
@@ -399,7 +399,7 @@ sub install ($self, $ctx, $master, $worker, $num) {
         },
         idle_tick => $self->{show_progress} ? 0.5 : undef,
         ($self->{show_progress}
-            ? (idle_work => sub { $master->log_task })
+            ? (idle_work => sub (@) { $master->log_task })
             : ()),
         tasks => \@task,
     );

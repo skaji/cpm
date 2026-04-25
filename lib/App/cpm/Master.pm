@@ -163,14 +163,6 @@ sub enable_terminal_logger ($self, @pid) {
     $self->{terminal_logger} = App::cpm::Logger::Terminal->new(@pid);
 }
 
-sub has_terminal_logger ($self) {
-    !!$self->{terminal_logger};
-}
-
-sub terminal_logger ($self) {
-    $self->{terminal_logger};
-}
-
 sub _terminal_summary_count ($self) {
     my $state = $self->{notest} ? "built" : "tested";
     scalar grep { $_->$state || $_->installed } $self->distributions;
@@ -183,7 +175,7 @@ sub _terminal_summary_total ($self) {
 }
 
 sub log_task ($self) {
-    my $terminal = $self->{terminal_logger} or return;
+    my $terminal = $self->{terminal_logger};
     my $lines = $terminal->new_lines;
 
     for my $pid (sort { $a <=> $b } keys $terminal->{pids}->%*) {
@@ -196,7 +188,7 @@ sub log_task ($self) {
 }
 
 sub finalize_terminal_logger ($self) {
-    my $terminal = delete $self->{terminal_logger} or return;
+    my $terminal = delete $self->{terminal_logger};
     $terminal->finalize;
 }
 

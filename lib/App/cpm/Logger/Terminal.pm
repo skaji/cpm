@@ -32,6 +32,7 @@ package App::cpm::Logger::Terminal::_Lines {
         my ($progress, $ing, $name) = $task
             ? ($self->{progress}, $ING{$task->type} || $task->type, $task->distvname)
             : (" ", "idle", "");
+        $ing = sprintf "%-11s", $ing;
         $ing = "\e[1;30m$ing\e[m" if $self->{use_color};
         $self->{_lines}[ $self->{pids}{$pid} ] = sprintf "%s %-11s %s\n",
             $progress, $ing, $name;
