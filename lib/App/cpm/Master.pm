@@ -283,7 +283,7 @@ sub install_distributions ($self, $ctx) {
     my @dist = $self->_final_install_distributions;
     return if !@dist;
 
-    warn "Installing distributions ...\n" if $self->{show_progress} || !$App::cpm::Logger::VERBOSE;
+    warn "Installing distributions...\n" if $self->{show_progress} || !$App::cpm::Logger::VERBOSE;
     $ctx->log("Installing distributions");
 
     for my $dist (sort { $a->distvname cmp $b->distvname } @dist) {
