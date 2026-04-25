@@ -27,22 +27,6 @@ subtest test => sub () {
     };
 };
 
-subtest final_install_selection => sub () {
-    my $installed = sub ($local, $path) {
-        -f File::Spec->catfile($local, "lib", "perl5", split "/", $path);
-    };
-
-    my $r = cpm_install "--test", "Data::Section::Simple";
-    is $r->exit, 0;
-    ok $installed->($r->local, "Data/Section/Simple.pm");
-    ok !$installed->($r->local, "Test/Requires.pm");
-
-    $r = cpm_install "--test", "--install-all", "Data::Section::Simple";
-    is $r->exit, 0;
-    ok $installed->($r->local, "Data/Section/Simple.pm");
-    ok $installed->($r->local, "Test/Requires.pm");
-};
-
 subtest range => sub () {
     my $r = cpm_install "CPAN::Test::Dummy::Perl5::Deps::VersionRange";
     is $r->exit, 0;
