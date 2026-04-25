@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+v0.999.7  2026-04-25 14:19:20 CEST (TRIAL RELEASE)
+        - Add new terminal logger (#284)
+        - Refine install-last final installation and compatibility options (#282)
+
 v0.999.6  2026-04-25 07:51:43 CEST (TRIAL RELEASE)
         - Refactor build/install pipeline around builders (#281)
         - Introduce a prebuilt builder (#280)
