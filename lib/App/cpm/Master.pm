@@ -159,8 +159,8 @@ sub info ($self, $task) {
     return 1;
 }
 
-sub enable_terminal_logger ($self, @pid) {
-    $self->{terminal_logger} = App::cpm::Logger::Terminal->new(@pid);
+sub enable_terminal_logger ($self, %argv) {
+    $self->{terminal_logger} = App::cpm::Logger::Terminal->new(%argv);
 }
 
 sub _terminal_summary_count ($self) {
