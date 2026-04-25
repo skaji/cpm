@@ -363,6 +363,7 @@ sub configure_builder ($self, $ctx, $task) {
             need_noman_argv => $self->{need_noman_argv},
             man_pages => $self->{man_pages},
             pureperl_only => $self->{pureperl_only},
+            use_install_command => $self->{use_install_command},
             argv => $argv,
             configure_timeout => $self->{configure_timeout},
             build_timeout => $self->{build_timeout},
