@@ -6,6 +6,7 @@ use experimental qw(lexical_subs signatures);
 use App::cpm::CircularDependency;
 use App::cpm::Distribution;
 use App::cpm::Logger;
+use App::cpm::Logger::Terminal;
 use App::cpm::Task;
 use App::cpm::version;
 use CPAN::DistnameInfo;
@@ -158,6 +159,39 @@ sub info ($self, $task) {
     return 1;
 }
 
+sub enable_terminal_logger ($self, @pid) {
+    $self->{terminal_logger} = App::cpm::Logger::Terminal->new(@pid);
+}
+
+sub _terminal_summary_count ($self) {
+    my $state = $self->{notest} ? "built" : "tested";
+    scalar grep { $_->$state || $_->installed } $self->distributions;
+}
+
+sub _terminal_summary_total ($self) {
+    my $distributions = scalar keys $self->{distributions}->%*;
+    my $tasks = scalar keys $self->{tasks}->%*;
+    $distributions > $tasks ? $distributions : $tasks;
+}
+
+sub log_task ($self) {
+    my $terminal = $self->{terminal_logger};
+    my $lines = $terminal->new_lines;
+
+    for my $pid (sort { $a <=> $b } keys $terminal->{pids}->%*) {
+        my ($task) = grep { ($_->in_charge || 0) == $pid } $self->tasks;
+        $lines->set_worker($pid, $task);
+    }
+
+    $lines->set_summary($self->_terminal_summary_count, $self->_terminal_summary_total);
+    $terminal->write($lines);
+}
+
+sub finalize_terminal_logger ($self) {
+    my $terminal = delete $self->{terminal_logger};
+    $terminal->finalize;
+}
+
 sub remove_task ($self, $ctx, $task) {
     delete $self->{tasks}{$task->uid};
 }
@@ -249,6 +283,9 @@ sub install_distributions ($self, $ctx) {
     my @dist = $self->_final_install_distributions;
     return if !@dist;
 
+    warn "Installing distributions ...\n" if $self->{show_progress} || !$App::cpm::Logger::VERBOSE;
+    $ctx->log("Installing distributions");
+
     for my $dist (sort { $a->distvname cmp $b->distvname } @dist) {
         my $guard = pushd $dist->directory;
 
@@ -281,6 +318,7 @@ sub install_distributions ($self, $ctx) {
             );
         }
     }
+    print STDERR "\e[1A\e[K" if $self->{show_progress};
     return 1;
 }
 

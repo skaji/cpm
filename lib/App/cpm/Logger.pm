@@ -7,6 +7,7 @@ use App::cpm::Util 'WIN32';
 use List::Util 'max';
 
 our $COLOR;
+our $SILENT;
 our $VERBOSE;
 our $SHOW_PROGRESS;
 
@@ -29,6 +30,9 @@ sub new ($class, %args) {
 }
 
 sub log ($self, %argv) {
+    my $silent = ref $self ? $self->{silent} : $SILENT;
+    return if $silent;
+
     my $type = $argv{type} || "";
     my $message = $argv{message};
     chomp $message;
