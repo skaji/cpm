@@ -14,6 +14,17 @@ Concretely:
 - let distributions become usable before final installation
 - make final installation a simple last phase
 
+Another intended goal is to narrow what gets finally installed by default.
+
+The intended default is:
+
+- install the direct targets
+  - modules given directly to `cpm install ...`
+  - modules selected from `cpanfile` / `META.*` / similar direct inputs
+- and install only their runtime dependencies
+
+In other words, the final file placement should not necessarily include every distribution that was needed during build/test.
+
 ## What Changed
 
 ### 1. Builders became the center of build/install behavior
@@ -210,6 +221,12 @@ With install-last, users may see a long build/test period and only later final p
 
 That is conceptually correct, but terminal UX may still need refinement.
 
+Desired work here:
+
+- revisit terminal logging
+- make the install phase easier to understand while it is waiting for build/test to finish
+- make the final install phase easier to understand when it starts
+
 ### 4. `CPAN::Meta::Spec` phase rules still deserve review
 
 The current code was changed to follow the spec more closely, especially around cumulative phase requirements.
@@ -221,6 +238,22 @@ However, the requirement that `runtime` deps are considered before `build` still
 Current install-last behavior does not try to preserve the old “install whatever already succeeded along the way” behavior.
 
 This is deliberate for now, but the policy is still open if practical use suggests a different tradeoff.
+
+The current desired direction is:
+
+- if some distributions fail, still install the distributions that have succeeded and are selected for final installation
+- but the overall `cpm install` command should still be treated as failed
+
+### 6. Compatibility / escape hatches still need work
+
+This branch changed behavior in large ways.
+
+User-facing escape hatches are still wanted:
+
+- an option to do install via `make install` / `./Build install`
+- an option to install everything as before, not only direct targets plus runtime dependencies
+
+These are mainly for compatibility and transition, not because they are preferred as the long-term default.
 
 ## Summary
 
