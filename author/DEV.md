@@ -254,6 +254,53 @@ Two user-facing escape hatches now exist:
 
 These are mainly for compatibility and transition, not because they are preferred as the long-term default.
 
+### 7. Large prebuilt installs were made fast again
+
+The install-last branch introduced a serious slowdown for large installs.
+
+Benchmark command used during investigation:
+
+```console
+rm -rf local && perl -Ilib script/cpm install $(cat ~/modules)
+```
+
+Both sides used prebuilt artifacts.
+
+Observed numbers on the test machine:
+
+- `c2ad7fd`: about 18.5 seconds for 858 installed distributions
+- install-last branch before optimization: about 205 seconds
+- after optimization: about 22 seconds
+
+Two hot spots caused most of the regression.
+
+First, final install called `dependency_env_for($dist, [qw(configure build runtime)])`
+for every selected distribution.
+
+That is required only when using build-system install commands such as:
+
+- `make install`
+- `./Build install`
+
+Normal final install from `blib`, including prebuilt install, does not need dependency
+`PERL5LIB` / `PATH`.
+
+Builders now expose `needs_install_env`.
+Only `Builder::EUMM` and `Builder::MB` return true when `--use-install-command`
+is enabled.
+
+Second, `_resolved_distribution` repeatedly scanned all distributions while checking
+dependency readiness and while building dependency environments.
+
+The result is now cached by package and version range.
+The cache is cleared in `add_distribution` whenever the distribution/provides set changes.
+
+Important future rule:
+
+- do not add broad `dependency_env_for` calls to final install unless the install path really needs dependency environment
+- if distribution/provides data becomes mutable in another place, clear `_resolved_distribution` there too
+- be careful when caching `dependency_env_for` itself, because its result depends on `dependency_ready`
+
 ## Summary
 
 The large refactor after `e01d6db` reached its main target:
