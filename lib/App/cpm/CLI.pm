@@ -43,7 +43,6 @@ sub new ($class, %argv) {
         local_lib => "local",
         cpanmetadb => "https://cpanmetadb.plackperl.org/v1.0/",
         _default_mirror => 'https://cpan.metacpan.org/',
-        retry => 1,
         configure_timeout => 60,
         build_timeout => 3600,
         test_timeout => 1800,
@@ -95,7 +94,7 @@ sub parse_options ($self, @argv) {
         "dev" => \($self->{dev}),
         "man-pages" => \($self->{man_pages}),
         "home=s" => \($self->{home}),
-        "retry!" => \($self->{retry}),
+        "retry!" => sub (@) {},
         "exclude-vendor!" => \($self->{exclude_vendor}),
         "configure-timeout=i" => \($self->{configure_timeout}),
         "build-timeout=i" => \($self->{build_timeout}),
@@ -297,7 +296,6 @@ sub cmd_install ($self) {
         cache_dir => $cache_dir,
         resolver  => $self->generate_resolver($ctx, $resolver),
         man_pages => $self->{man_pages},
-        retry     => $self->{retry},
         prebuilt  => $self->{prebuilt},
         pureperl_only => $self->{pureperl_only},
         static_install => $self->{static_install},
@@ -790,7 +788,7 @@ Options:
       --man-pages
         generate man pages
       --retry, --no-retry
-        retry configure/build/test/install if fails, default: retry
+        no-op compatibility option, will be removed in a future release
       --show-build-log-on-failure
         show build.log on failure, default: off
       --configure-timeout=sec, --build-timeout=sec, --test-timeout=sec

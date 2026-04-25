@@ -13,7 +13,6 @@ like $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
 like $r->err, qr{FAIL install https://github.com/skaji/CPAN-Test-Dummy-Perl5-SleepSteps.git};
 like $r->err, qr{See .* for details};
 
-# TODO do not retry
 like $r->log, qr{\QTimed out (> 2s)};
 note $r->log;
 
