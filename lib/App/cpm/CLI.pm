@@ -13,7 +13,7 @@ use App::cpm::Requirement;
 use App::cpm::Resolver::Cascade;
 use App::cpm::Resolver::MetaCPAN;
 use App::cpm::Resolver::MetaDB;
-use App::cpm::Util qw(WIN32 determine_home maybe_abs);
+use App::cpm::Util qw(WIN32 determine_home maybe_abs terminal_width);
 use App::cpm::Worker;
 use App::cpm::version;
 use App::cpm;
@@ -74,7 +74,7 @@ sub _normalize_progress ($self, $progress) {
 }
 
 sub _progress_default ($self) {
-    !WIN32 && !$ENV{CI} && !$self->{verbose} && -t STDERR ? "tty" : "plain";
+    !WIN32 && !$ENV{CI} && !$self->{verbose} && -t STDERR && terminal_width > 60 ? "tty" : "plain";
 }
 
 sub parse_options ($self, @argv) {
@@ -393,7 +393,7 @@ sub install ($self, $ctx, $master, $worker, $num) {
         num => $num,
         init_work => sub ($pipes) {
             my @pid = sort { $a <=> $b } keys $pipes->{pipes}->%*;
-            $master->enable_terminal_logger(@pid) if $tty_progress;
+            $master->enable_terminal_logger(pids => \@pid, width => terminal_width) if $tty_progress;
             $master->{terminal_logger}->use_color($self->{color}) if $tty_progress;
         },
         before_work => sub ($task, $pipe, @) {

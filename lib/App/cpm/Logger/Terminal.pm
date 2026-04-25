@@ -17,21 +17,33 @@ package App::cpm::Logger::Terminal::_Lines {
         install   => "installing",
     );
 
-    sub new ($class, $pids, $progress, $use_color) {
+    sub new ($class, $pids, $progress, $use_color, $width) {
         my $num = keys $pids->%*;
         bless {
             pids => $pids,
             progress => $progress,
             num => $num,
             use_color => $use_color,
+            width => $width,
             _lines => [],
         }, $class;
+    }
+
+    sub _truncate ($self, $text, $width) {
+        return "" if $width <= 0;
+        return $text if length($text) <= $width;
+        return "." x $width if $width <= 3;
+        substr($text, 0, $width - 3) . "...";
     }
 
     sub set_worker ($self, $pid, $task = undef) {
         my ($progress, $ing, $name) = $task
             ? ($self->{progress}, $ING{$task->type} || $task->type, $task->distvname)
             : (" ", "idle", "");
+        if ($self->{width}) {
+            my $available = $self->{width} - 14;
+            $name = $self->_truncate($name, $available);
+        }
         $ing = sprintf "%-11s", $ing;
         $ing = "\e[1;30m$ing\e[m" if $self->{use_color};
         $self->{_lines}[ $self->{pids}{$pid} ] = sprintf "%s %-11s %s\n",
@@ -47,7 +59,8 @@ package App::cpm::Logger::Terminal::_Lines {
     }
 }
 
-sub new ($class, @pid) {
+sub new ($class, %argv) {
+    my @pid = $argv{pids}->@*;
     my %pid = map { ($pid[$_], $_) } 0 .. $#pid;
     bless {
         first => 1,
@@ -56,6 +69,7 @@ sub new ($class, @pid) {
         fh => \*STDERR,
         progress_index => 0,
         use_color => 1,
+        width => $argv{width} || 0,
     }, $class;
 }
 
@@ -72,7 +86,7 @@ sub progress ($self) {
 }
 
 sub new_lines ($self) {
-    App::cpm::Logger::Terminal::_Lines->new($self->{pids}, $self->progress, $self->{use_color});
+    App::cpm::Logger::Terminal::_Lines->new($self->{pids}, $self->progress, $self->{use_color}, $self->{width});
 }
 
 sub clear ($self) {

@@ -12,7 +12,7 @@ use IO::Uncompress::Gunzip ();
 
 use Exporter 'import';
 
-our @EXPORT_OK = qw(DEBUG perl_identity maybe_abs WIN32 determine_home gunzip bunzip2 uniq);
+our @EXPORT_OK = qw(DEBUG perl_identity maybe_abs WIN32 determine_home gunzip bunzip2 uniq terminal_width);
 
 use constant DEBUG => $ENV{PERL_CPM_DEBUG} ? 1 : 0;
 use constant WIN32 => $^O eq 'MSWin32';
@@ -42,6 +42,14 @@ sub determine_home () { # taken from Menlo
     }
 
     File::Spec->catdir($homedir, ".perl-cpm");
+}
+
+sub terminal_width () {
+    my $request = $^O eq 'linux' ? 0x5413 : 0x40087468;
+    my $winsize = pack("S4", 0, 0, 0, 0);
+    return 0 if !ioctl(\*STDERR, $request, $winsize);
+    my (undef, $cols, undef, undef) = unpack("S4", $winsize);
+    $cols || 0;
 }
 
 sub gunzip ($from, $to) {
