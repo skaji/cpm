@@ -283,7 +283,7 @@ sub install_distributions ($self, $ctx) {
     my @dist = $self->_final_install_distributions;
     return if !@dist;
 
-    warn "Installing distributions...\n" if $self->{progress} eq "tty" || !$App::cpm::Logger::VERBOSE;
+    warn "Installing distributions...\n" if $self->{progress} eq "plain" && !$App::cpm::Logger::VERBOSE;
     $ctx->log("Installing distributions");
 
     for my $dist (sort { $a->distvname cmp $b->distvname } @dist) {
@@ -299,7 +299,7 @@ sub install_distributions ($self, $ctx) {
             $dist->installed(1);
             $self->{installed_distributions}++;
             $ctx->log("Successfully installed distribution");
-            if ($App::cpm::Logger::VERBOSE) {
+            if ($App::cpm::Logger::VERBOSE || $self->{progress} eq "tty") {
                 App::cpm::Logger->log(
                     type => "install",
                     result => "DONE",
@@ -318,7 +318,6 @@ sub install_distributions ($self, $ctx) {
             );
         }
     }
-    print STDERR "\e[1A\e[K" if $self->{progress} eq "tty";
     return 1;
 }
 
