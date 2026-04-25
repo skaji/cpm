@@ -333,9 +333,7 @@ sub cmd_install ($self) {
         }
     }
     my $installed = $master->installed_distributions;
-    warn $self->{install_all}
-        ? sprintf("%d distribution%s installed.\n", $installed, $installed > 1 ? "s" : "")
-        : sprintf("%d distribution%s installed (the runtime dependency closure only).\n", $installed, $installed > 1 ? "s" : "");
+    warn sprintf("%d distribution%s installed.\n", $installed, $installed > 1 ? "s" : "");
     $self->cleanup;
 
     if ($fail) {
