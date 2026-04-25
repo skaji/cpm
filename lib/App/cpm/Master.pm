@@ -19,6 +19,7 @@ sub new ($class, %argv) {
         installed_distributions => 0,
         tasks => +{},
         distributions => +{},
+        dependency_ready => +{},
         _fail_resolve => +{},
         _fail_install => +{},
         _is_installed => +{},
@@ -50,7 +51,7 @@ sub new ($class, %argv) {
 sub fail ($self, $ctx) {
     my @fail_resolve = sort keys $self->{_fail_resolve}->%*;
     my @fail_install = sort keys $self->{_fail_install}->%*;
-    my @not_installed = grep { !$self->{_fail_install}{$_->distfile} && !$_->installed } $self->distributions;
+    my @not_installed = grep { !$self->{_fail_install}{$_->distfile} && !$_->installed } $self->_final_install_distributions(1);
     return if !@fail_resolve && !@fail_install && !@not_installed;
 
     my $detector = App::cpm::CircularDependency->new;
@@ -93,7 +94,8 @@ sub tasks ($self) { values $self->{tasks}->%* }
 
 sub add_task ($self, $ctx, %task) {
     my $new = App::cpm::Task->new(%task);
-    if (grep { $_->equals($new) } $self->tasks) {
+    if (my ($existing) = grep { $_->equals($new) } $self->tasks) {
+        $existing->{final_target} ||= $new->{final_target};
         return 0;
     } else {
         $self->{tasks}{$new->uid} = $new;
@@ -181,8 +183,18 @@ sub install_phase_state ($self, $dist) {
     return $self->{notest} ? "built" : "tested";
 }
 
+sub dependency_ready ($self, $dist, @argv) {
+    my $distfile = $dist->distfile;
+    $self->{dependency_ready}{$distfile} = $argv[0] ? 1 : 0 if @argv;
+    $self->{dependency_ready}{$distfile};
+}
+
 sub _resolved_distribution ($self, $package, $version_range = undef) {
+    my $key = join "\0", $package, $version_range // "";
+    return $self->{_resolved_distribution}{$key} if exists $self->{_resolved_distribution}{$key};
+
     my ($resolved) = grep { $_->providing($package, $version_range) } $self->distributions;
+    $self->{_resolved_distribution}{$key} = $resolved;
     $resolved;
 }
 
@@ -200,7 +212,7 @@ sub dependency_env_for ($self, $dist, $phases, $seen = undef, $found = undef) {
             next if $self->is_installed($package, $version_range);
             next;
         }
-        next if !$resolved->usable;
+        next if !$self->dependency_ready($resolved);
         next if $seen->{$resolved->distfile}++;
 
         $found->{$resolved->distfile} = $resolved;
@@ -219,17 +231,32 @@ sub dependency_env_for ($self, $dist, $phases, $seen = undef, $found = undef) {
     };
 }
 
-sub _install_env_phases ($self, $dist) {
-    return [qw(runtime)] if $dist->prebuilt;
-    return $self->{notest}
-        ? [qw(configure runtime build)]
-        : [qw(configure runtime build test)];
+sub _final_install_distributions ($self, $include_unready = 0) {
+    return grep { $include_unready || $self->dependency_ready($_) } $self->distributions if $self->{install_all};
+
+    my %seen;
+    my @todo = grep { $_->final_target } $self->distributions;
+    my @install;
+    while (my $dist = shift @todo) {
+        next if $seen{$dist->distfile}++;
+        push @install, $dist if $include_unready || $self->dependency_ready($dist);
+
+        for my $req ($dist->requirements('runtime')->as_array->@*) {
+            my ($package, $version_range) = $req->@{qw(package version_range)};
+            next if $package eq "perl";
+            next if $self->{target_perl} and $self->is_core($package, $version_range);
+
+            my $resolved = $self->_resolved_distribution($package, $version_range);
+            next if !$resolved;
+            next if $self->is_installed($package, $version_range);
+            push @todo, $resolved;
+        }
+    }
+    return @install;
 }
 
 sub install_distributions ($self, $ctx) {
-    return if $self->{_fail_resolve}->%* || $self->{_fail_install}->%*;
-
-    my @dist = grep { $_->usable } $self->distributions;
+    my @dist = $self->_final_install_distributions;
     return if !@dist;
 
     for my $dist (sort { $a->distvname cmp $b->distvname } @dist) {
@@ -237,7 +264,10 @@ sub install_distributions ($self, $ctx) {
 
         local $ctx->{logger}{context} = $dist->distvname;
         $ctx->log("Installing distribution");
-        my $ok =$dist->builder->install($ctx);
+        my $env = $dist->builder->needs_install_env
+            ? $self->dependency_env_for($dist, [qw(configure build runtime)])
+            : { dependency_libs => [], dependency_paths => [] };
+        my $ok = $dist->builder->install($ctx, $env->{dependency_libs}, $env->{dependency_paths});
         if ($ok) {
             $dist->installed(1);
             $self->{installed_distributions}++;
@@ -270,9 +300,9 @@ sub _add_tasks ($self, $ctx) {
         my $changed = 0;
 
         if ($self->{notest}) {
-            $changed += $self->_mark_built_usable($ctx);
+            $changed += $self->_mark_built_dependency_ready($ctx);
         } else {
-            $changed += $self->_mark_tested_usable($ctx);
+            $changed += $self->_mark_tested_dependency_ready($ctx);
         }
 
         $changed += $self->_add_fetch_tasks($ctx);
@@ -287,15 +317,15 @@ sub _add_tasks ($self, $ctx) {
     }
 }
 
-sub _mark_built_usable ($self, $ctx) {
+sub _mark_built_dependency_ready ($self, $ctx) {
     my $changed = 0;
     my @distributions = grep { !$self->{_fail_install}{$_->distfile} } $self->distributions;
-    if (my @dists = grep { $_->built && !$_->usable } @distributions) {
+    if (my @dists = grep { $_->built && !$self->dependency_ready($_) } @distributions) {
         for my $dist (@dists) {
             my $dist_requirements = $dist->requirements('runtime')->as_array;
             my ($is_satisfied, @need_resolve) = $self->is_satisfied($dist_requirements);
             if ($is_satisfied) {
-                $dist->usable(1);
+                $self->dependency_ready($dist, 1);
                 $changed++;
             } elsif (!defined $is_satisfied) {
                 local $ctx->{logger}{context} = $dist->distvname;
@@ -321,10 +351,10 @@ sub _mark_built_usable ($self, $ctx) {
     return $changed;
 }
 
-sub _mark_tested_usable ($self, $ctx) {
+sub _mark_tested_dependency_ready ($self, $ctx) {
     my @distributions = grep { !$self->{_fail_install}{$_->distfile} } $self->distributions;
-    my @dists = grep { $_->tested && !$_->usable } @distributions;
-    $_->usable(1) for @dists;
+    my @dists = grep { $_->tested && !$self->dependency_ready($_) } @distributions;
+    $self->dependency_ready($_, 1) for @dists;
     return scalar @dists;
 }
 
@@ -447,7 +477,7 @@ sub _add_test_tasks ($self, $ctx) {
     if (my @dists = grep { $_->built && !$_->registered } @distributions) {
         for my $dist (@dists) {
             local $ctx->{logger}{context} = $dist->distvname;
-            my @phase = qw(configure runtime build test);
+            my @phase = qw(configure build runtime test);
             my $dist_requirements = $dist->requirements(\@phase)->as_array;
             my ($is_satisfied, @need_resolve) = $self->is_satisfied($dist_requirements);
             if ($is_satisfied) {
@@ -575,7 +605,7 @@ sub is_satisfied ($self, $requirements) {
         next if $self->{target_perl} and $self->is_core($package, $version_range);
         my $resolved = $self->_resolved_distribution($package, $version_range);
         if ($resolved) {
-            next if $resolved->usable;
+            next if $self->dependency_ready($resolved);
         } else {
             next if $self->is_installed($package, $version_range);
         }
@@ -593,10 +623,12 @@ sub add_distribution ($self, $distribution) {
     if (my $already = $self->{distributions}{$distfile}) {
         if ($already->resolved) {
             $already->overwrite_provide($_) for $distribution->provides->@*;
+            delete $self->{_resolved_distribution};
         }
         return 0;
     } else {
         $self->{distributions}{$distfile} = $distribution;
+        delete $self->{_resolved_distribution};
         return 1;
     }
 }
@@ -649,8 +681,11 @@ sub _register_resolve_result ($self, $ctx, $task) {
         provides => $provides,
         distfile => $task->{distfile},
         ref      => $task->{ref},
+        final_target => $task->{final_target},
     );
-    $self->add_distribution($distribution);
+    if (!$self->add_distribution($distribution) && $task->{final_target}) {
+        $self->distribution($distribution->distfile)->final_target(1);
+    }
 }
 
 sub _register_fetch_result ($self, $ctx, $task) {

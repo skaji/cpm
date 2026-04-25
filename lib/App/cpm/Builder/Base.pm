@@ -154,10 +154,14 @@ sub _install_blib_meta ($self, $ctx) {
     return 1;
 }
 
-sub install ($self, $ctx) {
+sub install ($self, $ctx, $dependency_libs = [], $dependency_paths = []) {
     $self->_install_blib($ctx);
     $self->_install_blib_meta($ctx);
     return 1;
+}
+
+sub needs_install_env ($self) {
+    return 0;
 }
 
 sub _log_env ($self, $ctx) {
@@ -199,6 +203,15 @@ sub run_build ($self, $ctx, $cmd, $dependency_libs, $dependency_paths) {
     $self->_set_env($dependency_libs, $dependency_paths);
     DEBUG and $self->_log_env($ctx);
     $ctx->run_command($cmd, $self->{build_timeout});
+}
+
+sub run_install ($self, $ctx, $cmd, $dependency_libs, $dependency_paths) {
+    local %ENV = %ENV;
+    $ENV{PERL_MM_USE_DEFAULT} = 1;
+    $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($ctx);
+    $self->_set_env($dependency_libs, $dependency_paths);
+    DEBUG and $self->_log_env($ctx);
+    $ctx->run_command($cmd, 0);
 }
 
 sub run_test ($self, $ctx, $cmd, $dependency_libs, $dependency_paths) {

@@ -11,7 +11,7 @@ Concretely:
 - move build-system-specific logic into builder classes
 - separate `configure`, `build`, `test`, and final `install`
 - stop relying on partially populated `local/lib` during the build graph
-- let distributions become usable before final installation
+- let distributions become dependency-ready before final installation
 - make final installation a simple last phase
 
 Another intended goal is to narrow what gets finally installed by default.
@@ -97,26 +97,26 @@ Separate scheduler flags:
 - `registered`
 - `deps_registered`
 
-Separate derived flag:
+Separate graph-derived readiness in `App::cpm::Master`:
 
-- `usable`
+- `dependency_ready`
 
-`usable` means:
+`dependency_ready` means:
 
-- under `--notest`: the distribution is built and its dependency closure is usable
-- under `--test`: the distribution is tested and its dependency closure is usable
+- under `--notest`: the distribution is built and its runtime dependency closure is dependency-ready
+- under `--test`: the distribution is tested and can be used as a dependency
 
 This replaces the old habit of using `installed` as the only practical dependency gate.
 
 ### 5. Scheduler became fixed-point based
 
-Because `usable` is derived state, one scheduler pass is not enough.
+Because dependency readiness is derived state, one scheduler pass is not enough.
 
 `App::cpm::Master` now repeatedly adds tasks until no further change occurs.
 
 This is needed for chains like:
 
-- dependency becomes `usable`
+- dependency becomes dependency-ready
 - that enables another distribution to `build`
 - that later enables another distribution to `test`
 
@@ -157,7 +157,7 @@ Prebuilt is now represented by `App::cpm::Builder::Prebuilt`.
 Current prebuilt behavior:
 
 - prebuilt is treated as already built
-- scheduler uses it via `usable`
+- scheduler uses it via `dependency_ready`
 - final install uses the same builder install path as other builders
 
 ### 9. Logging/progress changed to match install-last
@@ -190,70 +190,116 @@ The current design is roughly:
 1. resolve dependencies
 2. fetch sources / prebuilt artifacts
 3. configure/build/test through builders
-4. mark distributions `usable`
+4. mark distributions dependency-ready
 5. once the graph is done, perform final install
 
 This is the intended direction of the refactor, and at this point it is implemented end-to-end.
 
-## Remaining Issues
+## Resolved Release Issues
 
-### 1. `usable` is a practical compromise, not a perfect model
+### 1. Dependency readiness is now Master-owned
 
-`usable` lives on `Distribution`, but it is not a pure lifecycle state.
-It is derived from the dependency graph.
+The old `usable` flag has been removed from `Distribution`.
+Distribution now keeps lifecycle state only.
 
-This is workable, but it still mixes:
+Graph-derived readiness now lives in `App::cpm::Master` as `dependency_ready`.
 
-- self state
-- graph-derived readiness
+This keeps:
 
-more than ideal.
+- distribution lifecycle state
+- scheduler bookkeeping
+- graph-derived dependency readiness
 
-### 2. `installed` still exists mostly for bookkeeping
+separate enough for the version 1.0.0 model.
 
-Final install still marks distributions as `installed`, and some reporting/failure paths still use that.
+### 2. `installed` is final-install bookkeeping
 
-This is acceptable for now, but it is no longer the conceptual center of dependency progression.
+Final install still marks distributions as `installed`, but dependency progression no longer depends on it.
+It is used only for final install reporting and failure accounting.
 
-### 3. Final install UX can still improve
+### 3. Final install UX remains separate
 
 With install-last, users may see a long build/test period and only later final placement.
 
-That is conceptually correct, but terminal UX may still need refinement.
+Terminal logging for the final install phase is intentionally left for separate UX work.
+The per-distribution `Successfully installed distribution` log remains in `build.log`.
 
-Desired work here:
+### 4. `CPAN::Meta::Spec` phase rules follow the spec
 
-- revisit terminal logging
-- make the install phase easier to understand while it is waiting for build/test to finish
-- make the final install phase easier to understand when it starts
+Build scheduling treats runtime dependencies as prerequisites for the build phase.
+This is not ideal from a modeling perspective, but it follows `CPAN::Meta::Spec`.
 
-### 4. `CPAN::Meta::Spec` phase rules still deserve review
+The current phase gates are:
 
-The current code was changed to follow the spec more closely, especially around cumulative phase requirements.
+- configure: `configure`
+- build: `configure`, `runtime`, `build`
+- test: `configure`, `build`, `runtime`, `test`
+- dependency readiness under `--no-test`: `runtime`
 
-However, the requirement that `runtime` deps are considered before `build` still looks questionable from a modeling perspective and may deserve an upstream issue/discussion.
+### 5. Partial-success final install policy is implemented
 
-### 5. Partial-success final install policy is still open
+If some distributions fail, final install still installs distributions that:
 
-Current install-last behavior does not try to preserve the old “install whatever already succeeded along the way” behavior.
+- succeeded far enough to be dependency-ready
+- are selected for final installation
 
-This is deliberate for now, but the policy is still open if practical use suggests a different tradeoff.
+The overall `cpm install` command still fails if any selected distribution or resolve step failed.
 
-The current desired direction is:
+### 6. Compatibility / escape hatches were added
 
-- if some distributions fail, still install the distributions that have succeeded and are selected for final installation
-- but the overall `cpm install` command should still be treated as failed
+Two user-facing escape hatches now exist:
 
-### 6. Compatibility / escape hatches still need work
-
-This branch changed behavior in large ways.
-
-User-facing escape hatches are still wanted:
-
-- an option to do install via `make install` / `./Build install`
-- an option to install everything as before, not only direct targets plus runtime dependencies
+- `--use-install-command`: use `make install` / `./Build install` when available, with dependency `PERL5LIB` / `PATH`
+- `--install-all`: final-install every dependency-ready distribution
 
 These are mainly for compatibility and transition, not because they are preferred as the long-term default.
+
+### 7. Large prebuilt installs were made fast again
+
+The install-last branch introduced a serious slowdown for large installs.
+
+Benchmark command used during investigation:
+
+```console
+rm -rf local && perl -Ilib script/cpm install $(cat ~/modules)
+```
+
+Both sides used prebuilt artifacts.
+
+Observed numbers on the test machine:
+
+- `c2ad7fd`: about 18.5 seconds for 858 installed distributions
+- install-last branch before optimization: about 205 seconds
+- after optimization: about 22 seconds
+
+Two hot spots caused most of the regression.
+
+First, final install called `dependency_env_for($dist, [qw(configure build runtime)])`
+for every selected distribution.
+
+That is required only when using build-system install commands such as:
+
+- `make install`
+- `./Build install`
+
+Normal final install from `blib`, including prebuilt install, does not need dependency
+`PERL5LIB` / `PATH`.
+
+Builders now expose `needs_install_env`.
+Only `Builder::EUMM` and `Builder::MB` return true when `--use-install-command`
+is enabled.
+
+Second, `_resolved_distribution` repeatedly scanned all distributions while checking
+dependency readiness and while building dependency environments.
+
+The result is now cached by package and version range.
+The cache is cleared in `add_distribution` whenever the distribution/provides set changes.
+
+Important future rule:
+
+- do not add broad `dependency_env_for` calls to final install unless the install path really needs dependency environment
+- if distribution/provides data becomes mutable in another place, clear `_resolved_distribution` there too
+- be careful when caching `dependency_env_for` itself, because its result depends on `dependency_ready`
 
 ## Summary
 
@@ -262,6 +308,6 @@ The large refactor after `e01d6db` reached its main target:
 - builder-driven build pipeline
 - install-last execution
 - common final installation from built artifacts
-- dependency progression based on `usable`, not `installed`
+- dependency progression based on `dependency_ready`, not `installed`
 
-The remaining work is mostly refinement, cleanup, and policy, not the original architectural change.
+The remaining work for 1.0.0 is release mechanics and broader verification, not the original architectural change.

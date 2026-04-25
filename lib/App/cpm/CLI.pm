@@ -60,6 +60,8 @@ sub new ($class, %argv) {
         prebuilt => $prebuilt,
         pureperl_only => 0,
         static_install => 1,
+        install_all => 0,
+        use_install_command => 0,
         default_resolvers => 1,
         %argv
     }, $class;
@@ -103,6 +105,8 @@ sub parse_options ($self, @argv) {
         "reinstall" => \($self->{reinstall}),
         "pp|pureperl|pureperl-only" => \($self->{pureperl_only}),
         "static-install!" => \($self->{static_install}),
+        "install-all!" => \($self->{install_all}),
+        "use-install-command!" => \($self->{use_install_command}),
         "with-all" => sub (@) { map { $self->{"with_$_"} = 1 } @type, @phase },
         (map $with_option->($_), @type),
         (map $with_option->($_), @phase),
@@ -278,6 +282,7 @@ sub cmd_install ($self) {
         global => $self->{global},
         notest => $self->{notest},
         show_progress => $self->{show_progress},
+        install_all => $self->{install_all},
         (exists $self->{target_perl} ? (target_perl => $self->{target_perl}) : ()),
     );
 
@@ -296,6 +301,7 @@ sub cmd_install ($self) {
         prebuilt  => $self->{prebuilt},
         pureperl_only => $self->{pureperl_only},
         static_install => $self->{static_install},
+        use_install_command => $self->{use_install_command},
         configure_timeout => $self->{configure_timeout},
         build_timeout     => $self->{build_timeout},
         test_timeout      => $self->{test_timeout},
@@ -305,7 +311,8 @@ sub cmd_install ($self) {
         mb_argv => $mb_argv,
     );
 
-    $master->add_task($ctx, type => "resolve", $_->%*) for $packages->@*;
+    $master->add_task($ctx, type => "resolve", final_target => 1, $_->%*) for $packages->@*;
+    $_->final_target(1) for $dists->@*;
     $master->add_distribution($_) for $dists->@*;
     $self->install($ctx, $master, $worker, $self->{workers});
     $master->install_distributions($ctx);
@@ -317,8 +324,10 @@ sub cmd_install ($self) {
         }
     }
     print STDERR "\r" if $self->{show_progress};
-    warn sprintf "%d distribution%s installed.\n",
-        $master->installed_distributions, $master->installed_distributions > 1 ? "s" : "";
+    my $installed = $master->installed_distributions;
+    warn $self->{install_all}
+        ? sprintf("%d distribution%s installed.\n", $installed, $installed > 1 ? "s" : "")
+        : sprintf("%d distribution%s installed (the runtime dependency closure only).\n", $installed, $installed > 1 ? "s" : "");
     $self->cleanup;
 
     if ($fail) {
@@ -745,6 +754,13 @@ Options:
         prefer pureperl only build
       --static-install, --no-static-install
         enable/disable the static install, default: enable
+      --install-all, --no-install-all
+        install every successfully built distribution, including build/test-only dependencies.
+        by default, cpm installs only the runtime dependency closure.
+        default: off
+      --use-install-command, --no-use-install-command
+        use make install or ./Build install for final installation when available.
+        default: off
   -r, --resolver=class,args (EXPERIMENTAL, will be removed or renamed)
         specify resolvers, you can use --resolver multiple times
         available classes: metadb/metacpan/02packages/snapshot

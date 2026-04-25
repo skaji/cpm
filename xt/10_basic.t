@@ -2,6 +2,7 @@ use v5.24;
 use warnings;
 use experimental qw(lexical_subs signatures);
 
+use File::Spec;
 use Test::More;
 use lib "xt/lib";
 use CLI;
@@ -26,6 +27,22 @@ subtest test => sub () {
     };
 };
 
+subtest final_install_selection => sub () {
+    my $installed = sub ($local, $path) {
+        -f File::Spec->catfile($local, "lib", "perl5", split "/", $path);
+    };
+
+    my $r = cpm_install "--test", "Data::Section::Simple";
+    is $r->exit, 0;
+    ok $installed->($r->local, "Data/Section/Simple.pm");
+    ok !$installed->($r->local, "Test/Requires.pm");
+
+    $r = cpm_install "--test", "--install-all", "Data::Section::Simple";
+    is $r->exit, 0;
+    ok $installed->($r->local, "Data/Section/Simple.pm");
+    ok $installed->($r->local, "Test/Requires.pm");
+};
+
 subtest range => sub () {
     my $r = cpm_install "CPAN::Test::Dummy::Perl5::Deps::VersionRange";
     is $r->exit, 0;
@@ -42,6 +59,12 @@ subtest distfile => sub () {
     my $r = cpm_install "LEONT/ExtUtils-Config-0.008.tar.gz";
     is $r->exit, 0;
     like $r->log, qr/ExtUtils-Config-0\.008\| Successfully installed distribution/;
+};
+
+subtest use_install_command => sub () {
+    my $r = cpm_install "--use-install-command", "ExtUtils::Config\@0.008";
+    is $r->exit, 0;
+    like $r->log, qr/ExtUtils-Config-0\.008\| Executing .+(?:g?make(?:\.EXE)?|nmake(?:\.exe)?) install/i;
 };
 
 subtest configure => sub () {
