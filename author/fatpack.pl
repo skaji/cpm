@@ -1,9 +1,8 @@
 #!/usr/bin/env perl
-use v5.38;
-use experimental qw(builtin class defer for_list try);
+use v5.42;
 
 use App::FatPacker::Simple;
-use Config;
+use CPAN::Meta;
 use File::Which ();
 use FindBin;
 use Getopt::Long ();
@@ -15,14 +14,6 @@ use App::cpm::CLI;
 
 chdir $FindBin::Bin;
 
-=for hint
-
-Show new dependencies
-
-    git diff cpm | perl -nle 'print $1 if /^\+\$fatpacked\{"([^"]+)/'
-
-=cut
-
 Getopt::Long::GetOptions
     "f|force" => \my $force,
     "t|test" => \my $test,
@@ -31,25 +22,25 @@ or exit 1;
 
 my $perl_gzip_script = File::Which::which("perl-gzip-script") or die;
 
-sub perl_gzip_script (@argv) {
+my sub perl_gzip_script (@argv) {
     my $exit = system $perl_gzip_script, @argv;
     $exit == 0  or die;
 }
 
-sub cpm (@argv) {
+my sub cpm (@argv) {
     App::cpm::CLI->new->run(@argv) == 0 or die
 }
 
-sub fatpack (@argv) {
+my sub fatpack (@argv) {
     App::FatPacker::Simple->new->parse_options(@argv)->run
 }
 
-sub generate_index (@argv) {
+my sub generate_index (@argv) {
     my $exit = system "perl-cpan-index-generate", @argv;
     $exit == 0 or die;
 }
 
-sub git_info () {
+my sub git_info () {
     my $describe = `git describe --tags --dirty`;
     chomp $describe;
     my $hash = `git rev-parse --short HEAD`;
@@ -58,7 +49,7 @@ sub git_info () {
     ($describe, $url);
 }
 
-sub inject_git_info ($file, $describe, $url) {
+my sub inject_git_info ($file, $describe, $url) {
     my $inject = <<~"___";
     use App::cpm;
     \$App::cpm::GIT_DESCRIBE = '$describe';
@@ -68,14 +59,6 @@ sub inject_git_info ($file, $describe, $url) {
     $content =~ s/^use App::cpm::CLI;/$inject\nuse App::cpm::CLI;/sm;
     Path::Tiny->new($file)->spew_raw($content);
 }
-
-my @extra = qw(
-    ExtUtils::PL2Bat
-);
-
-my $exclude = join ",", qw(
-    ExtUtils::MakeMaker::CPANfile
-);
 
 my $target = 'v5.24';
 
@@ -106,16 +89,17 @@ if (-f "index.txt" && !$force && !$test && !$update_only) {
 }
 
 warn "Resolver: @resolver\n";
-cpm "install", "--target-perl", $target, @resolver, "--top-level-phase", "runtime", "--metafile", "../META.json";
-cpm "install", "--target-perl", $target, @resolver, @extra;
-generate_index "local/lib/perl5", "--exclude", $exclude, "--output", "index.txt" if !$test;
+my @dependency = sort keys CPAN::Meta->load_file("../META.json")->prereqs->{runtime}{requires}->%*;
+push @dependency, 'ExtUtils::PL2Bat';
+cpm "install", "--target-perl", $target, @resolver, @dependency;
+generate_index "local/lib/perl5", "--output", "index.txt" if !$test;
 exit if $update_only;
 
 print STDERR "FatPacking...";
 
 my $fatpack_dir = $test ? "local" : "../lib,local";
 my $output = $test ? "../cpm.test" : "../cpm";
-fatpack "-q", "-o", $output, "-d", $fatpack_dir, "-e", $exclude, "../script/cpm", "--cache", "$ENV{HOME}/.perl-cpm/.fatpack-cache";
+fatpack "-q", "-o", $output, "-d", $fatpack_dir, "../script/cpm", "--cache", "$ENV{HOME}/.perl-cpm/.fatpack-cache";
 print STDERR " DONE\n";
 inject_git_info($output, $git_describe, $git_url);
 chmod 0755, $output;
