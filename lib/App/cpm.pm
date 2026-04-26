@@ -30,38 +30,10 @@ cpm prepares dependencies first and performs final installation
 separately. By default, it installs the requested distributions and
 their runtime dependency closure.
 
-cpm keeps builds of distributions in your home directory and can reuse
-them later, which also helps make large installs faster.
+This makes installs more stable and more predictable, especially for
+larger dependency graphs and parallel work.
 
 For tutorial, check out L<App::cpm::Tutorial>.
-
-=head1 MOTIVATION
-
-Why do we need a new CPAN client?
-
-I used L<cpanm> a lot, and it's totally awesome.
-
-But if your Perl project has hundreds of CPAN module dependencies,
-then it takes quite a lot of time to install them.
-
-Also, for a long time cpm had an installation stability problem around
-partially built local libraries and changing dependency environments.
-
-So my motivation is simple: I want to install CPAN modules as fast as
-possible, and I want the install process to be stable and
-predictable.
-
-=head2 HOW FAST?
-
-Just an example:
-
-  > time cpanm -nq -Lextlib Plack
-  real 0m47.705s
-
-  > time cpm install Plack
-  real 0m16.629s
-
-This shows cpm can be much faster than cpanm.
 
 =head1 COPYRIGHT AND LICENSE
 
