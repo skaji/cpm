@@ -2,7 +2,7 @@
 
 a fast CPAN module installer
 
-![](https://skaji.github.io/images/cpm-Plack.svg)
+![](https://skaji.github.io/images/cpm-v1.svg)
 
 ## Install
 
@@ -27,10 +27,15 @@ $ cpm --version
 
 cpm is a fast CPAN module installer.
 
-cpm keeps the each builds of distributions in your home directory.
-Then, `cpm install` will use these prebuilt distributions.
-That is, if prebuilts are available, cpm never build distributions again, just copy the prebuilts into an appropriate directory.
-This is (of course!) inspired by [Carmel](https://github.com/miyagawa/Carmel).
+cpm prepares dependencies first and performs final installation
+separately. By default, it installs the requested distributions and
+their runtime dependency closure.
+
+This makes installs more stable and more predictable, especially for
+larger dependency graphs and parallel work.
+
+For more background on the cpm v1 redesign, see
+[cpm v1: making installs stable](https://skaji.medium.com/cpm-v1-making-installs-stable-b2236b8eda44).
 
 ## License
 

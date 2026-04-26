@@ -22,39 +22,18 @@ App::cpm - a fast CPAN module installer
 =head1 DESCRIPTION
 
 =for html
-<a href="https://skaji.github.io/images/cpm-Plack.svg"><img src="https://skaji.github.io/images/cpm-Plack.svg" alt="demo" style="max-width:100%;"></a>
+<a href="https://skaji.github.io/images/cpm-v1.svg"><img src="https://skaji.github.io/images/cpm-v1.svg" alt="demo" style="max-width:100%;"></a>
 
 cpm is a fast CPAN module installer.
 
-cpm keeps the each builds of distributions in your home directory,
-and reuses them later.
-That is, if prebuilts are available, cpm never builds distributions again, just copies the prebuilts into an appropriate directory.
-This is (of course!) inspired by L<Carmel>.
+cpm prepares dependencies first and performs final installation
+separately. By default, it installs the requested distributions and
+their runtime dependency closure.
+
+This makes installs more stable and more predictable, especially for
+larger dependency graphs and parallel work.
 
 For tutorial, check out L<App::cpm::Tutorial>.
-
-=head1 MOTIVATION
-
-Why do we need a new CPAN client?
-
-I used L<cpanm> a lot, and it's totally awesome.
-
-But if your Perl project has hundreds of CPAN module dependencies,
-then it takes quite a lot of time to install them.
-
-So my motivation is simple: I want to install CPAN modules as fast as possible.
-
-=head2 HOW FAST?
-
-Just an example:
-
-  > time cpanm -nq -Lextlib Plack
-  real 0m47.705s
-
-  > time cpm install Plack
-  real 0m16.629s
-
-This shows cpm is 3x faster than cpanm.
 
 =head1 COPYRIGHT AND LICENSE
 
