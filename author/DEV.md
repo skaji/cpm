@@ -250,7 +250,7 @@ The overall `cpm install` command still fails if any selected distribution or re
 Two user-facing escape hatches now exist:
 
 - `--use-install-command`: use `make install` / `./Build install` when available, with dependency `PERL5LIB` / `PATH`
-- `--install-all`: final-install every dependency-ready distribution
+- `--final-install=all`: final-install every dependency-ready distribution
 
 These are mainly for compatibility and transition, not because they are preferred as the long-term default.
 
