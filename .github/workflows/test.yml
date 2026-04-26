@@ -27,7 +27,7 @@ jobs:
           echo /tmp/perl-${{ matrix.perl-version }}/bin >> $GITHUB_PATH
       - run: perl -V
       - name: Install Dependencies
-        run: curl -fsSL https://raw.githubusercontent.com/skaji/cpm/version-1/cpm | perl - install -g --top-level-phase runtime,test,develop --top-level-relationship requires,recommends --show-build-log-on-failure
+        run: curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g --top-level-phase runtime,test,develop --top-level-relationship requires,recommends --show-build-log-on-failure
       - name: Run Tests
         run: prove -lr --timer t xt
 
@@ -48,7 +48,7 @@ jobs:
       - name: perl -V
         run: ${{ matrix.perl }} -V
       - name: Install Dependencies
-        run: curl -fsSL https://raw.githubusercontent.com/skaji/cpm/version-1/cpm | ${{ matrix.sudo }} ${{ matrix.perl }} - install -g --top-level-phase runtime,test,develop --top-level-relationship requires,recommends --show-build-log-on-failure
+        run: curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm | ${{ matrix.sudo }} ${{ matrix.perl }} - install -g --top-level-phase runtime,test,develop --top-level-relationship requires,recommends --show-build-log-on-failure
       - name: Run Tests
         run: ${{ matrix.prove }} -lr --timer t xt
 
@@ -66,6 +66,6 @@ jobs:
       - name: perl -V
         run: perl -V
       - name: Install Dependencies
-        run: curl -fsSL https://raw.githubusercontent.com/skaji/cpm/version-1/cpm | perl - install -g --top-level-phase runtime,test,develop --top-level-relationship requires,recommends --show-build-log-on-failure
+        run: curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g --top-level-phase runtime,test,develop --top-level-relationship requires,recommends --show-build-log-on-failure
       - name: Run Tests
         run: perl author\split-run "t\*.t xt\*.t xt\*\*.t" ${{ matrix.tester-id }}/3 prove -l --timer
