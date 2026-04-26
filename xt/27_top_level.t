@@ -27,9 +27,11 @@ subtest 'normal' => sub () {
     my $r = cpm_install '--cpanfile', $cpanfile;
     is $r->exit, 0;
     like   $r->log, qr/Devel-CheckBin-[^\|]+\| Successfully installed distribution/;
+    like   $r->log, qr/Parallel-Pipes-[^\|]+\| Successfully installed distribution/;
     unlike $r->log, qr/CPAN-Test-Dummy-Perl5-ModuleBuild-[^\|]+\| Successfully installed distribution/;
     unlike $r->log, qr/CPAN-Test-Dummy-Perl5-StaticInstall-[^\|]+\| Successfully installed distribution/;
-    unlike $r->log, qr/Parallel-Pipes-[^\|]+\| Successfully installed distribution/;
+    unlike $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
+    unlike $r->log, qr/Try-Tiny-[^\|]+\| Successfully installed distribution/;
 };
 
 subtest 'develop' => sub () {
@@ -49,7 +51,7 @@ subtest 'recommends' => sub () {
     like   $r->log, qr/CPAN-Test-Dummy-Perl5-ModuleBuild-[^\|]+\| Successfully installed distribution/;
     unlike $r->log, qr/CPAN-Test-Dummy-Perl5-StaticInstall-[^\|]+\| Successfully installed distribution/;
     unlike $r->log, qr/Parallel-Pipes-[^\|]+\| Successfully installed distribution/;
-    unlike $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
+    like   $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
     unlike $r->log, qr/Try-Tiny-[^\|]+\| Successfully installed distribution/;
     unlike $r->log, qr/Devel-CheckBin-[^\|]+\| Successfully installed distribution/;
 };
@@ -61,7 +63,7 @@ subtest 'suggests' => sub () {
     like   $r->log, qr/CPAN-Test-Dummy-Perl5-StaticInstall-[^\|]+\| Successfully installed distribution/;
     unlike $r->log, qr/Parallel-Pipes-[^\|]+\| Successfully installed distribution/;
     unlike $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
-    unlike $r->log, qr/Try-Tiny-[^\|]+\| Successfully installed distribution/;
+    like   $r->log, qr/Try-Tiny-[^\|]+\| Successfully installed distribution/;
     unlike $r->log, qr/Devel-CheckBin-[^\|]+\| Successfully installed distribution/;
 };
 
@@ -112,8 +114,8 @@ subtest 'with_without compatibility' => sub () {
     like   $r->err, qr/--without-test is deprecated; use --top-level-phase and\/or --top-level-relationship instead\./;
     unlike $r->log, qr/CPAN-Test-Dummy-Perl5-ModuleBuild-[^\|]+\| Successfully installed distribution/;
     unlike $r->log, qr/CPAN-Test-Dummy-Perl5-StaticInstall-[^\|]+\| Successfully installed distribution/;
-    unlike $r->log, qr/Parallel-Pipes-[^\|]+\| Successfully installed distribution/;
-    unlike $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
+    like   $r->log, qr/Parallel-Pipes-[^\|]+\| Successfully installed distribution/;
+    like   $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
     unlike $r->log, qr/Try-Tiny-[^\|]+\| Successfully installed distribution/;
     like   $r->log, qr/Devel-CheckBin-[^\|]+\| Successfully installed distribution/;
 };

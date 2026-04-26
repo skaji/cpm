@@ -52,7 +52,7 @@ sub new ($class, %argv) {
         build_timeout => 3600,
         test_timeout => 1800,
         top_level_relationship => [qw(requires)],
-        top_level_phase => [qw(configure build test runtime)],
+        top_level_phase => [qw(configure build test runtime develop)],
         feature => [],
         notest => 1,
         prebuilt => $prebuilt,
@@ -901,7 +901,7 @@ Options:
         select phases from the top-level cpmfile/cpanfile/metafile input;
         specifying this option replaces the default phase selection;
         use a comma-separated list like configure,test
-        default: configure,build,test,runtime
+        default: configure,build,test,runtime,develop
       --top-level-relationship=relationship
         select relationships from the top-level cpmfile/cpanfile/metafile input;
         specifying this option replaces the default relationship selection;
