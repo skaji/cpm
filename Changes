@@ -2,6 +2,11 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+v0.999.11  2026-04-26 09:27:03 CEST (TRIAL RELEASE)
+        - Add final-install and top-level selection options;
+          The default top-level phase selection is also changed
+          from build,runtime,test to configure,build,runtime,test,develop (#291)
+
 v0.999.10  2026-04-25 19:41:11 CEST (TRIAL RELEASE)
         - Handle narrow tty progress output (thibaultduponchelle #290)
         - Show final installs in tty progress (#289)
