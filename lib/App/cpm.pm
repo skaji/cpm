@@ -1,9 +1,9 @@
-package App::cpm v0.999.11;
+package App::cpm v1.0.0;
 use v5.24;
 use warnings;
 use experimental qw(lexical_subs signatures);
 
-our $TRIAL = 1;
+our $TRIAL = 0;
 our ($GIT_DESCRIBE, $GIT_URL);
 
 1;

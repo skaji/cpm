@@ -60,7 +60,7 @@
    "provides" : {
       "App::cpm" : {
          "file" : "lib/App/cpm.pm",
-         "version" : "v0.999.11"
+         "version" : "v1.0.0"
       },
       "App::cpm::Builder::Base" : {
          "file" : "lib/App/cpm/Builder/Base.pm"
@@ -162,7 +162,7 @@
          "file" : "lib/App/cpm/version.pm"
       }
    },
-   "release_status" : "testing",
+   "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
          "web" : "https://github.com/skaji/cpm/issues"
@@ -174,7 +174,7 @@
          "web" : "https://github.com/skaji/cpm"
       }
    },
-   "version" : "v0.999.11",
+   "version" : "v1.0.0",
    "x_contributors" : [
       "Andrew Rodland <andrew@cleverdomain.org>",
       "Dave Rolsky <autarch@urth.org>",

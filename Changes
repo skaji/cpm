@@ -2,6 +2,14 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+v1.0.0  2026-04-26 14:59:50 CEST
+        [This is cpm v1]
+        - cpm now prepares dependencies first and performs final installation separately.
+        - By default, cpm installs the requested distributions and their runtime dependency closure.
+        - Terminal progress output is now much better at showing what cpm is doing and which step is taking time.
+        - cpm now requires Perl v5.24 or later.
+        - For more background, see https://skaji.medium.com/cpm-v1-making-installs-stable-b2236b8eda44
+
 v0.999.11  2026-04-26 09:27:03 CEST (TRIAL RELEASE)
         - Add final-install and top-level selection options;
           The default top-level phase selection is also changed
