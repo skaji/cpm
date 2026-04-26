@@ -1,6 +1,7 @@
 package App::cpm::Worker;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use App::cpm::Util;
 use App::cpm::Worker::Installer;
@@ -10,11 +11,10 @@ use File::Path ();
 use File::Spec;
 use Time::HiRes qw(gettimeofday tv_interval);
 
-sub new {
-    my ($class, $ctx, %option) = @_;
-    my $home = $option{home};
+sub new ($class, $ctx, %argv) {
+    my $home = $argv{home};
     my $prebuilt_base;
-    if ($option{prebuilt}) {
+    if ($argv{prebuilt}) {
         $prebuilt_base = $class->prebuilt_base($home);
         File::Path::mkpath($prebuilt_base) if !-d $prebuilt_base;
         my $file = "$prebuilt_base/version";
@@ -23,27 +23,25 @@ sub new {
             print {$fh} "$Config{perlpath}\n";
         }
     }
-    %option = (
-        %option,
+    %argv = (
+        %argv,
         $prebuilt_base ? (prebuilt_base => $prebuilt_base) : (),
     );
-    my $installer = App::cpm::Worker::Installer->new($ctx, %option);
-    my $resolver  = App::cpm::Worker::Resolver->new($ctx, %option, impl => $option{resolver});
-    bless { %option, installer => $installer, resolver => $resolver }, $class;
+    my $installer = App::cpm::Worker::Installer->new($ctx, %argv);
+    my $resolver  = App::cpm::Worker::Resolver->new($ctx, %argv, impl => $argv{resolver});
+    bless { %argv, installer => $installer, resolver => $resolver }, $class;
 }
 
-sub prebuilt_base {
-    my ($class, $home) = @_;
+sub prebuilt_base ($class, $home) {
     my $identity = App::cpm::Util::perl_identity;
     File::Spec->catdir($home, "builds", $identity);
 }
 
-sub work {
-    my ($self, $ctx, $task) = @_;
+sub work ($self, $ctx, $task) {
     my $type = $task->{type} || "(undef)";
     my $result;
     my $start = $self->{verbose} ? [gettimeofday] : undef;
-    if (grep {$type eq $_} qw(fetch configure install)) {
+    if (grep {$type eq $_} qw(fetch configure build test)) {
         $result = eval { $self->{installer}->work($ctx, $task) };
         warn $@ if $@;
     } elsif ($type eq "resolve") {
@@ -54,7 +52,7 @@ sub work {
     }
     my $elapsed = $start ? tv_interval($start) : undef;
     $result ||= { ok => 0 };
-    $task->merge({%$result, pid => $$, elapsed => $elapsed});
+    $task->merge({$result->%*, pid => $$, elapsed => $elapsed});
     return $task;
 }
 

@@ -1,5 +1,6 @@
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 use Test::More;
 use lib "xt/lib";
 use CLI;
@@ -20,15 +21,15 @@ my $V = qr/[0-9\._]+/;
 
 $r = cpm_install '--cpanfile', $cpanfile;
 is $r->exit, 0;
-($v) = $r->err =~ /DONE install File-pushd-($V)/;
+($v) = $r->log =~ /File-pushd-($V)\| Successfully installed distribution/;
 $v = App::cpm::version->parse($v)->numify;
 ok $v >= 1.014;
 note $r->err;
 
 $r = cpm_install '--cpanfile', $cpanfile, '--feature', 'foo';
 is $r->exit, 0;
-like $r->err, qr/DONE install Data-Section-Simple-/;
-($v) = $r->err =~ /DONE install File-pushd-($V)/;
+like $r->log, qr/Data-Section-Simple-[^\|]+\| Successfully installed distribution/;
+($v) = $r->log =~ /File-pushd-($V)\| Successfully installed distribution/;
 $v = App::cpm::version->parse($v)->numify;
 ok $v < 1.014;
 note $r->err;

@@ -1,25 +1,23 @@
 package App::cpm::Resolver::MetaCPAN;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use App::cpm::DistNotation;
 use JSON::PP ();
 
-sub new {
-    my ($class, $ctx, %option) = @_;
-    my $uri = $option{uri} || "https://fastapi.metacpan.org/v1/download_url/";
+sub new ($class, $ctx, %argv) {
+    my $uri = $argv{uri} || "https://fastapi.metacpan.org/v1/download_url/";
     $uri =~ s{/*$}{/};
-    bless { %option, uri => $uri }, $class;
+    bless { %argv, uri => $uri }, $class;
 }
 
-sub _encode {
-    my $str = shift;
+my sub encode ($str) {
     $str =~ s/([^a-zA-Z0-9_\-.])/uc sprintf("%%%02x",ord($1))/eg;
     $str;
 }
 
-sub resolve {
-    my ($self, $ctx, $task) = @_;
+sub resolve ($self, $ctx, $task) {
     if ($self->{only_dev} and !$task->{dev}) {
         return { error => "skip, because MetaCPAN is configured to resolve dev releases only" };
     }
@@ -28,7 +26,7 @@ sub resolve {
         ( ($self->{dev} || $task->{dev}) ? (dev => 1) : () ),
         ( $task->{version_range} ? (version => $task->{version_range}) : () ),
     );
-    my $query = join "&", map { "$_=" . _encode($query{$_}) } sort keys %query;
+    my $query = join "&", map { "$_=" . encode($query{$_}) } sort keys %query;
     my $uri = "$self->{uri}$task->{package}" . ($query ? "?$query" : "");
     my $res;
     for (1..2) {

@@ -1,12 +1,11 @@
 package App::cpm::Resolver::Custom;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use App::cpm::DistNotation;
 
-sub new {
-    my ($class, $ctx, %argv) = @_;
-
+sub new ($class, $ctx, %argv) {
     my $from = $argv{from};
     my $requirements = $argv{requirements};
     my $mirror = $argv{mirror} || 'https://cpan.metacpan.org/';
@@ -21,32 +20,30 @@ sub new {
     $self;
 }
 
-sub _load {
-    my $self = shift;
-
+sub _load ($self) {
     my %resolve;
-    for my $package (sort keys %{$self->{requirements}}) {
-        my $options = $self->{requirements}{$package};
+    for my $package (sort keys $self->{requirements}->%*) {
+        my $req = $self->{requirements}{$package};
 
         my $uri;
-        if ($uri = $options->{git}) {
+        if ($uri = $req->{git}) {
             $resolve{$package} = {
                 source => 'git',
                 uri => $uri,
-                ref => $options->{ref},
+                ref => $req->{ref},
                 provides => [{package => $package}],
             };
-        } elsif ($uri = $options->{dist}) {
+        } elsif ($uri = $req->{dist}) {
             my $dist = App::cpm::DistNotation->new_from_dist($uri);
             die "Unsupported dist '$uri' found in $self->{from}\n" if !$dist;
-            my $cpan_uri = $dist->cpan_uri($options->{mirror} || $self->{mirror});
+            my $cpan_uri = $dist->cpan_uri($req->{mirror} || $self->{mirror});
             $resolve{$package} = {
                 source => 'cpan',
                 uri => $cpan_uri,
                 distfile => $dist->distfile,
                 provides => [{package => $package}],
             };
-        } elsif ($uri = $options->{url}) {
+        } elsif ($uri = $req->{url}) {
             die "Unsupported url '$uri' found in $self->{from}\n" if $uri !~ m{^(?:https?|file)://};
             my $dist = App::cpm::DistNotation->new_from_uri($uri);
             my $source = $dist ? 'cpan' : $uri =~ m{^file://} ? 'local' : 'http';
@@ -61,13 +58,11 @@ sub _load {
     $self->{resolve} = \%resolve;
 }
 
-sub effective {
-    my $self = shift;
-    %{$self->{resolve}} ? 1 : 0;
+sub effective ($self) {
+    $self->{resolve}->%* ? 1 : 0;
 }
 
-sub resolve {
-    my ($self, $ctx, $task) = @_;
+sub resolve ($self, $ctx, $task) {
     my $found = $self->{resolve}{$task->{package}};
     if (!$found) {
         return { error => "not found in $self->{from}" };

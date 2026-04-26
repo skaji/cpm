@@ -15,29 +15,19 @@ jobs:
     strategy:
       matrix:
         perl-version:
-          - '5.8-buster'
-          - '5.10-buster'
-          - '5.16-buster'
-          - '5.18-buster'
-          - 'latest'
-          - 'threaded'
-    container:
-      image: perl:${{ matrix.perl-version }}
+          - '5.24.4'
+          - '5.42.2'
     steps:
-      - uses: actions/checkout@v5
-      - name: change /etc/apt/sources.list
-        run: perl -i -pe 's/(deb|security).debian.org/archive.debian.org/' /etc/apt/sources.list
-        if: endsWith(matrix.perl-version, '-buster')
+      - uses: actions/checkout@v6
       - name: Install deb packages
-        run: apt-get -qq update && apt-get -qq install -y unzip libdb-dev
-      - name: perl -V
-        run: perl -V
+        run: sudo apt-get -qq update && sudo apt-get -qq install -y unzip libdb-dev
+      - name: Setup perl
+        run: |
+          curl -fsSL https://github.com/skaji/cpm-test/releases/download/0.01/ubuntu-24.04-perl-${{ matrix.perl-version }}.tar.xz | tar xJf - -C /tmp
+          echo /tmp/perl-${{ matrix.perl-version }}/bin >> $GITHUB_PATH
+      - run: perl -V
       - name: Install Dependencies
-        run: curl -fsSL --compressed https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g --with-develop --with-recommends --show-build-log-on-failure
-        if: matrix.perl-version != '5.8-buster'
-      - name: Install Dependencies
-        run: curl -fsSL --compressed https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g --with-develop --with-recommends --show-build-log-on-failure --resolver Fixed,CPAN::Meta::Requirements@2.140
-        if: matrix.perl-version == '5.8-buster'
+        run: curl -fsSL https://raw.githubusercontent.com/skaji/cpm/version-1/cpm | perl - install -g --top-level-phase runtime,test,develop --top-level-relationship requires,recommends --show-build-log-on-failure
       - name: Run Tests
         run: prove -lr --timer t xt
 
@@ -54,11 +44,11 @@ jobs:
             prove: /opt/homebrew/bin/prove
             sudo: ''
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: perl -V
         run: ${{ matrix.perl }} -V
       - name: Install Dependencies
-        run: curl -fsSL --compressed https://raw.githubusercontent.com/skaji/cpm/main/cpm | ${{ matrix.sudo }} ${{ matrix.perl }} - install -g --with-develop --with-recommends --show-build-log-on-failure
+        run: curl -fsSL https://raw.githubusercontent.com/skaji/cpm/version-1/cpm | ${{ matrix.sudo }} ${{ matrix.perl }} - install -g --top-level-phase runtime,test,develop --top-level-relationship requires,recommends --show-build-log-on-failure
       - name: Run Tests
         run: ${{ matrix.prove }} -lr --timer t xt
 
@@ -72,10 +62,10 @@ jobs:
           - '1'
           - '2'
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: perl -V
         run: perl -V
       - name: Install Dependencies
-        run: curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g --with-develop --with-recommends --show-build-log-on-failure
+        run: curl -fsSL https://raw.githubusercontent.com/skaji/cpm/version-1/cpm | perl - install -g --top-level-phase runtime,test,develop --top-level-relationship requires,recommends --show-build-log-on-failure
       - name: Run Tests
         run: perl author\split-run "t\*.t xt\*.t xt\*\*.t" ${{ matrix.tester-id }}/3 prove -l --timer

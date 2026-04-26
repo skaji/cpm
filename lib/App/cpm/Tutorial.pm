@@ -1,6 +1,7 @@
 package App::cpm::Tutorial;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 1;
 __END__
@@ -38,14 +39,22 @@ This command installs Plack into C<./local>, and you can use it by
 
   $ perl -I$PWD/local/lib/perl5 -MPlack -E 'say Plack->VERSION'
 
+By default, cpm installs the requested distributions and their runtime
+dependency closure.
+
 If you want to install modules into current INC instead of C<./local>,
 then use C<--global/-g> option.
 
   $ cpm install --global Plack
 
-By default, cpm outputs only C<DONE install Module> things.
-If you want more verbose messages, use C<--verbose/-v> option.
+By default, cpm chooses a progress mode automatically. On interactive
+terminals, it usually shows the terminal progress UI. Otherwise, it
+uses plain line-by-line output.
 
+If you want plain output explicitly, use C<--progress=plain>. If you
+want more verbose messages, use C<--verbose/-v> option.
+
+  $ cpm install --progress=plain Plack
   $ cpm install --verbose Plack
 
 =head2 Second step
@@ -92,6 +101,15 @@ in the current directory, then cpm loads modules from the file, and install them
   requires 'Moose', '2.000';
   requires 'Plack', '> 1.000, <= 2.000';
   $ cpm install
+
+By default, cpm reads the C<configure>, C<build>, C<test>, C<runtime>,
+and C<develop> phases from the top-level dependency file.
+
+If you want to select phases or relationships explicitly, use
+C<--top-level-phase> and C<--top-level-relationship>.
+
+  $ cpm install --top-level-phase runtime
+  $ cpm install --top-level-relationship requires,recommends
 
 If you have C<cpanfile.snapshot>,
 then cpm tries to resolve distribution names from it

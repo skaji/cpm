@@ -1,13 +1,12 @@
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 use Test::More;
 use Config;
 use File::Spec;
 use Path::Tiny 'path';
 use lib "xt/lib";
 use CLI;
-
-plan skip_all => 'only for perl 5.12+' if $] < 5.012;
 
 with_same_home {
     my $r = cpm_install "--prebuilt", "App::ChangeShebang", "File::pushd";
@@ -21,9 +20,9 @@ with_same_home {
     $r = cpm_install "--prebuilt", "App::ChangeShebang", "File::pushd", "Parallel::Pipes";
     is $r->exit, 0;
     my $v = qr/v?[\d\.]+/;
-    like $r->err, qr/^DONE install App-ChangeShebang-$v \(using prebuilt\)$/m;
-    like $r->err, qr/^DONE install File-pushd-$v \(using prebuilt\)$/m;
-    like $r->err, qr/^DONE install Parallel-Pipes-$v$/m;
+    like $r->log, qr/App-ChangeShebang-$v\| Successfully installed distribution/;
+    like $r->log, qr/File-pushd-$v\| Successfully installed distribution/;
+    like $r->log, qr/Parallel-Pipes-$v\| Successfully installed distribution/;
     note $r->err;
 
     my @Parallel_Pipes = glob "$builds/SKAJI/Parallel-Pipes-*";
@@ -53,8 +52,19 @@ with_same_home {
     note "first time", $r->err;
     $r = cpm_install "--prebuilt", "Parse::Distname";
     note "second time", $r->err;
-    # XXX install configure requires for now :/
-    like $r->err, qr/DONE install ExtUtils-MakeMaker-CPANfile/;
+    unlike $r->log, qr/ExtUtils-MakeMaker-CPANfile-[^\|]+\| Successfully installed distribution/;
+};
+
+with_same_home {
+    cpm_install "--prebuilt", "File::pushd";
+
+    my $r = cpm_install "--prebuilt", "--configure-timeout", 2,
+        "https://github.com/skaji/CPAN-Test-Dummy-Perl5-SleepSteps.git",
+        "File::pushd";
+    isnt $r->exit, 0;
+    like $r->err, qr/DONE fetch File-pushd-[^\s]+ \(using prebuilt\)/;
+    like $r->log, qr/File-pushd-[^\|]+\| Using prebuilt /;
+    like $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
 };
 
 done_testing;

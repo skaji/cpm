@@ -1,6 +1,7 @@
-use strict;
+use v5.24;
 use warnings;
-use utf8;
+use experimental qw(lexical_subs signatures);
+
 use Test::More;
 use lib "xt/lib";
 use CLI;
@@ -8,10 +9,7 @@ use File::pushd 'tempd';
 use Path::Tiny;
 use version;
 
-plan skip_all => 'only for perl 5.18+' if $] < 5.018;
-
-subtest test1 => sub {
-    plan skip_all => 'only for perl 5.22+' if $] < 5.022;
+subtest test1 => sub () {
     my $guard = tempd;
     path("cpanfile")->spew(qq{requires "Module::Build";\n});
     my $r = cpm_install "--target-perl", "5.10.1";
@@ -20,21 +18,21 @@ subtest test1 => sub {
     note $r->err;
 };
 
-subtest test2 => sub {
+subtest test2 => sub () {
     my $guard = tempd;
     path("cpanfile")->spew(qq{requires 'HTTP::Tinyish';\n});
     my $r = cpm_install "--target-perl", "5.8.5";
     is $r->exit, 0;
-    like $r->err, qr/DONE install parent-/;
+    like $r->log, qr/parent-[^\|]+\| Successfully installed distribution/;
     note $r->err;
 };
 
-subtest test3 => sub {
+subtest test3 => sub () {
     my $guard = tempd;
     path("cpanfile")->spew(qq{requires 'HTTP::Tinyish';\n});
     my $r = cpm_install "--target-perl", "5.10.1";
     is $r->exit, 0;
-    unlike $r->err, qr/DONE install parent-/;
+    unlike $r->log, qr/parent-[^\|]+\| Successfully installed distribution/;
     note $r->err;
 };
 

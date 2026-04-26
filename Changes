@@ -2,6 +2,49 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+v0.999.11  2026-04-26 09:27:03 CEST (TRIAL RELEASE)
+        - Add final-install and top-level selection options;
+          The default top-level phase selection is also changed
+          from build,runtime,test to configure,build,runtime,test,develop (#291)
+
+v0.999.10  2026-04-25 19:41:11 CEST (TRIAL RELEASE)
+        - Handle narrow tty progress output (thibaultduponchelle #290)
+        - Show final installs in tty progress (#289)
+        - Add progress mode option (#288)
+
+v0.999.9  2026-04-25 17:05:00 CEST (TRIAL RELEASE)
+        - Add broader verification tests (#287)
+
+v0.999.8  2026-04-25 14:47:37 CEST (TRIAL RELEASE)
+        - Remove worker retry logic (#285)
+
+v0.999.7  2026-04-25 14:19:20 CEST (TRIAL RELEASE)
+        - Add new terminal logger (#284)
+        - Refine install-last final installation and compatibility options (#282)
+
+v0.999.6  2026-04-25 07:51:43 CEST (TRIAL RELEASE)
+        - Refactor build/install pipeline around builders (#281)
+        - Introduce a prebuilt builder (#280)
+
+v0.999.5  2026-04-23 15:44:14 CEST (TRIAL RELEASE)
+        - Refine distribution states and prebuilt flow (#279)
+
+v0.999.4  2026-04-22 09:02:25 EEST (TRIAL RELEASE)
+        - Refactor installer build logic into builders (#278)
+
+v0.999.3  2026-04-09 01:06:07 JST (TRIAL RELEASE)
+        - Remove --sudo option (#277)
+        - Avoid spawning another process to save meta (#277)
+
+v0.999.2  2026-04-08 00:03:54 JST (TRIAL RELEASE)
+        - Use IO::Uncompress::Gunzip/Bunzip2 instead of gzip/bzip2 (#276)
+
+v0.999.1  2026-03-13 14:04:24 JST (TRIAL RELEASE)
+        - Fix App::cpm::Resolver::Fixed (#274)
+
+v0.999.0  2026-03-13 13:30:02 JST (TRIAL RELEASE)
+        - Raise the minimum supported Perl version to v5.24 per the Lyon Amendment (#273)
+
 0.998003  2025-12-29 13:23:24 JST
         - Internal refactor: introduce App::cpm::Context (#272)
         - Fix how to parse PERL_MB_OPT (#271)

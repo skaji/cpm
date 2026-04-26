@@ -1,5 +1,6 @@
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 use Test::More;
 
 use lib "xt/lib";
@@ -9,18 +10,17 @@ use File::Temp 'tempdir';
 use Path::Tiny 'path';
 use Config;
 
-plan skip_all => 'only for perl 5.18+' if $] < 5.018;
-
 my $tempdir = tempdir CLEANUP => 1;
 path($tempdir, qw(lib App cpm Resolver))->mkpath;
 path($tempdir, qw(lib App cpm Resolver Hoge.pm))->spew_raw(<<'EOF');
 package App::cpm::Resolver::Hoge;
-sub new {
-    my ($class, $ctx) = @_;
+use v5.24;
+use warnings;
+use experimental qw(lexical_subs signatures);
+sub new ($class, $ctx) {
     bless {}, $class;
 }
-sub resolve {
-    my ($self, $ctx, $task) = @_;
+sub resolve ($self, $ctx, $task) {
     if ($task->{package} ne 'App::ChangeShebang') {
         die;
     }
@@ -34,13 +34,14 @@ EOF
 path($tempdir, qw(lib Foo))->mkpath;
 path($tempdir, qw(lib Foo Bar.pm))->spew_raw(<<'EOF');
 package Foo::Bar;
-sub new {
-    my ($class, $ctx, @argv) = @_;
+use v5.24;
+use warnings;
+use experimental qw(lexical_subs signatures);
+sub new ($class, $ctx, @argv) {
     die if !(@argv == 2 && $argv[0] eq "arg1" && $argv[1] eq "arg2");
-    bless {}, shift;
+    bless {}, $class;
 }
-sub resolve {
-    my ($self, $ctx, $task) = @_;
+sub resolve ($self, $ctx, $task) {
     if ($task->{package} ne 'App::ChangeShebang') {
         die;
     }

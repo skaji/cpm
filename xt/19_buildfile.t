@@ -1,5 +1,6 @@
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 use Test::More;
 
 use lib "xt/lib";
@@ -7,7 +8,7 @@ use CLI;
 use Path::Tiny;
 use File::pushd 'tempd';
 
-subtest build_pl => sub {
+subtest build_pl => sub () {
     my $guard = tempd;
     with_same_local {
         cpm_install 'Module::Build';
@@ -26,11 +27,11 @@ $builder->create_build_script;
 EOF
         my $r = cpm_install;
         like $r->err, qr/Executing Build.PL/;
-        like $r->err, qr/DONE install File-pushd-/;
+        like $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
     };
 };
 
-subtest makefile_pl => sub {
+subtest makefile_pl => sub () {
     my $guard = tempd;
     Path::Tiny->new("Makefile.PL")->spew(<<'EOF');
 use ExtUtils::MakeMaker;
@@ -42,7 +43,7 @@ WriteMakefile(
 EOF
     my $r = cpm_install;
     like $r->err, qr/Executing Makefile.PL/;
-    like $r->err, qr/DONE install File-pushd-/;
+    like $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
 };
 
 done_testing;

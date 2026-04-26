@@ -1,5 +1,6 @@
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 use Test::More;
 
 use lib "xt/lib";
@@ -7,7 +8,7 @@ use CLI;
 use Path::Tiny;
 use File::pushd 'tempd';
 
-subtest basic => sub {
+subtest basic => sub () {
     my $metafile = Path::Tiny->tempfile;
     $metafile->spew(<<'EOF');
 {
@@ -39,15 +40,15 @@ subtest basic => sub {
 }
 EOF
     my $r = cpm_install "--metafile", $metafile;
-    like $r->err, qr/DONE install File-pushd-/;
+    like $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
     unlike $r->err, qr/common-sense/;
 
     $r = cpm_install "--feature", "hoge", "--metafile", $metafile;
-    like $r->err, qr/DONE install File-pushd-/;
-    like $r->err, qr/DONE install common-sense-/;
+    like $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
+    like $r->log, qr/common-sense-[^\|]+\| Successfully installed distribution/;
 };
 
-subtest dynamic_config => sub {
+subtest dynamic_config => sub () {
     my $guard = tempd;
     Path::Tiny->new('META.json')->spew(<<'EOF');
 {
@@ -89,7 +90,7 @@ EOF
 EOF
     $r = cpm_install;
     is $r->exit, 0;
-    like $r->err, qr/DONE install File-pushd-/;
+    like $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
 };
 
 done_testing;

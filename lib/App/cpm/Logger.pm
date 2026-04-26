@@ -1,18 +1,22 @@
 package App::cpm::Logger;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use App::cpm::Util 'WIN32';
 use List::Util 'max';
 
 our $COLOR;
+our $SILENT;
 our $VERBOSE;
 our $SHOW_PROGRESS;
 
 my %color = (
-    resolve => 33,
-    fetch => 34,
-    configure => 35,
+    resolve => 36,
+    fetch => 36,
+    configure => 36,
+    build => 36,
+    test => 36,
     install => 36,
     FAIL => 31,
     DONE => 32,
@@ -21,18 +25,19 @@ my %color = (
 
 our $HAS_WIN32_COLOR;
 
-sub new {
-    my $class = shift;
-    bless {@_}, $class;
+sub new ($class, %args) {
+    bless \%args, $class;
 }
 
-sub log {
-    my ($self, %option) = @_;
-    my $type = $option{type} || "";
-    my $message = $option{message};
+sub log ($self, %argv) {
+    my $silent = ref $self ? $self->{silent} : $SILENT;
+    return if $silent;
+
+    my $type = $argv{type} || "";
+    my $message = $argv{message};
     chomp $message;
-    my $optional = $option{optional} ? " ($option{optional})" : "";
-    my $result = $option{result};
+    my $optional = $argv{optional} ? " ($argv{optional})" : "";
+    my $result = $argv{result};
     my $is_color = ref $self ? $self->{color} : $COLOR;
     my $verbose = ref $self ? $self->{verbose} : $VERBOSE;
     my $show_progress = ref $self ? $self->{show_progress} : $SHOW_PROGRESS;
@@ -41,7 +46,7 @@ sub log {
         if (!defined $HAS_WIN32_COLOR) {
             $HAS_WIN32_COLOR = eval { require Win32::Console::ANSI; 1 } ? 1 : 0;
         }
-        $is_color = 0 unless $HAS_WIN32_COLOR;
+        $is_color = 0 if !$HAS_WIN32_COLOR;
     }
 
     if ($is_color) {
@@ -54,7 +59,7 @@ sub log {
     if ($verbose) {
         # type -> 5 + 9 + 3
         $type = $is_color && $type ? sprintf("%-17s", $type) : sprintf("%-9s", $type || "");
-        warn $r . sprintf "%d %s %s %s%s\n", $option{pid} || $$, $result, $type, $message, $optional;
+        warn $r . sprintf "%d %s %s %s%s\n", $argv{pid} || $$, $result, $type, $message, $optional;
     } else {
         warn $r . join(" ", $result, $type ? $type : (), $message . $optional) . "\n";
     }

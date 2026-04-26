@@ -1,13 +1,13 @@
 package App::cpm::Logger::File;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use App::cpm::Util 'WIN32';
 use File::Temp ();
 use POSIX ();
 
-sub new {
-    my ($class, $file) = @_;
+sub new ($class, $file = undef) {
     my $fh;
     if (WIN32) {
         require IO::File;
@@ -25,26 +25,21 @@ sub new {
     }, $class;
 }
 
-sub symlink_to {
-    my ($self, $dest) = @_;
+sub symlink_to ($self, $dest) {
     unlink $dest;
     if (!eval { symlink $self->file, $dest }) {
         $self->{file} = $dest;
     }
 }
 
-sub file {
-    shift->{file};
-}
+sub file ($self) { $self->{file} }
 
-sub prefix {
-    my $self = shift;
+sub prefix ($self) {
     my $pid = $self->{pid} || $$;
     $self->{context} ? "$pid,$self->{context}" : $pid;
 }
 
-sub log {
-    my ($self, @line) = @_;
+sub log ($self, @line) {
     my $now = POSIX::strftime('%Y-%m-%dT%H:%M:%S', localtime);
     my $prefix = $self->prefix;
     local $self->{fh} = IO::File->new($self->{file}, 'a') if WIN32;

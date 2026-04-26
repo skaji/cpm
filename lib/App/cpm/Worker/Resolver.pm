@@ -1,15 +1,13 @@
 package App::cpm::Worker::Resolver;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
-sub new {
-    my ($class, $ctx, %option) = @_;
-    bless { impl => $option{impl} }, $class;
+sub new ($class, $ctx, %argv) {
+    bless { impl => $argv{impl} }, $class;
 }
 
-sub work {
-    my ($self, $ctx, $task) = @_;
-
+sub work ($self, $ctx, $task) {
     local $ctx->{logger}{context} = $task->{package};
     my $result = $self->{impl}->resolve($ctx, $task);
     if ($result and !$result->{error}) {

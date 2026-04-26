@@ -1,5 +1,6 @@
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 use Test::More;
 
 use lib "xt/lib";
@@ -8,8 +9,7 @@ use CLI;
 use Config;
 use JSON::PP;
 
-sub read_json_file {
-    my $path = shift;
+sub read_json_file ($path) {
     open my $fh, "<", $path or die "$!: $path";
     JSON::PP::decode_json join "", <$fh>;
 }
@@ -25,7 +25,7 @@ with_same_home {
 
         if ($times == 1) {
             unlike $res->err, qr/prebuilt/;
-        } elsif ($times == 2 && $] >= 5.012) {
+        } elsif ($times == 2) {
             like $res->err, qr/prebuilt/;
         }
 

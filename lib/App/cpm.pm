@@ -1,8 +1,9 @@
-package App::cpm;
-use strict;
+package App::cpm v0.999.11;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
-our $VERSION = '0.998003';
+our $TRIAL = 1;
 our ($GIT_DESCRIBE, $GIT_URL);
 
 1;
@@ -21,55 +22,18 @@ App::cpm - a fast CPAN module installer
 =head1 DESCRIPTION
 
 =for html
-<a href="https://skaji.github.io/images/cpm-Plack.svg"><img src="https://skaji.github.io/images/cpm-Plack.svg" alt="demo" style="max-width:100%;"></a>
+<a href="https://skaji.github.io/images/cpm-v1.svg"><img src="https://skaji.github.io/images/cpm-v1.svg" alt="demo" style="max-width:100%;"></a>
 
 cpm is a fast CPAN module installer.
 
-cpm keeps the each builds of distributions in your home directory,
-and reuses them later.
-That is, if prebuilts are available, cpm never builds distributions again, just copies the prebuilts into an appropriate directory.
-This is (of course!) inspired by L<Carmel>.
+cpm prepares dependencies first and performs final installation
+separately. By default, it installs the requested distributions and
+their runtime dependency closure.
+
+This makes installs more stable and more predictable, especially for
+larger dependency graphs and parallel work.
 
 For tutorial, check out L<App::cpm::Tutorial>.
-
-=head1 MOTIVATION
-
-Why do we need a new CPAN client?
-
-I used L<cpanm> a lot, and it's totally awesome.
-
-But if your Perl project has hundreds of CPAN module dependencies,
-then it takes quite a lot of time to install them.
-
-So my motivation is simple: I want to install CPAN modules as fast as possible.
-
-=head2 HOW FAST?
-
-Just an example:
-
-  > time cpanm -nq -Lextlib Plack
-  real 0m47.705s
-
-  > time cpm install Plack
-  real 0m16.629s
-
-This shows cpm is 3x faster than cpanm.
-
-=head1 CAVEATS
-
-L<eserte|https://github.com/skaji/cpm/issues/71> reported that
-the parallel feature of cpm yielded a new type of failure for CPAN module installation.
-That is,
-if B<ModuleA> implicitly requires B<ModuleB> in configure/build phase,
-and B<ModuleB> is about to be installed,
-then it may happen that the installation of B<ModuleA> fails.
-
-I can say that it hardly happens especially if you use a new Perl.
-Moreover, for a workaround, cpm automatically retries the installation if it fails.
-
-I hope that
-if almost all CPAN modules are distributed with L<static install enabled|http://blogs.perl.org/users/shoichi_kaji1/2017/03/make-your-cpan-module-static-installable.html>,
-then cpm will parallelize the installation for these CPAN modules safely and we can eliminate this new type of failure completely.
 
 =head1 COPYRIGHT AND LICENSE
 

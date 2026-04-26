@@ -1,12 +1,13 @@
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 use Test::More;
 use lib "xt/lib";
 use CLI;
 
 my $r = cpm_install 'CPAN::Test::Dummy::Perl5::Make::CircDepeOne', 'File::pushd';
 isnt $r->exit, 0;
-like $r->err, qr{DONE install File-pushd};
+like $r->log, qr/File-pushd-[^\|]+\| Successfully installed distribution/;
 like $r->err, qr/FAIL install CPAN-Test-Dummy-Perl5-Make-CircDepeOne/;
 like $r->err, qr/FAIL install CPAN-Test-Dummy-Perl5-Make-CircDepeThree/;
 like $r->err, qr/FAIL install CPAN-Test-Dummy-Perl5-Make-CircDepeTwo/;

@@ -1,6 +1,7 @@
-use strict;
+use v5.24;
 use warnings;
-use utf8;
+use experimental qw(lexical_subs signatures);
+
 use Test::More;
 use App::cpm::Context;
 use App::cpm::Resolver::Cascade;

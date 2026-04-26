@@ -1,32 +1,33 @@
-use strict;
+use v5.24;
 use warnings;
-use utf8;
+use experimental qw(lexical_subs signatures);
+
 use Test::More;
 use lib "xt/lib";
 use CLI;
 
-subtest module_build => sub {
+subtest module_build => sub () {
     my $r = cpm_install 'Module::Build@0.4232';
     is $r->exit, 0;
-    like $r->err, qr/DONE install Module(?:-|::)Build/;
+    like $r->log, qr/Module-Build-[^\|]+\| Successfully installed distribution/;
     note $r->err;
 };
-subtest eumm => sub {
+subtest eumm => sub () {
     my $r = cpm_install 'ExtUtils::MakeMaker@7.22';
     is $r->exit, 0;
-    like $r->err, qr/DONE install ExtUtils(?:-|::)MakeMaker/;
+    like $r->log, qr/ExtUtils-MakeMaker-[^\|]+\| Successfully installed distribution/;
     note $r->err;
 };
-subtest eupxs => sub {
+subtest eupxs => sub () {
     my $r = cpm_install 'ExtUtils::ParseXS@3.24';
     is $r->exit, 0;
-    like $r->err, qr/DONE install ExtUtils(?:-|::)ParseXS/;
+    like $r->log, qr/ExtUtils-ParseXS-[^\|]+\| Successfully installed distribution/;
     note $r->err;
 };
-subtest eui => sub {
+subtest eui => sub () {
     my $r = cpm_install 'ExtUtils::Install@2.02';
     is $r->exit, 0;
-    like $r->err, qr/DONE install ExtUtils(?:-|::)Install/;
+    like $r->log, qr/ExtUtils-Install-[^\|]+\| Successfully installed distribution/;
     note $r->err;
 };
 

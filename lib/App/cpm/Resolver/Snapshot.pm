@@ -1,28 +1,27 @@
 package App::cpm::Resolver::Snapshot;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 use App::cpm::DistNotation;
 use App::cpm::version;
 use Carton::Snapshot;
 
-sub new {
-    my ($class, $ctx, %option) = @_;
-    my $snapshot = Carton::Snapshot->new(path => $option{path} || "cpanfile.snapshot");
+sub new ($class, $ctx, %argv) {
+    my $snapshot = Carton::Snapshot->new(path => $argv{path} || "cpanfile.snapshot");
     $snapshot->load;
-    my $mirror = $option{mirror} || "https://cpan.metacpan.org/";
+    my $mirror = $argv{mirror} || "https://cpan.metacpan.org/";
     $mirror =~ s{/*$}{/};
     bless {
-        %option,
+        %argv,
         mirror => $mirror,
         snapshot => $snapshot
     }, $class;
 }
 
-sub snapshot { shift->{snapshot} }
+sub snapshot ($self) { $self->{snapshot} }
 
-sub resolve {
-    my ($self, $ctx, $task) = @_;
+sub resolve ($self, $ctx, $task) {
     my $package = $task->{package};
     my $found = $self->snapshot->find($package);
     if (!$found) {
@@ -40,7 +39,7 @@ sub resolve {
         my $package = $_;
         my $version = $found->provides->{$_}{version};
         +{ package => $package, version => $version };
-    } sort keys %{$found->provides};
+    } sort keys $found->provides->%*;
 
     my $dist = App::cpm::DistNotation->new_from_dist($found->distfile);
     return {

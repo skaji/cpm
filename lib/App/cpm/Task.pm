@@ -1,21 +1,20 @@
 package App::cpm::Task;
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 use CPAN::DistnameInfo;
 
-sub new {
-    my ($class, %option) = @_;
-    my $self = bless {%option}, $class;
+sub new ($class, %argv) {
+    my $self = bless {%argv}, $class;
     $self->{uid} = $self->_uid;
     $self;
 }
 
-sub uid { shift->{uid} }
+sub uid ($self) { $self->{uid} }
 
-sub _uid {
-    my $self = shift;
+sub _uid ($self) {
     my $type = $self->type;
-    if (grep { $type eq $_ } qw(fetch configure install)) {
+    if (grep { $type eq $_ } qw(fetch configure build test)) {
         "$type " . $self->distfile;
     } elsif ($type eq "resolve") {
         "$type " . $self->{package};
@@ -24,13 +23,11 @@ sub _uid {
     }
 }
 
-sub distfile {
-    my $self = shift;
+sub distfile ($self) {
     $self->{distfile} || $self->{uri};
 }
 
-sub distvname {
-    my $self = shift;
+sub distvname ($self) {
     return $self->{_distvname} if $self->{_distvname};
     if ($self->{distfile}) {
         $self->{_distvname} ||= CPAN::DistnameInfo->new($self->{distfile})->distvname;
@@ -43,39 +40,32 @@ sub distvname {
     }
 }
 
-sub distname {
-    my $self = shift;
+sub distname ($self) {
     $self->{_distname} ||= CPAN::DistnameInfo->new($self->distfile)->dist || 'UNKNOWN';
 }
 
-sub cpanid {
-    my $self = shift;
+sub cpanid ($self) {
     $self->{_cpanid} ||= CPAN::DistnameInfo->new($self->distfile)->cpanid || 'UNKNOWN';
 }
 
-sub type {
-    my $self = shift;
+sub type ($self) {
     $self->{type};
 }
 
-sub in_charge {
-    my $self = shift;
-    @_ ? $self->{in_charge} = shift : $self->{in_charge};
+sub in_charge ($self, @argv) {
+    @argv ? $self->{in_charge} = $argv[0] : $self->{in_charge};
 }
 
-sub is_success {
-    my $self = shift;
+sub is_success ($self) {
     $self->{ok};
 }
 
-sub equals {
-    my ($self, $that) = @_;
+sub equals ($self, $that) {
     $self->uid eq $that->uid;
 }
 
-sub merge {
-    my ($self, $that) = @_;
-    for my $key (keys %$that) {
+sub merge ($self, $that) {
+    for my $key (keys $that->%*) {
         $self->{$key} = $that->{$key};
     }
     $self;
