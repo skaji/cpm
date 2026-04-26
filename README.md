@@ -2,7 +2,7 @@
 
 a fast CPAN module installer
 
-![](https://skaji.github.io/images/cpm-v1.gif)
+![](https://skaji.github.io/images/cpm-v1.svg)
 
 ## Install
 

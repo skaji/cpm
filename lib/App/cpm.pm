@@ -22,7 +22,7 @@ App::cpm - a fast CPAN module installer
 =head1 DESCRIPTION
 
 =for html
-<a href="https://skaji.github.io/images/cpm-v1.gif"><img src="https://skaji.github.io/images/cpm-v1.gif" alt="demo" style="max-width:100%;"></a>
+<a href="https://skaji.github.io/images/cpm-v1.svg"><img src="https://skaji.github.io/images/cpm-v1.svg" alt="demo" style="max-width:100%;"></a>
 
 cpm is a fast CPAN module installer.
 
