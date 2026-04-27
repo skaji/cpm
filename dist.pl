@@ -17,7 +17,7 @@ my @prereq = (
     [ Prereqs => 'RuntimeRequires' ] => [
         'CPAN::02Packages::Search' => '0.100',
         'CPAN::DistnameInfo' => '0',
-        'Command::Runner' => '0.100',
+        'Command::Runner' => '0.201',
         'Darwin::InitObjC' => '0',
         'ExtUtils::Config' => '0',
         'ExtUtils::Helpers' => '0',
@@ -30,7 +30,7 @@ my @prereq = (
         'IPC::Run3' => '0',
         'Module::CPANfile' => '0',
         'Module::cpmfile' => '0.001',
-        'Parallel::Pipes::App' => '0.100',
+        'Parallel::Pipes::App' => '0.201',
         'Parse::LocalDistribution' => '0.20',
         'Proc::ForkSafe' => '0.001',
         'perl' => 'v5.24',
