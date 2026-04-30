@@ -11,7 +11,7 @@ sub supports ($class, @) {
 
 sub configure ($self, $ctx, $dependency_libs, $dependency_paths) {
     my @cmd = ($ctx->{perl}, 'Build.PL');
-    push @cmd, "--install_base", $self->{install_base} if $self->{install_base};
+    push @cmd, "--install_base", $self->{install_base} if $self->{use_install_command} && $self->{install_base};
     push @cmd, qw(--config installman1dir= --config installsiteman1dir= --config installman3dir= --config installsiteman3dir=) if $self->{need_noman_argv};
     push @cmd, '--pureperl-only' if $self->{pureperl_only};
     push @cmd, $self->{argv}->@* if $self->{argv}->@*;
