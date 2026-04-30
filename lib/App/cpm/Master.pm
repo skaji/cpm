@@ -4,6 +4,7 @@ use warnings;
 use experimental qw(lexical_subs signatures);
 
 use App::cpm::CircularDependency;
+use App::cpm::DependencyIndex;
 use App::cpm::Distribution;
 use App::cpm::Logger;
 use App::cpm::Logger::Terminal;
@@ -19,11 +20,8 @@ sub new ($class, %argv) {
         installed_distributions => 0,
         tasks => +{},
         distributions => +{},
-        provided_by_package => +{},
         dependency_ready => +{},
-        runtime_waiting_by_distfile => +{},
-        runtime_waiting_by_package => +{},
-        runtime_dirty => +{},
+        dependency_index => App::cpm::DependencyIndex->new,
         _fail_resolve => +{},
         _fail_install => +{},
         _is_installed => +{},
@@ -217,48 +215,12 @@ sub dependency_ready ($self, $dist, @argv) {
         my $ready = $argv[0] ? 1 : 0;
         my $was_ready = $self->{dependency_ready}{$distfile} || 0;
         $self->{dependency_ready}{$distfile} = $ready;
-        $self->_mark_runtime_waiters_dirty($distfile) if !$was_ready && $ready;
+        $self->{dependency_index}->mark_distfile_ready($distfile) if !$was_ready && $ready;
     }
     $self->{dependency_ready}{$distfile};
 }
 
-sub _mark_runtime_waiters_dirty ($self, $distfile) {
-    if (my $waiters = $self->{runtime_waiting_by_distfile}{$distfile}) {
-        $self->{runtime_dirty}{$_} = 1 for keys $waiters->%*;
-    }
-}
-
-sub _mark_runtime_package_waiters_dirty ($self, @package) {
-    for my $package (@package) {
-        if (my $waiters = $self->{runtime_waiting_by_package}{$package}) {
-            $self->{runtime_dirty}{$_} = 1 for keys $waiters->%*;
-        }
-    }
-}
-
-sub _clear_runtime_waiting ($self, $dist) {
-    my $distfile = $dist->distfile;
-    my $waiting_distfiles = $dist->{_runtime_waiting_distfiles} || {};
-    for my $wait_distfile (keys $waiting_distfiles->%*) {
-        delete $self->{runtime_waiting_by_distfile}{$wait_distfile}{$distfile};
-        delete $self->{runtime_waiting_by_distfile}{$wait_distfile}
-            if !keys $self->{runtime_waiting_by_distfile}{$wait_distfile}->%*;
-    }
-    my $waiting_packages = $dist->{_runtime_waiting_packages} || {};
-    for my $package (keys $waiting_packages->%*) {
-        delete $self->{runtime_waiting_by_package}{$package}{$distfile};
-        delete $self->{runtime_waiting_by_package}{$package}
-            if !keys $self->{runtime_waiting_by_package}{$package}->%*;
-    }
-    delete $dist->{_runtime_waiting_distfiles};
-    delete $dist->{_runtime_waiting_packages};
-    delete $self->{runtime_dirty}{$distfile};
-}
-
-sub _remember_runtime_waiting ($self, $dist, $requirements) {
-    my $distfile = $dist->distfile;
-    $self->_clear_runtime_waiting($dist);
-
+sub _runtime_waiting_for ($self, $requirements) {
     my (%wait_distfile, %wait_package);
     for my $req ($requirements->@*) {
         my ($package, $version_range) = $req->@{qw(package version_range)};
@@ -274,33 +236,17 @@ sub _remember_runtime_waiting ($self, $dist, $requirements) {
             $wait_package{$package} = 1;
         }
     }
-
-    if (%wait_distfile || %wait_package) {
-        $dist->{_runtime_waiting_distfiles} = \%wait_distfile;
-        $dist->{_runtime_waiting_packages} = \%wait_package;
-        $self->{runtime_waiting_by_distfile}{$_}{$distfile} = 1 for keys %wait_distfile;
-        $self->{runtime_waiting_by_package}{$_}{$distfile} = 1 for keys %wait_package;
-    }
+    (\%wait_distfile, \%wait_package);
 }
 
 sub _resolved_distribution ($self, $package, $version_range = undef) {
     my $key = join "\0", $package, $version_range // "";
     return $self->{_resolved_distribution}{$key} if exists $self->{_resolved_distribution}{$key};
 
-    my $candidates = $self->{provided_by_package}{$package} || [];
-    my ($resolved) = grep { $_->providing($package, $version_range) } $candidates->@*;
+    my ($resolved) = grep { $_->providing($package, $version_range) }
+        $self->{dependency_index}->providers_for($package);
     $self->{_resolved_distribution}{$key} = $resolved;
     $resolved;
-}
-
-sub _index_provides ($self, $distribution, $provides) {
-    my $distfile = $distribution->distfile;
-    for my $provide ($provides->@*) {
-        my $package = $provide->{package};
-        my $candidates = $self->{provided_by_package}{$package} ||= [];
-        push $candidates->@*, $distribution
-            if !grep { $_->distfile eq $distfile } $candidates->@*;
-    }
 }
 
 sub dependency_env_for ($self, $dist, $phases, $seen = undef, $found = undef) {
@@ -430,18 +376,18 @@ sub _mark_built_dependency_ready ($self, $ctx) {
     my @distributions = grep { !$self->{_fail_install}{$_->distfile} } $self->distributions;
     if (my @dists = grep { $_->built && !$self->dependency_ready($_) } @distributions) {
         for my $dist (@dists) {
-            my $distfile = $dist->distfile;
-            if (($dist->{_runtime_waiting_distfiles} || $dist->{_runtime_waiting_packages}) && !$self->{runtime_dirty}{$distfile}) {
+            my $dependency_index = $self->{dependency_index};
+            if ($dependency_index->has_runtime_waiting($dist) && !$dependency_index->is_runtime_dirty($dist)) {
                 next;
             }
             my $dist_requirements = $dist->requirements('runtime')->as_array;
             my ($is_satisfied, @need_resolve) = $self->is_satisfied($dist_requirements);
             if ($is_satisfied) {
-                $self->_clear_runtime_waiting($dist);
+                $dependency_index->clear_runtime_waiting($dist);
                 $self->dependency_ready($dist, 1);
                 $changed++;
             } elsif (!defined $is_satisfied) {
-                $self->_clear_runtime_waiting($dist);
+                $dependency_index->clear_runtime_waiting($dist);
                 local $ctx->{logger}{context} = $dist->distvname;
                 my ($req) = grep { $_->{package} eq "perl" } $dist_requirements->@*;
                 my $msg = sprintf "%s requires perl %s, but you have only %s",
@@ -458,10 +404,10 @@ sub _mark_built_dependency_ready ($self, $ctx) {
                 $ctx->log($msg);
                 my $ok = $self->_register_resolve_task($ctx, @need_resolve);
                 $self->{_fail_install}{$dist->distfile}++ if !$ok;
-                $self->_remember_runtime_waiting($dist, $dist_requirements);
+                $dependency_index->remember_runtime_waiting($dist, $self->_runtime_waiting_for($dist_requirements));
                 $changed++;
             } else {
-                $self->_remember_runtime_waiting($dist, $dist_requirements);
+                $dependency_index->remember_runtime_waiting($dist, $self->_runtime_waiting_for($dist_requirements));
             }
         }
     }
@@ -738,8 +684,8 @@ sub add_distribution ($self, $distribution) {
     my $distfile = $distribution->distfile;
     if (my $already = $self->{distributions}{$distfile}) {
         delete $self->{_resolved_distribution};
-        $self->_index_provides($already, $distribution->provides);
-        $self->_mark_runtime_package_waiters_dirty(map { $_->{package} } $distribution->provides->@*);
+        $self->{dependency_index}->index_provides($already, $distribution->provides);
+        $self->{dependency_index}->mark_packages_resolved(map { $_->{package} } $distribution->provides->@*);
         if ($already->resolved) {
             $already->overwrite_provide($_) for $distribution->provides->@*;
         }
@@ -747,8 +693,8 @@ sub add_distribution ($self, $distribution) {
     } else {
         $self->{distributions}{$distfile} = $distribution;
         delete $self->{_resolved_distribution};
-        $self->_index_provides($distribution, $distribution->provides);
-        $self->_mark_runtime_package_waiters_dirty(map { $_->{package} } $distribution->provides->@*);
+        $self->{dependency_index}->index_provides($distribution, $distribution->provides);
+        $self->{dependency_index}->mark_packages_resolved(map { $_->{package} } $distribution->provides->@*);
         return 1;
     }
 }
