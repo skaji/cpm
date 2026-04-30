@@ -1,7 +1,7 @@
 package App::cpm::DependencyIndex;
 use v5.24;
 use warnings;
-use experimental qw(signatures);
+use experimental qw(lexical_subs signatures);
 
 sub new ($class) {
     bless {
@@ -12,12 +12,12 @@ sub new ($class) {
     }, $class;
 }
 
-sub index_provides ($self, $distribution, $provides) {
-    my $distfile = $distribution->distfile;
+sub index_provides ($self, $dist, $provides) {
+    my $distfile = $dist->distfile;
     for my $provide ($provides->@*) {
         my $package = $provide->{package};
         my $candidates = $self->{provided_by_package}{$package} ||= [];
-        push $candidates->@*, $distribution
+        push $candidates->@*, $dist
             if !grep { $_->distfile eq $distfile } $candidates->@*;
     }
 }
