@@ -80,6 +80,10 @@ sub new ($class, $ctx, %argv) {
     mkpath $_ for grep !-d, $argv{work_dir}, $argv{cache_dir};
     if ($argv{local_lib}) {
         $argv{local_lib} = App::cpm::Util::maybe_abs($argv{local_lib});
+        my $local_bin = File::Spec->catdir($argv{local_lib}, "bin");
+        my $local_perl5lib = File::Spec->catdir($argv{local_lib}, "lib", "perl5");
+        $argv{local_bin} = $local_bin if -d $local_bin;
+        $argv{local_perl5lib} = $local_perl5lib if -d $local_perl5lib;
     }
 
     my $need_noman_argv = !$argv{man_pages} &&
@@ -242,6 +246,8 @@ sub find_prebuilt ($self, $ctx, $uri) {
         distfile => $uri,
         provides => $provides,
         local_lib => $self->{local_lib},
+        local_bin => $self->{local_bin},
+        local_perl5lib => $self->{local_perl5lib},
         install_base => $self->{local_lib} || $self->{implicit_install_base},
     );
     return +{
@@ -350,6 +356,8 @@ sub configure_builder ($self, $ctx, $task) {
             distfile => $task->{distfile},
             provides => $task->{provides},
             local_lib => $self->{local_lib},
+            local_bin => $self->{local_bin},
+            local_perl5lib => $self->{local_perl5lib},
             install_base => $self->{local_lib} || $self->{implicit_install_base},
             need_noman_argv => $self->{need_noman_argv},
             man_pages => $self->{man_pages},

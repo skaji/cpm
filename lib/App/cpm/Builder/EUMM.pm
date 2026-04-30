@@ -15,7 +15,7 @@ sub configure ($self, $ctx, $dependency_libs, $dependency_paths) {
         return;
     }
     my @cmd = ($ctx->{perl}, 'Makefile.PL');
-    push @cmd, "INSTALL_BASE=$self->{install_base}" if $self->{install_base};
+    push @cmd, "INSTALL_BASE=$self->{install_base}" if $self->{use_install_command} && $self->{install_base};
     push @cmd, qw(INSTALLMAN1DIR=none INSTALLMAN3DIR=none) if $self->{need_noman_argv};
     push @cmd, 'PUREPERL_ONLY=1' if $self->{pureperl_only};
     push @cmd, $self->{argv}->@* if $self->{argv}->@*;

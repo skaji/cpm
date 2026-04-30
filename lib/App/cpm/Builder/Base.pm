@@ -65,23 +65,23 @@ sub paths ($self) {
 sub _env_path ($self, $dependency_paths) {
     join $Config{path_sep},
         $dependency_paths->@*,
-        ($self->local_lib ? File::Spec->catdir($self->local_lib, "bin") : ()),
+        ($self->{local_bin} ? $self->{local_bin} : ()),
         ( $ENV{PATH} ? $ENV{PATH} : () );
 }
 
 sub _env_perl5lib ($self, $dependency_libs) {
     join $Config{path_sep},
         $dependency_libs->@*,
-        ($self->local_lib ? File::Spec->catdir($self->local_lib, "lib", "perl5") : ()),
+        ($self->{local_perl5lib} ? $self->{local_perl5lib} : ()),
         ( $ENV{PERL5LIB} ? $ENV{PERL5LIB} : ());
 }
 
 sub _set_env ($self, $dependency_libs, $dependency_paths) {
-    if ($dependency_paths->@* || $self->local_lib) {
+    if ($dependency_paths->@* || $self->{local_bin}) {
         $ENV{PATH} = $self->_env_path($dependency_paths);
     }
 
-    if ($dependency_libs->@* || $self->local_lib) {
+    if ($dependency_libs->@* || $self->{local_perl5lib}) {
         $ENV{PERL5LIB} = $self->_env_perl5lib($dependency_libs);
     }
 }

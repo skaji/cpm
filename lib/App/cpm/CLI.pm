@@ -211,7 +211,7 @@ sub parse_options ($self, @argv) {
     if (WIN32 and $self->{workers} != 1) {
         die "The number of workers must be 1 under WIN32 environment.\n";
     }
-    if ($self->{pureperl_only} or !$self->{notest} or $self->{man_pages}) {
+    if ($self->{pureperl_only} or !$self->{notest} or $self->{man_pages} or $self->{use_install_command}) {
         $self->{prebuilt} = 0;
     }
 
@@ -603,9 +603,9 @@ sub locate_dependency_file ($self) {
             my $base = App::cpm::Util::maybe_abs($self->{local_lib});
             $ENV{PATH} = join $Config{path_sep}, File::Spec->catdir($base, "bin"), ( $ENV{PATH} ? $ENV{PATH} : () );
             $ENV{PERL5LIB} = join $Config{path_sep}, File::Spec->catdir($base, "lib", "perl5"), ( $ENV{PERL5LIB} ? $ENV{PERL5LIB} : ());
-            if ($build_file eq "Makefile.PL") {
+            if ($self->{use_install_command} && $build_file eq "Makefile.PL") {
                 push @cmd, "INSTALL_BASE=$base";
-            } else {
+            } elsif ($self->{use_install_command}) {
                 push @cmd, "--install_base", $base;
             }
         }
@@ -834,7 +834,7 @@ Options:
       --prebuilt, --no-prebuilt
         save builds for CPAN distributions; and later, install the prebuilts if available
         default: on; you can also set $ENV{PERL_CPM_PREBUILT} false to disable this option.
-        usage of --test and/or --man-pages disables this option.
+        usage of --test, --man-pages, and/or --use-install-command disables this option.
       --target-perl=VERSION  (EXPERIMENTAL)
         install modules as if version is your perl is VERSION
       --mirror=URL
