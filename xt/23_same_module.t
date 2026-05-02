@@ -75,6 +75,10 @@ with_same_local {
     $r = cpm_install "--cpanfile", $cpanfile;
     is $r->exit, 0;
     like $r->err, qr/All requirements are satisfied/;
+
+    $r = cpm_install "--cpanfile", $cpanfile, "--reinstall";
+    is $r->exit, 0;
+    like $r->log, qr/Parallel-Pipes-[^\|]+\| Successfully installed distribution/;
 };
 
 done_testing;

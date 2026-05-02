@@ -662,9 +662,9 @@ sub load_dependency_file ($self, $ctx) {
             package => $package,
             version_range => $options->{version},
             dev => $options->{dev},
-            reinstall => $options->{git} ? 1 : 0,
+            reinstall => $package ne "perl" && ($self->{reinstall} || $options->{git}) ? 1 : 0,
         };
-        if ($options->{git}) {
+        if ($req->{reinstall}) {
             push @reinstall, $req;
         } else {
             push @package, $req;
