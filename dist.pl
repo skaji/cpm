@@ -53,7 +53,7 @@ my @plugin = (
     ],
     'GithubMeta' => [ issues => 1 ],
     'MetaProvides::Package' => [ inherit_version => 0, inherit_missing => 0 ],
-    'PruneFiles' => [ filename => 'dist.pl', filename => 'cpm', filename => 'README.md', match => '^(xt|author|maint|example|eg)/' ],
+    'PruneFiles' => [ filename => 'AGENTS.md', filename => 'dist.pl', filename => 'cpm', filename => 'README.md', match => '^(xt|author|maint|example|eg)/' ],
     'GenerateFile' => [ filename => 'Build.PL', content => "use Module::Build::Tiny;\nBuild_PL();" ],
     'MetaJSON' => [],
     'Metadata' => [ x_static_install => 1 ],
