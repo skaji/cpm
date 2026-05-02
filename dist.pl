@@ -47,6 +47,10 @@ my @plugin = (
     'lib' => [ lib => 'author' ],
     '=Trial' => [],
     'Git::Check' => [ allow_dirty => 'Changes', allow_dirty => 'META.json' ],
+    'Run::BeforeRelease' => [
+        run => 'git fetch origin',
+        run => q{%x -e 'my $behind = qx(git rev-list --count HEAD..\@{u}); chomp $behind; die "local branch is behind upstream by $behind commit(s); pull/rebase before release\n" if $behind'},
+    ],
     'GithubMeta' => [ issues => 1 ],
     'MetaProvides::Package' => [ inherit_version => 0, inherit_missing => 0 ],
     'PruneFiles' => [ filename => 'dist.pl', filename => 'cpm', filename => 'README.md', match => '^(xt|author|maint|example|eg)/' ],
