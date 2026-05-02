@@ -60,7 +60,7 @@
    "provides" : {
       "App::cpm" : {
          "file" : "lib/App/cpm.pm",
-         "version" : "v1.0.2"
+         "version" : "v1.0.3"
       },
       "App::cpm::Builder::Base" : {
          "file" : "lib/App/cpm/Builder/Base.pm"
@@ -174,7 +174,7 @@
          "web" : "https://github.com/skaji/cpm"
       }
    },
-   "version" : "v1.0.2",
+   "version" : "v1.0.3",
    "x_contributors" : [
       "Andrew Rodland <andrew@cleverdomain.org>",
       "Dave Rolsky <autarch@urth.org>",

@@ -2,8 +2,12 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
-v1.0.2  2026-05-03 01:40:21 JST
+v1.0.3  2026-05-03 01:46:05 JST
         - Fix --reinstall for dependency files (rlauer6 #294, #295)
+        - Refine install command environment handling (#293)
+
+v1.0.2  2026-05-03 01:40:21 JST
+        - This release was made from the wrong revision; please use v1.0.3 instead.
 
 v1.0.1  2026-04-27 10:00:08 CEST
         - Require the latest Command::Runner, Parallel::Pipes::App
