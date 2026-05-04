@@ -5,97 +5,98 @@ use experimental qw(lexical_subs signatures);
 
 sub new ($class) {
     bless {
-        dependency_ready => +{},
-        provided_by_package => +{},
-        _resolved_distribution => +{},
-        runtime_waiting_by_distfile => +{},
-        runtime_waiting_by_package => +{},
-        runtime_dirty => +{},
+        dependency_ready_by_distfile => +{},
+        provider_dists_by_package => +{},
+        _resolved_distribution_by_requirement => +{},
+        runtime_dependency_waiters_by_distfile => +{},
+        runtime_dependency_waiters_by_package => +{},
+        runtime_dependency_dirty_by_distfile => +{},
     }, $class;
 }
 
-sub dependency_ready ($self, $dist, @argv) {
+sub is_dependency_ready ($self, $dist) {
     my $distfile = $dist->distfile;
-    if (@argv) {
-        my $ready = $argv[0] ? 1 : 0;
-        my $was_ready = $self->{dependency_ready}{$distfile} || 0;
-        $self->{dependency_ready}{$distfile} = $ready;
-        $self->mark_distfile_ready($distfile) if !$was_ready && $ready;
-    }
-    $self->{dependency_ready}{$distfile};
+    $self->{dependency_ready_by_distfile}{$distfile};
+}
+
+sub mark_dependency_ready ($self, $dist) {
+    my $distfile = $dist->distfile;
+    my $was_ready = $self->{dependency_ready_by_distfile}{$distfile} || 0;
+    $self->{dependency_ready_by_distfile}{$distfile} = 1;
+    $self->_mark_dependency_ready_distfile($distfile) if !$was_ready;
 }
 
 sub add_provides ($self, $dist, $provides) {
     my $distfile = $dist->distfile;
-    delete $self->{_resolved_distribution};
+    delete $self->{_resolved_distribution_by_requirement};
     for my $provide ($provides->@*) {
         my $package = $provide->{package};
-        my $candidates = $self->{provided_by_package}{$package} ||= [];
-        push $candidates->@*, $dist
-            if !grep { $_->distfile eq $distfile } $candidates->@*;
+        my $provider_dists = $self->{provider_dists_by_package}{$package} ||= [];
+        push $provider_dists->@*, $dist
+            if !grep { $_->distfile eq $distfile } $provider_dists->@*;
     }
 }
 
 sub resolved_distribution ($self, $package, $version_range = undef) {
     my $key = join "\0", $package, $version_range // "";
-    return $self->{_resolved_distribution}{$key} if exists $self->{_resolved_distribution}{$key};
+    return $self->{_resolved_distribution_by_requirement}{$key} if exists $self->{_resolved_distribution_by_requirement}{$key};
 
-    my $candidates = $self->{provided_by_package}{$package} || [];
-    my ($resolved) = grep { $_->providing($package, $version_range) } $candidates->@*;
-    $self->{_resolved_distribution}{$key} = $resolved;
+    my $provider_dists = $self->{provider_dists_by_package}{$package} || [];
+    my ($resolved) = grep { $_->providing($package, $version_range) } $provider_dists->@*;
+    $self->{_resolved_distribution_by_requirement}{$key} = $resolved;
     $resolved;
 }
 
-sub mark_distfile_ready ($self, $distfile) {
-    if (my $waiters = $self->{runtime_waiting_by_distfile}{$distfile}) {
-        $self->{runtime_dirty}{$_} = 1 for keys $waiters->%*;
+sub _mark_dependency_ready_distfile ($self, $distfile) {
+    if (my $waiters = $self->{runtime_dependency_waiters_by_distfile}{$distfile}) {
+        $self->{runtime_dependency_dirty_by_distfile}{$_} = 1 for keys $waiters->%*;
     }
 }
 
-sub mark_packages_resolved ($self, @package) {
-    for my $package (@package) {
-        if (my $waiters = $self->{runtime_waiting_by_package}{$package}) {
-            $self->{runtime_dirty}{$_} = 1 for keys $waiters->%*;
+sub mark_resolved_packages ($self, @packages) {
+    for my $package (@packages) {
+        if (my $waiters = $self->{runtime_dependency_waiters_by_package}{$package}) {
+            $self->{runtime_dependency_dirty_by_distfile}{$_} = 1 for keys $waiters->%*;
         }
     }
 }
 
-sub is_runtime_dirty ($self, $dist) {
-    $self->{runtime_dirty}{ $dist->distfile };
+sub is_runtime_dependency_dirty ($self, $dist) {
+    $self->{runtime_dependency_dirty_by_distfile}{ $dist->distfile };
 }
 
-sub has_runtime_waiting ($self, $dist) {
-    $dist->{_runtime_waiting_distfiles} || $dist->{_runtime_waiting_packages};
+sub has_runtime_dependency_waiting ($self, $dist) {
+    $dist->{_runtime_dependency_waiting_distfiles} || $dist->{_runtime_dependency_waiting_packages};
 }
 
-sub clear_runtime_waiting ($self, $dist) {
+sub clear_runtime_dependency_waiting ($self, $dist) {
     my $distfile = $dist->distfile;
-    my $waiting_distfiles = $dist->{_runtime_waiting_distfiles} || {};
-    for my $wait_distfile (keys $waiting_distfiles->%*) {
-        delete $self->{runtime_waiting_by_distfile}{$wait_distfile}{$distfile};
-        delete $self->{runtime_waiting_by_distfile}{$wait_distfile}
-            if !keys $self->{runtime_waiting_by_distfile}{$wait_distfile}->%*;
+    my $waiting_distfiles = $dist->{_runtime_dependency_waiting_distfiles} || {};
+    for my $waiting_distfile (keys $waiting_distfiles->%*) {
+        delete $self->{runtime_dependency_waiters_by_distfile}{$waiting_distfile}{$distfile};
+        delete $self->{runtime_dependency_waiters_by_distfile}{$waiting_distfile}
+            if !keys $self->{runtime_dependency_waiters_by_distfile}{$waiting_distfile}->%*;
     }
-    my $waiting_packages = $dist->{_runtime_waiting_packages} || {};
+    my $waiting_packages = $dist->{_runtime_dependency_waiting_packages} || {};
     for my $package (keys $waiting_packages->%*) {
-        delete $self->{runtime_waiting_by_package}{$package}{$distfile};
-        delete $self->{runtime_waiting_by_package}{$package}
-            if !keys $self->{runtime_waiting_by_package}{$package}->%*;
+        delete $self->{runtime_dependency_waiters_by_package}{$package}{$distfile};
+        delete $self->{runtime_dependency_waiters_by_package}{$package}
+            if !keys $self->{runtime_dependency_waiters_by_package}{$package}->%*;
     }
-    delete $dist->{_runtime_waiting_distfiles};
-    delete $dist->{_runtime_waiting_packages};
-    delete $self->{runtime_dirty}{$distfile};
+    delete $dist->{_runtime_dependency_waiting_distfiles};
+    delete $dist->{_runtime_dependency_waiting_packages};
+    delete $self->{runtime_dependency_dirty_by_distfile}{$distfile};
 }
 
-sub remember_runtime_waiting ($self, $dist, $wait_distfile, $wait_package) {
+sub remember_runtime_dependency_waiting ($self, $dist, $waiting_distfiles, $waiting_packages) {
     my $distfile = $dist->distfile;
-    $self->clear_runtime_waiting($dist);
+    $self->clear_runtime_dependency_waiting($dist);
 
-    if ($wait_distfile->%* || $wait_package->%*) {
-        $dist->{_runtime_waiting_distfiles} = $wait_distfile;
-        $dist->{_runtime_waiting_packages} = $wait_package;
-        $self->{runtime_waiting_by_distfile}{$_}{$distfile} = 1 for keys $wait_distfile->%*;
-        $self->{runtime_waiting_by_package}{$_}{$distfile} = 1 for keys $wait_package->%*;
+    if ($waiting_distfiles->%* || $waiting_packages->%*) {
+        $dist->{_runtime_dependency_waiting_distfiles} = $waiting_distfiles;
+        $dist->{_runtime_dependency_waiting_packages} = $waiting_packages;
+        $self->{runtime_dependency_waiters_by_distfile}{$_}{$distfile} = 1 for keys $waiting_distfiles->%*;
+        $self->{runtime_dependency_waiters_by_package}{$_}{$distfile} = 1 for keys $waiting_packages->%*;
     }
 }
 
