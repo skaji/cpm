@@ -25,7 +25,7 @@ sub dependency_ready ($self, $dist, @argv) {
     $self->{dependency_ready}{$distfile};
 }
 
-sub index_provides ($self, $dist, $provides) {
+sub add_provides ($self, $dist, $provides) {
     my $distfile = $dist->distfile;
     delete $self->{_resolved_distribution};
     for my $provide ($provides->@*) {

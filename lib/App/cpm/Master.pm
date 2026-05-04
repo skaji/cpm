@@ -661,7 +661,7 @@ sub is_satisfied ($self, $requirements) {
 sub add_distribution ($self, $distribution) {
     my $distfile = $distribution->distfile;
     if (my $already = $self->{distributions}{$distfile}) {
-        $self->{dependency_tracker}->index_provides($already, $distribution->provides);
+        $self->{dependency_tracker}->add_provides($already, $distribution->provides);
         $self->{dependency_tracker}->mark_packages_resolved(map { $_->{package} } $distribution->provides->@*);
         if ($already->resolved) {
             $already->overwrite_provide($_) for $distribution->provides->@*;
@@ -669,7 +669,7 @@ sub add_distribution ($self, $distribution) {
         return 0;
     } else {
         $self->{distributions}{$distfile} = $distribution;
-        $self->{dependency_tracker}->index_provides($distribution, $distribution->provides);
+        $self->{dependency_tracker}->add_provides($distribution, $distribution->provides);
         $self->{dependency_tracker}->mark_packages_resolved(map { $_->{package} } $distribution->provides->@*);
         return 1;
     }
