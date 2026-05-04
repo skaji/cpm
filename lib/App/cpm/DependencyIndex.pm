@@ -5,15 +5,29 @@ use experimental qw(lexical_subs signatures);
 
 sub new ($class) {
     bless {
+        dependency_ready => +{},
         provided_by_package => +{},
+        _resolved_distribution => +{},
         runtime_waiting_by_distfile => +{},
         runtime_waiting_by_package => +{},
         runtime_dirty => +{},
     }, $class;
 }
 
+sub dependency_ready ($self, $dist, @argv) {
+    my $distfile = $dist->distfile;
+    if (@argv) {
+        my $ready = $argv[0] ? 1 : 0;
+        my $was_ready = $self->{dependency_ready}{$distfile} || 0;
+        $self->{dependency_ready}{$distfile} = $ready;
+        $self->mark_distfile_ready($distfile) if !$was_ready && $ready;
+    }
+    $self->{dependency_ready}{$distfile};
+}
+
 sub index_provides ($self, $dist, $provides) {
     my $distfile = $dist->distfile;
+    delete $self->{_resolved_distribution};
     for my $provide ($provides->@*) {
         my $package = $provide->{package};
         my $candidates = $self->{provided_by_package}{$package} ||= [];
@@ -22,8 +36,14 @@ sub index_provides ($self, $dist, $provides) {
     }
 }
 
-sub providers_for ($self, $package) {
-    ($self->{provided_by_package}{$package} || [])->@*;
+sub resolved_distribution ($self, $package, $version_range = undef) {
+    my $key = join "\0", $package, $version_range // "";
+    return $self->{_resolved_distribution}{$key} if exists $self->{_resolved_distribution}{$key};
+
+    my $candidates = $self->{provided_by_package}{$package} || [];
+    my ($resolved) = grep { $_->providing($package, $version_range) } $candidates->@*;
+    $self->{_resolved_distribution}{$key} = $resolved;
+    $resolved;
 }
 
 sub mark_distfile_ready ($self, $distfile) {

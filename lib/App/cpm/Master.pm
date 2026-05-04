@@ -20,7 +20,6 @@ sub new ($class, %argv) {
         installed_distributions => 0,
         tasks => +{},
         distributions => +{},
-        dependency_ready => +{},
         dependency_index => App::cpm::DependencyIndex->new,
         _fail_resolve => +{},
         _fail_install => +{},
@@ -210,14 +209,7 @@ sub install_phase_state ($self, $dist) {
 }
 
 sub dependency_ready ($self, $dist, @argv) {
-    my $distfile = $dist->distfile;
-    if (@argv) {
-        my $ready = $argv[0] ? 1 : 0;
-        my $was_ready = $self->{dependency_ready}{$distfile} || 0;
-        $self->{dependency_ready}{$distfile} = $ready;
-        $self->{dependency_index}->mark_distfile_ready($distfile) if !$was_ready && $ready;
-    }
-    $self->{dependency_ready}{$distfile};
+    $self->{dependency_index}->dependency_ready($dist, @argv);
 }
 
 sub _runtime_waiting_for ($self, $requirements) {
@@ -240,13 +232,7 @@ sub _runtime_waiting_for ($self, $requirements) {
 }
 
 sub _resolved_distribution ($self, $package, $version_range = undef) {
-    my $key = join "\0", $package, $version_range // "";
-    return $self->{_resolved_distribution}{$key} if exists $self->{_resolved_distribution}{$key};
-
-    my ($resolved) = grep { $_->providing($package, $version_range) }
-        $self->{dependency_index}->providers_for($package);
-    $self->{_resolved_distribution}{$key} = $resolved;
-    $resolved;
+    $self->{dependency_index}->resolved_distribution($package, $version_range);
 }
 
 sub dependency_env_for ($self, $dist, $phases, $seen = undef, $found = undef) {
@@ -683,7 +669,6 @@ sub is_satisfied ($self, $requirements) {
 sub add_distribution ($self, $distribution) {
     my $distfile = $distribution->distfile;
     if (my $already = $self->{distributions}{$distfile}) {
-        delete $self->{_resolved_distribution};
         $self->{dependency_index}->index_provides($already, $distribution->provides);
         $self->{dependency_index}->mark_packages_resolved(map { $_->{package} } $distribution->provides->@*);
         if ($already->resolved) {
@@ -692,7 +677,6 @@ sub add_distribution ($self, $distribution) {
         return 0;
     } else {
         $self->{distributions}{$distfile} = $distribution;
-        delete $self->{_resolved_distribution};
         $self->{dependency_index}->index_provides($distribution, $distribution->provides);
         $self->{dependency_index}->mark_packages_resolved(map { $_->{package} } $distribution->provides->@*);
         return 1;
