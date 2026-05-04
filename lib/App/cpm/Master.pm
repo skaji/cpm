@@ -208,33 +208,6 @@ sub install_phase_state ($self, $dist) {
     return $self->{notest} ? "built" : "tested";
 }
 
-sub dependency_ready ($self, $dist, @argv) {
-    $self->{dependency_index}->dependency_ready($dist, @argv);
-}
-
-sub _runtime_waiting_for ($self, $requirements) {
-    my (%wait_distfile, %wait_package);
-    for my $req ($requirements->@*) {
-        my ($package, $version_range) = $req->@{qw(package version_range)};
-        next if $package eq "perl";
-        next if $self->{target_perl} and $self->is_core($package, $version_range);
-
-        my $resolved = $self->_resolved_distribution($package, $version_range);
-        if ($resolved) {
-            next if $self->dependency_ready($resolved);
-            $wait_distfile{$resolved->distfile} = 1;
-        } else {
-            next if $self->is_installed($package, $version_range);
-            $wait_package{$package} = 1;
-        }
-    }
-    (\%wait_distfile, \%wait_package);
-}
-
-sub _resolved_distribution ($self, $package, $version_range = undef) {
-    $self->{dependency_index}->resolved_distribution($package, $version_range);
-}
-
 sub dependency_env_for ($self, $dist, $phases, $seen = undef, $found = undef) {
     $seen ||= {};
     $found ||= {};
@@ -244,12 +217,12 @@ sub dependency_env_for ($self, $dist, $phases, $seen = undef, $found = undef) {
         next if $package eq "perl";
         next if $self->{target_perl} and $self->is_core($package, $version_range);
 
-        my $resolved = $self->_resolved_distribution($package, $version_range);
+        my $resolved = $self->{dependency_index}->resolved_distribution($package, $version_range);
         if (!$resolved) {
             next if $self->is_installed($package, $version_range);
             next;
         }
-        next if !$self->dependency_ready($resolved);
+        next if !$self->{dependency_index}->dependency_ready($resolved);
         next if $seen->{$resolved->distfile}++;
 
         $found->{$resolved->distfile} = $resolved;
@@ -269,7 +242,7 @@ sub dependency_env_for ($self, $dist, $phases, $seen = undef, $found = undef) {
 }
 
 sub _final_install_distributions ($self, $include_unready = 0) {
-    return grep { $include_unready || $self->dependency_ready($_) } $self->distributions
+    return grep { $include_unready || $self->{dependency_index}->dependency_ready($_) } $self->distributions
         if $self->{final_install} eq "all";
 
     my %seen;
@@ -277,14 +250,14 @@ sub _final_install_distributions ($self, $include_unready = 0) {
     my @install;
     while (my $dist = shift @todo) {
         next if $seen{$dist->distfile}++;
-        push @install, $dist if $include_unready || $self->dependency_ready($dist);
+        push @install, $dist if $include_unready || $self->{dependency_index}->dependency_ready($dist);
 
         for my $req ($dist->requirements('runtime')->as_array->@*) {
             my ($package, $version_range) = $req->@{qw(package version_range)};
             next if $package eq "perl";
             next if $self->{target_perl} and $self->is_core($package, $version_range);
 
-            my $resolved = $self->_resolved_distribution($package, $version_range);
+            my $resolved = $self->{dependency_index}->resolved_distribution($package, $version_range);
             next if !$resolved;
             next if $self->is_installed($package, $version_range);
             push @todo, $resolved;
@@ -360,7 +333,7 @@ sub _add_tasks ($self, $ctx) {
 sub _mark_built_dependency_ready ($self, $ctx) {
     my $changed = 0;
     my @distributions = grep { !$self->{_fail_install}{$_->distfile} } $self->distributions;
-    if (my @dists = grep { $_->built && !$self->dependency_ready($_) } @distributions) {
+    if (my @dists = grep { $_->built && !$self->{dependency_index}->dependency_ready($_) } @distributions) {
         for my $dist (@dists) {
             my $dependency_index = $self->{dependency_index};
             if ($dependency_index->has_runtime_waiting($dist) && !$dependency_index->is_runtime_dirty($dist)) {
@@ -370,7 +343,7 @@ sub _mark_built_dependency_ready ($self, $ctx) {
             my ($is_satisfied, @need_resolve) = $self->is_satisfied($dist_requirements);
             if ($is_satisfied) {
                 $dependency_index->clear_runtime_waiting($dist);
-                $self->dependency_ready($dist, 1);
+                $self->{dependency_index}->dependency_ready($dist, 1);
                 $changed++;
             } elsif (!defined $is_satisfied) {
                 $dependency_index->clear_runtime_waiting($dist);
@@ -400,10 +373,29 @@ sub _mark_built_dependency_ready ($self, $ctx) {
     return $changed;
 }
 
+sub _runtime_waiting_for ($self, $requirements) {
+    my (%wait_distfile, %wait_package);
+    for my $req ($requirements->@*) {
+        my ($package, $version_range) = $req->@{qw(package version_range)};
+        next if $package eq "perl";
+        next if $self->{target_perl} and $self->is_core($package, $version_range);
+
+        my $resolved = $self->{dependency_index}->resolved_distribution($package, $version_range);
+        if ($resolved) {
+            next if $self->{dependency_index}->dependency_ready($resolved);
+            $wait_distfile{$resolved->distfile} = 1;
+        } else {
+            next if $self->is_installed($package, $version_range);
+            $wait_package{$package} = 1;
+        }
+    }
+    (\%wait_distfile, \%wait_package);
+}
+
 sub _mark_tested_dependency_ready ($self, $ctx) {
     my @distributions = grep { !$self->{_fail_install}{$_->distfile} } $self->distributions;
-    my @dists = grep { $_->tested && !$self->dependency_ready($_) } @distributions;
-    $self->dependency_ready($_, 1) for @dists;
+    my @dists = grep { $_->tested && !$self->{dependency_index}->dependency_ready($_) } @distributions;
+    $self->{dependency_index}->dependency_ready($_, 1) for @dists;
     return scalar @dists;
 }
 
@@ -651,9 +643,9 @@ sub is_satisfied ($self, $requirements) {
             next;
         }
         next if $self->{target_perl} and $self->is_core($package, $version_range);
-        my $resolved = $self->_resolved_distribution($package, $version_range);
+        my $resolved = $self->{dependency_index}->resolved_distribution($package, $version_range);
         if ($resolved) {
-            next if $self->dependency_ready($resolved);
+            next if $self->{dependency_index}->dependency_ready($resolved);
         } else {
             next if $self->is_installed($package, $version_range);
         }
