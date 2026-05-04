@@ -662,7 +662,6 @@ sub add_distribution ($self, $distribution) {
     my $distfile = $distribution->distfile;
     if (my $already = $self->{distributions}{$distfile}) {
         $self->{dependency_tracker}->add_provides($already, $distribution->provides);
-        $self->{dependency_tracker}->mark_resolved_packages(map { $_->{package} } $distribution->provides->@*);
         if ($already->resolved) {
             $already->overwrite_provide($_) for $distribution->provides->@*;
         }
@@ -670,7 +669,6 @@ sub add_distribution ($self, $distribution) {
     } else {
         $self->{distributions}{$distfile} = $distribution;
         $self->{dependency_tracker}->add_provides($distribution, $distribution->provides);
-        $self->{dependency_tracker}->mark_resolved_packages(map { $_->{package} } $distribution->provides->@*);
         return 1;
     }
 }
@@ -739,6 +737,7 @@ sub _register_fetch_result ($self, $ctx, $task) {
     $distribution->directory($task->{directory});
     $distribution->meta($task->{meta});
     $distribution->provides($task->{provides});
+    $self->{dependency_tracker}->add_provides($distribution, $distribution->provides);
 
     if ($task->{prebuilt}) {
         $distribution->built(1);

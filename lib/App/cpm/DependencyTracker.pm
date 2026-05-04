@@ -40,6 +40,9 @@ sub add_provides ($self, $dist, $provides) {
         my $provider_dists = $self->{provider_dists_by_package}{$package} ||= [];
         push $provider_dists->@*, $dist
             if !grep { $_->distfile eq $distfile } $provider_dists->@*;
+        if (my $waiters = $self->{runtime_dependency_waiters_by_package}{$package}) {
+            $self->{runtime_dependency_dirty_by_distfile}{$_} = 1 for keys $waiters->%*;
+        }
     }
 }
 
@@ -56,14 +59,6 @@ sub resolved_distribution ($self, $package, $version_range = undef) {
 sub _mark_dependency_ready_distfile ($self, $distfile) {
     if (my $waiters = $self->{runtime_dependency_waiters_by_distfile}{$distfile}) {
         $self->{runtime_dependency_dirty_by_distfile}{$_} = 1 for keys $waiters->%*;
-    }
-}
-
-sub mark_resolved_packages ($self, @packages) {
-    for my $package (@packages) {
-        if (my $waiters = $self->{runtime_dependency_waiters_by_package}{$package}) {
-            $self->{runtime_dependency_dirty_by_distfile}{$_} = 1 for keys $waiters->%*;
-        }
     }
 }
 
