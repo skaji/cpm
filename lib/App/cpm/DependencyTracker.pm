@@ -29,7 +29,9 @@ sub mark_dependency_ready ($self, $dist) {
     my $distfile = $dist->distfile;
     my $was_ready = $self->{dependency_ready_by_distfile}{$distfile} || 0;
     $self->{dependency_ready_by_distfile}{$distfile} = 1;
-    $self->_mark_dependency_ready_distfile($distfile) if !$was_ready;
+    if (!$was_ready && (my $waiters = $self->{runtime_dependency_waiters_by_distfile}{$distfile})) {
+        $self->{runtime_dependency_dirty_by_distfile}{$_} = 1 for keys $waiters->%*;
+    }
 }
 
 sub add_provides ($self, $dist, $provides) {
@@ -54,12 +56,6 @@ sub resolved_distribution ($self, $package, $version_range = undef) {
     my ($resolved) = grep { $_->providing($package, $version_range) } $provider_dists->@*;
     $self->{resolved_distribution_by_requirement}{$key} = $resolved;
     $resolved;
-}
-
-sub _mark_dependency_ready_distfile ($self, $distfile) {
-    if (my $waiters = $self->{runtime_dependency_waiters_by_distfile}{$distfile}) {
-        $self->{runtime_dependency_dirty_by_distfile}{$_} = 1 for keys $waiters->%*;
-    }
 }
 
 sub is_runtime_dependency_dirty ($self, $dist) {
