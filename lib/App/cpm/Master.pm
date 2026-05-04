@@ -4,6 +4,7 @@ use warnings;
 use experimental qw(lexical_subs signatures);
 
 use App::cpm::CircularDependency;
+use App::cpm::DependencyTracker;
 use App::cpm::Distribution;
 use App::cpm::Logger;
 use App::cpm::Logger::Terminal;
@@ -19,7 +20,7 @@ sub new ($class, %argv) {
         installed_distributions => 0,
         tasks => +{},
         distributions => +{},
-        dependency_ready => +{},
+        dependency_tracker => App::cpm::DependencyTracker->new,
         _fail_resolve => +{},
         _fail_install => +{},
         _is_installed => +{},
@@ -207,21 +208,6 @@ sub install_phase_state ($self, $dist) {
     return $self->{notest} ? "built" : "tested";
 }
 
-sub dependency_ready ($self, $dist, @argv) {
-    my $distfile = $dist->distfile;
-    $self->{dependency_ready}{$distfile} = $argv[0] ? 1 : 0 if @argv;
-    $self->{dependency_ready}{$distfile};
-}
-
-sub _resolved_distribution ($self, $package, $version_range = undef) {
-    my $key = join "\0", $package, $version_range // "";
-    return $self->{_resolved_distribution}{$key} if exists $self->{_resolved_distribution}{$key};
-
-    my ($resolved) = grep { $_->providing($package, $version_range) } $self->distributions;
-    $self->{_resolved_distribution}{$key} = $resolved;
-    $resolved;
-}
-
 sub dependency_env_for ($self, $dist, $phases, $seen = undef, $found = undef) {
     $seen ||= {};
     $found ||= {};
@@ -231,12 +217,12 @@ sub dependency_env_for ($self, $dist, $phases, $seen = undef, $found = undef) {
         next if $package eq "perl";
         next if $self->{target_perl} and $self->is_core($package, $version_range);
 
-        my $resolved = $self->_resolved_distribution($package, $version_range);
+        my $resolved = $self->{dependency_tracker}->resolved_distribution($package, $version_range);
         if (!$resolved) {
             next if $self->is_installed($package, $version_range);
             next;
         }
-        next if !$self->dependency_ready($resolved);
+        next if !$self->{dependency_tracker}->is_dependency_ready($resolved);
         next if $seen->{$resolved->distfile}++;
 
         $found->{$resolved->distfile} = $resolved;
@@ -256,7 +242,7 @@ sub dependency_env_for ($self, $dist, $phases, $seen = undef, $found = undef) {
 }
 
 sub _final_install_distributions ($self, $include_unready = 0) {
-    return grep { $include_unready || $self->dependency_ready($_) } $self->distributions
+    return grep { $include_unready || $self->{dependency_tracker}->is_dependency_ready($_) } $self->distributions
         if $self->{final_install} eq "all";
 
     my %seen;
@@ -264,14 +250,14 @@ sub _final_install_distributions ($self, $include_unready = 0) {
     my @install;
     while (my $dist = shift @todo) {
         next if $seen{$dist->distfile}++;
-        push @install, $dist if $include_unready || $self->dependency_ready($dist);
+        push @install, $dist if $include_unready || $self->{dependency_tracker}->is_dependency_ready($dist);
 
         for my $req ($dist->requirements('runtime')->as_array->@*) {
             my ($package, $version_range) = $req->@{qw(package version_range)};
             next if $package eq "perl";
             next if $self->{target_perl} and $self->is_core($package, $version_range);
 
-            my $resolved = $self->_resolved_distribution($package, $version_range);
+            my $resolved = $self->{dependency_tracker}->resolved_distribution($package, $version_range);
             next if !$resolved;
             next if $self->is_installed($package, $version_range);
             push @todo, $resolved;
@@ -347,14 +333,20 @@ sub _add_tasks ($self, $ctx) {
 sub _mark_built_dependency_ready ($self, $ctx) {
     my $changed = 0;
     my @distributions = grep { !$self->{_fail_install}{$_->distfile} } $self->distributions;
-    if (my @dists = grep { $_->built && !$self->dependency_ready($_) } @distributions) {
+    if (my @dists = grep { $_->built && !$self->{dependency_tracker}->is_dependency_ready($_) } @distributions) {
         for my $dist (@dists) {
+            my $dependency_tracker = $self->{dependency_tracker};
+            if ($dependency_tracker->has_runtime_dependency_waiting($dist) && !$dependency_tracker->is_runtime_dependency_dirty($dist)) {
+                next;
+            }
             my $dist_requirements = $dist->requirements('runtime')->as_array;
             my ($is_satisfied, @need_resolve) = $self->is_satisfied($dist_requirements);
             if ($is_satisfied) {
-                $self->dependency_ready($dist, 1);
+                $dependency_tracker->clear_runtime_dependency_waiting($dist);
+                $self->{dependency_tracker}->mark_dependency_ready($dist);
                 $changed++;
             } elsif (!defined $is_satisfied) {
+                $dependency_tracker->clear_runtime_dependency_waiting($dist);
                 local $ctx->{logger}{context} = $dist->distvname;
                 my ($req) = grep { $_->{package} eq "perl" } $dist_requirements->@*;
                 my $msg = sprintf "%s requires perl %s, but you have only %s",
@@ -371,17 +363,39 @@ sub _mark_built_dependency_ready ($self, $ctx) {
                 $ctx->log($msg);
                 my $ok = $self->_register_resolve_task($ctx, @need_resolve);
                 $self->{_fail_install}{$dist->distfile}++ if !$ok;
+                $dependency_tracker->remember_runtime_dependency_waiting($dist, $self->_runtime_dependency_waiting_for($dist_requirements));
                 $changed++;
+            } else {
+                $dependency_tracker->remember_runtime_dependency_waiting($dist, $self->_runtime_dependency_waiting_for($dist_requirements));
             }
         }
     }
     return $changed;
 }
 
+sub _runtime_dependency_waiting_for ($self, $requirements) {
+    my (%waiting_distfiles, %waiting_packages);
+    for my $req ($requirements->@*) {
+        my ($package, $version_range) = $req->@{qw(package version_range)};
+        next if $package eq "perl";
+        next if $self->{target_perl} and $self->is_core($package, $version_range);
+
+        my $resolved = $self->{dependency_tracker}->resolved_distribution($package, $version_range);
+        if ($resolved) {
+            next if $self->{dependency_tracker}->is_dependency_ready($resolved);
+            $waiting_distfiles{$resolved->distfile} = 1;
+        } else {
+            next if $self->is_installed($package, $version_range);
+            $waiting_packages{$package} = 1;
+        }
+    }
+    (\%waiting_distfiles, \%waiting_packages);
+}
+
 sub _mark_tested_dependency_ready ($self, $ctx) {
     my @distributions = grep { !$self->{_fail_install}{$_->distfile} } $self->distributions;
-    my @dists = grep { $_->tested && !$self->dependency_ready($_) } @distributions;
-    $self->dependency_ready($_, 1) for @dists;
+    my @dists = grep { $_->tested && !$self->{dependency_tracker}->is_dependency_ready($_) } @distributions;
+    $self->{dependency_tracker}->mark_dependency_ready($_) for @dists;
     return scalar @dists;
 }
 
@@ -622,7 +636,6 @@ sub is_core ($self, $package, $version_range) {
 sub is_satisfied ($self, $requirements) {
     my $is_satisfied = 1;
     my @need_resolve;
-    my @distributions = $self->distributions;
     for my $req ($requirements->@*) {
         my ($package, $version_range) = $req->@{qw(package version_range)};
         if ($package eq "perl") {
@@ -630,9 +643,9 @@ sub is_satisfied ($self, $requirements) {
             next;
         }
         next if $self->{target_perl} and $self->is_core($package, $version_range);
-        my $resolved = $self->_resolved_distribution($package, $version_range);
+        my $resolved = $self->{dependency_tracker}->resolved_distribution($package, $version_range);
         if ($resolved) {
-            next if $self->dependency_ready($resolved);
+            next if $self->{dependency_tracker}->is_dependency_ready($resolved);
         } else {
             next if $self->is_installed($package, $version_range);
         }
@@ -648,14 +661,14 @@ sub is_satisfied ($self, $requirements) {
 sub add_distribution ($self, $distribution) {
     my $distfile = $distribution->distfile;
     if (my $already = $self->{distributions}{$distfile}) {
+        $self->{dependency_tracker}->add_provides($already, $distribution->provides);
         if ($already->resolved) {
             $already->overwrite_provide($_) for $distribution->provides->@*;
-            delete $self->{_resolved_distribution};
         }
         return 0;
     } else {
         $self->{distributions}{$distfile} = $distribution;
-        delete $self->{_resolved_distribution};
+        $self->{dependency_tracker}->add_provides($distribution, $distribution->provides);
         return 1;
     }
 }
@@ -724,6 +737,7 @@ sub _register_fetch_result ($self, $ctx, $task) {
     $distribution->directory($task->{directory});
     $distribution->meta($task->{meta});
     $distribution->provides($task->{provides});
+    $self->{dependency_tracker}->add_provides($distribution, $distribution->provides);
 
     if ($task->{prebuilt}) {
         $distribution->built(1);
