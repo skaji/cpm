@@ -3,6 +3,10 @@ use v5.24;
 use warnings;
 use experimental qw(lexical_subs signatures);
 
+# This class owns dependency state, indexes, and caches that make lookups cheap.
+# App::cpm::Master owns install scheduling decisions, including phase handling,
+# core/installed module checks, resolve task registration, and install failure handling.
+
 sub new ($class) {
     bless {
         dependency_ready_by_distfile => +{},
