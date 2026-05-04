@@ -11,7 +11,7 @@ sub new ($class) {
     bless {
         dependency_ready_by_distfile => +{},
         provider_dists_by_package => +{},
-        _resolved_distribution_by_requirement => +{},
+        resolved_distribution_by_requirement => +{},
         runtime_dependency_waiting_distfiles_by_distfile => +{},
         runtime_dependency_waiting_packages_by_distfile => +{},
         runtime_dependency_waiters_by_distfile => +{},
@@ -34,7 +34,7 @@ sub mark_dependency_ready ($self, $dist) {
 
 sub add_provides ($self, $dist, $provides) {
     my $distfile = $dist->distfile;
-    delete $self->{_resolved_distribution_by_requirement};
+    delete $self->{resolved_distribution_by_requirement};
     for my $provide ($provides->@*) {
         my $package = $provide->{package};
         my $provider_dists = $self->{provider_dists_by_package}{$package} ||= [];
@@ -45,11 +45,11 @@ sub add_provides ($self, $dist, $provides) {
 
 sub resolved_distribution ($self, $package, $version_range = undef) {
     my $key = join "\0", $package, $version_range // "";
-    return $self->{_resolved_distribution_by_requirement}{$key} if exists $self->{_resolved_distribution_by_requirement}{$key};
+    return $self->{resolved_distribution_by_requirement}{$key} if exists $self->{resolved_distribution_by_requirement}{$key};
 
     my $provider_dists = $self->{provider_dists_by_package}{$package} || [];
     my ($resolved) = grep { $_->providing($package, $version_range) } $provider_dists->@*;
-    $self->{_resolved_distribution_by_requirement}{$key} = $resolved;
+    $self->{resolved_distribution_by_requirement}{$key} = $resolved;
     $resolved;
 }
 
