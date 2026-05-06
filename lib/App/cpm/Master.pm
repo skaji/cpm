@@ -633,9 +633,8 @@ sub is_satisfied ($self, $requirements) {
         my $resolved = $self->_resolved_distribution($package, $version_range);
         if ($resolved) {
             next if $self->dependency_ready($resolved);
-        } else {
-            next if $self->is_installed($package, $version_range);
         }
+        next if $self->is_installed($package, $version_range);
 
         $is_satisfied = 0 if defined $is_satisfied;
         if (!$resolved) {
