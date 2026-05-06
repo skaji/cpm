@@ -2,6 +2,9 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+v1.0.4  2026-05-07 00:14:51 JST
+        - Prefer installed modules before waiting on unresolved dists (robrwo #297, #298)
+
 v1.0.3  2026-05-03 01:46:05 JST
         - Fix --reinstall for dependency files (rlauer6 #294, #295)
         - Refine install command environment handling (#293)
