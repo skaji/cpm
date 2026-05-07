@@ -33,9 +33,11 @@ package App::cpm::HTTP::_HTTPTiny {
     }
 }
 
-
 sub create ($class, %args) {
     my $wantarray = wantarray;
+    my $report_perl_version = delete $args{report_perl_version};
+    my $agent = "App::cpm/$App::cpm::VERSION";
+    $agent .= " perl/$]" if $report_perl_version;
 
     my @try = $args{prefer} ? $args{prefer}->@* : qw(HTTPTiny LWP Curl Wget);
     @try = map { "HTTP::Tinyish::$_" } @try;
@@ -52,7 +54,7 @@ sub create ($class, %args) {
     die "Couldn't find HTTP Clients that support https" if !$backend;
 
     my $http = $backend->new(
-        agent => "App::cpm/$App::cpm::VERSION",
+        agent => $agent,
         timeout => 60,
         verify_SSL => 1,
         %args,
