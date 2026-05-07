@@ -60,8 +60,13 @@ sub new ($class, %argv) {
         static_install => 1,
         use_install_command => 0,
         default_resolvers => 1,
+        report_perl_version => !$class->maybe_ci,
         %argv
     }, $class;
+}
+
+sub maybe_ci ($class) {
+    !!grep $ENV{$_}, qw(CI AUTOMATED_TESTING AUTHOR_TESTING);
 }
 
 sub _normalize_progress ($self, $progress) {
@@ -107,7 +112,7 @@ sub _warn_deprecated_top_level_option ($self, $option) {
 }
 
 sub _progress_default ($self) {
-    !WIN32 && !$ENV{CI} && !$self->{verbose} && -t STDERR && terminal_width > 60 ? "tty" : "plain";
+    !WIN32 && !$self->maybe_ci && !$self->{verbose} && -t STDERR && terminal_width > 60 ? "tty" : "plain";
 }
 
 sub parse_options ($self, @argv) {
@@ -174,6 +179,7 @@ sub parse_options ($self, @argv) {
         "pp|pureperl|pureperl-only" => \($self->{pureperl_only}),
         "static-install!" => \($self->{static_install}),
         "use-install-command!" => \($self->{use_install_command}),
+        "report-perl-version!" => \($self->{report_perl_version}),
         "top-level-phase=s" => \$top_level_phase,
         "top-level-relationship=s" => \$top_level_relationship,
         "with-all" => sub (@) {
@@ -329,7 +335,10 @@ sub cmd_install ($self) {
     my $work_dir = File::Spec->catdir($self->{home}, "work", "$now.$$");
     my $cache_dir = File::Spec->catdir($self->{home}, "cache");
 
-    my $ctx = App::cpm::Context->new(log_file => $log_file);
+    my $ctx = App::cpm::Context->new(
+        log_file => $log_file,
+        report_perl_version => $self->{report_perl_version},
+    );
     $ctx->{logger}->symlink_to("$self->{home}/build.log");
     my $trial = $App::cpm::TRIAL ? '-TRIAL' : '';
     $ctx->log("Running cpm $App::cpm::VERSION$trial ($0) on perl $Config{version} built for $Config{archname} ($^X)");
@@ -873,6 +882,8 @@ Options:
         no-op compatibility option, will be removed in a future release
       --show-build-log-on-failure
         show build.log on failure, default: off
+      --report-perl-version, --no-report-perl-version
+        report your local perl version as part of User-Agent, default: on unless CI is enabled
       --configure-timeout=sec, --build-timeout=sec, --test-timeout=sec
         specify configure/build/test timeout second, default: 60sec, 3600sec, 1800sec
       --progress=auto|tty|plain
