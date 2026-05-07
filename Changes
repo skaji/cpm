@@ -2,6 +2,10 @@ Revision history for App-cpm
 
 {{$NEXT}}
 
+v1.1.0  2026-05-07 20:22:44 JST
+        - Report the local Perl version in cpm's User-Agent so CPAN MetaDB can count cpm usage alongside cpanm-style Perl version stats.
+          The reporting is enabled by default outside CI, with an explicit opt-out for users who do not want to send it (#299)
+
 v1.0.4  2026-05-07 00:14:51 JST
         - Prefer installed modules before waiting on unresolved dists (robrwo #297, #298)
 
