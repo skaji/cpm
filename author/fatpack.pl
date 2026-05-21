@@ -89,7 +89,7 @@ if (-f "index.txt" && !$force && !$test && !$update_only) {
 }
 
 warn "Resolver: @resolver\n";
-my @dependency = sort keys CPAN::Meta->load_file("../META.json")->prereqs->{runtime}{requires}->%*;
+my @dependency = sort grep { $_ ne "perl" } keys CPAN::Meta->load_file("../META.json")->prereqs->{runtime}{requires}->%*;
 push @dependency, 'ExtUtils::PL2Bat';
 cpm "install", "--target-perl", $target, @resolver, @dependency;
 generate_index "local/lib/perl5", "--output", "index.txt" if !$test;
