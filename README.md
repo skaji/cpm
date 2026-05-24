@@ -42,7 +42,7 @@ For more background on the cpm v1 redesign, see
 GitHub Artifact Attestations are generated for release tarballs uploaded to
 CPAN. If you care about provenance for the uploaded tarballs, see:
 
-[https://github.com/skaji/cpm/attestations]()
+[https://github.com/skaji/cpm/attestations](https://github.com/skaji/cpm/attestations)
 
 ## License
 
