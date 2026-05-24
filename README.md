@@ -37,6 +37,13 @@ larger dependency graphs and parallel work.
 For more background on the cpm v1 redesign, see
 [cpm v1: making installs stable](https://skaji.medium.com/cpm-v1-making-installs-stable-b2236b8eda44).
 
+## Artifact Attestations
+
+GitHub Artifact Attestations are generated for release tarballs uploaded to
+CPAN. If you care about provenance for the uploaded tarballs, see:
+
+[https://github.com/skaji/cpm/attestations]()
+
 ## License
 
 Copyright 2015 Shoichi Kaji <skaji@cpan.org>

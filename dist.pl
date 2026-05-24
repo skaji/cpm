@@ -1,3 +1,39 @@
+use v5.42;
+
+package Trial {
+    use Moose;
+    with 'Dist::Zilla::Role::FileMunger';
+    sub munge_file ($self, $file) {
+        return if !($ENV{DZIL_RELEASING} && $file->name eq $self->zilla->main_module->name);
+        my @line;
+        for my $line (split /\n/, $file->content, -1) {
+            if ($line =~ /^our \$TRIAL/) {
+                my $trial_line = sprintf 'our $TRIAL = %d;', $self->zilla->is_trial ? 1 : 0;
+                push @line, $trial_line;
+            } else {
+                push @line, $line;
+            }
+        }
+        $file->content(join "\n", @line);
+    }
+}
+
+package VersionFromMainModule {
+    use Moose;
+    with 'Dist::Zilla::Role::VersionProvider', 'Dist::Zilla::Role::ModuleMetadata';
+    sub provide_version ($self, @) {
+        my $metadata = $self->module_metadata_for_file($self->zilla->main_module, collect_pod => 0);
+        my $version = $metadata->version;
+        "$version";
+    }
+}
+
+package NextRelease {
+    use Moose;
+    extends 'Dist::Zilla::Plugin::NextRelease';
+    sub after_release ($self, @) {} # noop
+}
+
 my @prereq = (
     [ Prereqs => 'ConfigureRequires' ] => [
         'Module::Build::Tiny' => '0.051',
@@ -15,10 +51,10 @@ my @prereq = (
         'Carton' => '0',
     ],
     [ Prereqs => 'RuntimeRequires' ] => [
-        'CPAN::02Packages::Search' => '0.100',
+        'CPAN::02Packages::Search' => 'v1.0.0',
         'CPAN::DistnameInfo' => '0',
-        'Command::Runner' => '0.201',
-        'Darwin::InitObjC' => '0',
+        'Command::Runner' => 'v1.0.0',
+        'Darwin::InitObjC' => 'v1.0.0',
         'ExtUtils::Config' => '0',
         'ExtUtils::Helpers' => '0',
         'ExtUtils::Install' => '2.20',
@@ -29,10 +65,10 @@ my @prereq = (
         'HTTP::Tinyish' => '0.12',
         'IPC::Run3' => '0',
         'Module::CPANfile' => '0',
-        'Module::cpmfile' => '0.001',
-        'Parallel::Pipes::App' => '0.201',
+        'Module::cpmfile' => 'v1.0.0',
+        'Parallel::Pipes::App' => 'v1.0.0',
         'Parse::LocalDistribution' => '0.20',
-        'Proc::ForkSafe' => '0.001',
+        'Proc::ForkSafe' => 'v1.0.0',
         'perl' => 'v5.24',
     ],
 );
@@ -41,33 +77,25 @@ my @plugin = (
     'ExecDir' => [ dir => 'script' ],
     'Git::GatherDir' => [ exclude_filename => 'META.json' ],
     'CopyFilesFromBuild' => [ copy => 'META.json' ],
-    'VersionFromMainModule' => [],
-    'ReversionOnRelease' => [ prompt => 1 ],
-    'NextRelease' => [ format => '%v  %{yyyy-MM-dd HH:mm:ss VVV}d%{ (TRIAL RELEASE)}T' ],
-    'lib' => [ lib => 'author' ],
+    '=VersionFromMainModule' => [],
+    'ReversionOnRelease' => [],
+    '=NextRelease' => [ format => '%v  %{yyyy-MM-dd HH:mm:ss VVV}d%{ (TRIAL RELEASE)}T' ],
     '=Trial' => [],
     'Git::Check' => [ allow_dirty => 'Changes', allow_dirty => 'META.json' ],
-    'Run::BeforeRelease' => [
-        run => 'git fetch origin',
-        run => q{%x -e 'my $behind = qx(git rev-list --count HEAD..\@{u}); chomp $behind; die "local branch is behind upstream by $behind commit(s); pull/rebase before release\n" if $behind'},
-    ],
     'GithubMeta' => [ issues => 1 ],
     'MetaProvides::Package' => [ inherit_version => 0, inherit_missing => 0 ],
-    'PruneFiles' => [ filename => 'AGENTS.md', filename => 'dist.pl', filename => 'cpm', filename => 'README.md', match => '^(xt|author|maint|example|eg)/' ],
-    'GenerateFile' => [ filename => 'Build.PL', content => "use Module::Build::Tiny;\nBuild_PL();" ],
     'MetaJSON' => [],
     'Metadata' => [ x_static_install => 1 ],
     'Git::Contributors' => [],
 
     'CheckChangesHasContent' => [],
-    'ConfirmRelease' => [],
-    'UploadToCPAN' => [],
-    'CopyFilesFromRelease' => [ match => '\.pm$' ],
+    'FakeRelease' => [],
+    'CopyFilesFromRelease' => [ filename => 'Changes', match => '\.pm$', ],
 
     # XXX
     'Run::AfterRelease' => [ run => 'env CPAN_RELEASE_VERSION=%v%t %x author/fatpack.pl' ],
 
-    'Git::Commit' => [ commit_msg => '%v%t', allow_dirty => 'Changes', allow_dirty => 'META.json', allow_dirty => 'cpm', allow_dirty_match => '\.pm$' ],
+    'Git::Commit' => [ commit_msg => '%v%t', allow_dirty => 'Changes', allow_dirty => 'META.json', allow_dirty_match => '\.pm$', allow_dirty => 'cpm' ],
     'Git::Tag' => [ tag_format => '%v%t', tag_message => '%v%t' ],
     'Git::Push' => [],
 

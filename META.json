@@ -35,10 +35,10 @@
             "Carton" : "0"
          },
          "requires" : {
-            "CPAN::02Packages::Search" : "0.100",
+            "CPAN::02Packages::Search" : "v1.0.0",
             "CPAN::DistnameInfo" : "0",
-            "Command::Runner" : "0.201",
-            "Darwin::InitObjC" : "0",
+            "Command::Runner" : "v1.0.0",
+            "Darwin::InitObjC" : "v1.0.0",
             "ExtUtils::Config" : "0",
             "ExtUtils::Helpers" : "0",
             "ExtUtils::Install" : "2.20",
@@ -49,10 +49,10 @@
             "HTTP::Tinyish" : "0.12",
             "IPC::Run3" : "0",
             "Module::CPANfile" : "0",
-            "Module::cpmfile" : "0.001",
-            "Parallel::Pipes::App" : "0.201",
+            "Module::cpmfile" : "v1.0.0",
+            "Parallel::Pipes::App" : "v1.0.0",
             "Parse::LocalDistribution" : "0.20",
-            "Proc::ForkSafe" : "0.001",
+            "Proc::ForkSafe" : "v1.0.0",
             "perl" : "v5.24.0"
          }
       }

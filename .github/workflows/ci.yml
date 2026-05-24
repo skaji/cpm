@@ -1,22 +1,21 @@
-name: test
+name: ci
 
 on:
   push:
     branches:
-      - '*'
-    tags-ignore:
+      - main
+    tags:
       - '*'
   pull_request:
 
 jobs:
-  ubuntu:
-    name: ubuntu perl ${{ matrix.perl-version }}
+  test-linux:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         perl-version:
           - '5.24.4'
-          - '5.42.2'
+          - 'latest'
     steps:
       - uses: actions/checkout@v6
       - name: Install deb packages
@@ -31,8 +30,7 @@ jobs:
       - name: Run Tests
         run: prove -lr --timer t xt
 
-  macos:
-    name: macos ${{ matrix.perl }}
+  test-macos:
     runs-on: macos-latest
     strategy:
       matrix:
@@ -52,8 +50,7 @@ jobs:
       - name: Run Tests
         run: ${{ matrix.prove }} -lr --timer t xt
 
-  windows:
-    name: windows perl ${{ matrix.tester-id }}
+  test-windows:
     runs-on: windows-latest
     strategy:
       matrix:
@@ -69,3 +66,41 @@ jobs:
         run: curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g --top-level-phase runtime,test,develop --top-level-relationship requires,recommends --show-build-log-on-failure
       - name: Run Tests
         run: perl author\split-run "t\*.t xt\*.t xt\*\*.t" ${{ matrix.tester-id }}/3 prove -l --timer
+
+  release:
+    needs:
+      - test-linux
+      - test-macos
+      - test-windows
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # actions/attest
+      attestations: write # actions/attest
+      artifact-metadata: write # actions/attest
+      contents: write # gh release
+    steps:
+      - uses: actions/checkout@v6
+      - name: Prepare variables
+        id: var
+        run: echo dist=$(jq -r '"\(.name)-\(.version)\(if .release_status == "stable" then "" else "-TRIAL" end)"' META.json) >> $GITHUB_OUTPUT
+      - name: Generate tarball
+        run: |
+          git archive --format=tar \
+            --prefix=${{ steps.var.outputs.dist }}/ \
+            'HEAD^{tree}' | gzip -n -9 > ${{ steps.var.outputs.dist }}.tar.gz
+      - uses: actions/attest@v4
+        id: attest
+        with:
+          subject-path: ${{ steps.var.outputs.dist }}.tar.gz
+      - name: Create release
+        run: |
+          gh release create --repo ${{ github.repository }} ${{ github.ref_name }} \
+            --notes "Artifact attestation: ${{ steps.attest.outputs.attestation-url }}" \
+            ${{ steps.var.outputs.dist }}.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: skaji/action-pause-upload@v1
+        with:
+          files: ${{ steps.var.outputs.dist }}.tar.gz
+          pause-token: ${{ secrets.PAUSE_TOKEN }}

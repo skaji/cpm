@@ -35,6 +35,13 @@ larger dependency graphs and parallel work.
 
 For tutorial, check out L<App::cpm::Tutorial>.
 
+=head1 ARTIFACT ATTESTATIONS
+
+GitHub Artifact Attestations are generated for release tarballs uploaded to
+CPAN. If you care about provenance for the uploaded tarballs, see:
+
+L<https://github.com/skaji/cpm/attestations>
+
 =head1 COPYRIGHT AND LICENSE
 
 Copyright 2015 Shoichi Kaji E<lt>skaji@cpan.orgE<gt>
