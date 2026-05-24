@@ -36,13 +36,12 @@ package NextRelease {
 
 my @prereq = (
     [ Prereqs => 'ConfigureRequires' ] => [
-        'Module::Build::Tiny' => '0.051',
-        'perl' => 'v5.24',
+        'Module::Build::Tiny' => '0.053',
     ],
     [ Prereqs => 'DevelopRequires' ] => [
         'Archive::Tar' => '0',
         'Archive::Zip' => '1.68',
-        'CPAN::Mirror::Tiny' => '0.20',
+        'CPAN::Mirror::Tiny' => 'v1.0.0',
         'Capture::Tiny' => '0',
         'Path::Tiny' => '0',
         'local::lib' => '0',
