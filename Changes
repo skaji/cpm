@@ -1,6 +1,7 @@
 Revision history for App-cpm
 
-{{$NEXT}}
+v1.1.1  2026-05-24 13:27:13 JST
+        - Use GitHub Artifact Attestations and add "ARTIFACT ATTESTATIONS" section to pod
 
 v1.1.0  2026-05-07 20:22:44 JST
         - Report the local Perl version in cpm's User-Agent so CPAN MetaDB can count cpm usage alongside cpanm-style Perl version stats.
