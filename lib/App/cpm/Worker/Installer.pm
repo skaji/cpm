@@ -14,6 +14,7 @@ use App::cpm::version;
 use CPAN::DistnameInfo;
 use CPAN::Meta;
 use Config;
+use Digest::SHA ();
 use File::Basename 'basename';
 use File::Copy ();
 use File::Copy::Recursive ();
@@ -171,12 +172,14 @@ sub fetch ($self, $ctx, $task) {
     } elsif ($source =~ /^(?:cpan|https?)$/) {
         my $g = pushd $self->{work_dir};
 
+        my $checksum = $task->{checksum};
         FETCH: {
             my $basename = basename $uri;
             if ($uri =~ s{^file://}{}) {
                 $ctx->log("Copying $uri");
                 File::Copy::copy($uri, $basename)
                     or last FETCH;
+                last FETCH if $checksum and !$self->verify_checksum($ctx, $basename, $checksum);
                 $dir = $self->unpack($ctx, $basename);
             } else {
                 if ($distfile and trusted_mirror($uri)) {
@@ -184,15 +187,20 @@ sub fetch ($self, $ctx, $task) {
                     if (-f $cache) {
                         $ctx->log("Using cache $cache");
                         File::Copy::copy($cache, $basename);
-                        $dir = $self->unpack($ctx, $basename);
-                        if ($dir) {
-                            $using_cache++;
-                            last FETCH;
+                        if ($checksum and !$self->verify_checksum($ctx, $basename, $checksum)) {
+                            $ctx->log("Discarding cached artifact that failed checksum: $cache");
+                            unlink $cache, $basename;
+                        } else {
+                            $dir = $self->unpack($ctx, $basename);
+                            if ($dir) {
+                                $using_cache++;
+                                last FETCH;
+                            }
+                            unlink $cache;
                         }
-                        unlink $cache;
                     }
                 }
-                $dir = $self->fetch_distribution($ctx, $uri, $distfile);
+                $dir = $self->fetch_distribution($ctx, $uri, $distfile, $checksum);
             }
         }
         $dir = File::Spec->catdir($self->{work_dir}, $dir) if $dir;
@@ -440,6 +448,38 @@ sub extract_packages ($self, $ctx, $meta) {
     \@out;
 }
 
+# Verify a downloaded artifact against an expected digest supplied by the
+# resolver (e.g. from a committed integrity lockfile). $checksum is
+# "<algo>:<hex>" or a bare sha256 hex. Returns true on match; a false return
+# makes the caller abort this distribution before it is unpacked, cached, or
+# built.
+sub verify_checksum ($self, $ctx, $file, $checksum) {
+    my ($algo, $expect) = $checksum =~ /\A(?:([A-Za-z0-9]+):)?([0-9a-fA-F]+)\z/
+        ? (lc($1 // 'sha256'), lc $2) : ();
+    if (!$expect) {
+        $ctx->log("Malformed checksum '$checksum'");
+        return;
+    }
+    if ($algo ne 'sha256') {
+        $ctx->log("Unsupported checksum algorithm '$algo' (only sha256)");
+        return;
+    }
+    open my $fh, '<:raw', $file or do {
+        $ctx->log("Cannot read $file for checksum: $!");
+        return;
+    };
+    my $got = Digest::SHA->new(256)->addfile($fh)->hexdigest;
+    close $fh;
+    if ($got ne $expect) {
+        $ctx->log("Checksum MISMATCH for @{[basename $file]}");
+        $ctx->log("  expected sha256:$expect");
+        $ctx->log("  got      sha256:$got");
+        return;
+    }
+    $ctx->log("Verified sha256:$got");
+    return 1;
+}
+
 sub mirror ($self, $ctx, $uri, $local) {
     my $res = $ctx->{http}->mirror($uri, $local);
     $ctx->log($res->{status} . ($res->{reason} ? " $res->{reason}" : ""));
@@ -449,11 +489,15 @@ sub mirror ($self, $ctx, $uri, $local) {
     return;
 }
 
-sub fetch_distribution ($self, $ctx, $uri, $distfile) {
+sub fetch_distribution ($self, $ctx, $uri, $distfile, $checksum = undef) {
     my $local = File::Spec->catfile($self->{work_dir}, File::Basename::basename($uri));
     $ctx->log("Fetching $uri");
     if (!$self->mirror($ctx, $uri, $local)) {
         $ctx->log("Failed to download $uri");
+        return;
+    }
+    if ($checksum and !$self->verify_checksum($ctx, $local, $checksum)) {
+        unlink $local;
         return;
     }
     my $dir = $self->unpack($ctx, $local);

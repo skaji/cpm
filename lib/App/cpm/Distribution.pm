@@ -63,6 +63,7 @@ for my $attr (qw(
     builder
     prebuilt
     final_target
+    checksum
 )) {
     no strict 'refs';
     *$attr = sub ($self, @argv) {

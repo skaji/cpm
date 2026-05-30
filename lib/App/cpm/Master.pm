@@ -398,6 +398,7 @@ sub _add_fetch_tasks ($self, $ctx) {
                 source => $dist->source,
                 uri => $dist->uri,
                 ref => $dist->ref,
+                checksum => $dist->checksum,
             );
             $changed++;
         }
@@ -708,6 +709,7 @@ sub _register_resolve_result ($self, $ctx, $task) {
         distfile => $task->{distfile},
         ref      => $task->{ref},
         final_target => $task->{final_target},
+        checksum => $task->{checksum},
     );
     if (!$self->add_distribution($distribution) && $task->{final_target}) {
         $self->distribution($distribution->distfile)->final_target(1);
