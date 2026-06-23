@@ -70,8 +70,16 @@ sub _env_path ($self, $dependency_paths) {
 }
 
 sub _env_perl5lib ($self, $dependency_libs) {
+    # Always include install_base/lib/perl5 in PERL5LIB so that
+    # make install postambles (e.g. XML::SAX's install_sax_driver)
+    # can find modules that were just installed, even if the directory
+    # did not exist when this builder was first constructed.
+    my $install_lib = $self->{install_base}
+        ? File::Spec->catdir($self->{install_base}, "lib", "perl5")
+        : undef;
     join $Config{path_sep},
         $dependency_libs->@*,
+        ($install_lib ? $install_lib : ()),
         ($self->{local_perl5lib} ? $self->{local_perl5lib} : ()),
         ( $ENV{PERL5LIB} ? $ENV{PERL5LIB} : ());
 }
@@ -81,7 +89,7 @@ sub _set_env ($self, $dependency_libs, $dependency_paths) {
         $ENV{PATH} = $self->_env_path($dependency_paths);
     }
 
-    if ($dependency_libs->@* || $self->{local_perl5lib}) {
+    if ($dependency_libs->@* || $self->{local_perl5lib} || $self->{install_base}) {
         $ENV{PERL5LIB} = $self->_env_perl5lib($dependency_libs);
     }
 }
