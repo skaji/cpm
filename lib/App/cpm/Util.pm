@@ -53,7 +53,7 @@ sub terminal_width () {
 }
 
 sub gunzip ($from, $to) {
-    my $ok = IO::Uncompress::Gunzip::gunzip($from, $to);
+    my $ok = IO::Uncompress::Gunzip::gunzip($from, $to, BinModeOut => 1);
     if ($ok) {
         return (1, undef);
     }
@@ -62,7 +62,7 @@ sub gunzip ($from, $to) {
 }
 
 sub bunzip2 ($from, $to) {
-    my $ok = IO::Uncompress::Bunzip2::bunzip2($from, $to);
+    my $ok = IO::Uncompress::Bunzip2::bunzip2($from, $to, BinModeOut => 1);
     if ($ok) {
         return (1, undef);
     }
