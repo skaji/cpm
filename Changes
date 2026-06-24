@@ -1,5 +1,9 @@
 Revision history for App-cpm
 
+{{$NEXT}}
+        - Write gunzip/bunzip2 output in binary mode on Windows, where older IO::Uncompress
+          versions may otherwise corrupt decompressed tar archives with text-mode output (#304)
+
 v1.1.1  2026-05-24 13:27:13 JST
         - Use GitHub Artifact Attestations and add "ARTIFACT ATTESTATIONS" section to pod
 
