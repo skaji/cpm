@@ -9,7 +9,7 @@ use App::cpm::Builder::Prebuilt;
 use App::cpm::Builder::Static;
 use App::cpm::Requirement;
 use App::cpm::Util;
-use App::cpm::Worker::Installer::Prebuilt;
+use App::cpm::Worker::Installer::Custom;
 use App::cpm::version;
 use CPAN::DistnameInfo;
 use CPAN::Meta;
@@ -88,11 +88,11 @@ sub new ($class, $ctx, %argv) {
 
     my $need_noman_argv = !$argv{man_pages} &&
         ($Config{installman1dir} || $Config{installsiteman1dir} || $Config{installman3dir} || $Config{installsiteman3dir});
-
-    $argv{prebuilt} = App::cpm::Worker::Installer::Prebuilt->new if $argv{prebuilt};
+    my $custom = App::cpm::Worker::Installer::Custom->new;
     bless {
         %argv,
         need_noman_argv => $need_noman_argv,
+        custom => $custom,
     }, $class;
 }
 
@@ -128,7 +128,15 @@ sub _fetch_git ($self, $ctx, $uri, $ref) {
 }
 
 sub enable_prebuilt ($self, $ctx, $uri) {
-    $self->{prebuilt} && !$self->{prebuilt}->skip($uri) && trusted_mirror($uri);
+    if (!$self->{prebuilt} || !trusted_mirror($uri)) {
+        return;
+    }
+    if (my $config = $self->{custom}->config($uri)) {
+        if (exists $config->{prebuilt}) {
+            return $config->{prebuilt};
+        }
+    }
+    return 1;
 }
 
 sub fetch ($self, $ctx, $task) {
@@ -341,6 +349,7 @@ sub configure ($self, $ctx, $task) {
 sub configure_builder ($self, $ctx, $task) {
     my ($dir, $meta, $dependency_libs, $dependency_paths)
         = $task->@{qw(directory meta dependency_libs dependency_paths)};
+    my $config = $self->{custom}->config($task->{uri}) || {};
     my @candidate = (
         ($self->{static_install} ? [ 'App::cpm::Builder::Static', $self->{mb_argv} ] : ()),
         [ 'App::cpm::Builder::MB',     $self->{mb_argv} ],
@@ -362,7 +371,7 @@ sub configure_builder ($self, $ctx, $task) {
             need_noman_argv => $self->{need_noman_argv},
             man_pages => $self->{man_pages},
             pureperl_only => $self->{pureperl_only},
-            use_install_command => $self->{use_install_command},
+            use_install_command => exists $config->{use_install_command} ? $config->{use_install_command} : $self->{use_install_command},
             argv => $argv,
             configure_timeout => $self->{configure_timeout},
             build_timeout => $self->{build_timeout},
