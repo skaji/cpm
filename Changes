@@ -1,5 +1,8 @@
 Revision history for App-cpm
 
+v1.1.3  2026-06-28 22:54:34 JST
+        - Set local env for install commands (rlauer6 #302, #307)
+
 v1.1.2  2026-06-24 23:33:07 JST
         - Write gunzip/bunzip2 output in binary mode on Windows, where older IO::Uncompress
           versions may otherwise corrupt decompressed tar archives with text-mode output (oalders #304, #305)
