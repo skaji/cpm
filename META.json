@@ -193,9 +193,8 @@
       "Will Sheppard <will.sheppard.uk@gmail.com>",
       "yoshikazusawa <883514+yoshikazusawa@users.noreply.github.com>"
    ],
-   "x_generated_by_perl" : "v5.42.2",
-   "x_serialization_backend" : "Cpanel::JSON::XS version 4.42",
+   "x_generated_by_perl" : "v5.44.0",
+   "x_serialization_backend" : "JSON::PP version 4.18",
    "x_spdx_expression" : "Artistic-1.0-Perl OR GPL-1.0-or-later",
    "x_static_install" : 1
 }
-
