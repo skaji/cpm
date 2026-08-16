@@ -88,7 +88,11 @@ sub new ($class, $ctx, %argv) {
 
     my $need_noman_argv = !$argv{man_pages} &&
         ($Config{installman1dir} || $Config{installsiteman1dir} || $Config{installman3dir} || $Config{installsiteman3dir});
-    my $custom = App::cpm::Worker::Installer::Custom->new;
+    my $custom = App::cpm::Worker::Installer::Custom->default;
+    if (my $path = $argv{config_path}) {
+        my $c = App::cpm::Worker::Installer::Custom->new_from_file($path);
+        $custom = $custom->merge($c);
+    }
     bless {
         %argv,
         need_noman_argv => $need_noman_argv,
@@ -359,6 +363,11 @@ sub configure_builder ($self, $ctx, $task) {
         my ($class, $argv) = $candidate->@*;
         next if !$class->supports($meta);
 
+        my @configure_args = (
+            ( $argv ? $argv->@* : () ),
+            ( $config->{configure_args} ? $config->{configure_args}->@* : () ),
+        );
+
         my $builder = $class->new(
             meta => $meta,
             directory => $dir,
@@ -372,10 +381,12 @@ sub configure_builder ($self, $ctx, $task) {
             man_pages => $self->{man_pages},
             pureperl_only => $self->{pureperl_only},
             use_install_command => exists $config->{use_install_command} ? $config->{use_install_command} : $self->{use_install_command},
-            argv => $argv,
             configure_timeout => $self->{configure_timeout},
             build_timeout => $self->{build_timeout},
             test_timeout => $self->{test_timeout},
+            configure_args => (@configure_args ? \@configure_args : undef),
+            build_args => $config->{build_args},
+            test_args => $config->{test_args},
         );
 
         my $ok = $builder->configure($ctx, $dependency_libs, $dependency_paths);

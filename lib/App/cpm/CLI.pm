@@ -61,6 +61,7 @@ sub new ($class, %argv) {
         use_install_command => 0,
         default_resolvers => 1,
         report_perl_version => !$class->maybe_ci,
+        config_path => undef,
         %argv
     }, $class;
 }
@@ -191,6 +192,7 @@ sub parse_options ($self, @argv) {
         (map $with_phase_option->($_), @TOP_LEVEL_PHASE),
         "feature=s@" => \@feature,
         "show-build-log-on-failure" => \($self->{show_build_log_on_failure}),
+        "experimental-config=s" => \($self->{config_path}),
     or return 0;
 
     $self->{local_lib} = maybe_abs($self->{local_lib}, $self->{cwd}) if !$self->{global};
@@ -344,6 +346,7 @@ sub cmd_install ($self) {
     $ctx->log("Running cpm $App::cpm::VERSION$trial ($0) on perl $Config{version} built for $Config{archname} ($^X)");
     $ctx->log("This is a self-contained version, $App::cpm::GIT_DESCRIBE ($App::cpm::GIT_URL)") if $App::cpm::GIT_DESCRIBE;
     $ctx->log("Command line arguments are: @ARGV");
+    $ctx->log("Experimental config file path is $self->{config_path}") if $self->{config_path};
     $ctx->log("Work directory is $work_dir");
 
     $ctx->log("You have make $ctx->{make}") if $ctx->{make};
@@ -395,6 +398,7 @@ sub cmd_install ($self) {
         implicit_install_base => $implicit_install_base,
         eumm_argv => $eumm_argv,
         mb_argv => $mb_argv,
+        config_path => $self->{config_path},
     );
 
     $master->add_task($ctx, type => "resolve", final_target => 1, $_->%*) for $packages->@*;
@@ -931,6 +935,8 @@ Options:
         shortcut for --with-requires, --with-recommends, --with-suggests,
         --with-configure, --with-build, --with-test, --with-runtime and --with-develop
         you can also use --top-level-phase/--top-level-relationship instead
+      --experimental-config=path
+        load distribution-specific installation settings from a YAML file (experimental)
 EOF
 
 sub cmd_help ($self) {
