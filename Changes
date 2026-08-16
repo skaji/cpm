@@ -1,5 +1,8 @@
 Revision history for App-cpm
 
+v1.1.5  2026-08-16 21:37:03 JST
+        - Add --experimental-config option (#313)
+
 v1.1.4  2026-06-28 23:46:13 JST
         - Introduce installer custom rules (rlauer6 #302, sidey79 #306, #308)
 
