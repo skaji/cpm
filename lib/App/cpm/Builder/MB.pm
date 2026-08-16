@@ -14,12 +14,14 @@ sub configure ($self, $ctx, $dependency_libs, $dependency_paths) {
     push @cmd, "--install_base", $self->{install_base} if $self->{use_install_command} && $self->{install_base};
     push @cmd, qw(--config installman1dir= --config installsiteman1dir= --config installman3dir= --config installsiteman3dir=) if $self->{need_noman_argv};
     push @cmd, '--pureperl-only' if $self->{pureperl_only};
-    push @cmd, $self->{argv}->@* if $self->{argv}->@*;
+    push @cmd, $self->{configure_args}->@* if $self->{configure_args};
     $self->run_configure($ctx, \@cmd, $dependency_libs, $dependency_paths) && -f 'Build';
 }
 
 sub build ($self, $ctx, $dependency_libs, $dependency_paths) {
-    my $ok = $self->run_build($ctx, [ $ctx->{perl}, "./Build" ], $dependency_libs, $dependency_paths);
+    my @cmd = ($ctx->{perl}, "./Build");
+    push @cmd, $self->{build_args}->@* if $self->{build_args};
+    my $ok = $self->run_build($ctx, \@cmd, $dependency_libs, $dependency_paths);
     return if !$ok;
     $self->_prepare_paths_cache;
     $self->_write_blib_meta($ctx);
@@ -27,7 +29,9 @@ sub build ($self, $ctx, $dependency_libs, $dependency_paths) {
 }
 
 sub test ($self, $ctx, $dependency_libs, $dependency_paths) {
-    $self->run_test($ctx, [ $ctx->{perl}, "./Build", "test" ], $dependency_libs, $dependency_paths);
+    my @cmd = ($ctx->{perl}, "./Build", "test");
+    push @cmd, $self->{test_args}->@* if $self->{test_args};
+    $self->run_test($ctx, \@cmd, $dependency_libs, $dependency_paths);
 }
 
 sub install ($self, $ctx, $dependency_libs = [], $dependency_paths = []) {

@@ -52,6 +52,7 @@
             "Parallel::Pipes::App" : "v1.0.0",
             "Parse::LocalDistribution" : "0.20",
             "Proc::ForkSafe" : "v1.0.0",
+            "YAML::PP" : "0",
             "perl" : "v5.24.0"
          }
       }
