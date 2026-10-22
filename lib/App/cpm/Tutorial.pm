@@ -21,15 +21,22 @@ which is fast!
 
 =head2 How to install cpm
 
-From CPAN:
+Download the latest self-contained cpm and run it directly:
 
-  $ curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g App::cpm
+  curl -fsSL -o cpm https://github.com/skaji/cpm/releases/latest/download/cpm &&
+    chmod +x cpm &&
+    ./cpm --version
 
-Or, download a I<self-contained> cpm:
+To verify its artifact attestation before running it, use this sequence
+instead. It requires the L<GitHub CLI|https://cli.github.com/> (C<gh>)
+and stops if downloading or verification fails:
 
-  $ curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm > cpm
-  $ chmod +x cpm
-  $ ./cpm --version
+  curl -fsSL -o cpm https://github.com/skaji/cpm/releases/latest/download/cpm &&
+    gh attestation verify cpm --repo skaji/cpm &&
+    chmod +x cpm &&
+    ./cpm --version
+
+You can use C<./cpm> as is, or place it in a directory on your C<PATH>.
 
 =head2 First step
 

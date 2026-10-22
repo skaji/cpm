@@ -6,22 +6,26 @@ a fast CPAN module installer
 
 ## Install
 
-There are 2 ways.
-
-### 1) self-contained version
+Download the latest self-contained cpm and run it directly:
 
 ```sh
-$ curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm > cpm
-$ chmod +x cpm
-$ ./cpm --version
+curl -fsSL -o cpm https://github.com/skaji/cpm/releases/latest/download/cpm &&
+  chmod +x cpm &&
+  ./cpm --version
 ```
 
-### 2) From CPAN
+To verify its artifact attestation before running it, use this sequence
+instead. It requires the [GitHub CLI](https://cli.github.com/) (`gh`)
+and stops if downloading or verification fails:
 
 ```sh
-$ curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g App::cpm
-$ cpm --version
+curl -fsSL -o cpm https://github.com/skaji/cpm/releases/latest/download/cpm &&
+  gh attestation verify cpm --repo skaji/cpm &&
+  chmod +x cpm &&
+  ./cpm --version
 ```
+
+You can use `./cpm` as is, or place it in a directory on your `PATH`.
 
 ## Description
 
@@ -39,8 +43,12 @@ For more background on the cpm v1 redesign, see
 
 ## Artifact Attestations
 
-GitHub Artifact Attestations are generated for release tarballs uploaded to
-CPAN. If you care about provenance for the uploaded tarballs, see:
+GitHub Artifact Attestations are generated for the self-contained cpm
+and release tarballs uploaded to CPAN. Verification establishes the
+provenance of the downloaded artifact; it does not verify CPAN
+distributions subsequently installed with cpm.
+
+See the repository's attestations:
 
 [https://github.com/skaji/cpm/attestations](https://github.com/skaji/cpm/attestations)
 

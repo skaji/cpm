@@ -92,12 +92,14 @@ jobs:
       - uses: actions/attest@v4
         id: attest
         with:
-          subject-path: ${{ steps.var.outputs.dist }}.tar.gz
+          subject-path: |
+            ${{ steps.var.outputs.dist }}.tar.gz
+            cpm
       - name: Create release
         run: |
           gh release create --repo ${{ github.repository }} ${{ github.ref_name }} \
             --notes "Artifact attestation: ${{ steps.attest.outputs.attestation-url }}" \
-            ${{ steps.var.outputs.dist }}.tar.gz
+            ${{ steps.var.outputs.dist }}.tar.gz cpm
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: skaji/action-pause-upload@v1
