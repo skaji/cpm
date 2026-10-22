@@ -1,5 +1,8 @@
 Revision history for App-cpm
 
+v1.1.6  2026-10-22 22:02:23 JST
+        - Publish self-contained cpm with attestations and document verified installation
+
 v1.1.5  2026-08-16 21:37:03 JST
         - Add --experimental-config option (#313)
 
