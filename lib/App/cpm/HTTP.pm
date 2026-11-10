@@ -4,6 +4,7 @@ use warnings;
 use experimental qw(lexical_subs signatures);
 
 use App::cpm;
+use Carp qw(croak);
 use HTTP::Tinyish;
 
 package App::cpm::HTTP::_HTTPTiny {
@@ -51,7 +52,12 @@ sub create ($class, %args) {
         ($desc = $meta->{$tool}) =~ s/^(.*?)\n.*/$1/s;
         $backend = $try, last;
     }
-    die "Couldn't find HTTP Clients that support https" if !$backend;
+    if (!$backend) {
+        if ($args{prefer}) {
+            croak "Couldn't find HTTP Clients that support https (requested: @{$args{prefer}})\n";
+        }
+        croak "Couldn't find HTTP Clients that support https\n";
+    }
 
     my $http = $backend->new(
         agent => $agent,

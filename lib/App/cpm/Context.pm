@@ -12,9 +12,13 @@ use File::Which ();
 
 sub new ($class, %argv) {
     my $logger = App::cpm::Logger::File->new($argv{log_file});
-    my ($http, $http_description) = App::cpm::HTTP->create(
+    my %http_options = (
         report_perl_version => $argv{report_perl_version},
     );
+    if (defined $argv{http_backend}) {
+        $http_options{prefer} = [$argv{http_backend}];
+    }
+    my ($http, $http_description) = App::cpm::HTTP->create(%http_options);
     my $unpacker = App::cpm::Installer::Unpacker->new;
     my $make = File::Which::which($Config{make});
     bless {
