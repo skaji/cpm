@@ -41,6 +41,22 @@ larger dependency graphs and parallel work.
 For more background on the cpm v1 redesign, see
 [cpm v1: making installs stable](https://skaji.medium.com/cpm-v1-making-installs-stable-b2236b8eda44).
 
+## HTTP backend selection
+
+By default, cpm tries HTTP::Tiny, LWP, curl, then wget. Select a backend explicitly
+when its behavior is required, for example wget's `.netrc` authentication:
+
+```sh
+cpm install --http-backend=wget Your::Module
+PERL_CPM_HTTP_BACKEND=wget cpm install Your::Module
+```
+
+Valid values are `auto`, `httptiny`, `lwp`, `curl`, and `wget` (case-insensitive).
+The command-line option takes precedence over `PERL_CPM_HTTP_BACKEND`;
+`--http-backend=auto` restores automatic selection. An explicitly selected backend
+must be available and support HTTPS; cpm fails instead of falling back to another
+backend. The selection applies to index requests and distribution downloads.
+
 ## Artifact Attestations
 
 GitHub Artifact Attestations are generated for the self-contained cpm

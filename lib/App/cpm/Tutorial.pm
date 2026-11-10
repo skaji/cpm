@@ -64,6 +64,21 @@ want more verbose messages, use C<--verbose/-v> option.
   $ cpm install --progress=plain Plack
   $ cpm install --verbose Plack
 
+=head2 HTTP backend selection
+
+By default, cpm tries HTTP::Tiny, LWP, curl, then wget. To select a backend
+explicitly, for example to use wget's F<.netrc> authentication:
+
+  $ cpm install --http-backend=wget Your::Module
+  $ PERL_CPM_HTTP_BACKEND=wget cpm install Your::Module
+
+Valid values are C<auto>, C<httptiny>, C<lwp>, C<curl>, and C<wget>
+(case-insensitive). The command-line option takes precedence over
+C<PERL_CPM_HTTP_BACKEND>. Use C<--http-backend=auto> to restore automatic
+selection. An explicitly selected backend must be available and support
+HTTPS; cpm fails instead of falling back to another backend. The selection
+applies to index requests and distribution downloads.
+
 =head2 Second step
 
 cpm can handle version range notation like L<cpanm>. Let's see some examples.

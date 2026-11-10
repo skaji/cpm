@@ -18,6 +18,7 @@ use App::cpm::Worker;
 use App::cpm::version;
 use App::cpm;
 use CPAN::Meta;
+use Carp qw(croak);
 use Command::Runner;
 use Config;
 use Cwd ();
@@ -47,6 +48,7 @@ sub new ($class, %argv) {
         cpanmetadb => "https://cpanmetadb.plackperl.org/v1.0/",
         _default_mirror => 'https://cpan.metacpan.org/',
         progress => "auto",
+        http_backend => $ENV{PERL_CPM_HTTP_BACKEND},
         final_install => "runtime",
         configure_timeout => 60,
         build_timeout => 3600,
@@ -74,6 +76,23 @@ sub _normalize_progress ($self, $progress) {
     return if !defined $progress;
     return $progress if $progress =~ /\A(?:auto|tty|plain)\z/;
     die "Unknown --progress mode '$progress' (expected: auto, tty, plain)\n";
+}
+
+sub _normalize_http_backend ($self, $backend) {
+    if (!defined $backend) {
+        return;
+    }
+    my %backends = (
+        auto => undef,
+        httptiny => 'HTTPTiny',
+        lwp => 'LWP',
+        curl => 'Curl',
+        wget => 'Wget',
+    );
+    if (exists $backends{lc $backend}) {
+        return $backends{lc $backend};
+    }
+    croak "Unknown HTTP backend '$backend' (expected: auto, httptiny, lwp, curl, wget)\n";
 }
 
 sub _normalize_final_install ($self, $final_install) {
@@ -153,6 +172,7 @@ sub parse_options ($self, @argv) {
         "color!" => \($self->{color}),
         "g|global" => \($self->{global}),
         "mirror=s" => \$mirror,
+        "http-backend=s" => \($self->{http_backend}),
         "v|verbose" => \($self->{verbose}),
         "w|workers=i" => \($self->{workers}),
         "target-perl=s" => \my $target_perl,
@@ -195,6 +215,7 @@ sub parse_options ($self, @argv) {
         "experimental-config=s" => \($self->{config_path}),
     or return 0;
 
+    $self->{http_backend} = $self->_normalize_http_backend($self->{http_backend});
     $self->{local_lib} = maybe_abs($self->{local_lib}, $self->{cwd}) if !$self->{global};
     $self->{home} = maybe_abs($self->{home}, $self->{cwd});
     $self->{resolver} = \@resolver;
@@ -340,6 +361,7 @@ sub cmd_install ($self) {
     my $ctx = App::cpm::Context->new(
         log_file => $log_file,
         report_perl_version => $self->{report_perl_version},
+        http_backend => $self->{http_backend},
     );
     $ctx->{logger}->symlink_to("$self->{home}/build.log");
     my $trial = $App::cpm::TRIAL ? '-TRIAL' : '';
@@ -853,6 +875,11 @@ Options:
       --mirror=URL
         base url for the CPAN mirror to use, cannot be used multiple times. Use --resolver instead.
         default: https://cpan.metacpan.org
+      --http-backend=auto|httptiny|lwp|curl|wget
+        select the HTTP backend (case-insensitive), default: auto
+        auto tries HTTP::Tiny, LWP, curl, then wget; an explicit backend must support HTTPS
+        and is used without fallback. Set PERL_CPM_HTTP_BACKEND to configure the default;
+        this option takes precedence, and --http-backend=auto restores automatic selection.
       --pp, --pureperl-only
         prefer pureperl only build
       --static-install, --no-static-install
