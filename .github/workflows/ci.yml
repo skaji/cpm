@@ -17,7 +17,7 @@ jobs:
           - '5.24.4'
           - 'latest'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install deb packages
         run: sudo apt-get -qq update && sudo apt-get -qq install -y unzip libdb-dev
       - name: Setup perl
@@ -42,7 +42,7 @@ jobs:
             prove: /opt/homebrew/bin/prove
             sudo: ''
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: perl -V
         run: ${{ matrix.perl }} -V
       - name: Install Dependencies
@@ -59,7 +59,7 @@ jobs:
           - '1'
           - '2'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: perl -V
         run: perl -V
       - name: Install Dependencies
@@ -80,15 +80,18 @@ jobs:
       artifact-metadata: write # actions/attest
       contents: write # gh release
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Prepare variables
         id: var
-        run: echo dist=$(jq -r '"\(.name)-\(.version)\(if .release_status == "stable" then "" else "-TRIAL" end)"' META.json) >> $GITHUB_OUTPUT
-      - name: Generate tarball
+        run: echo dist=$(jq -r .name META.json)-${{ github.ref_name }} >> $GITHUB_OUTPUT
+      - name: Generate archive
         run: |
-          git archive --format=tar \
+          git -c tar.umask=0002 archive \
+            --format=tar.gz \
+            -9 \
             --prefix=${{ steps.var.outputs.dist }}/ \
-            'HEAD^{tree}' | gzip -n -9 > ${{ steps.var.outputs.dist }}.tar.gz
+            --output=${{ steps.var.outputs.dist }}.tar.gz \
+            ${{ github.ref_name }}
       - uses: actions/attest@v4
         id: attest
         with:
