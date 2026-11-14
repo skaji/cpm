@@ -12,6 +12,7 @@ jobs:
   test-linux:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         perl-version:
           - '5.24.4'
@@ -22,7 +23,7 @@ jobs:
         run: sudo apt-get -qq update && sudo apt-get -qq install -y unzip libdb-dev
       - name: Setup perl
         run: |
-          curl -fsSL https://github.com/skaji/cpm-test/releases/download/0.01/ubuntu-24.04-perl-${{ matrix.perl-version }}.tar.xz | tar xJf - -C /tmp
+          curl -fsSL https://github.com/skaji/cpm-test/releases/download/0.01/ubuntu-26.04-perl-${{ matrix.perl-version }}.tar.xz | tar xJf - -C /tmp
           echo /tmp/perl-${{ matrix.perl-version }}/bin >> $GITHUB_PATH
       - run: perl -V
       - name: Install Dependencies
@@ -33,6 +34,7 @@ jobs:
   test-macos:
     runs-on: macos-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - perl: /usr/bin/perl
@@ -53,6 +55,7 @@ jobs:
   test-windows:
     runs-on: windows-latest
     strategy:
+      fail-fast: false
       matrix:
         tester-id:
           - '0'
