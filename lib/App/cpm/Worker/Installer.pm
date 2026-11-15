@@ -387,6 +387,7 @@ sub configure_builder ($self, $ctx, $task) {
             configure_args => (@configure_args ? \@configure_args : undef),
             build_args => $config->{build_args},
             test_args => $config->{test_args},
+            install_args => $config->{install_args},
         );
 
         my $ok = $builder->configure($ctx, $dependency_libs, $dependency_paths);

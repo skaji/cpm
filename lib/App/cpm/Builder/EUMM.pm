@@ -40,7 +40,18 @@ sub test ($self, $ctx, $dependency_libs, $dependency_paths) {
 
 sub install ($self, $ctx, $dependency_libs = [], $dependency_paths = []) {
     return $self->SUPER::install($ctx, $dependency_libs, $dependency_paths) if !$self->{use_install_command};
-    my $ok = $self->run_install($ctx, [ $ctx->{make}, "install" ], $dependency_libs, $dependency_paths);
+    my @cmd = ( $ctx->{make}, 'install' );
+
+    push @cmd, $self->{install_args}->@*
+      if $self->{install_args};
+
+    my $ok = $self->run_install(
+                                $ctx,
+                                \@cmd,
+                                $dependency_libs,
+                                $dependency_paths,
+                               );
+
     return if !$ok;
     $self->_install_blib_meta($ctx);
     return 1;
