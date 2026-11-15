@@ -4,7 +4,7 @@
       "Shoichi Kaji <skaji@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 6.037, CPAN::Meta::Converter version 2.150013, CPAN::Meta::Converter version 2.150015",
+   "generated_by" : "CPAN::Meta version 2.150015",
    "license" : [
       "perl_5"
    ],
@@ -59,7 +59,7 @@
    "provides" : {
       "App::cpm" : {
          "file" : "lib/App/cpm.pm",
-         "version" : "v1.1.6"
+         "version" : "v1.1.7"
       },
       "App::cpm::Builder::Base" : {
          "file" : "lib/App/cpm/Builder/Base.pm"
@@ -173,7 +173,7 @@
          "web" : "https://github.com/skaji/cpm"
       }
    },
-   "version" : "v1.1.6",
+   "version" : "v1.1.7",
    "x_contributors" : [
       "Andrew Rodland <andrew@cleverdomain.org>",
       "Dave Rolsky <autarch@urth.org>",
@@ -187,6 +187,7 @@
       "Nicolas R <atoomic@cpan.org>",
       "Nicolas R <cpan@atoomic.org>",
       "Olaf Alders <olaf@wundersolutions.com>",
+      "Rob Lauer <rlauer6@comcast.net>",
       "shawnlaffan <shawnlaffan@gmail.com>",
       "Shoichi Kaji <skaji@outlook.com>",
       "Thibault Duponchelle <thibault.duponchelle@gmail.com>",

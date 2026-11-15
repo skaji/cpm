@@ -1,5 +1,10 @@
 Revision history for App-cpm
 
+v1.1.7  2026-11-16 02:13:22 JST
+        - Add install_args support to experimental distribution configuration (rlauer6 #314)
+        - Add --http-backend option (amishHammer #315, #316)
+        - Change --experimental-config file format from YAML to JSON (#317)
+
 v1.1.6  2026-10-22 22:02:23 JST
         - Publish self-contained cpm with attestations and document verified installation
 
