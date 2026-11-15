@@ -3,14 +3,17 @@ use v5.24;
 use warnings;
 use experimental qw(lexical_subs signatures);
 
-use YAML::PP ();
+use JSON::PP ();
 
 sub new ($class, %argv) {
     bless { custom => [], %argv }, $class;
 }
 
 sub new_from_file ($class, $path) {
-    my ($data) = YAML::PP->new->load_file($path);
+    open my $fh, "<:utf8", $path or die "$path: $!\n";
+    my $content = do { local $/; <$fh> };
+    my $data = eval { JSON::PP->new->decode($content) };
+    die "invalid json file, $path: $@" if $@;
     my @custom = $data->{distribution_custom} ? $data->{distribution_custom}->@* : ();
     for my $c (@custom) {
         $c->{match} = qr/$c->{match}/;
