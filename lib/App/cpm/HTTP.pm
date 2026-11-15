@@ -39,19 +39,34 @@ sub create ($class, %args) {
     my $agent = "App::cpm/$App::cpm::VERSION";
     $agent .= " perl/$]" if $report_perl_version;
 
-    my @try = $args{prefer} ? $args{prefer}->@* : qw(HTTPTiny LWP Curl Wget);
-    @try = map { "HTTP::Tinyish::$_" } @try;
-    @try = map { $_ eq "HTTP::Tinyish::HTTPTiny" ? "App::cpm::HTTP::_HTTPTiny": $_ } @try;
+    my @try;
+    if (!defined $args{prefer} or lc $args{prefer} eq "auto") {
+        @try = qw(HTTPTiny LWP Curl Wget);
+    } elsif (lc $args{prefer} eq "httptiny") {
+        @try = qw(HTTPTiny);
+    } elsif (lc $args{prefer} eq "lwp") {
+        @try = qw(LWP);
+    } elsif (lc $args{prefer} eq "curl") {
+        @try = qw(Curl);
+    } elsif (lc $args{prefer} eq "wget") {
+        @try = qw(Wget);
+    } else {
+        die "unknown http backend: $args{prefer}\n";
+    }
+    my @try2 =
+        map { $_ eq "HTTP::Tinyish::HTTPTiny" ? "App::cpm::HTTP::_HTTPTiny" : $_ }
+        map { "HTTP::Tinyish::$_" }
+        @try;
 
     my ($backend, $tool, $desc);
-    for my $try (@try) {
+    for my $try (@try2) {
         my $meta = HTTP::Tinyish->configure_backend($try) or next;
         $try->supports("https") or next;
         ($tool) = sort keys $meta->%*;
         ($desc = $meta->{$tool}) =~ s/^(.*?)\n.*/$1/s;
         $backend = $try, last;
     }
-    die "Couldn't find HTTP Clients that support https" if !$backend;
+    die "Couldn't find HTTP Clients that support https, tried @try2" if !$backend;
 
     my $http = $backend->new(
         agent => $agent,

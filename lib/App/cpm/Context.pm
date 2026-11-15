@@ -13,6 +13,7 @@ use File::Which ();
 sub new ($class, %argv) {
     my $logger = App::cpm::Logger::File->new($argv{log_file});
     my ($http, $http_description) = App::cpm::HTTP->create(
+        prefer => $argv{http_backend},
         report_perl_version => $argv{report_perl_version},
     );
     my $unpacker = App::cpm::Installer::Unpacker->new;
