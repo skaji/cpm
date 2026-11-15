@@ -941,7 +941,7 @@ Options:
       --http-backend=auto|httptiny|lwp|curl|wget
         select the HTTP backend, default: auto
       --experimental-config=path
-        load distribution-specific installation settings from a YAML file (experimental)
+        load distribution-specific installation settings from a JSON file (experimental)
 EOF
 
 sub cmd_help ($self) {
