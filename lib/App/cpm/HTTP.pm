@@ -66,7 +66,7 @@ sub create ($class, %args) {
         ($desc = $meta->{$tool}) =~ s/^(.*?)\n.*/$1/s;
         $backend = $try, last;
     }
-    die "Couldn't find HTTP Clients that support https, tried @try2" if !$backend;
+    die "Couldn't find HTTP Clients that support https, tried @try" if !$backend;
 
     my $http = $backend->new(
         agent => $agent,
