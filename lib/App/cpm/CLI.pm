@@ -62,6 +62,7 @@ sub new ($class, %argv) {
         default_resolvers => 1,
         report_perl_version => !$class->maybe_ci,
         config_path => undef,
+        http_backend => "auto",
         %argv
     }, $class;
 }
@@ -193,6 +194,7 @@ sub parse_options ($self, @argv) {
         "feature=s@" => \@feature,
         "show-build-log-on-failure" => \($self->{show_build_log_on_failure}),
         "experimental-config=s" => \($self->{config_path}),
+        "http-backend=s" => \($self->{http_backend}),
     or return 0;
 
     $self->{local_lib} = maybe_abs($self->{local_lib}, $self->{cwd}) if !$self->{global};
@@ -338,6 +340,7 @@ sub cmd_install ($self) {
     my $cache_dir = File::Spec->catdir($self->{home}, "cache");
 
     my $ctx = App::cpm::Context->new(
+        http_backend => $self->{http_backend},
         log_file => $log_file,
         report_perl_version => $self->{report_perl_version},
     );
@@ -935,6 +938,8 @@ Options:
         shortcut for --with-requires, --with-recommends, --with-suggests,
         --with-configure, --with-build, --with-test, --with-runtime and --with-develop
         you can also use --top-level-phase/--top-level-relationship instead
+      --http-backend=auto|httptiny|lwp|curl|wget
+        select the HTTP backend, default: auto
       --experimental-config=path
         load distribution-specific installation settings from a YAML file (experimental)
 EOF
