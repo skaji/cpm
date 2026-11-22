@@ -355,13 +355,16 @@ sub configure_builder ($self, $ctx, $task) {
         = $task->@{qw(directory meta dependency_libs dependency_paths)};
     my $config = $self->{custom}->config($task->{uri}) || {};
     my @candidate = (
-        ($self->{static_install} ? [ 'App::cpm::Builder::Static', $self->{mb_argv} ] : ()),
-        [ 'App::cpm::Builder::MB',     $self->{mb_argv} ],
-        [ 'App::cpm::Builder::EUMM',   $self->{eumm_argv} ],
+        [ 'App::cpm::Builder::MB', $self->{mb_argv}, 0 ],
+        [ 'App::cpm::Builder::EUMM', $self->{eumm_argv}, 0 ],
     );
+    if (exists $config->{static_install} ? $config->{static_install} : $self->{static_install}) {
+        unshift @candidate, [ 'App::cpm::Builder::Static', $self->{mb_argv}, $config->{static_install} ];
+    }
+
     for my $candidate (@candidate) {
-        my ($class, $argv) = $candidate->@*;
-        next if !$class->supports($meta);
+        my ($class, $argv, $always) = $candidate->@*;
+        next if !$always && !$class->supports($meta);
 
         my @configure_args = (
             ( $argv ? $argv->@* : () ),
