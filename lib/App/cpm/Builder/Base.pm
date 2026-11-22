@@ -199,6 +199,7 @@ sub run_configure ($self, $ctx, $cmd, $dependency_libs, $dependency_paths) {
     $ENV{PERL5_CPANM_IS_RUNNING} = $$;
     $ENV{PERL_MM_USE_DEFAULT} = 1;
     $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($ctx);
+    %ENV = (%ENV, $self->{configure_env}->%*) if $self->{configure_env};
     $self->_set_env($dependency_libs, $dependency_paths, 0);
     DEBUG and $self->_log_env($ctx);
     $ctx->run_command($cmd, $self->{configure_timeout});
@@ -208,6 +209,7 @@ sub run_build ($self, $ctx, $cmd, $dependency_libs, $dependency_paths) {
     local %ENV = %ENV;
     $ENV{PERL_MM_USE_DEFAULT} = 1;
     $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($ctx);
+    %ENV = (%ENV, $self->{build_env}->%*) if $self->{build_env};
     $self->_set_env($dependency_libs, $dependency_paths, 0);
     DEBUG and $self->_log_env($ctx);
     $ctx->run_command($cmd, $self->{build_timeout});
@@ -217,6 +219,7 @@ sub run_install ($self, $ctx, $cmd, $dependency_libs, $dependency_paths) {
     local %ENV = %ENV;
     $ENV{PERL_MM_USE_DEFAULT} = 1;
     $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($ctx);
+    %ENV = (%ENV, $self->{install_env}->%*) if $self->{install_env};
     $self->_set_env($dependency_libs, $dependency_paths, $self->{local_lib} ? 1 : 0);
     DEBUG and $self->_log_env($ctx);
     $ctx->run_command($cmd, 0);
@@ -227,6 +230,7 @@ sub run_test ($self, $ctx, $cmd, $dependency_libs, $dependency_paths) {
     $ENV{PERL_MM_USE_DEFAULT} = 1;
     $ENV{PERL_USE_UNSAFE_INC} = $self->_use_unsafe_inc($ctx);
     $ENV{NONINTERACTIVE_TESTING} = 1;
+    %ENV = (%ENV, $self->{test_env}->%*) if $self->{test_env};
     $self->_set_env($dependency_libs, $dependency_paths, 0);
     DEBUG and $self->_log_env($ctx);
     $ctx->run_command($cmd, $self->{test_timeout});
