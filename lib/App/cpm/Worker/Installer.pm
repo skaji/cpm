@@ -388,6 +388,10 @@ sub configure_builder ($self, $ctx, $task) {
             build_args => $config->{build_args},
             test_args => $config->{test_args},
             install_args => $config->{install_args},
+            configure_env => $config->{configure_env},
+            build_env => $config->{build_env},
+            test_env => $config->{test_env},
+            install_env => $config->{install_env},
         );
 
         my $ok = $builder->configure($ctx, $dependency_libs, $dependency_paths);
